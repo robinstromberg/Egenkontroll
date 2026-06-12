@@ -1,3 +1,4 @@
+import { AccessRunList } from './AccessRunList';
 import './InspectorView.css';
 
 export type InspectorViewProps = {
@@ -15,12 +16,7 @@ export function InspectorView({ shareKey }: InspectorViewProps) {
             Delad egenkontrollhistorik visas här. Vyn är endast läsbar.
           </p>
         </div>
-        <div className="inspector-list">
-          <article className="inspector-row">
-            <strong>Delningsnyckel mottagen</strong>
-            <p className="muted-copy">{shareKey.slice(0, 8)}...</p>
-          </article>
-        </div>
+        <AccessRunList shareKey={shareKey} />
       </section>
     </main>
   );
