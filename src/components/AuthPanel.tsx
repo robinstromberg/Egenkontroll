@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import { ActionButton } from './ui/ActionButton';
 import { sendEmailLink } from '../services/authService';
 
 export function AuthPanel() {
@@ -40,9 +41,9 @@ export function AuthPanel() {
           placeholder="namn@foretag.se"
           required
         />
-        <button className="primary-button" type="submit" disabled={status === 'loading'}>
+        <ActionButton type="submit" disabled={status === 'loading'}>
           {status === 'loading' ? 'Skickar...' : 'Skicka inloggningslänk'}
-        </button>
+        </ActionButton>
       </form>
       {message ? (
         <p className={status === 'error' ? 'form-message error-message' : 'form-message success-message'}>
