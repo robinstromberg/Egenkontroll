@@ -1,0 +1,62 @@
+.today-dashboard {
+  display: grid;
+  gap: 18px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 28px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.today-summary {
+  display: grid;
+  gap: 10px;
+  border-radius: 22px;
+  padding: 16px;
+  background: #f4f1ff;
+}
+
+.today-list,
+.deviation-list {
+  display: grid;
+  gap: 10px;
+}
+
+.today-item,
+.deviation-item {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 14px;
+  background: #fbfbff;
+}
+
+.today-item-header,
+.deviation-item-header {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.status-pill.done {
+  color: #0c6638;
+  background: #ddf8e7;
+}
+
+.status-pill.warning {
+  color: #9f1d2b;
+  background: #ffe3e7;
+}
+
+.status-pill.pending {
+  color: #5b46e1;
+  background: #efedff;
+}
