@@ -1,23 +1,68 @@
-const plannedModules = [
-  {
-    title: 'Idag',
-    description: 'Dagens kontroller, status och öppna avvikelser samlas på startsidan.',
-  },
-  {
-    title: 'Kontrollmotor',
-    description: 'Alla kontrolltyper följer samma flöde: öppna, fyll i, hantera avvikelse och spara.',
-  },
-  {
-    title: 'Historik',
-    description: 'Alla registreringar sparas med datum, tid, användare, status och åtgärder.',
-  },
-  {
-    title: 'Delning',
-    description: 'Tidsbegränsad läslänk och QR-kod för inspektörsvy och export.',
-  },
-];
+import type { Session } from '@supabase/supabase-js';
+import { useCallback, useEffect, useState } from 'react';
+import { AppDashboard } from './components/AppDashboard';
+import { AuthPanel } from './components/AuthPanel';
+import { OrganizationSetup } from './components/OrganizationSetup';
+import { getCurrentSession, signOut } from './services/authService';
+import { ensureProfile, listOrganizationContexts } from './services/organizationService';
+import type { OrganizationContext } from './services/organizationService';
+import { supabase } from './lib/supabaseClient';
 
 function App() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [organizationContexts, setOrganizationContexts] = useState<OrganizationContext[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState('');
+
+  const loadOrganizationContext = useCallback(async () => {
+    const contexts = await listOrganizationContexts();
+    setOrganizationContexts(contexts);
+  }, []);
+
+  const loadSession = useCallback(async () => {
+    setLoading(true);
+    setMessage('');
+
+    try {
+      const currentSession = await getCurrentSession();
+      setSession(currentSession);
+
+      if (currentSession?.user) {
+        await ensureProfile(currentSession.user);
+        await loadOrganizationContext();
+      } else {
+        setOrganizationContexts([]);
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Appen kunde inte läsa sessionen.');
+    } finally {
+      setLoading(false);
+    }
+  }, [loadOrganizationContext]);
+
+  useEffect(() => {
+    void loadSession();
+
+    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      if (nextSession?.user) {
+        void ensureProfile(nextSession.user).then(loadOrganizationContext);
+      } else {
+        setOrganizationContexts([]);
+      }
+    });
+
+    return () => data.subscription.unsubscribe();
+  }, [loadOrganizationContext, loadSession]);
+
+  async function handleSignOut() {
+    await signOut();
+    setSession(null);
+    setOrganizationContexts([]);
+  }
+
+  const activeContext = organizationContexts[0];
+
   return (
     <main className="app-shell">
       <section className="hero-card" aria-labelledby="page-title">
@@ -28,36 +73,26 @@ function App() {
           <p className="eyebrow">Mobilförst SaaS-webapp</p>
           <h1 id="page-title">Egenkontroll</h1>
           <p className="lead">
-            En enkel grund för digital egenkontroll i livsmedelsverksamheter. Appen är
-            förberedd för Supabase, Vercel och fortsatt issue-baserad utveckling.
+            Digital egenkontroll för livsmedelsverksamheter. Inloggning, verksamhetsyta
+            och rollbaserad åtkomst är nu på plats som grund för kommande kontrollflöden.
           </p>
         </div>
       </section>
 
-      <section className="status-panel" aria-labelledby="status-title">
-        <div>
-          <p className="eyebrow">Issue #1</p>
-          <h2 id="status-title">Teknisk grund är initierad</h2>
-        </div>
-        <ul className="check-list">
-          <li>React + TypeScript + Vite</li>
-          <li>Mobilförst layoutgrund</li>
-          <li>Miljövariabler för Supabase</li>
-          <li>Redo för nästa issue</li>
-        </ul>
-      </section>
+      {message ? <p className="form-message error-message">{message}</p> : null}
 
-      <section aria-labelledby="modules-title">
-        <h2 id="modules-title">Planerade huvudmoduler</h2>
-        <div className="module-grid">
-          {plannedModules.map((module) => (
-            <article className="module-card" key={module.title}>
-              <h3>{module.title}</h3>
-              <p>{module.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      {loading ? (
+        <section className="status-panel">
+          <p className="eyebrow">Laddar</p>
+          <h2>Kontrollerar session...</h2>
+        </section>
+      ) : !session?.user ? (
+        <AuthPanel />
+      ) : activeContext ? (
+        <AppDashboard user={session.user} context={activeContext} onSignOut={handleSignOut} />
+      ) : (
+        <OrganizationSetup user={session.user} onCreated={loadOrganizationContext} />
+      )}
     </main>
   );
 }
