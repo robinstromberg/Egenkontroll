@@ -1,7 +1,7 @@
 import type { User } from '@supabase/supabase-js';
 import { useState } from 'react';
 import { AdminControls } from './AdminControls';
-import { ControlRunForm } from './ControlRunForm';
+import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
 import { TodayDashboard } from './TodayDashboard';
 import { ActionButton } from './ui/ActionButton';
 import type { OrganizationContext } from '../services/organizationService';
@@ -54,7 +54,7 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
       </div>
 
       {activeControlTypeId ? (
-        <ControlRunForm
+        <ControlRunFormWithPhotos
           controlTypeId={activeControlTypeId}
           organizationId={context.organization.id}
           userId={user.id}
