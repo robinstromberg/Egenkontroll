@@ -1,4 +1,5 @@
 import type { User } from '@supabase/supabase-js';
+import { AdminControls } from './AdminControls';
 import { ActionButton } from './ui/ActionButton';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
@@ -49,7 +50,7 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
         </article>
         <article className="module-card">
           <h3>Kontrolltyper</h3>
-          <p>{canManage ? 'Adminflöde kommer att aktiveras här.' : 'Admin hanterar kontrolltyper.'}</p>
+          <p>{canManage ? 'Du kan skapa och inaktivera kontroller nedan.' : 'Admin hanterar kontrolltyper.'}</p>
         </article>
         <article className="module-card">
           <h3>Historik</h3>
@@ -60,6 +61,10 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
           <p>Inspektörslänk och QR-kod byggs i senare issue.</p>
         </article>
       </div>
+
+      {canManage ? (
+        <AdminControls organizationId={context.organization.id} userId={user.id} />
+      ) : null}
     </section>
   );
 }
