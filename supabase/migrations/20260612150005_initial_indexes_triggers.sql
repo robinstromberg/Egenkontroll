@@ -1,0 +1,24 @@
+create index organizations_created_by_idx on public.organizations(created_by);
+create index organization_memberships_user_idx on public.organization_memberships(user_id);
+create index organization_memberships_org_idx on public.organization_memberships(organization_id);
+create index control_types_org_idx on public.control_types(organization_id);
+create index control_objects_type_idx on public.control_objects(control_type_id);
+create index control_fields_type_idx on public.control_field_definitions(control_type_id);
+create index control_runs_org_performed_at_idx on public.control_runs(organization_id, performed_at desc);
+create index control_runs_type_idx on public.control_runs(control_type_id);
+create index control_run_items_run_idx on public.control_run_items(control_run_id);
+create index deviations_org_status_idx on public.deviations(organization_id, status);
+create index deviations_run_idx on public.deviations(control_run_id);
+create index attachments_run_idx on public.attachments(control_run_id);
+create index share_links_org_idx on public.share_links(organization_id);
+create index export_logs_org_idx on public.export_logs(organization_id);
+
+create trigger set_organizations_updated_at before update on public.organizations for each row execute function public.set_updated_at();
+create trigger set_profiles_updated_at before update on public.profiles for each row execute function public.set_updated_at();
+create trigger set_organization_memberships_updated_at before update on public.organization_memberships for each row execute function public.set_updated_at();
+create trigger set_control_types_updated_at before update on public.control_types for each row execute function public.set_updated_at();
+create trigger set_control_objects_updated_at before update on public.control_objects for each row execute function public.set_updated_at();
+create trigger set_control_field_definitions_updated_at before update on public.control_field_definitions for each row execute function public.set_updated_at();
+create trigger set_control_runs_updated_at before update on public.control_runs for each row execute function public.set_updated_at();
+create trigger set_deviations_updated_at before update on public.deviations for each row execute function public.set_updated_at();
+create trigger set_share_links_updated_at before update on public.share_links for each row execute function public.set_updated_at();
