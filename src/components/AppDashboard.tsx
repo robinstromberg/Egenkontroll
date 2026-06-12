@@ -1,5 +1,7 @@
 import type { User } from '@supabase/supabase-js';
+import { useState } from 'react';
 import { AdminControls } from './AdminControls';
+import { ControlRunForm } from './ControlRunForm';
 import { TodayDashboard } from './TodayDashboard';
 import { ActionButton } from './ui/ActionButton';
 import type { OrganizationContext } from '../services/organizationService';
@@ -19,6 +21,13 @@ const roleLabels = {
 
 export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
   const canManage = canManageOrganization(context.membership.role);
+  const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
+  const [dashboardKey, setDashboardKey] = useState(0);
+
+  async function handleControlSaved() {
+    setActiveControlTypeId(null);
+    setDashboardKey((current) => current + 1);
+  }
 
   return (
     <section className="dashboard-card" aria-labelledby="dashboard-title">
@@ -44,7 +53,21 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
         </p>
       </div>
 
-      <TodayDashboard organizationId={context.organization.id} />
+      {activeControlTypeId ? (
+        <ControlRunForm
+          controlTypeId={activeControlTypeId}
+          organizationId={context.organization.id}
+          userId={user.id}
+          onCancel={() => setActiveControlTypeId(null)}
+          onSaved={handleControlSaved}
+        />
+      ) : (
+        <TodayDashboard
+          key={dashboardKey}
+          organizationId={context.organization.id}
+          onStartControl={setActiveControlTypeId}
+        />
+      )}
 
       <div className="module-grid">
         <article className="module-card">
