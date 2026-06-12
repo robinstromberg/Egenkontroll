@@ -1,4 +1,12 @@
-const items = ['Idag', 'Historik', 'Lägg till', 'Delning', 'Meny'];
+import { t } from '../locales';
+
+const items = [
+  t.navigationToday,
+  t.navigationHistory,
+  t.navigationAdd,
+  t.navigationSharing,
+  t.navigationMenu,
+];
 
 export function AppBottomNav() {
   return (
@@ -16,7 +24,7 @@ export function AppBottomNav() {
       }}
     >
       {items.map((item) => {
-        const selected = item === 'Idag';
+        const selected = item === t.navigationToday;
         return (
           <span
             className={selected ? 'bottom-bar-item selected' : 'bottom-bar-item'}
