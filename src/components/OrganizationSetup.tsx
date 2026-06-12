@@ -4,6 +4,7 @@ import { ActionButton } from './ui/ActionButton';
 import { createFirstOrganization } from '../services/organizationService';
 import { listActiveControlTemplates } from '../services/templateService';
 import type { ControlTemplate } from '../types/database';
+import './OrganizationSetup.css';
 
 export type OrganizationSetupProps = {
   user: User;
