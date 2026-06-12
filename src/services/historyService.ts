@@ -1,10 +1,18 @@
 import { supabase } from '../lib/supabaseClient';
-import type { Attachment, ControlRun, ControlRunItem, Deviation } from '../types/database';
+import type { ControlRun, ControlRunItem, Deviation } from '../types/database';
 
 export type HistoryFilters = {
   fromDate?: string;
   toDate?: string;
   status?: string;
+};
+
+export type HistoryAttachment = {
+  id: string;
+  file_name: string | null;
+  storage_bucket: string;
+  storage_path: string;
+  created_at: string;
 };
 
 export type ControlRunSummary = ControlRun & {
@@ -15,7 +23,7 @@ export type ControlRunDetail = {
   run: ControlRunSummary;
   items: ControlRunItem[];
   deviations: Deviation[];
-  attachments: Attachment[];
+  attachments: HistoryAttachment[];
 };
 
 export async function listHistoryRuns(
@@ -81,7 +89,7 @@ export async function getControlRunDetail(
       .order('opened_at', { ascending: true }),
     supabase
       .from('attachments')
-      .select('*')
+      .select('id, file_name, storage_bucket, storage_path, created_at')
       .eq('organization_id', organizationId)
       .eq('control_run_id', controlRunId)
       .order('created_at', { ascending: true }),
@@ -98,6 +106,6 @@ export async function getControlRunDetail(
     },
     items: (items ?? []) as ControlRunItem[],
     deviations: (deviations ?? []) as Deviation[],
-    attachments: (attachments ?? []) as Attachment[],
+    attachments: (attachments ?? []) as HistoryAttachment[],
   };
 }
