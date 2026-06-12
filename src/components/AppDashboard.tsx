@@ -1,4 +1,5 @@
 import type { User } from '@supabase/supabase-js';
+import { ActionButton } from './ui/ActionButton';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
 
@@ -27,9 +28,9 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
             {user.email} · {roleLabels[context.membership.role]}
           </p>
         </div>
-        <button className="secondary-button" type="button" onClick={onSignOut}>
+        <ActionButton variant="secondary" type="button" onClick={onSignOut}>
           Logga ut
-        </button>
+        </ActionButton>
       </div>
 
       <div className="role-panel">
