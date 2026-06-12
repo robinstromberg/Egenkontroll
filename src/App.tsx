@@ -3,13 +3,21 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppBottomNav } from './components/AppBottomNav';
 import { AppDashboard } from './components/AppDashboard';
 import { AuthPanel } from './components/AuthPanel';
+import { InspectorView } from './components/InspectorView';
 import { OrganizationSetup } from './components/OrganizationSetup';
 import { getCurrentSession, signOut } from './services/authService';
 import { ensureProfile, listOrganizationContexts } from './services/organizationService';
 import type { OrganizationContext } from './services/organizationService';
 import { supabase } from './lib/supabaseClient';
 
+function readInspectorKey(): string | null {
+  const marker = '#inspector=';
+  if (!window.location.hash.startsWith(marker)) return null;
+  return window.location.hash.slice(marker.length);
+}
+
 function App() {
+  const inspectorKey = readInspectorKey();
   const [session, setSession] = useState<Session | null>(null);
   const [organizationContexts, setOrganizationContexts] = useState<OrganizationContext[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +50,8 @@ function App() {
   }, [loadOrganizationContext]);
 
   useEffect(() => {
+    if (inspectorKey) return;
+
     void loadSession();
 
     const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
@@ -54,12 +64,16 @@ function App() {
     });
 
     return () => data.subscription.unsubscribe();
-  }, [loadOrganizationContext, loadSession]);
+  }, [inspectorKey, loadOrganizationContext, loadSession]);
 
   async function handleSignOut() {
     await signOut();
     setSession(null);
     setOrganizationContexts([]);
+  }
+
+  if (inspectorKey) {
+    return <InspectorView shareKey={inspectorKey} />;
   }
 
   const activeContext = organizationContexts[0];
