@@ -65,6 +65,7 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
         <TodayDashboard
           key={dashboardKey}
           organizationId={context.organization.id}
+          userId={user.id}
           onStartControl={setActiveControlTypeId}
         />
       )}
