@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AdminControls } from './AdminControls';
 import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
 import { HistoryView } from './HistoryView';
+import { SharingView } from './SharingView';
 import { TodayDashboard } from './TodayDashboard';
 import { ActionButton } from './ui/ActionButton';
 import type { OrganizationContext } from '../services/organizationService';
@@ -73,14 +74,14 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
 
       <HistoryView organizationId={context.organization.id} />
 
+      {canManage ? (
+        <SharingView organizationId={context.organization.id} userId={user.id} />
+      ) : null}
+
       <div className="module-grid">
         <article className="module-card">
           <h3>Kontrolltyper</h3>
           <p>{canManage ? 'Du kan skapa och inaktivera kontroller nedan.' : 'Admin hanterar kontrolltyper.'}</p>
-        </article>
-        <article className="module-card">
-          <h3>Delning</h3>
-          <p>Inspektörslänk och QR-kod byggs i senare issue.</p>
         </article>
       </div>
 
