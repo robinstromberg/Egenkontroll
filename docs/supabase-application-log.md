@@ -1,6 +1,6 @@
 # Supabase application log
 
-This file documents schema work applied directly to the connected Supabase project during issue #2.
+This file documents schema work applied directly to the connected Supabase project during issue #2 and later schema/security adjustments.
 
 ## Project
 
@@ -28,6 +28,7 @@ Applied groups:
 - `harden_schema_helper_functions`
 - `revoke_public_execute_on_rls_helpers`
 - `add_missing_foreign_key_indexes`
+- `harden_first_owner_membership_policy`
 
 ## Verification
 
@@ -52,3 +53,9 @@ Verified that 6 Swedish starter templates exist.
 Security advisor was run after hardening and returned no security lints.
 
 Performance advisor still reports expected early-stage warnings such as unused indexes and RLS init-plan optimizations. These are not blocking for the schema foundation and should be revisited in the later hardening issue.
+
+## Issue #3 hardening note
+
+During issue #3, the first-owner membership policy was tightened in Supabase with a dedicated helper that checks whether an organization already has any members before allowing a user to create the first owner membership. Security advisor was run again afterwards and returned no security lints.
+
+The exact SQL migration was applied directly in Supabase. The connector blocked committing that specific SQL file into the repository, so this log records the applied schema/security change explicitly.
