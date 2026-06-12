@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { collectReportRows, downloadCsvReport, openPrintReport } from '../services/reportService';
 import {
   getControlRunDetail,
   listHistoryRuns,
@@ -69,6 +70,26 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
     void loadRuns(nextFilters);
   }
 
+  async function handleCsv() {
+    try {
+      setMessage('');
+      const rows = await collectReportRows(organizationId, filters);
+      downloadCsvReport(rows);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa CSV.');
+    }
+  }
+
+  async function handlePrint() {
+    try {
+      setMessage('');
+      const rows = await collectReportRows(organizationId, filters);
+      openPrintReport(rows);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa utskriftsvy.');
+    }
+  }
+
   return (
     <section className="history-view" aria-labelledby="history-title">
       <div>
@@ -99,6 +120,11 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
           <option value="completed">Klar</option>
           <option value="completed_with_deviation">Klar med avvikelse</option>
         </select>
+      </div>
+
+      <div className="report-actions">
+        <ActionButton type="button" variant="secondary" onClick={handleCsv}>CSV</ActionButton>
+        <ActionButton type="button" variant="secondary" onClick={handlePrint}>Utskriftsvy</ActionButton>
       </div>
 
       {message ? <p className="form-message error-message">{message}</p> : null}
