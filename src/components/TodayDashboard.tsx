@@ -6,6 +6,7 @@ import './TodayDashboard.css';
 
 export type TodayDashboardProps = {
   organizationId: string;
+  onStartControl: (controlTypeId: string) => void;
 };
 
 function formatDate(value: Date): string {
@@ -28,7 +29,7 @@ function getStatusClass(status: TodayControl['status']): string {
   return 'status-pill pending';
 }
 
-export function TodayDashboard({ organizationId }: TodayDashboardProps) {
+export function TodayDashboard({ organizationId, onStartControl }: TodayDashboardProps) {
   const [controls, setControls] = useState<TodayControl[]>([]);
   const [deviations, setDeviations] = useState<OpenDeviationSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +100,7 @@ export function TodayDashboard({ organizationId }: TodayDashboardProps) {
               </div>
               <span className={getStatusClass(control.status)}>{getStatusText(control.status)}</span>
             </div>
-            <ActionButton type="button" variant="secondary">
+            <ActionButton type="button" variant="secondary" onClick={() => onStartControl(control.controlType.id)}>
               Utför kontroll
             </ActionButton>
           </article>
