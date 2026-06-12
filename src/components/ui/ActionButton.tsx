@@ -8,6 +8,7 @@ type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 export function ActionButton({ children, className = '', variant = 'primary', ...props }: ActionButtonProps) {
-  const classes = ['app-button', `app-button-${variant}`, className].filter(Boolean).join(' ');
+  const baseClass = variant === 'primary' ? 'primary-button' : 'secondary-button';
+  const classes = [baseClass, className].filter(Boolean).join(' ');
   return <button className={classes} {...props}>{children}</button>;
 }
