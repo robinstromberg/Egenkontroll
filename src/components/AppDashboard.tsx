@@ -1,5 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 import { AdminControls } from './AdminControls';
+import { TodayDashboard } from './TodayDashboard';
 import { ActionButton } from './ui/ActionButton';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
@@ -43,11 +44,9 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
         </p>
       </div>
 
+      <TodayDashboard organizationId={context.organization.id} />
+
       <div className="module-grid">
-        <article className="module-card">
-          <h3>Idag</h3>
-          <p>Dagens kontrollista byggs i kommande issue.</p>
-        </article>
         <article className="module-card">
           <h3>Kontrolltyper</h3>
           <p>{canManage ? 'Du kan skapa och inaktivera kontroller nedan.' : 'Admin hanterar kontrolltyper.'}</p>
