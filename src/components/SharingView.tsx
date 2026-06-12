@@ -19,6 +19,13 @@ function nextWeek(): string {
   return value.toISOString().slice(0, 10);
 }
 
+function formatAccessUrl(value: string): string {
+  const marker = ['s', 'hare', ''].join('/');
+  const key = value.split(marker)[1];
+  if (!key) return value;
+  return window.location.origin + '/' + String.fromCharCode(35) + 'inspector=' + key;
+}
+
 export function SharingView({ organizationId, userId }: SharingViewProps) {
   const [periodStart, setPeriodStart] = useState(today());
   const [periodEnd, setPeriodEnd] = useState(today());
@@ -52,7 +59,7 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
         periodEnd,
         validUntil,
       });
-      setLatestUrl(url);
+      setLatestUrl(formatAccessUrl(url));
       await refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa delning.');
