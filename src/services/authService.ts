@@ -1,4 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
+import { environment } from '../config/environment';
 import { supabase } from '../lib/supabaseClient';
 
 export async function getCurrentSession(): Promise<Session | null> {
@@ -16,7 +17,7 @@ export async function sendEmailLink(email: string): Promise<void> {
     email,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: window.location.origin,
+      emailRedirectTo: environment.appUrl,
     },
   });
 
