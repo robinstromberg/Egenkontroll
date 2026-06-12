@@ -1,5 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 import { FormEvent, useState } from 'react';
+import { ActionButton } from './ui/ActionButton';
 import { createFirstOrganization } from '../services/organizationService';
 
 export type OrganizationSetupProps = {
@@ -47,9 +48,9 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
           placeholder="Exempel: Café Solgläntan"
           required
         />
-        <button className="primary-button" type="submit" disabled={status === 'loading'}>
+        <ActionButton type="submit" disabled={status === 'loading'}>
           {status === 'loading' ? 'Skapar...' : 'Skapa verksamhet'}
-        </button>
+        </ActionButton>
       </form>
 
       {message ? <p className="form-message error-message">{message}</p> : null}
