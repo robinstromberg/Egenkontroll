@@ -1,0 +1,66 @@
+.template-picker {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 22px;
+  padding: 16px;
+  background: #fbfbff;
+}
+
+.template-picker-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.template-picker-header h3 {
+  margin-bottom: 0;
+}
+
+.template-toggle {
+  min-height: 40px;
+  border: 0;
+  border-radius: 14px;
+  padding: 0 12px;
+  color: #5b46e1;
+  background: #efedff;
+  font-weight: 800;
+}
+
+.template-list {
+  display: grid;
+  gap: 10px;
+}
+
+.template-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.template-card.selected {
+  border-color: rgba(91, 70, 225, 0.42);
+  background: #f4f1ff;
+}
+
+.template-card input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.template-card span {
+  display: grid;
+  gap: 4px;
+}
+
+.template-card small {
+  color: #5f6a82;
+  line-height: 1.45;
+}

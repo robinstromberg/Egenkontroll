@@ -1,5 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
+import { cloneTemplatesToOrganization } from './templateService';
 import type { OrganizationMembership, Organization, OrganizationRole } from '../types/database';
 
 export type OrganizationContext = {
@@ -57,7 +58,11 @@ export async function listOrganizationContexts(): Promise<OrganizationContext[]>
     }));
 }
 
-export async function createFirstOrganization(user: User, organizationName: string): Promise<void> {
+export async function createFirstOrganization(
+  user: User,
+  organizationName: string,
+  templateIds: string[] = [],
+): Promise<void> {
   await ensureProfile(user);
 
   const { data: organization, error: organizationError } = await supabase
@@ -73,8 +78,10 @@ export async function createFirstOrganization(user: User, organizationName: stri
     throw organizationError;
   }
 
+  const organizationId = organization.id as string;
+
   const { error: membershipError } = await supabase.from('organization_memberships').insert({
-    organization_id: organization.id,
+    organization_id: organizationId,
     user_id: user.id,
     role: 'owner',
     status: 'active',
@@ -83,4 +90,6 @@ export async function createFirstOrganization(user: User, organizationName: stri
   if (membershipError) {
     throw membershipError;
   }
+
+  await cloneTemplatesToOrganization(organizationId, templateIds, user.id);
 }
