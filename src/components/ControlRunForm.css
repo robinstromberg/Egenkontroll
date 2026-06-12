@@ -1,0 +1,47 @@
+.control-form {
+  display: grid;
+  gap: 18px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 28px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.control-form-header {
+  display: grid;
+  gap: 12px;
+}
+
+.control-group {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 20px;
+  padding: 16px;
+  background: #fbfbff;
+}
+
+.control-field {
+  display: grid;
+  gap: 8px;
+}
+
+.control-field label,
+.action-label {
+  font-weight: 800;
+}
+
+.deviation-box {
+  display: grid;
+  gap: 8px;
+  border-radius: 16px;
+  padding: 12px;
+  color: #9f1d2b;
+  background: #ffe3e7;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
