@@ -1,0 +1,43 @@
+.sharing-view {
+  display: grid;
+  gap: 18px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 28px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.sharing-form,
+.share-list,
+.share-result {
+  display: grid;
+  gap: 10px;
+}
+
+.share-row {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 14px;
+  background: #fbfbff;
+}
+
+.share-link-box {
+  word-break: break-all;
+  border-radius: 16px;
+  padding: 12px;
+  background: #f4f1ff;
+}
+
+.qr-image {
+  width: 160px;
+  height: 160px;
+  border-radius: 16px;
+}
+
+@media (min-width: 820px) {
+  .sharing-form {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
