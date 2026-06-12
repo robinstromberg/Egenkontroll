@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
+import { AppBottomNav } from './components/AppBottomNav';
 import { AppDashboard } from './components/AppDashboard';
 import { AuthPanel } from './components/AuthPanel';
 import { OrganizationSetup } from './components/OrganizationSetup';
@@ -62,38 +63,42 @@ function App() {
   }
 
   const activeContext = organizationContexts[0];
+  const showNavigation = Boolean(session?.user);
 
   return (
-    <main className="app-shell">
-      <section className="hero-card" aria-labelledby="page-title">
-        <div className="app-icon" aria-hidden="true">
-          ✓
-        </div>
-        <div className="hero-copy">
-          <p className="eyebrow">Mobilförst SaaS-webapp</p>
-          <h1 id="page-title">Egenkontroll</h1>
-          <p className="lead">
-            Digital egenkontroll för livsmedelsverksamheter. Inloggning, verksamhetsyta
-            och rollbaserad åtkomst är nu på plats som grund för kommande kontrollflöden.
-          </p>
-        </div>
-      </section>
-
-      {message ? <p className="form-message error-message">{message}</p> : null}
-
-      {loading ? (
-        <section className="status-panel">
-          <p className="eyebrow">Laddar</p>
-          <h2>Kontrollerar session...</h2>
+    <>
+      <main className={showNavigation ? 'app-shell with-bottom-bar' : 'app-shell'}>
+        <section className="hero-card" aria-labelledby="page-title">
+          <div className="app-icon" aria-hidden="true">
+            ✓
+          </div>
+          <div className="hero-copy">
+            <p className="eyebrow">Mobilförst SaaS-webapp</p>
+            <h1 id="page-title">Egenkontroll</h1>
+            <p className="lead">
+              Digital egenkontroll för livsmedelsverksamheter. Inloggning, verksamhetsyta
+              och rollbaserad åtkomst är nu på plats som grund för kommande kontrollflöden.
+            </p>
+          </div>
         </section>
-      ) : !session?.user ? (
-        <AuthPanel />
-      ) : activeContext ? (
-        <AppDashboard user={session.user} context={activeContext} onSignOut={handleSignOut} />
-      ) : (
-        <OrganizationSetup user={session.user} onCreated={loadOrganizationContext} />
-      )}
-    </main>
+
+        {message ? <p className="form-message error-message">{message}</p> : null}
+
+        {loading ? (
+          <section className="status-panel">
+            <p className="eyebrow">Laddar</p>
+            <h2>Kontrollerar session...</h2>
+          </section>
+        ) : !session?.user ? (
+          <AuthPanel />
+        ) : activeContext ? (
+          <AppDashboard user={session.user} context={activeContext} onSignOut={handleSignOut} />
+        ) : (
+          <OrganizationSetup user={session.user} onCreated={loadOrganizationContext} />
+        )}
+      </main>
+      {showNavigation ? <AppBottomNav /> : null}
+    </>
   );
 }
 
