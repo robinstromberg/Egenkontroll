@@ -1,0 +1,39 @@
+.app-shell.with-bottom-bar {
+  padding-bottom: 112px;
+}
+
+.bottom-bar {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  max-width: 960px;
+  margin: 0 auto;
+  border: 1px solid rgba(91, 70, 225, 0.14);
+  border-radius: 24px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 45px rgba(62, 46, 135, 0.18);
+}
+
+.bottom-bar-item {
+  display: grid;
+  min-height: 52px;
+  place-items: center;
+  border-radius: 18px;
+  color: #657089;
+  background: transparent;
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-align: center;
+  user-select: none;
+}
+
+.bottom-bar-item.selected {
+  color: #5b46e1;
+  background: #efedff;
+}
