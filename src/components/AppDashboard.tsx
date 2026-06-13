@@ -1,5 +1,5 @@
 import type { User } from '@supabase/supabase-js';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminControls } from './AdminControls';
 import type { AppView } from './AppBottomNav';
 import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
@@ -28,6 +28,12 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
   const canManage = canManageOrganization(context.membership.role);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
   const [dashboardKey, setDashboardKey] = useState(0);
+
+  useEffect(() => {
+    if (activeView !== 'today') {
+      setActiveControlTypeId(null);
+    }
+  }, [activeView]);
 
   async function handleControlSaved() {
     setActiveControlTypeId(null);
