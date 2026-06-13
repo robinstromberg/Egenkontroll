@@ -221,6 +221,16 @@ h3 {
   outline: none;
 }
 
+input.text-input,
+select.text-input {
+  display: block;
+}
+
+input.text-input[type="date"],
+input.text-input[type="number"] {
+  text-align: center;
+}
+
 .text-input:focus {
   border-color: #5b46e1;
   box-shadow: 0 0 0 4px rgba(91, 70, 225, 0.12);

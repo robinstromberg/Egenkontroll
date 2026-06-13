@@ -2,9 +2,20 @@
   display: grid;
   gap: 18px;
   border: 1px solid rgba(91, 70, 225, 0.12);
-  border-radius: 28px;
-  padding: 20px;
+  border-radius: 20px;
+  padding: 16px;
   background: #ffffff;
+}
+
+.control-form-topbar {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.control-form-topbar h3 {
+  margin-bottom: 0;
 }
 
 .control-form-header {
@@ -24,6 +35,7 @@
 .control-field {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .control-field label,
@@ -44,4 +56,65 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.segmented-choice {
+  display: grid;
+  gap: 8px;
+}
+
+.segmented-choice-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.choice-button {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(91, 70, 225, 0.14);
+  border-radius: 14px;
+  padding: 0 12px;
+  color: #34405a;
+  background: #ffffff;
+  font-weight: 900;
+}
+
+.choice-button.selected.good {
+  border-color: rgba(12, 122, 67, 0.22);
+  color: #0c6638;
+  background: #ddf8e7;
+}
+
+.choice-button.selected.bad {
+  border-color: rgba(159, 29, 43, 0.22);
+  color: #9f1d2b;
+  background: #ffe3e7;
+}
+
+.choice-button.selected.neutral {
+  border-color: rgba(91, 70, 225, 0.28);
+  color: #5b46e1;
+  background: #efedff;
+}
+
+.choice-dot {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+}
+
+.choice-button.selected .choice-dot {
+  box-shadow: inset 0 0 0 4px #ffffff;
+  background: currentColor;
+}
+
+@media (max-width: 420px) {
+  .control-form-topbar {
+    display: grid;
+  }
 }

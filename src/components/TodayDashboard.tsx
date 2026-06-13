@@ -31,6 +31,16 @@ function getStatusClass(status: TodayControl['status']): string {
   return 'status-pill pending';
 }
 
+function getCategoryMeta(category: string) {
+  const normalized = category.toLowerCase();
+  if (normalized.includes('temperatur') || normalized.includes('temperature')) return { className: 'temperature', label: '°C' };
+  if (normalized.includes('städ') || normalized.includes('stad') || normalized.includes('checklist')) return { className: 'checklist', label: 'OK' };
+  if (normalized.includes('mottag') || normalized.includes('receiving')) return { className: 'receiving', label: 'IN' };
+  if (normalized.includes('spår') || normalized.includes('spar') || normalized.includes('traceability')) return { className: 'traceability', label: 'SP' };
+  if (normalized.includes('runda') || normalized.includes('round')) return { className: 'round', label: 'R' };
+  return { className: 'custom', label: 'C' };
+}
+
 export function TodayDashboard({ organizationId, userId, onStartControl }: TodayDashboardProps) {
   const [controls, setControls] = useState<TodayControl[]>([]);
   const [deviations, setDeviations] = useState<OpenDeviationSummary[]>([]);
@@ -103,20 +113,28 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
           <p className="muted-copy">Inga dagliga eller veckovisa kontroller är aktiva ännu.</p>
         ) : null}
 
-        {controls.map((control) => (
-          <article className="today-item" key={control.controlType.id}>
-            <div className="today-item-header">
-              <div>
-                <h4>{control.controlType.name}</h4>
-                <p className="muted-copy">{control.controlType.frequency} · {control.controlType.category}</p>
+        {controls.map((control) => {
+          const categoryMeta = getCategoryMeta(control.controlType.category);
+          return (
+            <article className="today-item" key={control.controlType.id}>
+              <div className="today-item-header">
+                <div className="today-item-title">
+                  <span className={`control-type-icon ${categoryMeta.className}`} aria-hidden="true">
+                    {categoryMeta.label}
+                  </span>
+                  <div>
+                    <h4>{control.controlType.name}</h4>
+                    <p className="muted-copy">{control.controlType.frequency} · {control.controlType.category}</p>
+                  </div>
+                </div>
+                <span className={getStatusClass(control.status)}>{getStatusText(control.status)}</span>
               </div>
-              <span className={getStatusClass(control.status)}>{getStatusText(control.status)}</span>
-            </div>
-            <ActionButton type="button" variant="secondary" onClick={() => onStartControl(control.controlType.id)}>
-              Utför kontroll
-            </ActionButton>
-          </article>
-        ))}
+              <ActionButton type="button" variant="secondary" onClick={() => onStartControl(control.controlType.id)}>
+                Utför kontroll
+              </ActionButton>
+            </article>
+          );
+        })}
       </div>
 
       <div className="deviation-list">

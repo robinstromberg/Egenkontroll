@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { SegmentedChoice } from './ui/SegmentedChoice';
 import {
   getControlRunDefinition,
   saveControlRun,
@@ -20,7 +21,6 @@ export type ControlRunFormProps = {
 };
 
 type ResponseState = Record<string, string>;
-
 type DeviationState = Record<string, string>;
 
 function responseKey(objectId: string | null, fieldId: string): string {
@@ -33,18 +33,9 @@ function getFieldInputType(field: ControlFieldDefinition): string {
   return 'text';
 }
 
-function getDeviationReason(
-  field: ControlFieldDefinition,
-  object: ControlObject | null,
-  value: string,
-): string | null {
-  if (field.field_type === 'ok_not_ok' && value === 'not_ok') {
-    return `${field.label} är ej OK.`;
-  }
-
-  if (field.field_type === 'boolean' && value === 'false') {
-    return `${field.label} är inte uppfyllt.`;
-  }
+function getDeviationReason(field: ControlFieldDefinition, object: ControlObject | null, value: string): string | null {
+  if (field.field_type === 'ok_not_ok' && value === 'not_ok') return `${field.label} är ej OK.`;
+  if (field.field_type === 'boolean' && value === 'false') return `${field.label} är inte uppfyllt.`;
 
   if (field.field_type === 'temperature') {
     const parsed = Number(value);
@@ -137,9 +128,7 @@ export function ControlRunForm({
     return result;
   }, [actions, definition, responses]);
 
-  const missingAction = responseList.some(
-    (response) => response.deviationDetected && !response.actionText?.trim(),
-  );
+  const missingAction = responseList.some((response) => response.deviationDetected && !response.actionText?.trim());
 
   function updateResponse(key: string, value: string) {
     setResponses((current) => ({ ...current, [key]: value }));
@@ -165,21 +154,23 @@ export function ControlRunForm({
     }
   }
 
-  if (loading) {
-    return <p className="muted-copy">Laddar kontroll...</p>;
-  }
-
-  if (!definition) {
-    return <p className="form-message error-message">Kontrollen kunde inte visas.</p>;
-  }
+  if (loading) return <p className="muted-copy">Laddar kontroll...</p>;
+  if (!definition) return <p className="form-message error-message">Kontrollen kunde inte visas.</p>;
 
   const objects = definition.objects.length ? definition.objects : [null];
 
   return (
     <form className="control-form" onSubmit={handleSubmit}>
       <div className="control-form-header">
-        <p className="eyebrow">Utför kontroll</p>
-        <h3>{definition.controlType.name}</h3>
+        <div className="control-form-topbar">
+          <div>
+            <p className="eyebrow">Utför kontroll</p>
+            <h3>{definition.controlType.name}</h3>
+          </div>
+          <ActionButton type="button" variant="secondary" onClick={onCancel}>
+            Tillbaka
+          </ActionButton>
+        </div>
         <p className="muted-copy">{definition.controlType.instructions ?? 'Fyll i kontrollpunkterna nedan.'}</p>
       </div>
 
@@ -203,29 +194,45 @@ export function ControlRunForm({
 
             return (
               <div className="control-field" key={key}>
-                <label htmlFor={key}>{field.label}</label>
-
                 {field.field_type === 'ok_not_ok' ? (
-                  <select className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)}>
-                    <option value="ok">OK</option>
-                    <option value="not_ok">Ej OK</option>
-                  </select>
-                ) : field.field_type === 'boolean' ? (
-                  <select className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)}>
-                    <option value="true">Ja</option>
-                    <option value="false">Nej</option>
-                  </select>
-                ) : field.field_type === 'textarea' ? (
-                  <textarea className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)} />
-                ) : (
-                  <input
-                    className="text-input"
+                  <SegmentedChoice
                     id={key}
-                    type={getFieldInputType(field)}
+                    label={field.label}
                     value={value}
-                    onChange={(event) => updateResponse(key, event.target.value)}
-                    required={field.required}
+                    onChange={(nextValue) => updateResponse(key, nextValue)}
+                    options={[
+                      { label: 'OK', tone: 'good', value: 'ok' },
+                      { label: 'Ej OK', tone: 'bad', value: 'not_ok' },
+                    ]}
                   />
+                ) : field.field_type === 'boolean' ? (
+                  <SegmentedChoice
+                    id={key}
+                    label={field.label}
+                    value={value}
+                    onChange={(nextValue) => updateResponse(key, nextValue)}
+                    options={[
+                      { label: 'Ja', tone: 'good', value: 'true' },
+                      { label: 'Nej', tone: 'bad', value: 'false' },
+                    ]}
+                  />
+                ) : field.field_type === 'textarea' ? (
+                  <>
+                    <label htmlFor={key}>{field.label}</label>
+                    <textarea className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)} />
+                  </>
+                ) : (
+                  <>
+                    <label htmlFor={key}>{field.label}</label>
+                    <input
+                      className="text-input"
+                      id={key}
+                      type={getFieldInputType(field)}
+                      value={value}
+                      onChange={(event) => updateResponse(key, event.target.value)}
+                      required={field.required}
+                    />
+                  </>
                 )}
 
                 {reason ? (

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { SegmentedChoice } from './ui/SegmentedChoice';
 import {
   getControlRunDefinition,
   saveControlRun,
@@ -169,8 +170,15 @@ export function ControlRunFormWithPhotos({
   return (
     <form className="control-form" onSubmit={handleSubmit}>
       <div className="control-form-header">
-        <p className="eyebrow">Utför kontroll</p>
-        <h3>{definition.controlType.name}</h3>
+        <div className="control-form-topbar">
+          <div>
+            <p className="eyebrow">Utför kontroll</p>
+            <h3>{definition.controlType.name}</h3>
+          </div>
+          <ActionButton type="button" variant="secondary" onClick={onCancel}>
+            Tillbaka
+          </ActionButton>
+        </div>
         <p className="muted-copy">{definition.controlType.instructions ?? 'Fyll i kontrollpunkterna nedan.'}</p>
       </div>
 
@@ -190,39 +198,58 @@ export function ControlRunFormWithPhotos({
 
             return (
               <div className="control-field" key={key}>
-                <label htmlFor={key}>{field.label}</label>
-
                 {field.field_type === 'photo' ? (
-                  <input
-                    accept="image/*"
-                    capture="environment"
-                    className="text-input"
-                    id={key}
-                    onChange={(event) => updateFile(key, event.target.files?.[0] ?? null)}
-                    type="file"
-                    required={field.required}
-                  />
+                  <>
+                    <label htmlFor={key}>{field.label}</label>
+                    <input
+                      accept="image/*"
+                      capture="environment"
+                      className="text-input"
+                      id={key}
+                      onChange={(event) => updateFile(key, event.target.files?.[0] ?? null)}
+                      type="file"
+                      required={field.required}
+                    />
+                  </>
                 ) : field.field_type === 'ok_not_ok' ? (
-                  <select className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)}>
-                    <option value="ok">OK</option>
-                    <option value="not_ok">Ej OK</option>
-                  </select>
-                ) : field.field_type === 'boolean' ? (
-                  <select className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)}>
-                    <option value="true">Ja</option>
-                    <option value="false">Nej</option>
-                  </select>
-                ) : field.field_type === 'textarea' ? (
-                  <textarea className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)} />
-                ) : (
-                  <input
-                    className="text-input"
+                  <SegmentedChoice
                     id={key}
-                    type={getFieldInputType(field)}
+                    label={field.label}
                     value={value}
-                    onChange={(event) => updateResponse(key, event.target.value)}
-                    required={field.required}
+                    onChange={(nextValue) => updateResponse(key, nextValue)}
+                    options={[
+                      { label: 'OK', tone: 'good', value: 'ok' },
+                      { label: 'Ej OK', tone: 'bad', value: 'not_ok' },
+                    ]}
                   />
+                ) : field.field_type === 'boolean' ? (
+                  <SegmentedChoice
+                    id={key}
+                    label={field.label}
+                    value={value}
+                    onChange={(nextValue) => updateResponse(key, nextValue)}
+                    options={[
+                      { label: 'Ja', tone: 'good', value: 'true' },
+                      { label: 'Nej', tone: 'bad', value: 'false' },
+                    ]}
+                  />
+                ) : field.field_type === 'textarea' ? (
+                  <>
+                    <label htmlFor={key}>{field.label}</label>
+                    <textarea className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)} />
+                  </>
+                ) : (
+                  <>
+                    <label htmlFor={key}>{field.label}</label>
+                    <input
+                      className="text-input"
+                      id={key}
+                      type={getFieldInputType(field)}
+                      value={value}
+                      onChange={(event) => updateResponse(key, event.target.value)}
+                      required={field.required}
+                    />
+                  </>
                 )}
 
                 {files[key] ? <p className="muted-copy">Vald bild: {files[key]?.name}</p> : null}

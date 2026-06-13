@@ -39,6 +39,54 @@
   justify-content: space-between;
 }
 
+.today-item-title {
+  display: flex;
+  min-width: 0;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.control-type-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.control-type-icon.temperature {
+  color: #0c6638;
+  background: #ddf8e7;
+}
+
+.control-type-icon.checklist {
+  color: #1c4fb7;
+  background: #e5efff;
+}
+
+.control-type-icon.receiving {
+  color: #986300;
+  background: #fff1cc;
+}
+
+.control-type-icon.traceability {
+  color: #5b46e1;
+  background: #efedff;
+}
+
+.control-type-icon.round {
+  color: #0b6f7f;
+  background: #dff7fb;
+}
+
+.control-type-icon.custom {
+  color: #8240a3;
+  background: #f6e8ff;
+}
+
 .status-pill {
   border-radius: 999px;
   padding: 6px 10px;
