@@ -1,10 +1,6 @@
 .admin-controls {
   display: grid;
-  gap: 18px;
-  border: 1px solid rgba(91, 70, 225, 0.12);
-  border-radius: 20px;
-  padding: 16px;
-  background: #ffffff;
+  gap: 14px;
 }
 
 .admin-grid,
@@ -12,19 +8,22 @@
 .admin-list,
 .admin-row {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
+.admin-form,
 .admin-row {
-  border: 1px solid rgba(91, 70, 225, 0.12);
+  border: 1px solid rgba(91, 70, 225, 0.1);
   border-radius: 16px;
   padding: 14px;
-  background: #fbfbff;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
 }
 
 .admin-row-header {
   display: flex;
   gap: 10px;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -35,20 +34,17 @@
 .admin-row p {
   margin-bottom: 0;
   color: #566078;
+  font-size: 0.86rem;
+  line-height: 1.35;
 }
 
 .admin-small-button {
-  min-height: 40px;
+  min-height: 34px;
   border: 0;
-  border-radius: 14px;
-  padding: 0 12px;
+  border-radius: 999px;
+  padding: 0 10px;
   color: #5b46e1;
   background: #efedff;
+  font-size: 0.76rem;
   font-weight: 800;
-}
-
-@media (min-width: 820px) {
-  .admin-grid {
-    grid-template-columns: 1fr 1fr;
-  }
 }

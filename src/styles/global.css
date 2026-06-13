@@ -189,10 +189,11 @@ h3 {
 
 .empty-view-card,
 .menu-card {
-  border: 1px solid rgba(91, 70, 225, 0.12);
-  border-radius: 18px;
-  padding: 16px;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 16px;
+  padding: 14px;
   background: #ffffff;
+  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
 }
 
 .role-panel p {

@@ -1,26 +1,31 @@
 .sharing-view {
   display: grid;
-  gap: 18px;
-  border: 1px solid rgba(91, 70, 225, 0.12);
-  border-radius: 20px;
-  padding: 16px;
-  background: #ffffff;
+  gap: 14px;
 }
 
 .sharing-form,
 .share-list,
 .share-result {
   display: grid;
-  gap: 10px;
+  gap: 8px;
+}
+
+.sharing-form {
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 16px;
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
 }
 
 .share-row {
   display: grid;
   gap: 8px;
-  border: 1px solid rgba(91, 70, 225, 0.12);
-  border-radius: 16px;
-  padding: 14px;
-  background: #fbfbff;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
 }
 
 .share-link-box {
@@ -54,7 +59,7 @@
 
 .share-modal {
   display: grid;
-  width: min(100%, 520px);
+  width: min(100%, 430px);
   gap: 16px;
   border: 1px solid rgba(91, 70, 225, 0.14);
   border-radius: 24px;
@@ -64,10 +69,6 @@
 }
 
 @media (min-width: 820px) {
-  .sharing-form {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
   .share-modal-backdrop {
     place-items: center;
   }

@@ -33,6 +33,12 @@ function readItemValue(item: ControlRunDetail['items'][number]): string {
   return 'Ej angivet';
 }
 
+function getRunStatusText(status: string): string {
+  if (status === 'completed_with_deviation') return 'Avvikelse';
+  if (status === 'completed') return 'Klar';
+  return status;
+}
+
 export function HistoryView({ organizationId }: HistoryViewProps) {
   const [filters, setFilters] = useState<HistoryFilters>({});
   const [runs, setRuns] = useState<ControlRunSummary[]>([]);
@@ -133,17 +139,17 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
       <div className="history-list">
         {runs.length === 0 && !loading ? <p className="muted-copy">Ingen historik hittades.</p> : null}
         {runs.map((run) => (
-          <article className="history-row" key={run.id}>
-            <div className="history-row-header">
-              <div>
-                <strong>{run.control_type_name ?? 'Kontroll'}</strong>
-                <p className="muted-copy">{formatDateTime(run.performed_at)} · {run.status}</p>
-              </div>
-              <ActionButton type="button" variant="secondary" onClick={() => openDetail(run.id)}>
-                Visa
-              </ActionButton>
-            </div>
-          </article>
+          <button className="history-row" key={run.id} onClick={() => openDetail(run.id)} type="button">
+            <span className="history-icon" aria-hidden="true">↺</span>
+            <span className="history-copy">
+              <strong>{run.control_type_name ?? 'Kontroll'}</strong>
+              <span>{formatDateTime(run.performed_at)} · {getRunStatusText(run.status)}</span>
+            </span>
+            <span className={run.status === 'completed_with_deviation' ? 'status-pill warning' : 'status-pill done'}>
+              {getRunStatusText(run.status)}
+            </span>
+            <span className="row-chevron" aria-hidden="true">›</span>
+          </button>
         ))}
       </div>
 
@@ -152,7 +158,7 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
           <div className="history-row-header">
             <div>
               <h4>{detail.run.control_type_name ?? 'Kontroll'}</h4>
-              <p className="muted-copy">{formatDateTime(detail.run.performed_at)} · {detail.run.status}</p>
+              <p className="muted-copy">{formatDateTime(detail.run.performed_at)} · {getRunStatusText(detail.run.status)}</p>
             </div>
             <ActionButton type="button" variant="secondary" onClick={() => setDetail(null)}>
               Stäng

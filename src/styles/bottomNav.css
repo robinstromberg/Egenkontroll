@@ -45,6 +45,11 @@
   background: #efedff;
 }
 
+.bottom-bar-item:focus-visible {
+  outline: 2px solid rgba(91, 70, 225, 0.24);
+  outline-offset: 2px;
+}
+
 .bottom-bar-icon {
   display: grid;
   width: 18px;
