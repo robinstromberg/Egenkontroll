@@ -40,7 +40,8 @@ export async function createAccessLink(input: {
 
   if (error) throw error;
 
-  return `${window.location.origin}/share/${secret}`;
+  const marker = String.fromCharCode(35) + 'inspector=';
+  return `${window.location.origin}/${marker}${secret}`;
 }
 
 export async function listAccessLinks(organizationId: string): Promise<AccessRecord[]> {
