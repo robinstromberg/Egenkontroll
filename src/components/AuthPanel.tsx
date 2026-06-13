@@ -59,14 +59,8 @@ export function AuthPanel() {
       if (error) throw error;
 
       if (Array.isArray(data.user?.identities) && data.user.identities.length === 0) {
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: environment.appUrl,
-        });
-
-        if (resetError) throw resetError;
-
         setStatus('sent');
-        setMessage('Kontot finns redan. Kontrollera din inkorg och öppna länken för att sätta ny testkod.');
+        setMessage('Kontot finns redan. Logga in med din testkod eller be admin sätta en ny testkod.');
         setMode('enter');
         return;
       }
