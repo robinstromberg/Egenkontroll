@@ -21,6 +21,10 @@ const roleLabels = {
   staff: 'Personal',
 };
 
+function goHome() {
+  document.querySelector('.dashboard-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
   const canManage = canManageOrganization(context.membership.role);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
@@ -29,6 +33,7 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
   async function handleControlSaved() {
     setActiveControlTypeId(null);
     setDashboardKey((current) => current + 1);
+    goHome();
   }
 
   return (
@@ -41,9 +46,14 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
             {user.email} · {roleLabels[context.membership.role]}
           </p>
         </div>
-        <ActionButton variant="secondary" type="button" onClick={onSignOut}>
-          Logga ut
-        </ActionButton>
+        <div className="form-actions">
+          <ActionButton variant="secondary" type="button" onClick={goHome}>
+            Hem
+          </ActionButton>
+          <ActionButton variant="secondary" type="button" onClick={onSignOut}>
+            Logga ut
+          </ActionButton>
+        </div>
       </div>
 
       <div className="role-panel">
@@ -60,7 +70,10 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
           controlTypeId={activeControlTypeId}
           organizationId={context.organization.id}
           userId={user.id}
-          onCancel={() => setActiveControlTypeId(null)}
+          onCancel={() => {
+            setActiveControlTypeId(null);
+            goHome();
+          }}
           onSaved={handleControlSaved}
         />
       ) : (
