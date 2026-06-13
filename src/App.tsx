@@ -5,6 +5,7 @@ import { AppDashboard } from './components/AppDashboard';
 import { AuthPanel } from './components/AuthPanel';
 import { InspectorView } from './components/InspectorView';
 import { OrganizationSetup } from './components/OrganizationSetup';
+import { PasswordSetupPanel } from './components/PasswordSetupPanel';
 import { getCurrentSession, signOut } from './services/authService';
 import { ensureProfile, listOrganizationContexts } from './services/organizationService';
 import type { OrganizationContext } from './services/organizationService';
@@ -20,6 +21,9 @@ function App() {
   const inspectorKey = readInspectorKey();
   const [session, setSession] = useState<Session | null>(null);
   const [organizationContexts, setOrganizationContexts] = useState<OrganizationContext[]>([]);
+  const [passwordRecovery, setPasswordRecovery] = useState(
+    () => window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery'),
+  );
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
@@ -54,7 +58,11 @@ function App() {
 
     void loadSession();
 
-    const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true);
+      }
+
       setSession(nextSession);
       if (nextSession?.user) {
         void ensureProfile(nextSession.user).then(loadOrganizationContext);
@@ -70,6 +78,7 @@ function App() {
     await signOut();
     setSession(null);
     setOrganizationContexts([]);
+    setPasswordRecovery(false);
   }
 
   if (inspectorKey) {
@@ -105,6 +114,8 @@ function App() {
           </section>
         ) : !session?.user ? (
           <AuthPanel />
+        ) : passwordRecovery ? (
+          <PasswordSetupPanel onSaved={() => setPasswordRecovery(false)} onSkip={() => setPasswordRecovery(false)} />
         ) : activeContext ? (
           <AppDashboard user={session.user} context={activeContext} onSignOut={handleSignOut} />
         ) : (

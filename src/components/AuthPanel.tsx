@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { sendEmailLink } from '../services/authService';
+import { environment } from '../config/environment';
 import { supabase } from '../lib/supabaseClient';
 
 type Mode = 'enter' | 'create' | 'link';
@@ -31,7 +32,12 @@ export function AuthPanel() {
       setMessage('');
     } catch (error) {
       setStatus('error');
-      setMessage(error instanceof Error ? error.message : 'Det gick inte att logga in.');
+      const errorMessage = error instanceof Error ? error.message : 'Det gick inte att logga in.';
+      setMessage(
+        errorMessage === 'Invalid login credentials'
+          ? 'Det gick inte att logga in. Om kontot skapades med magic link, välj Skapa testkonto för att få en länk och sätta testkod.'
+          : errorMessage,
+      );
     }
   }
 
@@ -41,14 +47,32 @@ export function AuthPanel() {
     setMessage('');
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email: email.trim(),
+      const cleanEmail = email.trim();
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
         [secretField]: secret,
+        options: {
+          emailRedirectTo: environment.appUrl,
+        },
       });
 
       if (error) throw error;
+
+      if (Array.isArray(data.user?.identities) && data.user.identities.length === 0) {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: environment.appUrl,
+        });
+
+        if (resetError) throw resetError;
+
+        setStatus('sent');
+        setMessage('Kontot finns redan. Kontrollera din inkorg och öppna länken för att sätta ny testkod.');
+        setMode('enter');
+        return;
+      }
+
       setStatus('sent');
-      setMessage('Testkontot är skapat. Testa att logga in med samma uppgifter.');
+      setMessage('Kontrollera din inkorg och bekräfta kontot. Därefter kan du logga in med testkoden.');
       setMode('enter');
     } catch (error) {
       setStatus('error');
