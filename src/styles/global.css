@@ -50,6 +50,11 @@ button:disabled {
   padding: 18px 14px 40px;
 }
 
+.app-shell.with-bottom-bar {
+  width: min(100%, 430px);
+  padding: 12px 10px 40px;
+}
+
 .hero-card,
 .status-panel,
 .module-card,
@@ -141,9 +146,33 @@ h3 {
   padding: 18px;
 }
 
+.with-bottom-bar .dashboard-card {
+  gap: 14px;
+  margin-top: 0;
+  border-radius: 26px;
+  padding: 16px;
+  box-shadow: 0 18px 45px rgba(62, 46, 135, 0.1);
+}
+
 .dashboard-header {
   display: grid;
   gap: 16px;
+}
+
+.with-bottom-bar .dashboard-header {
+  gap: 8px;
+}
+
+.with-bottom-bar .dashboard-header h2 {
+  margin-bottom: 6px;
+  color: #11172c;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.with-bottom-bar .dashboard-header .muted-copy {
+  font-size: 0.92rem;
+  line-height: 1.35;
 }
 
 .role-panel {
@@ -298,6 +327,10 @@ section + section {
     padding: 48px 24px 64px;
   }
 
+  .app-shell.with-bottom-bar {
+    padding: 18px 10px 64px;
+  }
+
   .hero-card {
     grid-template-columns: auto 1fr;
     align-items: start;
@@ -305,7 +338,7 @@ section + section {
   }
 
   .status-panel,
-  .dashboard-header {
+  .app-shell:not(.with-bottom-bar) .dashboard-header {
     grid-template-columns: 1fr auto;
     align-items: start;
   }

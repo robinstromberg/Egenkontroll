@@ -21,7 +21,7 @@ function formatDate(value: Date): string {
 
 function getStatusText(status: TodayControl['status']): string {
   if (status === 'done') return 'Klar';
-  if (status === 'done_with_deviation') return 'Klar med avvikelse';
+  if (status === 'done_with_deviation') return 'Avvikelse';
   return 'Ej utförd';
 }
 
@@ -33,12 +33,22 @@ function getStatusClass(status: TodayControl['status']): string {
 
 function getCategoryMeta(category: string) {
   const normalized = category.toLowerCase();
-  if (normalized.includes('temperatur') || normalized.includes('temperature')) return { className: 'temperature', label: '°C' };
-  if (normalized.includes('städ') || normalized.includes('stad') || normalized.includes('checklist')) return { className: 'checklist', label: 'OK' };
-  if (normalized.includes('mottag') || normalized.includes('receiving')) return { className: 'receiving', label: 'IN' };
-  if (normalized.includes('spår') || normalized.includes('spar') || normalized.includes('traceability')) return { className: 'traceability', label: 'SP' };
-  if (normalized.includes('runda') || normalized.includes('round')) return { className: 'round', label: 'R' };
-  return { className: 'custom', label: 'C' };
+  if (normalized.includes('temperatur') || normalized.includes('temperature')) {
+    return { className: 'temperature', label: '°C', name: 'Temperatur' };
+  }
+  if (normalized.includes('städ') || normalized.includes('stad') || normalized.includes('checklist')) {
+    return { className: 'checklist', label: '✓', name: 'Checklista' };
+  }
+  if (normalized.includes('mottag') || normalized.includes('receiving')) {
+    return { className: 'receiving', label: 'IN', name: 'Mottagning' };
+  }
+  if (normalized.includes('spår') || normalized.includes('spar') || normalized.includes('traceability')) {
+    return { className: 'traceability', label: 'SP', name: 'Spårbarhet' };
+  }
+  if (normalized.includes('runda') || normalized.includes('round')) {
+    return { className: 'round', label: 'R', name: 'Rond' };
+  }
+  return { className: 'custom', label: 'C', name: category };
 }
 
 export function TodayDashboard({ organizationId, userId, onStartControl }: TodayDashboardProps) {
@@ -79,6 +89,11 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
     [controls],
   );
 
+  const nextControl = useMemo(
+    () => controls.find((control) => control.status === 'not_done') ?? controls[0],
+    [controls],
+  );
+
   async function handleResolve(deviationId: string) {
     setMessage('');
     try {
@@ -92,7 +107,7 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
 
   return (
     <section className="today-dashboard" aria-labelledby="today-title">
-      <div>
+      <div className="today-intro">
         <p className="eyebrow">Idag</p>
         <h3 id="today-title">{formatDate(new Date())}</h3>
         <p className="muted-copy">
@@ -108,7 +123,12 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
         <span>{deviations.length} öppna avvikelser</span>
       </div>
 
-      <div className="today-list">
+      <div className="today-list" aria-label="Dagens kontroller">
+        <div className="today-list-heading">
+          <h4>Dagens kontroller</h4>
+          <span>{completedCount} av {controls.length} klara</span>
+        </div>
+
         {controls.length === 0 && !loading ? (
           <p className="muted-copy">Inga dagliga eller veckovisa kontroller är aktiva ännu.</p>
         ) : null}
@@ -116,29 +136,41 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
         {controls.map((control) => {
           const categoryMeta = getCategoryMeta(control.controlType.category);
           return (
-            <article className="today-item" key={control.controlType.id}>
-              <div className="today-item-header">
-                <div className="today-item-title">
-                  <span className={`control-type-icon ${categoryMeta.className}`} aria-hidden="true">
-                    {categoryMeta.label}
-                  </span>
-                  <div>
-                    <h4>{control.controlType.name}</h4>
-                    <p className="muted-copy">{control.controlType.frequency} · {control.controlType.category}</p>
-                  </div>
-                </div>
-                <span className={getStatusClass(control.status)}>{getStatusText(control.status)}</span>
-              </div>
-              <ActionButton type="button" variant="secondary" onClick={() => onStartControl(control.controlType.id)}>
-                Utför kontroll
-              </ActionButton>
-            </article>
+            <button
+              className="today-control-row"
+              key={control.controlType.id}
+              onClick={() => onStartControl(control.controlType.id)}
+              type="button"
+            >
+              <span className={`control-type-icon ${categoryMeta.className}`} aria-hidden="true">
+                {categoryMeta.label}
+              </span>
+              <span className="today-control-copy">
+                <strong>{control.controlType.name}</strong>
+                <span>{categoryMeta.name}</span>
+              </span>
+              <span className={getStatusClass(control.status)}>{getStatusText(control.status)}</span>
+              <span className="row-chevron" aria-hidden="true">›</span>
+            </button>
           );
         })}
       </div>
 
+      {nextControl ? (
+        <ActionButton
+          className="today-primary-action"
+          type="button"
+          onClick={() => onStartControl(nextControl.controlType.id)}
+        >
+          Utför kontroll
+        </ActionButton>
+      ) : null}
+
       <div className="deviation-list">
-        <h4>Öppna avvikelser</h4>
+        <div className="today-list-heading">
+          <h4>Öppna avvikelser</h4>
+          <span>{deviations.length}</span>
+        </div>
         {deviations.length === 0 && !loading ? (
           <p className="muted-copy">Inga öppna avvikelser just nu.</p>
         ) : null}
