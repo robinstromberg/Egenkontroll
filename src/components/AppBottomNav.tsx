@@ -10,20 +10,20 @@ const items: { id: AppView; label: string }[] = [
   { id: 'menu', label: t.navigationMenu },
 ];
 
-export function AppBottomNav(props: { activeView: AppView; onChangeView: (view: AppView) => void }) {
+export function AppBottomNav(props: { activeView?: AppView; onChangeView?: (view: AppView) => void } = {}) {
   return (
     <div className="bottom-bar">
       {items.map((item) => {
-        const selected = item.id === props.activeView;
+        const selected = item.id === (props.activeView ?? 'today');
         return (
           <span
             className={selected ? 'bottom-bar-item selected' : 'bottom-bar-item'}
             key={item.id}
             role="button"
             tabIndex={0}
-            onClick={() => props.onChangeView(item.id)}
+            onClick={() => props.onChangeView?.(item.id)}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') props.onChangeView(item.id);
+              if (event.key === 'Enter' || event.key === ' ') props.onChangeView?.(item.id);
             }}
           >
             {item.label}
