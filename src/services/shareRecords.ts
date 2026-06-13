@@ -15,6 +15,48 @@ export type SharedRun = {
   control_type_name: string;
   performed_at: string;
   status: string;
+  notes: string | null;
+  items: SharedRunItem[];
+  deviations: SharedDeviation[];
+  attachments: SharedAttachment[];
+};
+
+export type SharedRunItem = {
+  id: string;
+  object_snapshot: Record<string, unknown>;
+  field_snapshot: Record<string, unknown>;
+  value_text: string | null;
+  value_number: number | null;
+  value_boolean: boolean | null;
+  value_date: string | null;
+  value_json: Record<string, unknown> | null;
+  status: string;
+  deviation_detected: boolean;
+  deviation_reason: string | null;
+  action_text: string | null;
+  created_at: string;
+};
+
+export type SharedDeviation = {
+  id: string;
+  control_run_item_id: string | null;
+  status: string;
+  severity: string;
+  description: string;
+  action_text: string;
+  follow_up_comment: string | null;
+  opened_at: string;
+  resolved_at: string | null;
+};
+
+export type SharedAttachment = {
+  id: string;
+  control_run_item_id: string | null;
+  deviation_id: string | null;
+  file_name: string | null;
+  storage_bucket: string;
+  storage_path: string;
+  created_at: string;
 };
 
 export async function createAccessLink(input: {

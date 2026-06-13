@@ -8,8 +8,8 @@
   display: grid;
   gap: 18px;
   border: 1px solid rgba(91, 70, 225, 0.12);
-  border-radius: 28px;
-  padding: 24px;
+  border-radius: 22px;
+  padding: 20px;
   background: #ffffff;
   box-shadow: 0 18px 45px rgba(62, 46, 135, 0.1);
 }
@@ -21,9 +21,23 @@
 
 .inspector-row {
   display: grid;
-  gap: 8px;
+  gap: 14px;
   border: 1px solid rgba(91, 70, 225, 0.12);
   border-radius: 18px;
   padding: 14px;
   background: #fbfbff;
+}
+
+.inspector-detail-list {
+  display: grid;
+  gap: 10px;
+}
+
+.inspector-detail-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 16px;
+  padding: 12px;
+  background: #ffffff;
 }
