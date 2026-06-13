@@ -10,6 +10,24 @@ const items: { id: AppView; label: string }[] = [
   { id: 'menu', label: t.navigationMenu },
 ];
 
+const targets: Record<AppView, string> = {
+  today: '.dashboard-card',
+  history: '.history-view',
+  add: '.today-dashboard',
+  sharing: '.sharing-view',
+  menu: '.module-grid',
+};
+
+function changeView(view: AppView, onChangeView?: (view: AppView) => void) {
+  if (onChangeView) {
+    onChangeView(view);
+    return;
+  }
+
+  const target = document.querySelector(targets[view]);
+  target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 export function AppBottomNav(props: { activeView?: AppView; onChangeView?: (view: AppView) => void } = {}) {
   return (
     <div className="bottom-bar">
@@ -21,9 +39,9 @@ export function AppBottomNav(props: { activeView?: AppView; onChangeView?: (view
             key={item.id}
             role="button"
             tabIndex={0}
-            onClick={() => props.onChangeView?.(item.id)}
+            onClick={() => changeView(item.id, props.onChangeView)}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') props.onChangeView?.(item.id);
+              if (event.key === 'Enter' || event.key === ' ') changeView(item.id, props.onChangeView);
             }}
           >
             {item.label}
