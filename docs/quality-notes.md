@@ -25,6 +25,7 @@ Latest technical verification:
 - RLS helper functions and direct `auth.uid()` policies were optimized to use `(select auth.uid())` where applicable.
 - The public inspector RPC is intentionally executable by anonymous users because temporary inspector links require unauthenticated read-only access. The RPC is constrained by hashed token, active status, validity window, reporting period and included control type scope.
 - Direct PUBLIC execute permission was revoked from the inspector RPC; only `anon` and `authenticated` keep execute access for the intended link flow.
+- `docs/checklist.md` now separates technically verified items from manual browser tests that still require a logged-in user.
 
 Known manual checks still required:
 
