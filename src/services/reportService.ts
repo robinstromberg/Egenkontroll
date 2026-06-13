@@ -30,7 +30,7 @@ function readItemValue(item: Awaited<ReturnType<typeof getControlRunDetail>>['it
 }
 
 function escapeCsv(value: string): string {
-  return `"${value.replaceAll('"', '""')}"`;
+  return `"${value.replace(/"/g, '""')}"`;
 }
 
 function downloadTextFile(fileName: string, content: string, mimeType: string) {
