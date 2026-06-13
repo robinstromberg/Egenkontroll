@@ -1,46 +1,32 @@
 import { t } from '../locales';
 
-const items = [
-  t.navigationToday,
-  t.navigationHistory,
-  t.navigationAdd,
-  t.navigationSharing,
-  t.navigationMenu,
+export type AppView = 'today' | 'history' | 'add' | 'sharing' | 'menu';
+
+const items: { id: AppView; label: string }[] = [
+  { id: 'today', label: t.navigationToday },
+  { id: 'history', label: t.navigationHistory },
+  { id: 'add', label: t.navigationAdd },
+  { id: 'sharing', label: t.navigationSharing },
+  { id: 'menu', label: t.navigationMenu },
 ];
 
-export function AppBottomNav() {
+export function AppBottomNav(props: { activeView: AppView; onChangeView: (view: AppView) => void }) {
   return (
-    <div
-      className="bottom-bar"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(5, 1fr)',
-        gap: 6,
-        marginTop: 20,
-        border: '1px solid rgba(91, 70, 225, 0.14)',
-        borderRadius: 24,
-        padding: 8,
-        background: 'rgba(255, 255, 255, 0.96)',
-      }}
-    >
+    <div className="bottom-bar">
       {items.map((item) => {
-        const selected = item === t.navigationToday;
+        const selected = item.id === props.activeView;
         return (
           <span
             className={selected ? 'bottom-bar-item selected' : 'bottom-bar-item'}
-            key={item}
-            style={{
-              display: 'grid',
-              placeItems: 'center',
-              minHeight: 52,
-              borderRadius: 18,
-              color: selected ? '#5b46e1' : '#657089',
-              background: selected ? '#efedff' : 'transparent',
-              fontSize: '0.74rem',
-              fontWeight: 900,
+            key={item.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => props.onChangeView(item.id)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') props.onChangeView(item.id);
             }}
           >
-            {item}
+            {item.label}
           </span>
         );
       })}
