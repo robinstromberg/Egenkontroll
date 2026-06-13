@@ -1,6 +1,7 @@
 import type { User } from '@supabase/supabase-js';
 import { useState } from 'react';
 import { AdminControls } from './AdminControls';
+import type { AppView } from './AppBottomNav';
 import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
 import { HistoryView } from './HistoryView';
 import { SharingView } from './SharingView';
@@ -10,8 +11,10 @@ import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
 
 export type AppDashboardProps = {
+  activeView: AppView;
   user: User;
   context: OrganizationContext;
+  onChangeView: (view: AppView) => void;
   onSignOut: () => Promise<void>;
 };
 
@@ -21,11 +24,7 @@ const roleLabels = {
   staff: 'Personal',
 };
 
-function goHome() {
-  document.querySelector('.dashboard-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
+export function AppDashboard({ activeView, user, context, onChangeView, onSignOut }: AppDashboardProps) {
   const canManage = canManageOrganization(context.membership.role);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
   const [dashboardKey, setDashboardKey] = useState(0);
@@ -33,7 +32,88 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
   async function handleControlSaved() {
     setActiveControlTypeId(null);
     setDashboardKey((current) => current + 1);
-    goHome();
+    onChangeView('today');
+  }
+
+  function handleStartControl(controlTypeId: string) {
+    setActiveControlTypeId(controlTypeId);
+    onChangeView('today');
+  }
+
+  function renderView() {
+    if (activeControlTypeId) {
+      return (
+        <ControlRunFormWithPhotos
+          controlTypeId={activeControlTypeId}
+          organizationId={context.organization.id}
+          userId={user.id}
+          onCancel={() => setActiveControlTypeId(null)}
+          onSaved={handleControlSaved}
+        />
+      );
+    }
+
+    if (activeView === 'history') {
+      return <HistoryView organizationId={context.organization.id} />;
+    }
+
+    if (activeView === 'add') {
+      return canManage ? (
+        <AdminControls organizationId={context.organization.id} userId={user.id} />
+      ) : (
+        <section className="empty-view-card" aria-labelledby="add-title">
+          <p className="eyebrow">Lägg till</p>
+          <h3 id="add-title">Admin krävs</h3>
+          <p className="muted-copy">Kontrolltyper och objekt hanteras av administratörer.</p>
+        </section>
+      );
+    }
+
+    if (activeView === 'sharing') {
+      return canManage ? (
+        <SharingView organizationId={context.organization.id} userId={user.id} />
+      ) : (
+        <section className="empty-view-card" aria-labelledby="sharing-title">
+          <p className="eyebrow">Delning</p>
+          <h3 id="sharing-title">Admin krävs</h3>
+          <p className="muted-copy">Delningslänkar hanteras av administratörer.</p>
+        </section>
+      );
+    }
+
+    if (activeView === 'menu') {
+      return (
+        <section className="menu-view" aria-labelledby="menu-title">
+          <div className="menu-card">
+            <p className="eyebrow">Meny</p>
+            <h3 id="menu-title">{context.organization.name}</h3>
+            <p className="muted-copy">
+              {user.email} · {roleLabels[context.membership.role]}
+            </p>
+          </div>
+          <div className="role-panel">
+            <h3>Roll och åtkomst</h3>
+            <p>
+              {canManage
+                ? 'Du kan hantera verksamhetens struktur, användare och delningslänkar.'
+                : 'Du kan utföra kontroller och se relevant historik för verksamheten.'}
+            </p>
+          </div>
+          <ActionButton variant="secondary" type="button" onClick={onSignOut}>
+            Logga ut
+          </ActionButton>
+        </section>
+      );
+    }
+
+    return (
+      <TodayDashboard
+        key={dashboardKey}
+        organizationId={context.organization.id}
+        userId={user.id}
+        onStartControl={handleStartControl}
+      />
+    );
   }
 
   return (
@@ -46,61 +126,9 @@ export function AppDashboard({ user, context, onSignOut }: AppDashboardProps) {
             {user.email} · {roleLabels[context.membership.role]}
           </p>
         </div>
-        <div className="form-actions">
-          <ActionButton variant="secondary" type="button" onClick={goHome}>
-            Hem
-          </ActionButton>
-          <ActionButton variant="secondary" type="button" onClick={onSignOut}>
-            Logga ut
-          </ActionButton>
-        </div>
       </div>
 
-      <div className="role-panel">
-        <h3>Roll och åtkomst</h3>
-        <p>
-          {canManage
-            ? 'Du kan hantera verksamhetens struktur, användare och kommande delningslänkar.'
-            : 'Du kan utföra kontroller och se relevant historik för verksamheten.'}
-        </p>
-      </div>
-
-      {activeControlTypeId ? (
-        <ControlRunFormWithPhotos
-          controlTypeId={activeControlTypeId}
-          organizationId={context.organization.id}
-          userId={user.id}
-          onCancel={() => {
-            setActiveControlTypeId(null);
-            goHome();
-          }}
-          onSaved={handleControlSaved}
-        />
-      ) : (
-        <TodayDashboard
-          key={dashboardKey}
-          organizationId={context.organization.id}
-          userId={user.id}
-          onStartControl={setActiveControlTypeId}
-        />
-      )}
-
-      <HistoryView organizationId={context.organization.id} />
-
-      {canManage ? (
-        <SharingView organizationId={context.organization.id} userId={user.id} />
-      ) : null}
-
-      <div className="module-grid">
-        <article className="module-card">
-          <h3>Kontrolltyper</h3>
-          <p>{canManage ? 'Du kan skapa och inaktivera kontroller nedan.' : 'Admin hanterar kontrolltyper.'}</p>
-        </article>
-      </div>
-
-      {canManage ? (
-        <AdminControls organizationId={context.organization.id} userId={user.id} />
-      ) : null}
+      {renderView()}
     </section>
   );
 }

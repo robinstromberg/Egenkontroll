@@ -2,7 +2,7 @@
 
 :root {
   color: #172033;
-  background: #f7f5ff;
+  background: #f8f7ff;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
@@ -15,10 +15,17 @@
   box-sizing: border-box;
 }
 
+html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
+  width: 100%;
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
 }
 
 button,
@@ -40,7 +47,7 @@ button:disabled {
 .app-shell {
   width: min(100%, 960px);
   margin: 0 auto;
-  padding: 24px 16px 40px;
+  padding: 18px 14px 40px;
 }
 
 .hero-card,
@@ -50,15 +57,15 @@ button:disabled {
 .dashboard-card,
 .role-panel {
   border: 1px solid rgba(91, 70, 225, 0.12);
-  border-radius: 28px;
+  border-radius: 22px;
   background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 18px 45px rgba(62, 46, 135, 0.1);
+  box-shadow: 0 14px 34px rgba(62, 46, 135, 0.08);
 }
 
 .hero-card {
   display: grid;
   gap: 20px;
-  padding: 28px;
+  padding: 24px;
 }
 
 .app-icon {
@@ -96,15 +103,15 @@ p {
 
 h1 {
   margin-bottom: 0;
-  font-size: clamp(2.2rem, 12vw, 4.8rem);
+  font-size: clamp(2.1rem, 10vw, 4.2rem);
   line-height: 0.95;
-  letter-spacing: -0.08em;
+  letter-spacing: 0;
 }
 
 h2 {
   margin-bottom: 16px;
-  font-size: clamp(1.45rem, 7vw, 2rem);
-  letter-spacing: -0.04em;
+  font-size: clamp(1.42rem, 6vw, 1.9rem);
+  letter-spacing: 0;
 }
 
 h3 {
@@ -129,9 +136,9 @@ h3 {
 .auth-card,
 .dashboard-card {
   display: grid;
-  gap: 20px;
+  gap: 16px;
   margin-top: 20px;
-  padding: 24px;
+  padding: 18px;
 }
 
 .dashboard-header {
@@ -142,6 +149,21 @@ h3 {
 .role-panel {
   padding: 18px;
   background: #f8fbff;
+}
+
+.empty-view-card,
+.menu-view,
+.menu-card {
+  display: grid;
+  gap: 14px;
+}
+
+.empty-view-card,
+.menu-card {
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 16px;
+  background: #ffffff;
 }
 
 .role-panel p {
@@ -208,7 +230,7 @@ h3 {
 .secondary-button {
   min-height: 52px;
   border: 0;
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 0 18px;
   font-weight: 900;
 }

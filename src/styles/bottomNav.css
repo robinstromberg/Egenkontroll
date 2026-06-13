@@ -1,36 +1,41 @@
 .app-shell.with-bottom-bar {
-  padding-bottom: 112px;
+  padding-bottom: calc(104px + env(safe-area-inset-bottom));
 }
 
 .bottom-bar {
   position: fixed;
   right: 12px;
-  bottom: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
   left: 12px;
   z-index: 50;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-  max-width: 960px;
+  gap: 4px;
+  width: min(calc(100% - 24px), 720px);
+  max-width: none;
   margin: 0 auto;
   border: 1px solid rgba(91, 70, 225, 0.14);
-  border-radius: 24px;
-  padding: 8px;
+  border-radius: 22px;
+  padding: 7px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 18px 45px rgba(62, 46, 135, 0.18);
+  backdrop-filter: blur(16px);
 }
 
 .bottom-bar-item {
   display: grid;
-  min-height: 52px;
+  min-width: 0;
+  min-height: 50px;
+  border: 0;
   place-items: center;
-  border-radius: 18px;
+  border-radius: 16px;
   color: #657089;
   background: transparent;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 900;
   text-align: center;
   user-select: none;
+  white-space: nowrap;
 }
 
 .bottom-bar-item.selected {

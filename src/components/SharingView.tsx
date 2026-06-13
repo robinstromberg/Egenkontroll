@@ -32,11 +32,12 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
   const [validUntil, setValidUntil] = useState(nextWeek());
   const [links, setLinks] = useState<AccessRecord[]>([]);
   const [latestUrl, setLatestUrl] = useState('');
+  const [copied, setCopied] = useState(false);
   const [message, setMessage] = useState('');
 
   const qrUrl = useMemo(() => {
     if (!latestUrl) return '';
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(latestUrl)}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(latestUrl)}`;
   }, [latestUrl]);
 
   async function refresh() {
@@ -60,9 +61,21 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
         validUntil,
       });
       setLatestUrl(formatAccessUrl(url));
+      setCopied(false);
       await refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa delning.');
+    }
+  }
+
+  async function handleCopy() {
+    if (!latestUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(latestUrl);
+      setCopied(true);
+    } catch {
+      setMessage('Kunde inte kopiera länken automatiskt.');
     }
   }
 
@@ -93,10 +106,27 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
       {message ? <p className="form-message error-message">{message}</p> : null}
 
       {latestUrl ? (
-        <div className="share-result">
-          <strong>Ny delningslänk</strong>
-          <p className="share-link-box">{latestUrl}</p>
-          {qrUrl ? <img className="qr-image" src={qrUrl} alt="QR-kod för inspektörslänk" /> : null}
+        <div className="share-modal-backdrop" role="presentation">
+          <section className="share-modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+            <div>
+              <p className="eyebrow">Delning skapad</p>
+              <h3 id="share-modal-title">Inspektörslänk</h3>
+              <p className="muted-copy">Period: {periodStart} – {periodEnd}. Giltig till {validUntil}.</p>
+            </div>
+            {qrUrl ? <img className="qr-image large" src={qrUrl} alt="QR-kod för inspektörslänk" /> : null}
+            <p className="share-link-box">{latestUrl}</p>
+            <div className="form-actions">
+              <ActionButton type="button" onClick={handleCopy}>
+                {copied ? 'Kopierad' : 'Kopiera länk'}
+              </ActionButton>
+              <ActionButton type="button" variant="secondary" onClick={() => window.open(latestUrl, '_blank', 'noopener,noreferrer')}>
+                Öppna läsvy
+              </ActionButton>
+              <ActionButton type="button" variant="secondary" onClick={() => setLatestUrl('')}>
+                Stäng
+              </ActionButton>
+            </div>
+          </section>
         </div>
       ) : null}
 

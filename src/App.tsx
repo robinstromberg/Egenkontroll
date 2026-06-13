@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import { AppBottomNav } from './components/AppBottomNav';
+import type { AppView } from './components/AppBottomNav';
 import { AppDashboard } from './components/AppDashboard';
 import { AuthPanel } from './components/AuthPanel';
 import { InspectorView } from './components/InspectorView';
@@ -20,6 +21,7 @@ function readInspectorKey(): string | null {
 function App() {
   const inspectorKey = readInspectorKey();
   const [session, setSession] = useState<Session | null>(null);
+  const [activeView, setActiveView] = useState<AppView>('today');
   const [organizationContexts, setOrganizationContexts] = useState<OrganizationContext[]>([]);
   const [passwordRecovery, setPasswordRecovery] = useState(
     () => window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery'),
@@ -78,6 +80,7 @@ function App() {
     await signOut();
     setSession(null);
     setOrganizationContexts([]);
+    setActiveView('today');
     setPasswordRecovery(false);
   }
 
@@ -91,7 +94,7 @@ function App() {
   return (
     <>
       <main className={showNavigation ? 'app-shell with-bottom-bar' : 'app-shell'}>
-        <section className="hero-card" aria-labelledby="page-title">
+        {!showNavigation ? <section className="hero-card" aria-labelledby="page-title">
           <div className="app-icon" aria-hidden="true">
             ✓
           </div>
@@ -103,7 +106,7 @@ function App() {
               och rollbaserad åtkomst är nu på plats som grund för kommande kontrollflöden.
             </p>
           </div>
-        </section>
+        </section> : null}
 
         {message ? <p className="form-message error-message">{message}</p> : null}
 
@@ -117,12 +120,18 @@ function App() {
         ) : passwordRecovery ? (
           <PasswordSetupPanel onSaved={() => setPasswordRecovery(false)} onSkip={() => setPasswordRecovery(false)} />
         ) : activeContext ? (
-          <AppDashboard user={session.user} context={activeContext} onSignOut={handleSignOut} />
+          <AppDashboard
+            activeView={activeView}
+            user={session.user}
+            context={activeContext}
+            onChangeView={setActiveView}
+            onSignOut={handleSignOut}
+          />
         ) : (
           <OrganizationSetup user={session.user} onCreated={loadOrganizationContext} />
         )}
       </main>
-      {showNavigation ? <AppBottomNav /> : null}
+      {showNavigation ? <AppBottomNav activeView={activeView} onChangeView={setActiveView} /> : null}
     </>
   );
 }
