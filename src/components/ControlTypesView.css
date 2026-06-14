@@ -1,0 +1,114 @@
+.control-types-view {
+  display: grid;
+  gap: 18px;
+}
+
+.control-types-topbar {
+  display: grid;
+  gap: 6px;
+}
+
+.control-types-topbar h3 {
+  margin-bottom: 0;
+}
+
+.control-type-list {
+  display: grid;
+  gap: 10px;
+}
+
+.control-type-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 18px;
+  padding: 12px 14px;
+  color: #172033;
+  background: #ffffff;
+  text-align: left;
+  box-shadow: 0 10px 24px rgba(62, 46, 135, 0.07);
+}
+
+.control-type-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 14px;
+  font-weight: 900;
+}
+
+.control-type-icon.temperature {
+  color: #0c7a43;
+  background: #e6f8ed;
+}
+
+.control-type-icon.checklist {
+  color: #2f63d7;
+  background: #edf3ff;
+}
+
+.control-type-icon.receiving {
+  color: #6b46e8;
+  background: #f0edff;
+}
+
+.control-type-icon.traceability {
+  color: #7555d9;
+  background: #f1edff;
+}
+
+.control-type-icon.round {
+  color: #7a61c9;
+  background: #f4f0ff;
+}
+
+.control-type-icon.custom {
+  color: #5b46e1;
+  background: #efedff;
+}
+
+.control-type-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.control-type-copy strong {
+  font-size: 0.98rem;
+}
+
+.control-type-copy span {
+  color: #657089;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.control-type-chevron {
+  color: #6e7590;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.add-control-type-button {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1.5px dashed rgba(91, 70, 225, 0.55);
+  border-radius: 20px;
+  color: #5b46e1;
+  background: #f6f3ff;
+  font-weight: 900;
+}
+
+.empty-view-card {
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 22px;
+  padding: 20px;
+  background: #ffffff;
+}
