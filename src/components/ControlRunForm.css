@@ -40,6 +40,77 @@
   font-weight: 800;
 }
 
+.check-matrix {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+}
+
+.check-matrix-header,
+.check-matrix-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px 58px;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+}
+
+.check-matrix-header {
+  color: #657089;
+  background: #fbfaff;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.check-matrix-header strong {
+  color: #11172c;
+  font-size: 0.84rem;
+}
+
+.check-matrix-header span {
+  text-align: center;
+}
+
+.check-matrix-row + .check-matrix-row {
+  border-top: 1px solid rgba(91, 70, 225, 0.08);
+}
+
+.check-matrix-name {
+  overflow: hidden;
+  color: #172033;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.matrix-choice {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-self: center;
+  place-items: center;
+  border: 2px solid #d7dbea;
+  border-radius: 999px;
+  color: transparent;
+  background: #ffffff;
+  font-weight: 900;
+}
+
+.matrix-choice.ok.selected {
+  border-color: #0c7a43;
+  color: #ffffff;
+  background: #0fa45a;
+}
+
+.matrix-choice.not-ok.selected {
+  border-color: #9f1d2b;
+  color: #ffffff;
+  background: #d63d4d;
+}
+
 .temperature-field {
   display: grid;
   gap: 8px;
@@ -249,7 +320,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .control-group {
+  .control-group,
+  .check-matrix {
     border-color: rgba(159, 145, 255, 0.18);
     background: #121a2e;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
@@ -257,8 +329,34 @@
 
   .control-group h4,
   .control-field label,
-  .action-label {
+  .action-label,
+  .check-matrix-header strong,
+  .check-matrix-name {
     color: #f7f9ff;
+  }
+
+  .check-matrix-header {
+    color: #aeb8d0;
+    background: #111a2f;
+  }
+
+  .check-matrix-row + .check-matrix-row {
+    border-top-color: rgba(159, 145, 255, 0.12);
+  }
+
+  .matrix-choice {
+    border-color: rgba(159, 145, 255, 0.28);
+    background: #111a2f;
+  }
+
+  .matrix-choice.ok.selected {
+    border-color: #61d992;
+    background: #1f9f63;
+  }
+
+  .matrix-choice.not-ok.selected {
+    border-color: #ff9aa8;
+    background: #c83749;
   }
 
   .temperature-field {
