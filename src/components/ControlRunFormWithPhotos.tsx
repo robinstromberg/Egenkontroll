@@ -34,6 +34,16 @@ type PhotoCaptureFieldProps = {
   onChange: (file: File | null) => void;
 };
 
+type TemperatureFieldProps = {
+  id: string;
+  label: string;
+  object: ControlObject | null;
+  value: string;
+  required: boolean;
+  reason: string | null;
+  onChange: (value: string) => void;
+};
+
 function responseKey(objectId: string | null, fieldId: string): string {
   return `${objectId ?? 'global'}:${fieldId}`;
 }
@@ -66,6 +76,17 @@ function getDefaultValue(field: ControlFieldDefinition): string {
   if (field.field_type === 'ok_not_ok') return 'ok';
   if (field.field_type === 'boolean') return 'true';
   return '';
+}
+
+function getLimitText(object: ControlObject | null): string | null {
+  if (!object) return null;
+  const unit = object.unit ?? '°C';
+  if (object.limit_min !== null && object.limit_min !== undefined && object.limit_max !== null && object.limit_max !== undefined) {
+    return `${object.limit_min}${unit}–${object.limit_max}${unit}`;
+  }
+  if (object.limit_max !== null && object.limit_max !== undefined) return `Max ${object.limit_max}${unit}`;
+  if (object.limit_min !== null && object.limit_min !== undefined) return `Min ${object.limit_min}${unit}`;
+  return null;
 }
 
 function PhotoCaptureField({ id, label, file, required, onChange }: PhotoCaptureFieldProps) {
@@ -110,6 +131,34 @@ function PhotoCaptureField({ id, label, file, required, onChange }: PhotoCapture
       />
 
       {file ? <p className="photo-file-name">{file.name}</p> : null}
+    </div>
+  );
+}
+
+function TemperatureField({ id, label, object, value, required, reason, onChange }: TemperatureFieldProps) {
+  const limitText = getLimitText(object);
+  const hasValue = value.trim().length > 0;
+  const statusClass = reason ? 'temperature-status bad' : 'temperature-status good';
+  const statusText = reason ? 'Över gränsvärde' : 'Inom gränsvärde';
+
+  return (
+    <div className={reason ? 'temperature-field deviation' : 'temperature-field'}>
+      <label htmlFor={id}>{label}</label>
+      <div className="temperature-input-row">
+        <input
+          className="text-input temperature-input"
+          id={id}
+          type="number"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          required={required}
+        />
+        <span className="temperature-unit">{object?.unit ?? '°C'}</span>
+      </div>
+      <div className="temperature-meta-row">
+        {limitText ? <span>{limitText}</span> : <span>Gränsvärde saknas</span>}
+        {hasValue ? <span className={statusClass}>{statusText}</span> : null}
+      </div>
     </div>
   );
 }
@@ -267,6 +316,16 @@ export function ControlRunFormWithPhotos({
                     file={files[key] ?? null}
                     required={field.required}
                     onChange={(nextFile) => updateFile(key, nextFile)}
+                  />
+                ) : field.field_type === 'temperature' ? (
+                  <TemperatureField
+                    id={key}
+                    label={field.label}
+                    object={object}
+                    value={value}
+                    required={field.required}
+                    reason={reason}
+                    onChange={(nextValue) => updateResponse(key, nextValue)}
                   />
                 ) : field.field_type === 'ok_not_ok' ? (
                   <SegmentedChoice
