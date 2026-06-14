@@ -1,8 +1,8 @@
 import type { User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
-import { AdminControls } from './AdminControls';
 import type { AppView } from './AppBottomNav';
 import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
+import { ControlTypesView } from './ControlTypesView';
 import { HistoryView } from './HistoryView';
 import { SharingView } from './SharingView';
 import { TodayDashboard } from './TodayDashboard';
@@ -64,14 +64,12 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
     }
 
     if (activeView === 'add') {
-      return canManage ? (
-        <AdminControls organizationId={context.organization.id} userId={user.id} />
-      ) : (
-        <section className="empty-view-card" aria-labelledby="add-title">
-          <p className="eyebrow">Lägg till</p>
-          <h3 id="add-title">Admin krävs</h3>
-          <p className="muted-copy">Kontrolltyper och objekt hanteras av administratörer.</p>
-        </section>
+      return (
+        <ControlTypesView
+          organizationId={context.organization.id}
+          userId={user.id}
+          canManage={canManage}
+        />
       );
     }
 
