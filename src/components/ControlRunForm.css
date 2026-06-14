@@ -186,6 +186,66 @@
   background: currentColor;
 }
 
+@media (prefers-color-scheme: dark) {
+  .control-group {
+    border-color: rgba(159, 145, 255, 0.18);
+    background: #121a2e;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .control-group h4,
+  .control-field label,
+  .action-label {
+    color: #f7f9ff;
+  }
+
+  .deviation-box {
+    border: 1px solid rgba(255, 119, 135, 0.36);
+    color: #ff9aa8;
+    background: rgba(159, 29, 43, 0.22);
+  }
+
+  .choice-button {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #d8deef;
+    background: #111a2f;
+  }
+
+  .choice-button.selected.good {
+    border-color: rgba(97, 217, 146, 0.34);
+    color: #61d992;
+    background: rgba(39, 128, 83, 0.2);
+  }
+
+  .choice-button.selected.bad {
+    border-color: rgba(255, 119, 135, 0.34);
+    color: #ff9aa8;
+    background: rgba(159, 29, 43, 0.24);
+  }
+
+  .choice-button.selected.neutral,
+  .photo-camera-button {
+    border-color: rgba(185, 175, 255, 0.28);
+    color: #b9afff;
+    background: #211b45;
+  }
+
+  .photo-thumbnail {
+    border-color: rgba(159, 145, 255, 0.22);
+    background: #111a2f;
+  }
+
+  .photo-empty-slot {
+    border-color: rgba(159, 145, 255, 0.28);
+    color: #aeb8d0;
+    background: #111a2f;
+  }
+
+  .photo-file-name {
+    color: #aeb8d0;
+  }
+}
+
 @media (max-width: 420px) {
   .control-form-topbar {
     display: grid;
