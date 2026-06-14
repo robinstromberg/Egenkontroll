@@ -32,6 +32,22 @@ const frequencies: Array<{ value: ControlFrequency; label: string }> = [
   { value: 'custom', label: 'Anpassad' },
 ];
 
+const frequencyLabels: Record<ControlFrequency, string> = {
+  daily: 'Dagligen',
+  weekly: 'Veckovis',
+  per_delivery: 'Vid leverans',
+  custom: 'Anpassad',
+};
+
+const categoryLabels: Record<ControlCategory, string> = {
+  temperature: 'Temperatur',
+  checklist: 'Checklista',
+  receiving: 'Varumottagning',
+  traceability: 'Spårbarhet',
+  round: 'Egenkontrollrunda',
+  custom: 'Anpassad',
+};
+
 export function AdminControls({ organizationId, userId }: AdminControlsProps) {
   const [controlTypes, setControlTypes] = useState<ControlType[]>([]);
   const [selectedTypeId, setSelectedTypeId] = useState<string>('');
@@ -177,80 +193,109 @@ export function AdminControls({ organizationId, userId }: AdminControlsProps) {
       <div className="admin-grid">
         <form className="admin-form" onSubmit={handleCreateType}>
           <h4>Ny kontrolltyp</h4>
-          <input
-            className="text-input"
-            value={typeName}
-            onChange={(event) => setTypeName(event.target.value)}
-            placeholder="Exempel: Diskkontroll"
-            required
-          />
-          <select className="text-input" value={category} onChange={(event) => setCategory(event.target.value as ControlCategory)}>
-            {categories.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-          </select>
-          <select className="text-input" value={frequency} onChange={(event) => setFrequency(event.target.value as ControlFrequency)}>
-            {frequencies.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-          </select>
+          <label>
+            <span>Namn</span>
+            <input
+              className="text-input"
+              value={typeName}
+              onChange={(event) => setTypeName(event.target.value)}
+              placeholder="Exempel: Diskkontroll"
+              required
+            />
+          </label>
+          <label>
+            <span>Kategori</span>
+            <select className="text-input" value={category} onChange={(event) => setCategory(event.target.value as ControlCategory)}>
+              {categories.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Frekvens</span>
+            <select className="text-input" value={frequency} onChange={(event) => setFrequency(event.target.value as ControlFrequency)}>
+              {frequencies.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+            </select>
+          </label>
           <ActionButton type="submit">Lägg till kontrolltyp</ActionButton>
         </form>
 
         <div className="admin-list">
           <h4>Befintliga kontrolltyper</h4>
           {controlTypes.map((controlType) => (
-            <article className="admin-row" key={controlType.id}>
+            <article className={controlType.id === selectedTypeId ? 'admin-row selected' : 'admin-row'} key={controlType.id}>
               <div className="admin-row-header">
                 <button className="template-toggle" type="button" onClick={() => setSelectedTypeId(controlType.id)}>
                   {controlType.name}
                 </button>
-                <button className="admin-small-button" type="button" onClick={() => toggleType(controlType)}>
+                <button className={controlType.active ? 'admin-small-button' : 'admin-small-button inactive'} type="button" onClick={() => toggleType(controlType)}>
                   {controlType.active ? 'Inaktivera' : 'Aktivera'}
                 </button>
               </div>
-              <p>{controlType.frequency} · {controlType.category} · {controlType.active ? 'Aktiv' : 'Inaktiv'}</p>
+              <p>{frequencyLabels[controlType.frequency]} · {categoryLabels[controlType.category]}</p>
+              <span className={controlType.active ? 'admin-status active' : 'admin-status inactive'}>
+                {controlType.active ? 'Aktiv' : 'Inaktiv'}
+              </span>
             </article>
           ))}
         </div>
       </div>
 
-      <div className="admin-grid">
+      <div className="admin-object-panel">
+        <div className="admin-section-heading">
+          <div>
+            <p className="eyebrow">Kontrollpunkter</p>
+            <h4>{selectedType?.name ?? 'Ingen kontrolltyp vald'}</h4>
+          </div>
+          {selectedType ? <span className="admin-status active">{objects.filter((item) => item.active).length} aktiva</span> : null}
+        </div>
+
         <form className="admin-form" onSubmit={handleCreateObject}>
-          <h4>Ny kontrollpunkt</h4>
-          <p className="muted-copy">Vald kontrolltyp: {selectedType?.name ?? 'Ingen vald'}</p>
-          <input
-            className="text-input"
-            value={objectName}
-            onChange={(event) => setObjectName(event.target.value)}
-            placeholder="Exempel: Kyl 3 – Beredning"
-            required
-          />
-          <input
-            className="text-input"
-            value={objectLocation}
-            onChange={(event) => setObjectLocation(event.target.value)}
-            placeholder="Plats, frivilligt"
-          />
-          <input
-            className="text-input"
-            value={limitMax}
-            onChange={(event) => setLimitMax(event.target.value)}
-            placeholder="Maxgräns, frivilligt"
-            type="number"
-          />
+          <h4>Lägg till kontrollpunkt</h4>
+          <label>
+            <span>Namn</span>
+            <input
+              className="text-input"
+              value={objectName}
+              onChange={(event) => setObjectName(event.target.value)}
+              placeholder="Exempel: Kyl 3 – Beredning"
+              required
+            />
+          </label>
+          <label>
+            <span>Plats</span>
+            <input
+              className="text-input"
+              value={objectLocation}
+              onChange={(event) => setObjectLocation(event.target.value)}
+              placeholder="Plats, frivilligt"
+            />
+          </label>
+          <label>
+            <span>Maxgräns</span>
+            <input
+              className="text-input"
+              value={limitMax}
+              onChange={(event) => setLimitMax(event.target.value)}
+              placeholder="Exempel: 8"
+              type="number"
+            />
+          </label>
           <ActionButton type="submit" disabled={!selectedTypeId}>Lägg till kontrollpunkt</ActionButton>
         </form>
 
-        <div className="admin-list">
-          <h4>Kontrollpunkter</h4>
+        <div className="admin-list object-list">
+          {objects.length === 0 ? <p className="muted-copy">Inga kontrollpunkter finns för vald kontrolltyp ännu.</p> : null}
           {objects.map((controlObject) => (
-            <article className="admin-row" key={controlObject.id}>
-              <div className="admin-row-header">
+            <article className={controlObject.active ? 'admin-object-card' : 'admin-object-card inactive'} key={controlObject.id}>
+              <div className="admin-object-icon" aria-hidden="true">{selectedType?.category === 'temperature' ? '°C' : '✓'}</div>
+              <div>
                 <h4>{controlObject.name}</h4>
-                <button className="admin-small-button" type="button" onClick={() => toggleObject(controlObject)}>
-                  {controlObject.active ? 'Inaktivera' : 'Aktivera'}
-                </button>
+                <p>
+                  {controlObject.location ?? 'Ingen plats'} · {controlObject.limit_max ?? 'Ingen gräns'} {controlObject.unit ?? ''}
+                </p>
               </div>
-              <p>
-                {controlObject.location ?? 'Ingen plats'} · {controlObject.limit_max ?? 'Ingen gräns'} {controlObject.unit ?? ''}
-              </p>
+              <button className={controlObject.active ? 'admin-small-button' : 'admin-small-button inactive'} type="button" onClick={() => toggleObject(controlObject)}>
+                {controlObject.active ? 'Inaktivera' : 'Aktivera'}
+              </button>
             </article>
           ))}
         </div>
