@@ -19,6 +19,13 @@ function formatDate(value: Date): string {
   }).format(value);
 }
 
+function getGreeting(value: Date): string {
+  const hour = value.getHours();
+  if (hour < 10) return 'God morgon';
+  if (hour < 17) return 'Hej';
+  return 'God kväll';
+}
+
 function getStatusText(status: TodayControl['status']): string {
   if (status === 'done') return 'Klar';
   if (status === 'done_with_deviation') return 'Avvikelse';
@@ -57,6 +64,7 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
   const [followUps, setFollowUps] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const today = new Date();
 
   async function loadDashboard(active = true) {
     try {
@@ -107,20 +115,27 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
 
   return (
     <section className="today-dashboard" aria-labelledby="today-title">
-      <div className="today-intro">
-        <p className="eyebrow">Idag</p>
-        <h3 id="today-title">{formatDate(new Date())}</h3>
-        <p className="muted-copy">
-          Här ser personalen vad som ska göras, vad som är klart och vad som kräver åtgärd.
-        </p>
+      <div className="today-hero">
+        <div>
+          <p className="eyebrow">Idag</p>
+          <h3 id="today-title">{getGreeting(today)}</h3>
+          <p className="today-date">{formatDate(today)}</p>
+        </div>
+        <span className="today-weather" aria-hidden="true">☀</span>
       </div>
 
       {message ? <p className="form-message error-message">{message}</p> : null}
       {loading ? <p className="muted-copy">Laddar dagens arbete...</p> : null}
 
       <div className="today-summary">
-        <strong>{completedCount} av {controls.length} kontroller klara</strong>
-        <span>{deviations.length} öppna avvikelser</span>
+        <div>
+          <span>Dagens kontroller</span>
+          <strong>{completedCount} av {controls.length} klara</strong>
+        </div>
+        <div>
+          <span>Öppna avvikelser</span>
+          <strong>{deviations.length}</strong>
+        </div>
       </div>
 
       <div className="today-list" aria-label="Dagens kontroller">
@@ -137,7 +152,7 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
           const categoryMeta = getCategoryMeta(control.controlType.category);
           return (
             <button
-              className="today-control-row"
+              className={`today-control-row ${control.status}`}
               key={control.controlType.id}
               onClick={() => onStartControl(control.controlType.id)}
               type="button"
@@ -167,7 +182,7 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
       ) : null}
 
       <div className="deviation-list">
-        <div className="today-list-heading">
+        <div className="today-list-heading deviation-heading">
           <h4>Öppna avvikelser</h4>
           <span>{deviations.length}</span>
         </div>
