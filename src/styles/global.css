@@ -323,6 +323,89 @@ section + section {
   margin-top: 28px;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f4f7ff;
+    background: #0d1324;
+  }
+
+  body {
+    background: #0d1324;
+  }
+
+  .hero-card,
+  .status-panel,
+  .module-card,
+  .auth-card,
+  .dashboard-card,
+  .role-panel,
+  .empty-view-card,
+  .menu-card {
+    border-color: rgba(132, 116, 255, 0.2);
+    background: rgba(18, 26, 46, 0.96);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+  }
+
+  .role-panel {
+    background: #141f36;
+  }
+
+  h1,
+  h2,
+  h3,
+  .with-bottom-bar .dashboard-header h2,
+  .field-label {
+    color: #f7f9ff;
+  }
+
+  .lead,
+  .muted-copy,
+  .role-panel p,
+  .module-card p {
+    color: #aeb8d0;
+  }
+
+  .eyebrow,
+  .secondary-button {
+    color: #9f91ff;
+  }
+
+  .secondary-button {
+    background: #211b45;
+  }
+
+  .primary-button {
+    background: #725cff;
+    box-shadow: 0 12px 25px rgba(114, 92, 255, 0.24);
+  }
+
+  .text-input {
+    border-color: rgba(159, 145, 255, 0.22);
+    color: #f7f9ff;
+    background: #111a2f;
+  }
+
+  .text-input:focus {
+    border-color: #9f91ff;
+    box-shadow: 0 0 0 4px rgba(159, 145, 255, 0.16);
+  }
+
+  .check-list li {
+    color: #d8deef;
+  }
+
+  .check-list li::before,
+  .success-message {
+    color: #61d992;
+    background: rgba(39, 128, 83, 0.2);
+  }
+
+  .error-message {
+    color: #ff9aa8;
+    background: rgba(159, 29, 43, 0.24);
+  }
+}
+
 @media (min-width: 720px) {
   .app-shell {
     padding: 48px 24px 64px;
