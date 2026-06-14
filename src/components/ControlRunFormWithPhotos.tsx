@@ -9,6 +9,7 @@ import type {
   ControlResponse,
   ControlRunDefinition,
 } from '../services/controlRunWithAttachmentsService';
+import type { SavedControlSummary } from './SavedControlView';
 import type { ControlFieldDefinition, ControlObject } from '../types/database';
 import './ControlRunForm.css';
 
@@ -16,8 +17,9 @@ export type ControlRunFormWithPhotosProps = {
   organizationId: string;
   controlTypeId: string;
   userId: string;
+  performedBy: string;
   onCancel: () => void;
-  onSaved: () => Promise<void>;
+  onSaved: (summary: SavedControlSummary) => Promise<void>;
 };
 
 type ResponseState = Record<string, string>;
@@ -62,6 +64,7 @@ export function ControlRunFormWithPhotos({
   organizationId,
   controlTypeId,
   userId,
+  performedBy,
   onCancel,
   onSaved,
 }: ControlRunFormWithPhotosProps) {
@@ -153,8 +156,13 @@ export function ControlRunFormWithPhotos({
     try {
       setSaving(true);
       setMessage('');
+      const savedAt = new Date().toISOString();
       await saveControlRun(organizationId, controlTypeId, userId, definition, responseList);
-      await onSaved();
+      await onSaved({
+        controlName: definition.controlType.name,
+        savedAt,
+        performedBy,
+      });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte spara kontrollen.');
     } finally {
