@@ -40,6 +40,68 @@
   font-weight: 800;
 }
 
+.temperature-field {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(12, 122, 67, 0.14);
+  border-radius: 16px;
+  padding: 12px;
+  background: #f7fff9;
+}
+
+.temperature-field.deviation {
+  border-color: rgba(159, 29, 43, 0.22);
+  background: #fff8f9;
+}
+
+.temperature-input-row {
+  position: relative;
+  display: grid;
+}
+
+.temperature-input {
+  padding-right: 54px;
+  font-size: 1.35rem;
+  font-weight: 900;
+  text-align: left !important;
+}
+
+.temperature-unit {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  color: #657089;
+  font-weight: 900;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.temperature-meta-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  color: #657089;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.temperature-status {
+  border-radius: 999px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.temperature-status.good {
+  color: #0c6638;
+  background: #ddf8e7;
+}
+
+.temperature-status.bad {
+  color: #9f1d2b;
+  background: #ffe3e7;
+}
+
 .photo-capture-field {
   display: grid;
   gap: 8px;
@@ -199,6 +261,31 @@
     color: #f7f9ff;
   }
 
+  .temperature-field {
+    border-color: rgba(97, 217, 146, 0.28);
+    background: rgba(39, 128, 83, 0.14);
+  }
+
+  .temperature-field.deviation {
+    border-color: rgba(255, 119, 135, 0.34);
+    background: rgba(159, 29, 43, 0.18);
+  }
+
+  .temperature-unit,
+  .temperature-meta-row {
+    color: #aeb8d0;
+  }
+
+  .temperature-status.good {
+    color: #61d992;
+    background: rgba(39, 128, 83, 0.22);
+  }
+
+  .temperature-status.bad {
+    color: #ff9aa8;
+    background: rgba(159, 29, 43, 0.24);
+  }
+
   .deviation-box {
     border: 1px solid rgba(255, 119, 135, 0.36);
     color: #ff9aa8;
@@ -248,6 +335,10 @@
 
 @media (max-width: 420px) {
   .control-form-topbar {
+    display: grid;
+  }
+
+  .temperature-meta-row {
     display: grid;
   }
 }
