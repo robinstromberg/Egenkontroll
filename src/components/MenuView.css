@@ -51,3 +51,22 @@
   font-size: 1.6rem;
   line-height: 1;
 }
+
+@media (prefers-color-scheme: dark) {
+  .menu-list-item {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #f7f9ff;
+    background: #121a2e;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  }
+
+  .menu-list-icon {
+    color: #b9afff;
+    background: #211b45;
+  }
+
+  .menu-list-copy span,
+  .menu-list-chevron {
+    color: #aeb8d0;
+  }
+}
