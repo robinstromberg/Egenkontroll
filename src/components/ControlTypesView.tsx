@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AdminControls } from './AdminControls';
+import { ControlTypeDetailView } from './ControlTypeDetailView';
 import { ActionButton } from './ui/ActionButton';
 import { listControlTypes } from '../services/controlAdminService';
 import type { ControlCategory, ControlFrequency, ControlType } from '../types/database';
@@ -27,11 +28,11 @@ const frequencyLabels: Record<ControlFrequency, string> = {
   custom: 'Anpassad',
 };
 
-function ControlTypeRow({ controlType }: { controlType: ControlType }) {
+function ControlTypeRow({ controlType, onOpen }: { controlType: ControlType; onOpen: () => void }) {
   const meta = categoryMeta[controlType.category] ?? categoryMeta.custom;
 
   return (
-    <button className="control-type-row" type="button" aria-label={`Öppna ${controlType.name}`}>
+    <button className="control-type-row" type="button" aria-label={`Öppna ${controlType.name}`} onClick={onOpen}>
       <span className={`control-type-icon ${meta.className}`} aria-hidden="true">
         {meta.icon}
       </span>
@@ -48,9 +49,15 @@ function ControlTypeRow({ controlType }: { controlType: ControlType }) {
 
 export function ControlTypesView({ organizationId, userId, canManage }: ControlTypesViewProps) {
   const [controlTypes, setControlTypes] = useState<ControlType[]>([]);
+  const [selectedControlTypeId, setSelectedControlTypeId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [showAdminControls, setShowAdminControls] = useState(false);
+
+  async function refreshControlTypes() {
+    const nextTypes = await listControlTypes(organizationId);
+    setControlTypes(nextTypes);
+  }
 
   useEffect(() => {
     let active = true;
@@ -75,6 +82,24 @@ export function ControlTypesView({ organizationId, userId, canManage }: ControlT
     };
   }, [organizationId, showAdminControls]);
 
+  const selectedControlType = selectedControlTypeId
+    ? controlTypes.find((controlType) => controlType.id === selectedControlTypeId) ?? null
+    : null;
+
+  if (selectedControlType) {
+    return (
+      <ControlTypeDetailView
+        organizationId={organizationId}
+        controlType={selectedControlType}
+        canManage={canManage}
+        onBack={() => setSelectedControlTypeId(null)}
+        onChanged={async () => {
+          await refreshControlTypes();
+        }}
+      />
+    );
+  }
+
   if (showAdminControls) {
     return (
       <section className="control-types-view" aria-labelledby="control-types-title">
@@ -82,7 +107,7 @@ export function ControlTypesView({ organizationId, userId, canManage }: ControlT
           <ActionButton variant="secondary" type="button" onClick={() => setShowAdminControls(false)}>
             Tillbaka
           </ActionButton>
-          <h3 id="control-types-title">Hantera kontrolltyper</h3>
+          <h3 id="control-types-title">Lägg till kontrolltyp</h3>
         </div>
         <AdminControls organizationId={organizationId} userId={userId} />
       </section>
@@ -103,7 +128,11 @@ export function ControlTypesView({ organizationId, userId, canManage }: ControlT
       ) : controlTypes.length > 0 ? (
         <div className="control-type-list">
           {controlTypes.map((controlType) => (
-            <ControlTypeRow controlType={controlType} key={controlType.id} />
+            <ControlTypeRow
+              controlType={controlType}
+              key={controlType.id}
+              onOpen={() => setSelectedControlTypeId(controlType.id)}
+            />
           ))}
         </div>
       ) : (
