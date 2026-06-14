@@ -1,0 +1,178 @@
+.control-type-detail {
+  display: grid;
+  gap: 16px;
+}
+
+.control-type-detail-topbar {
+  display: grid;
+  gap: 12px;
+}
+
+.control-type-detail-topbar h3 {
+  margin-bottom: 0;
+}
+
+.control-type-detail-card,
+.control-point-section,
+.control-point-form,
+.control-point-card {
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 18px;
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+}
+
+.control-type-detail-card {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.control-type-detail-card div,
+.control-point-form label {
+  display: grid;
+  gap: 5px;
+}
+
+.control-type-detail-card span,
+.control-point-form label span {
+  color: #657089;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.control-type-detail-card strong {
+  color: #172033;
+  font-size: 0.9rem;
+}
+
+.control-point-section {
+  display: grid;
+  gap: 12px;
+  background: #fbfaff;
+}
+
+.control-point-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.control-point-heading h4,
+.control-point-card h4,
+.control-point-form h4 {
+  margin: 0;
+}
+
+.control-point-count {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: #0c6638;
+  background: #ddf8e7;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.control-point-list,
+.control-point-form {
+  display: grid;
+  gap: 10px;
+}
+
+.control-point-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.control-point-card.inactive {
+  opacity: 0.68;
+}
+
+.control-point-card p {
+  margin: 0;
+  color: #566078;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.control-point-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 14px;
+  color: #0c6638;
+  background: #ddf8e7;
+  font-weight: 900;
+}
+
+.control-point-action {
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 10px;
+  color: #5b46e1;
+  background: #efedff;
+  font-size: 0.76rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  .control-type-detail-card,
+  .control-point-section,
+  .control-point-form,
+  .control-point-card {
+    border-color: rgba(159, 145, 255, 0.18);
+    background: #121a2e;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .control-point-section {
+    background: #111a2f;
+  }
+
+  .control-type-detail-card strong,
+  .control-point-heading h4,
+  .control-point-card h4,
+  .control-point-form h4,
+  .control-point-form label span {
+    color: #f7f9ff;
+  }
+
+  .control-type-detail-card span,
+  .control-point-card p {
+    color: #aeb8d0;
+  }
+
+  .control-point-count,
+  .control-point-icon {
+    color: #61d992;
+    background: rgba(39, 128, 83, 0.22);
+  }
+
+  .control-point-action {
+    color: #b9afff;
+    background: #211b45;
+  }
+}
+
+@media (max-width: 420px) {
+  .control-type-detail-card {
+    grid-template-columns: 1fr;
+  }
+
+  .control-point-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .control-point-action {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
