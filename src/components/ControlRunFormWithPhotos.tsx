@@ -44,6 +44,13 @@ type TemperatureFieldProps = {
   onChange: (value: string) => void;
 };
 
+type ChecklistMatrixProps = {
+  field: ControlFieldDefinition;
+  objects: ControlObject[];
+  responses: ResponseState;
+  onChange: (key: string, value: string) => void;
+};
+
 function responseKey(objectId: string | null, fieldId: string): string {
   return `${objectId ?? 'global'}:${fieldId}`;
 }
@@ -163,6 +170,44 @@ function TemperatureField({ id, label, object, value, required, reason, onChange
   );
 }
 
+function ChecklistMatrix({ field, objects, responses, onChange }: ChecklistMatrixProps) {
+  return (
+    <section className="check-matrix" aria-labelledby={`matrix-${field.id}`}>
+      <div className="check-matrix-header">
+        <strong id={`matrix-${field.id}`}>{field.label}</strong>
+        <span>OK</span>
+        <span>Ej OK</span>
+      </div>
+
+      {objects.map((object) => {
+        const key = responseKey(object.id, field.id);
+        const value = responses[key] ?? 'ok';
+        return (
+          <div className="check-matrix-row" key={object.id}>
+            <span className="check-matrix-name">{object.name}</span>
+            <button
+              type="button"
+              className={value === 'ok' ? 'matrix-choice ok selected' : 'matrix-choice ok'}
+              aria-pressed={value === 'ok'}
+              onClick={() => onChange(key, 'ok')}
+            >
+              ✓
+            </button>
+            <button
+              type="button"
+              className={value === 'not_ok' ? 'matrix-choice not-ok selected' : 'matrix-choice not-ok'}
+              aria-pressed={value === 'not_ok'}
+              onClick={() => onChange(key, 'not_ok')}
+            >
+              ×
+            </button>
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
 export function ControlRunFormWithPhotos({
   organizationId,
   controlTypeId,
@@ -277,6 +322,8 @@ export function ControlRunFormWithPhotos({
   if (!definition) return <p className="form-message error-message">Kontrollen kunde inte visas.</p>;
 
   const objects = definition.objects.length ? definition.objects : [null];
+  const matrixObjects = definition.objects;
+  const matrixField = matrixObjects.length > 1 ? definition.fields.find((field) => field.field_type === 'ok_not_ok') : undefined;
 
   return (
     <form className="control-form" onSubmit={handleSubmit}>
@@ -295,97 +342,113 @@ export function ControlRunFormWithPhotos({
 
       {message ? <p className="form-message error-message">{message}</p> : null}
 
-      {objects.map((object) => (
-        <section className="control-group" key={object?.id ?? 'global'}>
-          <div>
-            <h4>{object?.name ?? definition.controlType.name}</h4>
-            {object?.location ? <p className="muted-copy">{object.location}</p> : null}
-          </div>
+      {matrixField ? (
+        <ChecklistMatrix
+          field={matrixField}
+          objects={matrixObjects}
+          responses={responses}
+          onChange={updateResponse}
+        />
+      ) : null}
 
-          {definition.fields.map((field) => {
-            const key = responseKey(object?.id ?? null, field.id);
-            const value = responses[key] ?? '';
-            const reason = getDeviationReason(field, object, value);
+      {objects.map((object) => {
+        const visibleFields = matrixField
+          ? definition.fields.filter((field) => field.id !== matrixField.id)
+          : definition.fields;
+        if (visibleFields.length === 0) return null;
 
-            return (
-              <div className="control-field" key={key}>
-                {field.field_type === 'photo' ? (
-                  <PhotoCaptureField
-                    id={key}
-                    label={field.label}
-                    file={files[key] ?? null}
-                    required={field.required}
-                    onChange={(nextFile) => updateFile(key, nextFile)}
-                  />
-                ) : field.field_type === 'temperature' ? (
-                  <TemperatureField
-                    id={key}
-                    label={field.label}
-                    object={object}
-                    value={value}
-                    required={field.required}
-                    reason={reason}
-                    onChange={(nextValue) => updateResponse(key, nextValue)}
-                  />
-                ) : field.field_type === 'ok_not_ok' ? (
-                  <SegmentedChoice
-                    id={key}
-                    label={field.label}
-                    value={value}
-                    onChange={(nextValue) => updateResponse(key, nextValue)}
-                    options={[
-                      { label: 'OK', tone: 'good', value: 'ok' },
-                      { label: 'Ej OK', tone: 'bad', value: 'not_ok' },
-                    ]}
-                  />
-                ) : field.field_type === 'boolean' ? (
-                  <SegmentedChoice
-                    id={key}
-                    label={field.label}
-                    value={value}
-                    onChange={(nextValue) => updateResponse(key, nextValue)}
-                    options={[
-                      { label: 'Ja', tone: 'good', value: 'true' },
-                      { label: 'Nej', tone: 'bad', value: 'false' },
-                    ]}
-                  />
-                ) : field.field_type === 'textarea' ? (
-                  <>
-                    <label htmlFor={key}>{field.label}</label>
-                    <textarea className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)} />
-                  </>
-                ) : (
-                  <>
-                    <label htmlFor={key}>{field.label}</label>
-                    <input
-                      className="text-input"
+        return (
+          <section className="control-group" key={object?.id ?? 'global'}>
+            <div>
+              <h4>{object?.name ?? definition.controlType.name}</h4>
+              {object?.location ? <p className="muted-copy">{object.location}</p> : null}
+            </div>
+
+            {visibleFields.map((field) => {
+              const key = responseKey(object?.id ?? null, field.id);
+              const value = responses[key] ?? '';
+              const reason = getDeviationReason(field, object, value);
+
+              return (
+                <div className="control-field" key={key}>
+                  {field.field_type === 'photo' ? (
+                    <PhotoCaptureField
                       id={key}
-                      type={getFieldInputType(field)}
-                      value={value}
-                      onChange={(event) => updateResponse(key, event.target.value)}
+                      label={field.label}
+                      file={files[key] ?? null}
                       required={field.required}
+                      onChange={(nextFile) => updateFile(key, nextFile)}
                     />
-                  </>
-                )}
+                  ) : field.field_type === 'temperature' ? (
+                    <TemperatureField
+                      id={key}
+                      label={field.label}
+                      object={object}
+                      value={value}
+                      required={field.required}
+                      reason={reason}
+                      onChange={(nextValue) => updateResponse(key, nextValue)}
+                    />
+                  ) : field.field_type === 'ok_not_ok' ? (
+                    <SegmentedChoice
+                      id={key}
+                      label={field.label}
+                      value={value}
+                      onChange={(nextValue) => updateResponse(key, nextValue)}
+                      options={[
+                        { label: 'OK', tone: 'good', value: 'ok' },
+                        { label: 'Ej OK', tone: 'bad', value: 'not_ok' },
+                      ]}
+                    />
+                  ) : field.field_type === 'boolean' ? (
+                    <SegmentedChoice
+                      id={key}
+                      label={field.label}
+                      value={value}
+                      onChange={(nextValue) => updateResponse(key, nextValue)}
+                      options={[
+                        { label: 'Ja', tone: 'good', value: 'true' },
+                        { label: 'Nej', tone: 'bad', value: 'false' },
+                      ]}
+                    />
+                  ) : field.field_type === 'textarea' ? (
+                    <>
+                      <label htmlFor={key}>{field.label}</label>
+                      <textarea className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)} />
+                    </>
+                  ) : (
+                    <>
+                      <label htmlFor={key}>{field.label}</label>
+                      <input
+                        className="text-input"
+                        id={key}
+                        type={getFieldInputType(field)}
+                        value={value}
+                        onChange={(event) => updateResponse(key, event.target.value)}
+                        required={field.required}
+                      />
+                    </>
+                  )}
 
-                {reason ? (
-                  <div className="deviation-box">
-                    <strong>Avvikelse: {reason}</strong>
-                    <label className="action-label" htmlFor={`${key}:action`}>Åtgärd</label>
-                    <textarea
-                      className="text-input"
-                      id={`${key}:action`}
-                      value={actions[key] ?? ''}
-                      onChange={(event) => updateAction(key, event.target.value)}
-                      required
-                    />
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </section>
-      ))}
+                  {reason ? (
+                    <div className="deviation-box">
+                      <strong>Avvikelse: {reason}</strong>
+                      <label className="action-label" htmlFor={`${key}:action`}>Åtgärd</label>
+                      <textarea
+                        className="text-input"
+                        id={`${key}:action`}
+                        value={actions[key] ?? ''}
+                        onChange={(event) => updateAction(key, event.target.value)}
+                        required
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </section>
+        );
+      })}
 
       {missingAction ? (
         <p className="form-message error-message">Alla avvikelser måste ha en åtgärdstext innan kontrollen kan sparas.</p>
