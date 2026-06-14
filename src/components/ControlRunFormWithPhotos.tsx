@@ -26,6 +26,14 @@ type ResponseState = Record<string, string>;
 type DeviationState = Record<string, string>;
 type FileState = Record<string, File | null>;
 
+type PhotoCaptureFieldProps = {
+  id: string;
+  label: string;
+  file: File | null;
+  required: boolean;
+  onChange: (file: File | null) => void;
+};
+
 function responseKey(objectId: string | null, fieldId: string): string {
   return `${objectId ?? 'global'}:${fieldId}`;
 }
@@ -58,6 +66,52 @@ function getDefaultValue(field: ControlFieldDefinition): string {
   if (field.field_type === 'ok_not_ok') return 'ok';
   if (field.field_type === 'boolean') return 'true';
   return '';
+}
+
+function PhotoCaptureField({ id, label, file, required, onChange }: PhotoCaptureFieldProps) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return undefined;
+    }
+
+    const nextUrl = URL.createObjectURL(file);
+    setPreviewUrl(nextUrl);
+    return () => URL.revokeObjectURL(nextUrl);
+  }, [file]);
+
+  return (
+    <div className="photo-capture-field">
+      <label htmlFor={id}>{label}</label>
+      <div className="photo-capture-row">
+        <div className="photo-thumbnail-strip" aria-live="polite">
+          {previewUrl ? (
+            <img className="photo-thumbnail" src={previewUrl} alt="Vald bild" />
+          ) : (
+            <span className="photo-empty-slot">Ingen bild vald</span>
+          )}
+        </div>
+
+        <label className="photo-camera-button" htmlFor={id} aria-label="Ta eller välj bild">
+          <span aria-hidden="true">▣</span>
+        </label>
+      </div>
+
+      <input
+        accept="image/*"
+        capture="environment"
+        className="photo-file-input"
+        id={id}
+        onChange={(event) => onChange(event.target.files?.[0] ?? null)}
+        type="file"
+        required={required}
+      />
+
+      {file ? <p className="photo-file-name">{file.name}</p> : null}
+    </div>
+  );
 }
 
 export function ControlRunFormWithPhotos({
@@ -207,18 +261,13 @@ export function ControlRunFormWithPhotos({
             return (
               <div className="control-field" key={key}>
                 {field.field_type === 'photo' ? (
-                  <>
-                    <label htmlFor={key}>{field.label}</label>
-                    <input
-                      accept="image/*"
-                      capture="environment"
-                      className="text-input"
-                      id={key}
-                      onChange={(event) => updateFile(key, event.target.files?.[0] ?? null)}
-                      type="file"
-                      required={field.required}
-                    />
-                  </>
+                  <PhotoCaptureField
+                    id={key}
+                    label={field.label}
+                    file={files[key] ?? null}
+                    required={field.required}
+                    onChange={(nextFile) => updateFile(key, nextFile)}
+                  />
                 ) : field.field_type === 'ok_not_ok' ? (
                   <SegmentedChoice
                     id={key}
@@ -259,8 +308,6 @@ export function ControlRunFormWithPhotos({
                     />
                   </>
                 )}
-
-                {files[key] ? <p className="muted-copy">Vald bild: {files[key]?.name}</p> : null}
 
                 {reason ? (
                   <div className="deviation-box">
