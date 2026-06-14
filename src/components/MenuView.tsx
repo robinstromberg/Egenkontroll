@@ -1,5 +1,6 @@
 import { ActionButton } from './ui/ActionButton';
 import type { OrganizationContext } from '../services/organizationService';
+import './MenuView.css';
 
 export type MenuViewProps = {
   context: OrganizationContext;
