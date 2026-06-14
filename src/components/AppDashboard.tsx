@@ -4,9 +4,9 @@ import type { AppView } from './AppBottomNav';
 import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
 import { ControlTypesView } from './ControlTypesView';
 import { HistoryView } from './HistoryView';
+import { MenuView } from './MenuView';
 import { SharingView } from './SharingView';
 import { TodayDashboard } from './TodayDashboard';
-import { ActionButton } from './ui/ActionButton';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
 
@@ -87,26 +87,13 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
 
     if (activeView === 'menu') {
       return (
-        <section className="menu-view" aria-labelledby="menu-title">
-          <div className="menu-card">
-            <p className="eyebrow">Meny</p>
-            <h3 id="menu-title">{context.organization.name}</h3>
-            <p className="muted-copy">
-              {user.email} · {roleLabels[context.membership.role]}
-            </p>
-          </div>
-          <div className="role-panel">
-            <h3>Roll och åtkomst</h3>
-            <p>
-              {canManage
-                ? 'Du kan hantera verksamhetens struktur, användare och delningslänkar.'
-                : 'Du kan utföra kontroller och se relevant historik för verksamheten.'}
-            </p>
-          </div>
-          <ActionButton variant="secondary" type="button" onClick={onSignOut}>
-            Logga ut
-          </ActionButton>
-        </section>
+        <MenuView
+          context={context}
+          userEmail={user.email}
+          roleLabel={roleLabels[context.membership.role]}
+          canManage={canManage}
+          onSignOut={onSignOut}
+        />
       );
     }
 
