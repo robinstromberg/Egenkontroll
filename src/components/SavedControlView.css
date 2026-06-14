@@ -107,6 +107,33 @@
   line-height: 1;
 }
 
+@media (prefers-color-scheme: dark) {
+  .saved-control-copy h3,
+  .saved-summary-card strong {
+    color: #f7f9ff;
+  }
+
+  .saved-control-copy p,
+  .saved-summary-card span {
+    color: #aeb8d0;
+  }
+
+  .saved-summary-card {
+    border-color: rgba(159, 145, 255, 0.18);
+    background: #121a2e;
+  }
+
+  .saved-history-button {
+    color: #b9afff;
+    background: #211b45;
+  }
+
+  .saved-success-mark {
+    background: #16b86a;
+    box-shadow: 0 14px 28px rgba(22, 184, 106, 0.22);
+  }
+}
+
 @keyframes saved-pop {
   from {
     opacity: 0;
