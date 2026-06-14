@@ -5,6 +5,8 @@ import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
 import { ControlTypesView } from './ControlTypesView';
 import { HistoryView } from './HistoryView';
 import { MenuView } from './MenuView';
+import { SavedControlView } from './SavedControlView';
+import type { SavedControlSummary } from './SavedControlView';
 import { SharingView } from './SharingView';
 import { TodayDashboard } from './TodayDashboard';
 import type { OrganizationContext } from '../services/organizationService';
@@ -24,24 +26,34 @@ const roleLabels = {
   staff: 'Personal',
 };
 
+function getDisplayName(user: User): string {
+  const metadataName = user.user_metadata?.full_name || user.user_metadata?.name;
+  if (typeof metadataName === 'string' && metadataName.trim()) return metadataName.trim();
+  return user.email ?? 'Inloggad användare';
+}
+
 export function AppDashboard({ activeView, user, context, onChangeView, onSignOut }: AppDashboardProps) {
   const canManage = canManageOrganization(context.membership.role);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
+  const [savedSummary, setSavedSummary] = useState<SavedControlSummary | null>(null);
   const [dashboardKey, setDashboardKey] = useState(0);
 
   useEffect(() => {
     if (activeView !== 'today') {
       setActiveControlTypeId(null);
+      setSavedSummary(null);
     }
   }, [activeView]);
 
-  async function handleControlSaved() {
+  async function handleControlSaved(summary: SavedControlSummary) {
     setActiveControlTypeId(null);
+    setSavedSummary(summary);
     setDashboardKey((current) => current + 1);
     onChangeView('today');
   }
 
   function handleStartControl(controlTypeId: string) {
+    setSavedSummary(null);
     setActiveControlTypeId(controlTypeId);
     onChangeView('today');
   }
@@ -53,8 +65,22 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
           controlTypeId={activeControlTypeId}
           organizationId={context.organization.id}
           userId={user.id}
+          performedBy={getDisplayName(user)}
           onCancel={() => setActiveControlTypeId(null)}
           onSaved={handleControlSaved}
+        />
+      );
+    }
+
+    if (savedSummary) {
+      return (
+        <SavedControlView
+          summary={savedSummary}
+          onDone={() => setSavedSummary(null)}
+          onShowHistory={() => {
+            setSavedSummary(null);
+            onChangeView('history');
+          }}
         />
       );
     }
