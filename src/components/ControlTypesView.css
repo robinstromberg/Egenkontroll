@@ -112,3 +112,42 @@
   padding: 20px;
   background: #ffffff;
 }
+
+@media (prefers-color-scheme: dark) {
+  .control-type-row,
+  .empty-view-card {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #f7f9ff;
+    background: #121a2e;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  }
+
+  .control-type-copy span,
+  .control-type-chevron {
+    color: #aeb8d0;
+  }
+
+  .control-type-icon.temperature {
+    color: #61d992;
+    background: rgba(39, 128, 83, 0.2);
+  }
+
+  .control-type-icon.checklist {
+    color: #8db0ff;
+    background: rgba(47, 99, 215, 0.18);
+  }
+
+  .control-type-icon.receiving,
+  .control-type-icon.traceability,
+  .control-type-icon.round,
+  .control-type-icon.custom {
+    color: #b9afff;
+    background: #211b45;
+  }
+
+  .add-control-type-button {
+    border-color: rgba(185, 175, 255, 0.5);
+    color: #b9afff;
+    background: #171335;
+  }
+}
