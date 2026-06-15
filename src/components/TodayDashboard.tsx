@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { listOpenDeviations, listTodayControls } from '../services/dashboardService';
 import { resolveDeviation } from '../services/deviationService';
+import { getControlTypeVisual } from '../utils/controlTypeVisuals';
 import type { OpenDeviationSummary, TodayControl } from '../services/dashboardService';
 import './TodayDashboard.css';
 
@@ -36,26 +37,6 @@ function getStatusClass(status: TodayControl['status']): string {
   if (status === 'done') return 'status-pill done';
   if (status === 'done_with_deviation') return 'status-pill warning';
   return 'status-pill pending';
-}
-
-function getCategoryMeta(category: string) {
-  const normalized = category.toLowerCase();
-  if (normalized.includes('temperatur') || normalized.includes('temperature')) {
-    return { className: 'temperature', label: '°C', name: 'Temperatur' };
-  }
-  if (normalized.includes('städ') || normalized.includes('stad') || normalized.includes('checklist')) {
-    return { className: 'checklist', label: '✓', name: 'Checklista' };
-  }
-  if (normalized.includes('mottag') || normalized.includes('receiving')) {
-    return { className: 'receiving', label: 'IN', name: 'Mottagning' };
-  }
-  if (normalized.includes('spår') || normalized.includes('spar') || normalized.includes('traceability')) {
-    return { className: 'traceability', label: 'SP', name: 'Spårbarhet' };
-  }
-  if (normalized.includes('runda') || normalized.includes('round')) {
-    return { className: 'round', label: 'R', name: 'Rond' };
-  }
-  return { className: 'custom', label: 'C', name: category };
 }
 
 export function TodayDashboard({ organizationId, userId, onStartControl }: TodayDashboardProps) {
@@ -149,7 +130,7 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
         ) : null}
 
         {controls.map((control) => {
-          const categoryMeta = getCategoryMeta(control.controlType.category);
+          const visual = getControlTypeVisual(control.controlType);
           return (
             <button
               className={`today-control-row ${control.status}`}
@@ -157,12 +138,12 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
               onClick={() => onStartControl(control.controlType.id)}
               type="button"
             >
-              <span className={`control-type-icon ${categoryMeta.className}`} aria-hidden="true">
-                {categoryMeta.label}
+              <span className={`control-type-icon ${visual.className}${visual.imageSrc ? ' has-image' : ''}`} aria-hidden="true">
+                {visual.imageSrc ? <img src={visual.imageSrc} alt="" /> : visual.icon}
               </span>
               <span className="today-control-copy">
                 <strong>{control.controlType.name}</strong>
-                <span>{categoryMeta.name}</span>
+                <span>{visual.label}</span>
               </span>
               <span className={getStatusClass(control.status)}>{getStatusText(control.status)}</span>
               <span className="row-chevron" aria-hidden="true">›</span>
