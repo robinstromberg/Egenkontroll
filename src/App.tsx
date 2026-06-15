@@ -12,16 +12,38 @@ import { ensureProfile, listOrganizationContexts } from './services/organization
 import type { OrganizationContext } from './services/organizationService';
 import { supabase } from './lib/supabaseClient';
 
+const appViews: AppView[] = ['today', 'history', 'add', 'sharing', 'menu'];
+
+function isAppView(value: string | null): value is AppView {
+  return Boolean(value && appViews.includes(value as AppView));
+}
+
+function readHashParams(): URLSearchParams {
+  const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+  return new URLSearchParams(hash);
+}
+
 function readInspectorKey(): string | null {
-  const marker = '#inspector=';
-  if (!window.location.hash.startsWith(marker)) return null;
-  return window.location.hash.slice(marker.length);
+  const params = readHashParams();
+  return params.get('inspector');
+}
+
+function readActiveView(): AppView {
+  const params = readHashParams();
+  const view = params.get('view');
+  return isAppView(view) ? view : 'today';
+}
+
+function writeActiveView(view: AppView) {
+  const nextHash = view === 'today' ? '' : `#view=${view}`;
+  const nextUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
+  window.history.replaceState(null, '', nextUrl);
 }
 
 function App() {
   const inspectorKey = readInspectorKey();
   const [session, setSession] = useState<Session | null>(null);
-  const [activeView, setActiveView] = useState<AppView>('today');
+  const [activeView, setActiveView] = useState<AppView>(() => readActiveView());
   const [organizationContexts, setOrganizationContexts] = useState<OrganizationContext[]>([]);
   const [passwordRecovery, setPasswordRecovery] = useState(
     () => window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery'),
@@ -76,12 +98,31 @@ function App() {
     return () => data.subscription.unsubscribe();
   }, [inspectorKey, loadOrganizationContext, loadSession]);
 
+  useEffect(() => {
+    if (inspectorKey) return;
+
+    function handleHashChange() {
+      const nextInspectorKey = readInspectorKey();
+      if (nextInspectorKey) return;
+      setActiveView(readActiveView());
+    }
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [inspectorKey]);
+
+  useEffect(() => {
+    if (inspectorKey || !session?.user || passwordRecovery) return;
+    writeActiveView(activeView);
+  }, [activeView, inspectorKey, passwordRecovery, session?.user]);
+
   async function handleSignOut() {
     await signOut();
     setSession(null);
     setOrganizationContexts([]);
     setActiveView('today');
     setPasswordRecovery(false);
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
   }
 
   if (inspectorKey) {
