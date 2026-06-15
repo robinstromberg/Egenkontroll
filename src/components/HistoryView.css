@@ -1,11 +1,25 @@
 .history-view {
   display: grid;
-  gap: 14px;
+  width: min(100%, 560px);
+  margin: 0 auto;
+  gap: 16px;
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }
 
 .history-filters {
   display: grid;
-  gap: 8px;
+  gap: 10px;
+}
+
+.history-filter-field {
+  display: grid;
+  gap: 6px;
+}
+
+.history-filter-field span {
+  color: #28334d;
+  font-size: 0.8rem;
+  font-weight: 900;
 }
 
 .report-actions {
@@ -18,7 +32,7 @@
 .history-detail,
 .history-detail-list {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .history-row {
@@ -27,22 +41,22 @@
   gap: 10px;
   align-items: center;
   width: 100%;
-  min-height: 58px;
-  border: 1px solid rgba(91, 70, 225, 0.1);
-  border-radius: 14px;
-  padding: 10px;
-  color: inherit;
+  min-height: 64px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 12px;
+  color: #172033;
   background: #ffffff;
-  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.06);
   text-align: left;
 }
 
 .history-icon {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   place-items: center;
-  border-radius: 12px;
+  border-radius: 14px;
   color: #5b46e1;
   background: #efedff;
   font-weight: 900;
@@ -51,13 +65,13 @@
 .history-copy {
   display: grid;
   min-width: 0;
-  gap: 3px;
+  gap: 4px;
 }
 
 .history-copy strong {
   overflow: hidden;
   color: #11172c;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -65,21 +79,77 @@
 
 .history-copy span {
   overflow: hidden;
-  color: #657089;
-  font-size: 0.78rem;
-  line-height: 1.2;
+  color: #4f5b73;
+  font-size: 0.8rem;
+  line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.status-pill {
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.status-pill.done {
+  color: #0f5c35;
+  background: #dff8e8;
+}
+
+.status-pill.warning {
+  color: #8a1f1f;
+  background: #ffe1e1;
+}
+
+.row-chevron {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  color: #6f7590;
+  background: #f2f4fa;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.history-detail {
+  border-radius: 22px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
 .history-detail-card {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   border: 1px solid rgba(91, 70, 225, 0.1);
   border-radius: 16px;
-  padding: 14px;
+  padding: 12px;
+  color: #172033;
   background: #ffffff;
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+}
+
+.history-detail-card strong {
+  color: #11172c;
+  font-size: 0.88rem;
+  line-height: 1.25;
+}
+
+.history-detail-card p {
+  margin: 0;
+  color: #28334d;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.history-detail-card .muted-copy {
+  color: #566078;
+  font-weight: 600;
 }
 
 .history-row-header {
@@ -87,4 +157,94 @@
   gap: 10px;
   align-items: flex-start;
   justify-content: space-between;
+}
+
+.history-row-header h4 {
+  margin: 0;
+  color: #11172c;
+}
+
+@media (prefers-color-scheme: dark) {
+  .history-filter-field span {
+    color: #f7f9ff;
+  }
+
+  .history-filter-field .text-input {
+    color: #f7f9ff;
+    background: #111a2f;
+    border-color: rgba(159, 145, 255, 0.28);
+  }
+
+  .history-row {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #f7f9ff;
+    background: #121a2e;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .history-copy strong {
+    color: #f7f9ff;
+  }
+
+  .history-copy span {
+    color: #b8c2d8;
+  }
+
+  .history-icon {
+    color: #c7bfff;
+    background: #211b45;
+  }
+
+  .row-chevron {
+    color: #c6ccda;
+    background: #1d2740;
+  }
+
+  .status-pill.done {
+    color: #62dc94;
+    background: rgba(33, 130, 76, 0.24);
+  }
+
+  .status-pill.warning {
+    color: #ff9f9f;
+    background: rgba(176, 56, 56, 0.24);
+  }
+
+  .history-detail {
+    background: rgba(10, 17, 31, 0.78);
+  }
+
+  .history-detail-card {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #f7f9ff;
+    background: #121a2e;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .history-detail-card strong,
+  .history-row-header h4 {
+    color: #f7f9ff;
+  }
+
+  .history-detail-card p {
+    color: #e6ebf7;
+  }
+
+  .history-detail-card .muted-copy {
+    color: #b8c2d8;
+  }
+}
+
+@media (max-width: 420px) {
+  .history-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .row-chevron {
+    display: none;
+  }
+
+  .status-pill {
+    padding-inline: 8px;
+  }
 }
