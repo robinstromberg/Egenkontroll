@@ -3,22 +3,14 @@ import { AdminControls } from './AdminControls';
 import { ControlTypeDetailView } from './ControlTypeDetailView';
 import { ActionButton } from './ui/ActionButton';
 import { listControlTypes } from '../services/controlAdminService';
-import type { ControlCategory, ControlFrequency, ControlType } from '../types/database';
+import { getControlTypeVisual } from '../utils/controlTypeVisuals';
+import type { ControlFrequency, ControlType } from '../types/database';
 import './ControlTypesView.css';
 
 type ControlTypesViewProps = {
   organizationId: string;
   userId: string;
   canManage: boolean;
-};
-
-const categoryMeta: Record<ControlCategory, { icon: string; label: string; className: string }> = {
-  temperature: { icon: '♨', label: 'Temperatur', className: 'temperature' },
-  checklist: { icon: '✓', label: 'Checklista', className: 'checklist' },
-  receiving: { icon: '□', label: 'Varumottagning', className: 'receiving' },
-  traceability: { icon: '∞', label: 'Spårbarhet', className: 'traceability' },
-  round: { icon: '○', label: 'Runda', className: 'round' },
-  custom: { icon: '+', label: 'Egen', className: 'custom' },
 };
 
 const frequencyLabels: Record<ControlFrequency, string> = {
@@ -29,16 +21,16 @@ const frequencyLabels: Record<ControlFrequency, string> = {
 };
 
 function ControlTypeRow({ controlType, onOpen }: { controlType: ControlType; onOpen: () => void }) {
-  const meta = categoryMeta[controlType.category] ?? categoryMeta.custom;
+  const visual = getControlTypeVisual(controlType);
 
   return (
     <button className="control-type-row" type="button" aria-label={`Öppna ${controlType.name}`} onClick={onOpen}>
-      <span className={`control-type-icon ${meta.className}`} aria-hidden="true">
-        {meta.icon}
+      <span className={`control-type-icon ${visual.className}${visual.imageSrc ? ' has-image' : ''}`} aria-hidden="true">
+        {visual.imageSrc ? <img src={visual.imageSrc} alt="" /> : visual.icon}
       </span>
       <span className="control-type-copy">
         <strong>{controlType.name}</strong>
-        <span>{frequencyLabels[controlType.frequency] ?? meta.label}</span>
+        <span>{frequencyLabels[controlType.frequency] ?? visual.label}</span>
       </span>
       <span className="control-type-chevron" aria-hidden="true">
         ›
