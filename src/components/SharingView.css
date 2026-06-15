@@ -1,37 +1,87 @@
 .sharing-view {
   display: grid;
-  gap: 14px;
+  width: min(100%, 560px);
+  margin: 0 auto;
+  gap: 16px;
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }
 
 .sharing-form,
 .share-list,
 .share-result {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .sharing-form {
   border: 1px solid rgba(91, 70, 225, 0.1);
-  border-radius: 16px;
-  padding: 14px;
+  border-radius: 18px;
+  padding: 16px;
+  color: #172033;
   background: #ffffff;
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+}
+
+.sharing-form label {
+  display: grid;
+  gap: 6px;
+  color: #28334d;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.sharing-form .text-input {
+  color: #172033;
+  background: #f8f9fd;
+  border-color: rgba(91, 70, 225, 0.14);
+}
+
+.share-list h4 {
+  margin: 0;
 }
 
 .share-row {
   display: grid;
   gap: 8px;
   border: 1px solid rgba(91, 70, 225, 0.1);
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 14px;
+  color: #172033;
   background: #ffffff;
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+}
+
+.share-row p {
+  margin: 0;
+  color: #4f5b73;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  font-weight: 650;
+}
+
+.share-status {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.share-status.active {
+  color: #0f5c35;
+  background: #dff8e8;
+}
+
+.share-status.inactive {
+  color: #5c6478;
+  background: #eef1f8;
 }
 
 .share-link-box {
   word-break: break-all;
   border-radius: 16px;
   padding: 12px;
+  color: #172033;
   background: #f4f1ff;
 }
 
@@ -64,8 +114,54 @@
   border: 1px solid rgba(91, 70, 225, 0.14);
   border-radius: 24px;
   padding: 20px;
+  color: #172033;
   background: #ffffff;
   box-shadow: 0 24px 70px rgba(23, 32, 51, 0.24);
+}
+
+@media (prefers-color-scheme: dark) {
+  .sharing-form,
+  .share-row,
+  .share-modal {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #f7f9ff;
+    background: #121a2e;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .sharing-form label,
+  .share-list h4 {
+    color: #f7f9ff;
+  }
+
+  .sharing-form .text-input {
+    color: #f7f9ff;
+    background: #111a2f;
+    border-color: rgba(159, 145, 255, 0.28);
+  }
+
+  .share-row p {
+    color: #b8c2d8;
+  }
+
+  .share-status.active {
+    color: #62dc94;
+    background: rgba(33, 130, 76, 0.24);
+  }
+
+  .share-status.inactive {
+    color: #c6ccda;
+    background: #1d2740;
+  }
+
+  .share-link-box {
+    color: #f7f9ff;
+    background: #1d2740;
+  }
+
+  .share-modal .muted-copy {
+    color: #b8c2d8;
+  }
 }
 
 @media (min-width: 820px) {
