@@ -26,6 +26,13 @@ function formatAccessUrl(value: string): string {
   return window.location.origin + '/' + String.fromCharCode(35) + 'inspector=' + key;
 }
 
+function getShareStatusText(status: string): string {
+  if (status === 'active') return 'Aktiv';
+  if (status === 'expired') return 'Utgången';
+  if (status === 'revoked') return 'Stoppad';
+  return status;
+}
+
 export function SharingView({ organizationId, userId }: SharingViewProps) {
   const [periodStart, setPeriodStart] = useState(today());
   const [periodEnd, setPeriodEnd] = useState(today());
@@ -134,9 +141,11 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
         <h4>Senaste delningar</h4>
         {links.map((link) => (
           <article className="share-row" key={link.id}>
-            <strong>{link.status}</strong>
-            <p className="muted-copy">Period: {link.period_start} – {link.period_end}</p>
-            <p className="muted-copy">Giltig till: {new Date(link.valid_until).toLocaleDateString('sv-SE')}</p>
+            <strong className={link.status === 'active' ? 'share-status active' : 'share-status inactive'}>
+              {getShareStatusText(link.status)}
+            </strong>
+            <p>Period: {link.period_start} – {link.period_end}</p>
+            <p>Giltig till: {new Date(link.valid_until).toLocaleDateString('sv-SE')}</p>
           </article>
         ))}
       </div>
