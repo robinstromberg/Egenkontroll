@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Spårbarhet">
+  <defs>
+    <linearGradient id="g" x1="36" y1="42" x2="220" y2="214" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8b67ff"/>
+      <stop offset="1" stop-color="#5a3de8"/>
+    </linearGradient>
+    <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <path fill="none" stroke="url(#g)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" filter="url(#s)" d="M52 170h88c22 0 40-18 40-40V62h33v117c0 19-15 34-34 34H52v-43Z"/>
+  <path fill="none" stroke="url(#g)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M180 62h33l-16-28h-34l-16 28h33Z"/>
+  <path fill="none" stroke="url(#g)" stroke-width="14" stroke-linecap="round" d="M48 155h92M50 197h92"/>
+  <path fill="none" stroke="url(#g)" stroke-width="9" stroke-linecap="round" d="M69 170v28M92 170v28M115 170v28"/>
+  <circle cx="172" cy="121" r="12" fill="none" stroke="url(#g)" stroke-width="12"/>
+</svg>
