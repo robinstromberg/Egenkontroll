@@ -155,13 +155,25 @@
 
 .control-type-icon {
   display: grid;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  overflow: hidden;
   place-items: center;
   border-radius: 12px;
   font-size: 0.76rem;
   font-weight: 900;
+}
+
+.control-type-icon.has-image {
+  background: transparent !important;
+}
+
+.control-type-icon img {
+  display: block;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
 }
 
 .control-type-icon.temperature {
@@ -169,11 +181,14 @@
   background: #ddf8e7;
 }
 
-.control-type-icon.checklist {
+.control-type-icon.checklist,
+.control-type-icon.datummarkning,
+.control-type-icon.stadning {
   color: #1c4fb7;
   background: #e5efff;
 }
 
+.control-type-icon.servering,
 .control-type-icon.receiving {
   color: #986300;
   background: #fff1cc;
@@ -307,16 +322,15 @@
     background: rgba(39, 128, 83, 0.2);
   }
 
-  .control-type-icon.checklist {
+  .control-type-icon.checklist,
+  .control-type-icon.datummarkning,
+  .control-type-icon.stadning {
     color: #8db0ff;
     background: rgba(47, 99, 215, 0.18);
   }
 
-  .control-type-icon.receiving {
-    color: #ffd27a;
-    background: rgba(152, 99, 0, 0.2);
-  }
-
+  .control-type-icon.servering,
+  .control-type-icon.receiving,
   .control-type-icon.traceability,
   .control-type-icon.round,
   .control-type-icon.custom {
