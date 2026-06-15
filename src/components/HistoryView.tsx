@@ -105,27 +105,36 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
       </div>
 
       <div className="history-filters">
-        <input
-          className="text-input"
-          type="date"
-          value={filters.fromDate ?? ''}
-          onChange={(event) => updateFilters({ ...filters, fromDate: event.target.value || undefined })}
-        />
-        <input
-          className="text-input"
-          type="date"
-          value={filters.toDate ?? ''}
-          onChange={(event) => updateFilters({ ...filters, toDate: event.target.value || undefined })}
-        />
-        <select
-          className="text-input"
-          value={filters.status ?? ''}
-          onChange={(event) => updateFilters({ ...filters, status: event.target.value || undefined })}
-        >
-          <option value="">Alla statusar</option>
-          <option value="completed">Klar</option>
-          <option value="completed_with_deviation">Klar med avvikelse</option>
-        </select>
+        <label className="history-filter-field">
+          <span>Från datum</span>
+          <input
+            className="text-input"
+            type="date"
+            value={filters.fromDate ?? ''}
+            onChange={(event) => updateFilters({ ...filters, fromDate: event.target.value || undefined })}
+          />
+        </label>
+        <label className="history-filter-field">
+          <span>Till datum</span>
+          <input
+            className="text-input"
+            type="date"
+            value={filters.toDate ?? ''}
+            onChange={(event) => updateFilters({ ...filters, toDate: event.target.value || undefined })}
+          />
+        </label>
+        <label className="history-filter-field">
+          <span>Status</span>
+          <select
+            className="text-input"
+            value={filters.status ?? ''}
+            onChange={(event) => updateFilters({ ...filters, status: event.target.value || undefined })}
+          >
+            <option value="">Alla statusar</option>
+            <option value="completed">Klar</option>
+            <option value="completed_with_deviation">Klar med avvikelse</option>
+          </select>
+        </label>
       </div>
 
       <div className="report-actions">
