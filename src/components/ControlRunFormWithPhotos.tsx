@@ -48,7 +48,9 @@ type ChecklistMatrixProps = {
   field: ControlFieldDefinition;
   objects: ControlObject[];
   responses: ResponseState;
+  actions: DeviationState;
   onChange: (key: string, value: string) => void;
+  onActionChange: (key: string, value: string) => void;
 };
 
 function responseKey(objectId: string | null, fieldId: string): string {
@@ -146,7 +148,7 @@ function TemperatureField({ id, label, object, value, required, reason, onChange
   const limitText = getLimitText(object);
   const hasValue = value.trim().length > 0;
   const statusClass = reason ? 'temperature-status bad' : 'temperature-status good';
-  const statusText = reason ? 'Över gränsvärde' : 'Inom gränsvärde';
+  const statusText = reason ? 'Utanför gränsvärde' : 'Inom gränsvärde';
 
   return (
     <div className={reason ? 'temperature-field deviation' : 'temperature-field'}>
@@ -170,7 +172,7 @@ function TemperatureField({ id, label, object, value, required, reason, onChange
   );
 }
 
-function ChecklistMatrix({ field, objects, responses, onChange }: ChecklistMatrixProps) {
+function ChecklistMatrix({ field, objects, responses, actions, onChange, onActionChange }: ChecklistMatrixProps) {
   return (
     <section className="check-matrix" aria-labelledby={`matrix-${field.id}`}>
       <div className="check-matrix-header">
@@ -181,26 +183,48 @@ function ChecklistMatrix({ field, objects, responses, onChange }: ChecklistMatri
 
       {objects.map((object) => {
         const key = responseKey(object.id, field.id);
+        const actionId = `${key}:action`;
         const value = responses[key] ?? 'ok';
+        const showAction = value === 'not_ok';
+
         return (
-          <div className="check-matrix-row" key={object.id}>
-            <span className="check-matrix-name">{object.name}</span>
-            <button
-              type="button"
-              className={value === 'ok' ? 'matrix-choice ok selected' : 'matrix-choice ok'}
-              aria-pressed={value === 'ok'}
-              onClick={() => onChange(key, 'ok')}
-            >
-              ✓
-            </button>
-            <button
-              type="button"
-              className={value === 'not_ok' ? 'matrix-choice not-ok selected' : 'matrix-choice not-ok'}
-              aria-pressed={value === 'not_ok'}
-              onClick={() => onChange(key, 'not_ok')}
-            >
-              ×
-            </button>
+          <div className={showAction ? 'check-matrix-item has-action' : 'check-matrix-item'} key={object.id}>
+            <div className="check-matrix-row">
+              <span className="check-matrix-name">{object.name}</span>
+              <button
+                type="button"
+                className={value === 'ok' ? 'matrix-choice ok selected' : 'matrix-choice ok'}
+                aria-pressed={value === 'ok'}
+                onClick={() => {
+                  onChange(key, 'ok');
+                  onActionChange(key, '');
+                }}
+              >
+                ✓
+              </button>
+              <button
+                type="button"
+                className={value === 'not_ok' ? 'matrix-choice not-ok selected' : 'matrix-choice not-ok'}
+                aria-pressed={value === 'not_ok'}
+                onClick={() => onChange(key, 'not_ok')}
+              >
+                ×
+              </button>
+            </div>
+
+            {showAction ? (
+              <div className="matrix-action-box">
+                <strong>Avvikelse: {field.label} är ej OK.</strong>
+                <label className="action-label" htmlFor={actionId}>Vad är fel / åtgärd?</label>
+                <textarea
+                  className="text-input"
+                  id={actionId}
+                  value={actions[key] ?? ''}
+                  onChange={(event) => onActionChange(key, event.target.value)}
+                  required
+                />
+              </div>
+            ) : null}
           </div>
         );
       })}
@@ -242,6 +266,8 @@ export function ControlRunFormWithPhotos({
           }
         }
         setResponses(nextResponses);
+        setActions({});
+        setFiles({});
       } catch (error) {
         if (!active) return;
         setMessage(error instanceof Error ? error.message : 'Kunde inte läsa kontrollen.');
@@ -274,7 +300,7 @@ export function ControlRunFormWithPhotos({
           file: files[key] ?? null,
           deviationDetected: Boolean(reason),
           deviationReason: reason,
-          actionText: actions[key] ?? null,
+          actionText: reason ? actions[key] ?? null : null,
         });
       }
     }
@@ -347,13 +373,15 @@ export function ControlRunFormWithPhotos({
           field={matrixField}
           objects={matrixObjects}
           responses={responses}
+          actions={actions}
           onChange={updateResponse}
+          onActionChange={updateAction}
         />
       ) : null}
 
       {objects.map((object) => {
         const visibleFields = matrixField
-          ? definition.fields.filter((field) => field.id !== matrixField.id)
+          ? definition.fields.filter((field) => field.id !== matrixField.id && field.field_type !== 'textarea')
           : definition.fields;
         if (visibleFields.length === 0) return null;
 
