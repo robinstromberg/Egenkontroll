@@ -35,9 +35,8 @@
 
 .control-type-icon {
   display: grid;
-  width: 38px;
-  height: 38px;
-  overflow: hidden;
+  width: 42px;
+  height: 42px;
   place-items: center;
   border-radius: 14px;
   font-weight: 900;
@@ -49,8 +48,8 @@
 
 .control-type-icon img {
   display: block;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
 }
 
