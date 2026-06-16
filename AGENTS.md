@@ -138,6 +138,28 @@ Appen ska vara:
 - säker,
 - konsekvent över alla kontrolltyper.
 
+### CRUD-princip för administrerade resurser
+
+När användaren kan skapa en verksamhetsrelaterad resurs ska AI:n som huvudregel även planera för:
+
+- visa/lista,
+- redigera,
+- ta bort eller arkivera/inaktivera.
+
+Detta gäller exempelvis:
+
+- leverantörer,
+- kontrolltyper,
+- kontrollpunkter,
+- kontrollobjekt,
+- användare,
+- roller,
+- delningslänkar.
+
+Undantag ska vara medvetna och dokumenterade. Historiska registreringar, revisionsspår och signerade kontroller ska normalt inte hårdraderas.
+
+Nya funktioner ska inte betraktas som kompletta enbart för att användaren kan lägga till data.
+
 Visuell riktning:
 
 - ljus, ren layout,
