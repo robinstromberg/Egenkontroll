@@ -7,6 +7,7 @@ export type MenuViewProps = {
   userEmail: string | null | undefined;
   roleLabel: string;
   canManage: boolean;
+  onOpenSuppliers: () => void;
   onSignOut: () => Promise<void>;
 };
 
@@ -15,6 +16,7 @@ type MenuItem = {
   description: string;
   icon: string;
   adminOnly?: boolean;
+  action?: 'suppliers';
 };
 
 const menuItems: MenuItem[] = [
@@ -46,6 +48,7 @@ const menuItems: MenuItem[] = [
     description: 'Leverantörer för varumottagning och spårbarhet.',
     icon: '◇',
     adminOnly: true,
+    action: 'suppliers',
   },
   {
     title: 'Hjälp',
@@ -54,7 +57,14 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-export function MenuView({ context, userEmail, roleLabel, canManage, onSignOut }: MenuViewProps) {
+export function MenuView({
+  context,
+  userEmail,
+  roleLabel,
+  canManage,
+  onOpenSuppliers,
+  onSignOut,
+}: MenuViewProps) {
   const visibleItems = menuItems.filter((item) => canManage || !item.adminOnly);
 
   return (
@@ -69,7 +79,14 @@ export function MenuView({ context, userEmail, roleLabel, canManage, onSignOut }
 
       <div className="menu-list" aria-label="Menyval">
         {visibleItems.map((item) => (
-          <button className="menu-list-item" type="button" key={item.title}>
+          <button
+            className="menu-list-item"
+            type="button"
+            key={item.title}
+            onClick={() => {
+              if (item.action === 'suppliers') onOpenSuppliers();
+            }}
+          >
             <span className="menu-list-icon" aria-hidden="true">
               {item.icon}
             </span>

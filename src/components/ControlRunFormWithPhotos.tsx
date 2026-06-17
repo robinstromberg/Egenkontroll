@@ -5,12 +5,13 @@ import {
   getControlRunDefinition,
   saveControlRun,
 } from '../services/controlRunWithAttachmentsService';
+import { listSuppliers } from '../services/supplierService';
 import type {
   ControlResponse,
   ControlRunDefinition,
 } from '../services/controlRunWithAttachmentsService';
 import type { SavedControlSummary } from './SavedControlView';
-import type { ControlFieldDefinition, ControlObject } from '../types/database';
+import type { ControlFieldDefinition, ControlObject, Supplier } from '../types/database';
 import './ControlRunForm.css';
 
 export type ControlRunFormWithPhotosProps = {
@@ -53,6 +54,15 @@ type ChecklistMatrixProps = {
   onActionChange: (key: string, value: string) => void;
 };
 
+type SupplierSelectFieldProps = {
+  id: string;
+  label: string;
+  value: string;
+  required: boolean;
+  suppliers: Supplier[];
+  onChange: (value: string) => void;
+};
+
 function responseKey(objectId: string | null, fieldId: string): string {
   return `${objectId ?? 'global'}:${fieldId}`;
 }
@@ -85,6 +95,10 @@ function getDefaultValue(field: ControlFieldDefinition): string {
   if (field.field_type === 'ok_not_ok') return 'ok';
   if (field.field_type === 'boolean') return 'true';
   return '';
+}
+
+function isSupplierField(field: ControlFieldDefinition): boolean {
+  return field.field_key === 'supplier' || field.label.trim().toLowerCase() === 'leverantör';
 }
 
 function getLimitText(object: ControlObject | null): string | null {
@@ -232,6 +246,39 @@ function ChecklistMatrix({ field, objects, responses, actions, onChange, onActio
   );
 }
 
+function SupplierSelectField({
+  id,
+  label,
+  value,
+  required,
+  suppliers,
+  onChange,
+}: SupplierSelectFieldProps) {
+  return (
+    <>
+      <label htmlFor={id}>{label}</label>
+      <select
+        className="text-input supplier-select"
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        required={required}
+        disabled={suppliers.length === 0}
+      >
+        <option value="">{suppliers.length ? 'Välj leverantör' : 'Inga aktiva leverantörer'}</option>
+        {suppliers.map((supplier) => (
+          <option value={supplier.name} key={supplier.id}>
+            {supplier.name}
+          </option>
+        ))}
+      </select>
+      {suppliers.length === 0 ? (
+        <p className="field-hint">Lägg till leverantörer under Meny innan fältet används.</p>
+      ) : null}
+    </>
+  );
+}
+
 export function ControlRunFormWithPhotos({
   organizationId,
   controlTypeId,
@@ -244,6 +291,7 @@ export function ControlRunFormWithPhotos({
   const [responses, setResponses] = useState<ResponseState>({});
   const [files, setFiles] = useState<FileState>({});
   const [actions, setActions] = useState<DeviationState>({});
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -257,6 +305,13 @@ export function ControlRunFormWithPhotos({
         const nextDefinition = await getControlRunDefinition(organizationId, controlTypeId);
         if (!active) return;
         setDefinition(nextDefinition);
+        if (nextDefinition.fields.some(isSupplierField)) {
+          const nextSuppliers = await listSuppliers(organizationId);
+          if (!active) return;
+          setSuppliers(nextSuppliers);
+        } else {
+          setSuppliers([]);
+        }
 
         const nextResponses: ResponseState = {};
         const objects = nextDefinition.objects.length ? nextDefinition.objects : [null];
@@ -438,6 +493,15 @@ export function ControlRunFormWithPhotos({
                         { label: 'Ja', tone: 'good', value: 'true' },
                         { label: 'Nej', tone: 'bad', value: 'false' },
                       ]}
+                    />
+                  ) : isSupplierField(field) ? (
+                    <SupplierSelectField
+                      id={key}
+                      label={field.label}
+                      value={value}
+                      required={field.required}
+                      suppliers={suppliers}
+                      onChange={(nextValue) => updateResponse(key, nextValue)}
                     />
                   ) : field.field_type === 'textarea' ? (
                     <>

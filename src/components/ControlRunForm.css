@@ -40,6 +40,18 @@
   font-weight: 800;
 }
 
+.supplier-select {
+  cursor: pointer;
+}
+
+.field-hint {
+  margin: 0;
+  color: #657089;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .check-matrix {
   display: grid;
   overflow: hidden;
@@ -467,6 +479,10 @@
   }
 
   .photo-file-name {
+    color: #aeb8d0;
+  }
+
+  .field-hint {
     color: #aeb8d0;
   }
 }

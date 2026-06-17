@@ -102,6 +102,16 @@ export type ControlFieldDefinition = {
   updated_at: string;
 };
 
+export type Supplier = {
+  id: string;
+  organization_id: string;
+  name: string;
+  active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type ControlRun = {
   id: string;
   organization_id: string;

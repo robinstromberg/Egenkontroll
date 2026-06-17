@@ -8,6 +8,7 @@ import { MenuView } from './MenuView';
 import { SavedControlView } from './SavedControlView';
 import type { SavedControlSummary } from './SavedControlView';
 import { SharingView } from './SharingView';
+import { SuppliersView } from './SuppliersView';
 import { TodayDashboard } from './TodayDashboard';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
@@ -35,6 +36,7 @@ function getDisplayName(user: User): string {
 export function AppDashboard({ activeView, user, context, onChangeView, onSignOut }: AppDashboardProps) {
   const canManage = canManageOrganization(context.membership.role);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
+  const [menuSubview, setMenuSubview] = useState<'suppliers' | null>(null);
   const [savedSummary, setSavedSummary] = useState<SavedControlSummary | null>(null);
   const [dashboardKey, setDashboardKey] = useState(0);
 
@@ -42,6 +44,9 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
     if (activeView !== 'today') {
       setActiveControlTypeId(null);
       setSavedSummary(null);
+    }
+    if (activeView !== 'menu') {
+      setMenuSubview(null);
     }
   }, [activeView]);
 
@@ -112,12 +117,23 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
     }
 
     if (activeView === 'menu') {
+      if (menuSubview === 'suppliers') {
+        return (
+          <SuppliersView
+            organizationId={context.organization.id}
+            userId={user.id}
+            onBack={() => setMenuSubview(null)}
+          />
+        );
+      }
+
       return (
         <MenuView
           context={context}
           userEmail={user.email}
           roleLabel={roleLabels[context.membership.role]}
           canManage={canManage}
+          onOpenSuppliers={() => setMenuSubview('suppliers')}
           onSignOut={onSignOut}
         />
       );
