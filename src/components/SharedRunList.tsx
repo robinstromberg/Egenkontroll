@@ -6,6 +6,9 @@ import {
 } from '../services/shareRecords';
 import type { SharedControlTypeOption, SharedRun, SharedRunItem } from '../services/shareRecords';
 
+type DeviationFilter = 'all' | 'with-open' | 'with-resolved' | 'without';
+type SortKey = 'performed-desc' | 'performed-asc' | 'control-type' | 'deviation-status';
+
 export type SharedRunListProps = {
   shareKey: string;
 };
@@ -44,11 +47,66 @@ function readItemValue(item: SharedRunItem): string {
   return 'Ej angivet';
 }
 
+function countOpenDeviations(run: SharedRun): number {
+  return run.deviations.filter((deviation) => deviation.status !== 'resolved').length;
+}
+
+function countResolvedDeviations(run: SharedRun): number {
+  return run.deviations.filter((deviation) => deviation.status === 'resolved').length;
+}
+
+function readDeviationLabel(run: SharedRun): string {
+  const openCount = countOpenDeviations(run);
+  const resolvedCount = countResolvedDeviations(run);
+
+  if (openCount > 0) return `${openCount} öppna`;
+  if (resolvedCount > 0) return `${resolvedCount} lösta`;
+  return 'Inga';
+}
+
+function readDeviationTone(run: SharedRun): string {
+  if (countOpenDeviations(run) > 0) return 'danger';
+  if (countResolvedDeviations(run) > 0) return 'success';
+  return 'neutral';
+}
+
+function matchesDeviationFilter(run: SharedRun, filter: DeviationFilter): boolean {
+  const openCount = countOpenDeviations(run);
+  const resolvedCount = countResolvedDeviations(run);
+
+  if (filter === 'with-open') return openCount > 0;
+  if (filter === 'with-resolved') return resolvedCount > 0 && openCount === 0;
+  if (filter === 'without') return run.deviations.length === 0;
+  return true;
+}
+
+function sortRuns(runs: SharedRun[], sortKey: SortKey): SharedRun[] {
+  return [...runs].sort((first, second) => {
+    if (sortKey === 'performed-asc') {
+      return new Date(first.performed_at).getTime() - new Date(second.performed_at).getTime();
+    }
+
+    if (sortKey === 'control-type') {
+      return first.control_type_name.localeCompare(second.control_type_name, 'sv-SE');
+    }
+
+    if (sortKey === 'deviation-status') {
+      return countOpenDeviations(second) - countOpenDeviations(first)
+        || countResolvedDeviations(second) - countResolvedDeviations(first)
+        || new Date(second.performed_at).getTime() - new Date(first.performed_at).getTime();
+    }
+
+    return new Date(second.performed_at).getTime() - new Date(first.performed_at).getTime();
+  });
+}
+
 export function SharedRunList({ shareKey }: SharedRunListProps) {
   const [controlTypes, setControlTypes] = useState<SharedControlTypeOption[]>([]);
   const [selectedControlTypeIds, setSelectedControlTypeIds] = useState<string[]>([]);
   const [periodStart, setPeriodStart] = useState(dateDaysAgo(30));
   const [periodEnd, setPeriodEnd] = useState(today());
+  const [deviationFilter, setDeviationFilter] = useState<DeviationFilter>('all');
+  const [sortKey, setSortKey] = useState<SortKey>('performed-desc');
   const [runs, setRuns] = useState<SharedRun[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -111,6 +169,11 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
     ));
   }
 
+  const visibleRuns = sortRuns(
+    runs.filter((run) => matchesDeviationFilter(run, deviationFilter)),
+    sortKey,
+  );
+
   if (optionsLoading) return <p className="muted-copy">Laddar delning...</p>;
   if (message && !hasSearched) return <p className="form-message error-message">{message}</p>;
 
@@ -158,6 +221,36 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
           )}
         </fieldset>
 
+        <div className="inspector-secondary-filters">
+          <label>
+            Avvikelser
+            <select
+              className="text-input"
+              value={deviationFilter}
+              onChange={(event) => setDeviationFilter(event.target.value as DeviationFilter)}
+            >
+              <option value="all">Alla kontroller</option>
+              <option value="with-open">Med öppna avvikelser</option>
+              <option value="with-resolved">Med lösta avvikelser</option>
+              <option value="without">Utan avvikelser</option>
+            </select>
+          </label>
+
+          <label>
+            Sortering
+            <select
+              className="text-input"
+              value={sortKey}
+              onChange={(event) => setSortKey(event.target.value as SortKey)}
+            >
+              <option value="performed-desc">Senaste först</option>
+              <option value="performed-asc">Äldsta först</option>
+              <option value="control-type">Kontrolltyp A-Ö</option>
+              <option value="deviation-status">Avvikelser först</option>
+            </select>
+          </label>
+        </div>
+
         <ActionButton type="submit" disabled={loading || selectedControlTypeIds.length === 0}>
           {loading ? 'Hämtar...' : 'Visa dokumentation'}
         </ActionButton>
@@ -166,61 +259,93 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
       {message && hasSearched ? <p className="form-message error-message">{message}</p> : null}
       {!hasSearched ? <p className="muted-copy">Välj period och kontrolltyper för att visa dokumentationen.</p> : null}
       {hasSearched && !loading && runs.length === 0 ? <p className="muted-copy">Inga kontroller hittades för urvalet.</p> : null}
+      {hasSearched && !loading && runs.length > 0 && visibleRuns.length === 0 ? (
+        <p className="muted-copy">Inga kontroller matchar avvikelsefiltret.</p>
+      ) : null}
 
-      {runs.length ? (
-        <div className="inspector-list">
-          {runs.map((run) => (
-            <article className="inspector-row" key={run.run_id}>
-              <div>
-                <strong>{run.control_type_name}</strong>
-                <p className="muted-copy">{formatDateTime(run.performed_at)} · {run.status}</p>
-                {run.notes ? <p>{run.notes}</p> : null}
-              </div>
+      {visibleRuns.length ? (
+        <div className="inspector-table-wrap">
+          <table className="inspector-table">
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Kontroll</th>
+                <th>Status</th>
+                <th>Avvikelser</th>
+                <th>Innehåll</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleRuns.map((run) => (
+                <tr key={run.run_id}>
+                  <td data-label="Datum">{formatDateTime(run.performed_at)}</td>
+                  <td data-label="Kontroll">
+                    <strong>{run.control_type_name}</strong>
+                    {run.notes ? <span className="inspector-table-note">{run.notes}</span> : null}
+                  </td>
+                  <td data-label="Status">
+                    <span className="inspector-status-pill">{run.status}</span>
+                  </td>
+                  <td data-label="Avvikelser">
+                    <span className={`inspector-deviation-pill ${readDeviationTone(run)}`}>
+                      {readDeviationLabel(run)}
+                    </span>
+                  </td>
+                  <td data-label="Innehåll">
+                    <details className="inspector-details">
+                      <summary>
+                        {run.items.length} fält
+                        {run.attachments.length ? ` · ${run.attachments.length} bilagor` : ''}
+                      </summary>
 
-              <div className="inspector-detail-list">
-                {run.items.map((item) => (
-                  <section className="inspector-detail-card" key={item.id}>
-                    <strong>
-                      {readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · {readFieldLabel(item.field_snapshot)}
-                    </strong>
-                    <p>{readItemValue(item)}</p>
-                    <p className="muted-copy">Status: {item.status}</p>
-                    {item.deviation_detected ? (
-                      <p className="form-message error-message">Avvikelse: {item.deviation_reason ?? 'Åtgärd krävs'}</p>
-                    ) : null}
-                    {item.action_text ? <p className="muted-copy">Åtgärd: {item.action_text}</p> : null}
-                  </section>
-                ))}
-              </div>
+                      <div className="inspector-detail-list">
+                        {run.items.map((item) => (
+                          <section className="inspector-detail-card" key={item.id}>
+                            <strong>
+                              {readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · {readFieldLabel(item.field_snapshot)}
+                            </strong>
+                            <p>{readItemValue(item)}</p>
+                            <p className="muted-copy">Status: {item.status}</p>
+                            {item.deviation_detected ? (
+                              <p className="form-message error-message">Avvikelse: {item.deviation_reason ?? 'Åtgärd krävs'}</p>
+                            ) : null}
+                            {item.action_text ? <p className="muted-copy">Åtgärd: {item.action_text}</p> : null}
+                          </section>
+                        ))}
+                      </div>
 
-              {run.deviations.length ? (
-                <div className="inspector-detail-list">
-                  <h4>Avvikelser</h4>
-                  {run.deviations.map((deviation) => (
-                    <section className="inspector-detail-card" key={deviation.id}>
-                      <strong>{deviation.status} · {deviation.severity}</strong>
-                      <p>{deviation.description}</p>
-                      <p className="muted-copy">Åtgärd: {deviation.action_text}</p>
-                      {deviation.follow_up_comment ? <p className="muted-copy">Uppföljning: {deviation.follow_up_comment}</p> : null}
-                      {deviation.resolved_at ? <p className="muted-copy">Löst: {formatDateTime(deviation.resolved_at)}</p> : null}
-                    </section>
-                  ))}
-                </div>
-              ) : null}
+                      {run.deviations.length ? (
+                        <div className="inspector-detail-list">
+                          <h4>Avvikelser</h4>
+                          {run.deviations.map((deviation) => (
+                            <section className="inspector-detail-card" key={deviation.id}>
+                              <strong>{deviation.status} · {deviation.severity}</strong>
+                              <p>{deviation.description}</p>
+                              <p className="muted-copy">Åtgärd: {deviation.action_text}</p>
+                              {deviation.follow_up_comment ? <p className="muted-copy">Uppföljning: {deviation.follow_up_comment}</p> : null}
+                              {deviation.resolved_at ? <p className="muted-copy">Löst: {formatDateTime(deviation.resolved_at)}</p> : null}
+                            </section>
+                          ))}
+                        </div>
+                      ) : null}
 
-              {run.attachments.length ? (
-                <div className="inspector-detail-list">
-                  <h4>Bilagor</h4>
-                  {run.attachments.map((attachment) => (
-                    <section className="inspector-detail-card" key={attachment.id}>
-                      <strong>{attachment.file_name ?? 'Bilaga'}</strong>
-                      <p className="muted-copy">{attachment.storage_path}</p>
-                    </section>
-                  ))}
-                </div>
-              ) : null}
-            </article>
-          ))}
+                      {run.attachments.length ? (
+                        <div className="inspector-detail-list">
+                          <h4>Bilagor</h4>
+                          {run.attachments.map((attachment) => (
+                            <section className="inspector-detail-card" key={attachment.id}>
+                              <strong>{attachment.file_name ?? 'Bilaga'}</strong>
+                              <p className="muted-copy">{attachment.storage_path}</p>
+                            </section>
+                          ))}
+                        </div>
+                      ) : null}
+                    </details>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : null}
     </div>
