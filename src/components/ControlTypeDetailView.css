@@ -13,8 +13,11 @@
 }
 
 .control-type-detail-card,
+.control-field-section,
+.control-field-form,
 .control-point-section,
 .control-point-form,
+.control-field-card,
 .control-point-card {
   border: 1px solid rgba(91, 70, 225, 0.1);
   border-radius: 18px;
@@ -30,12 +33,18 @@
 }
 
 .control-type-detail-card div,
+.control-field-form,
+.control-field-form label,
+.control-field-edit-form,
+.control-field-edit-form label,
 .control-point-form label {
   display: grid;
   gap: 5px;
 }
 
 .control-type-detail-card span,
+.control-field-form label span,
+.control-field-edit-form label span,
 .control-point-form label span {
   color: #657089;
   font-size: 0.78rem;
@@ -47,6 +56,7 @@
   font-size: 0.9rem;
 }
 
+.control-field-section,
 .control-point-section {
   display: grid;
   gap: 12px;
@@ -61,6 +71,8 @@
 }
 
 .control-point-heading h4,
+.control-field-card h4,
+.control-field-form h4,
 .control-point-card h4,
 .control-point-form h4 {
   margin: 0;
@@ -77,11 +89,14 @@
 }
 
 .control-point-list,
+.control-field-list,
+.control-field-form,
 .control-point-form {
   display: grid;
   gap: 10px;
 }
 
+.control-field-card,
 .control-point-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -89,10 +104,12 @@
   align-items: center;
 }
 
+.control-field-card.inactive,
 .control-point-card.inactive {
   opacity: 0.68;
 }
 
+.control-field-card p,
 .control-point-card p {
   margin: 0;
   color: #566078;
@@ -100,6 +117,7 @@
   line-height: 1.35;
 }
 
+.control-field-icon,
 .control-point-icon {
   display: grid;
   width: 38px;
@@ -109,6 +127,11 @@
   color: #0c6638;
   background: #ddf8e7;
   font-weight: 900;
+}
+
+.control-field-icon {
+  color: #5b46e1;
+  background: #efedff;
 }
 
 .control-point-action {
@@ -123,22 +146,83 @@
   white-space: nowrap;
 }
 
+.control-field-edit-form {
+  grid-column: span 2;
+}
+
+.control-field-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.control-field-checkbox {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: #34405a;
+  font-weight: 800;
+}
+
+.control-field-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: #5b46e1;
+}
+
+.field-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.field-type-option {
+  display: grid;
+  gap: 4px;
+  min-height: 82px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 16px;
+  padding: 10px;
+  color: #172033;
+  background: #ffffff;
+  text-align: left;
+}
+
+.field-type-option.selected {
+  border-color: rgba(91, 70, 225, 0.34);
+  background: #efedff;
+}
+
+.field-type-option span {
+  color: #657089;
+  font-size: 0.76rem;
+  line-height: 1.25;
+}
+
 @media (prefers-color-scheme: dark) {
   .control-type-detail-card,
+  .control-field-section,
+  .control-field-form,
   .control-point-section,
   .control-point-form,
+  .control-field-card,
   .control-point-card {
     border-color: rgba(159, 145, 255, 0.18);
     background: #121a2e;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
   }
 
+  .control-field-section,
   .control-point-section {
     background: #111a2f;
   }
 
   .control-type-detail-card strong,
   .control-point-heading h4,
+  .control-field-card h4,
+  .control-field-form h4,
+  .control-field-form label span,
+  .control-field-edit-form label span,
   .control-point-card h4,
   .control-point-form h4,
   .control-point-form label span {
@@ -146,6 +230,7 @@
   }
 
   .control-type-detail-card span,
+  .control-field-card p,
   .control-point-card p {
     color: #aeb8d0;
   }
@@ -160,6 +245,30 @@
     color: #b9afff;
     background: #211b45;
   }
+
+  .control-field-icon {
+    color: #b9afff;
+    background: #211b45;
+  }
+
+  .control-field-checkbox {
+    color: #d8deef;
+  }
+
+  .field-type-option {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #f7f9ff;
+    background: #121a2e;
+  }
+
+  .field-type-option.selected {
+    border-color: rgba(159, 145, 255, 0.38);
+    background: #211b45;
+  }
+
+  .field-type-option span {
+    color: #aeb8d0;
+  }
 }
 
 @media (max-width: 420px) {
@@ -167,12 +276,22 @@
     grid-template-columns: 1fr;
   }
 
+  .field-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .control-field-card,
   .control-point-card {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
+  .control-field-edit-form,
   .control-point-action {
     grid-column: 1 / -1;
+  }
+
+  .control-field-card > .control-point-action,
+  .control-point-card > .control-point-action {
     justify-self: start;
   }
 }

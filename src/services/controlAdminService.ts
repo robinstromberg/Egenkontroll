@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabaseClient';
 import type {
   ControlCategory,
+  ControlFieldDefinition,
   ControlFrequency,
   ControlObject,
   ControlType,
@@ -27,6 +28,34 @@ export type CreateControlObjectInput = {
   limitMax?: number | null;
   unit?: string;
 };
+
+export type CreateControlFieldInput = {
+  organizationId: string;
+  controlTypeId: string;
+  label: string;
+  fieldType: ControlFieldDefinition['field_type'];
+  required: boolean;
+};
+
+export type UpdateControlFieldInput = {
+  fieldDefinitionId: string;
+  organizationId: string;
+  label: string;
+  required: boolean;
+  active: boolean;
+};
+
+function createFieldKey(label: string, fieldType: ControlFieldDefinition['field_type']): string {
+  const normalized = label
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+  return normalized || fieldType;
+}
 
 export async function listControlTypes(organizationId: string): Promise<ControlType[]> {
   const { data, error } = await supabase
@@ -60,6 +89,89 @@ export async function createControlType(input: CreateControlTypeInput): Promise<
   }
 
   return data as ControlType;
+}
+
+export async function listControlFields(
+  organizationId: string,
+  controlTypeId: string,
+): Promise<ControlFieldDefinition[]> {
+  const { data, error } = await supabase
+    .from('control_field_definitions')
+    .select('*')
+    .eq('organization_id', organizationId)
+    .eq('control_type_id', controlTypeId)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as ControlFieldDefinition[];
+}
+
+export async function createControlField(input: CreateControlFieldInput): Promise<ControlFieldDefinition> {
+  const label = input.label.trim();
+  if (!label) {
+    throw new Error('Fältnamn krävs.');
+  }
+
+  const existingFields = await listControlFields(input.organizationId, input.controlTypeId);
+  const baseKey = createFieldKey(label, input.fieldType);
+  const existingKeys = new Set(existingFields.map((field) => field.field_key));
+  let fieldKey = baseKey;
+  let suffix = 2;
+
+  while (existingKeys.has(fieldKey)) {
+    fieldKey = `${baseKey}_${suffix}`;
+    suffix += 1;
+  }
+
+  const maxSortOrder = existingFields.reduce((max, field) => Math.max(max, field.sort_order), -1);
+
+  const { data, error } = await supabase
+    .from('control_field_definitions')
+    .insert({
+      organization_id: input.organizationId,
+      control_type_id: input.controlTypeId,
+      field_key: fieldKey,
+      label,
+      field_type: input.fieldType,
+      required: input.required,
+      deviation_rule: {},
+      options: [],
+      sort_order: maxSortOrder + 1,
+      active: true,
+    })
+    .select('*')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as ControlFieldDefinition;
+}
+
+export async function updateControlField(input: UpdateControlFieldInput): Promise<void> {
+  const label = input.label.trim();
+  if (!label) {
+    throw new Error('Fältnamn krävs.');
+  }
+
+  const { error } = await supabase
+    .from('control_field_definitions')
+    .update({
+      label,
+      required: input.required,
+      active: input.active,
+    })
+    .eq('id', input.fieldDefinitionId)
+    .eq('organization_id', input.organizationId);
+
+  if (error) {
+    throw error;
+  }
 }
 
 export async function setControlTypeActive(
