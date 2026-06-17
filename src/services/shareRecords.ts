@@ -67,6 +67,8 @@ export type SharedAttachment = {
   created_at: string;
 };
 
+export type SharedExportType = 'pdf' | 'csv';
+
 export async function createAccessLink(input: {
   organizationId: string;
   createdBy: string;
@@ -131,4 +133,18 @@ export async function readSharedRuns(
   if (error) throw error;
 
   return (data ?? []) as SharedRun[];
+}
+
+export async function logSharedExport(
+  secret: string,
+  exportType: SharedExportType,
+  filters: Record<string, unknown>,
+): Promise<void> {
+  const { error } = await supabase.rpc('log_shared_export', {
+    raw_token: secret,
+    p_export_type: exportType,
+    p_filters: filters,
+  });
+
+  if (error) throw error;
 }

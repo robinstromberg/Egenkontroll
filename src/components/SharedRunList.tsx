@@ -1,10 +1,11 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import {
+  logSharedExport,
   readSharedControlTypeOptions,
   readSharedRuns,
 } from '../services/shareRecords';
-import type { SharedControlTypeOption, SharedRun, SharedRunItem } from '../services/shareRecords';
+import type { SharedControlTypeOption, SharedExportType, SharedRun, SharedRunItem } from '../services/shareRecords';
 
 type DeviationFilter = 'all' | 'with-open' | 'with-resolved' | 'without';
 type SortKey = 'performed-desc' | 'performed-asc' | 'control-type' | 'deviation-status';
@@ -406,11 +407,32 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
     resolvedDeviations,
   };
 
-  function handleCsvExport() {
+  async function recordExport(exportType: SharedExportType) {
+    try {
+      await logSharedExport(shareKey, exportType, {
+        period_start: periodStart,
+        period_end: periodEnd,
+        control_type_ids: selectedControlTypeIds,
+        control_type_names: selectedControlTypeNames,
+        deviation_filter: deviationFilter,
+        sort: sortKey,
+        run_count: visibleRuns.length,
+        item_count: totalItems,
+        open_deviations: openDeviations,
+        resolved_deviations: resolvedDeviations,
+      });
+    } catch (error) {
+      setMessage(error instanceof Error ? `Exporten skapades, men kunde inte loggas: ${error.message}` : 'Exporten skapades, men kunde inte loggas.');
+    }
+  }
+
+  async function handleCsvExport() {
+    await recordExport('csv');
     downloadTextFile(`egenkontroll-${periodStart}-${periodEnd}.csv`, buildCsv(visibleRuns), 'text/csv;charset=utf-8');
   }
 
-  function handlePrintExport() {
+  async function handlePrintExport() {
+    await recordExport('pdf');
     openPrintReport(visibleRuns, reportSummary);
   }
 
