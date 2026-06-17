@@ -35,7 +35,18 @@ function readActiveView(): AppView {
 }
 
 function writeActiveView(view: AppView) {
-  const nextHash = view === 'today' ? '' : `#view=${view}`;
+  const params = new URLSearchParams();
+
+  if (view !== 'today') {
+    params.set('view', view);
+  }
+
+  const controlTypeId = readHashParams().get('controlTypeId');
+  if (view === 'add' && controlTypeId) {
+    params.set('controlTypeId', controlTypeId);
+  }
+
+  const nextHash = params.toString() ? `#${params.toString()}` : '';
   const nextUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
   window.history.replaceState(null, '', nextUrl);
 }

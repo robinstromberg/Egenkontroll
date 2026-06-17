@@ -47,9 +47,29 @@ function ControlTypeRow({ controlType, onOpen }: { controlType: ControlType; onO
   );
 }
 
+function readControlTypeIdFromHash(): string | null {
+  const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+  return new URLSearchParams(hash).get('controlTypeId');
+}
+
+function writeControlTypeIdToHash(controlTypeId: string | null) {
+  const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+  const params = new URLSearchParams(hash);
+  params.set('view', 'add');
+
+  if (controlTypeId) {
+    params.set('controlTypeId', controlTypeId);
+  } else {
+    params.delete('controlTypeId');
+  }
+
+  const nextUrl = `${window.location.pathname}${window.location.search}#${params.toString()}`;
+  window.history.replaceState(null, '', nextUrl);
+}
+
 export function ControlTypesView({ organizationId, userId, canManage }: ControlTypesViewProps) {
   const [controlTypes, setControlTypes] = useState<ControlType[]>([]);
-  const [selectedControlTypeId, setSelectedControlTypeId] = useState<string | null>(null);
+  const [selectedControlTypeId, setSelectedControlTypeId] = useState<string | null>(() => readControlTypeIdFromHash());
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [showAdminControls, setShowAdminControls] = useState(false);
@@ -86,13 +106,31 @@ export function ControlTypesView({ organizationId, userId, canManage }: ControlT
     ? controlTypes.find((controlType) => controlType.id === selectedControlTypeId) ?? null
     : null;
 
+  useEffect(() => {
+    if (loading || !selectedControlTypeId) return;
+    if (selectedControlType) return;
+
+    setSelectedControlTypeId(null);
+    writeControlTypeIdToHash(null);
+  }, [loading, selectedControlType, selectedControlTypeId]);
+
+  function openControlType(controlTypeId: string) {
+    setSelectedControlTypeId(controlTypeId);
+    writeControlTypeIdToHash(controlTypeId);
+  }
+
+  function closeControlType() {
+    setSelectedControlTypeId(null);
+    writeControlTypeIdToHash(null);
+  }
+
   if (selectedControlType) {
     return (
       <ControlTypeDetailView
         organizationId={organizationId}
         controlType={selectedControlType}
         canManage={canManage}
-        onBack={() => setSelectedControlTypeId(null)}
+        onBack={closeControlType}
         onChanged={async () => {
           await refreshControlTypes();
         }}
@@ -131,7 +169,7 @@ export function ControlTypesView({ organizationId, userId, canManage }: ControlT
             <ControlTypeRow
               controlType={controlType}
               key={controlType.id}
-              onOpen={() => setSelectedControlTypeId(controlType.id)}
+              onOpen={() => openControlType(controlType.id)}
             />
           ))}
         </div>
