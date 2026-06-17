@@ -1,7 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import type {
   ControlCategory,
-  ControlFieldDefinition,
   ControlFrequency,
   ControlObject,
   ControlType,
@@ -29,87 +28,6 @@ export type CreateControlObjectInput = {
   unit?: string;
 };
 
-type DefaultControlField = {
-  field_key: string;
-  label: string;
-  field_type: ControlFieldDefinition['field_type'];
-  required: boolean;
-  sort_order: number;
-};
-
-const defaultFieldsByCategory: Record<ControlCategory, DefaultControlField[]> = {
-  temperature: [
-    { field_key: 'temperature', label: 'Temperatur', field_type: 'temperature', required: true, sort_order: 0 },
-  ],
-  checklist: [
-    { field_key: 'status', label: 'Status', field_type: 'ok_not_ok', required: true, sort_order: 0 },
-    { field_key: 'comment', label: 'Kommentar', field_type: 'textarea', required: false, sort_order: 1 },
-  ],
-  custom: [
-    { field_key: 'status', label: 'Status', field_type: 'ok_not_ok', required: true, sort_order: 0 },
-    { field_key: 'comment', label: 'Kommentar', field_type: 'textarea', required: false, sort_order: 1 },
-  ],
-  receiving: [
-    { field_key: 'status', label: 'Status', field_type: 'ok_not_ok', required: true, sort_order: 0 },
-    { field_key: 'temperature', label: 'Temperatur', field_type: 'temperature', required: false, sort_order: 1 },
-    { field_key: 'comment', label: 'Kommentar', field_type: 'textarea', required: false, sort_order: 2 },
-  ],
-  traceability: [
-    { field_key: 'batch_label', label: 'Batch / märkning', field_type: 'text', required: false, sort_order: 0 },
-    { field_key: 'best_before_date', label: 'Bäst före / datum', field_type: 'date', required: false, sort_order: 1 },
-    { field_key: 'photo', label: 'Foto', field_type: 'photo', required: false, sort_order: 2 },
-    { field_key: 'comment', label: 'Kommentar', field_type: 'textarea', required: false, sort_order: 3 },
-  ],
-  round: [
-    { field_key: 'status', label: 'Status', field_type: 'ok_not_ok', required: true, sort_order: 0 },
-    { field_key: 'comment', label: 'Kommentar', field_type: 'textarea', required: false, sort_order: 1 },
-  ],
-};
-
-async function ensureDefaultFieldsForControlType(controlType: ControlType): Promise<void> {
-  const { data: existingFields, error: existingFieldsError } = await supabase
-    .from('control_field_definitions')
-    .select('id')
-    .eq('organization_id', controlType.organization_id)
-    .eq('control_type_id', controlType.id)
-    .limit(1);
-
-  if (existingFieldsError) {
-    throw existingFieldsError;
-  }
-
-  if ((existingFields ?? []).length > 0) {
-    return;
-  }
-
-  const defaultFields = defaultFieldsByCategory[controlType.category];
-  if (!defaultFields.length) {
-    return;
-  }
-
-  const { error } = await supabase
-    .from('control_field_definitions')
-    .upsert(
-      defaultFields.map((field) => ({
-        organization_id: controlType.organization_id,
-        control_type_id: controlType.id,
-        field_key: field.field_key,
-        label: field.label,
-        field_type: field.field_type,
-        required: field.required,
-        deviation_rule: {},
-        options: [],
-        sort_order: field.sort_order,
-        active: true,
-      })),
-      { ignoreDuplicates: true, onConflict: 'control_type_id,field_key' },
-    );
-
-  if (error) {
-    throw error;
-  }
-}
-
 export async function listControlTypes(organizationId: string): Promise<ControlType[]> {
   const { data, error } = await supabase
     .from('control_types')
@@ -127,28 +45,21 @@ export async function listControlTypes(organizationId: string): Promise<ControlT
 
 export async function createControlType(input: CreateControlTypeInput): Promise<ControlType> {
   const { data, error } = await supabase
-    .from('control_types')
-    .insert({
-      organization_id: input.organizationId,
-      name: input.name,
-      description: input.description ?? null,
-      category: input.category,
-      frequency: input.frequency,
-      instructions: input.instructions ?? null,
-      created_by: input.createdBy,
-      active: true,
-    })
-    .select('*')
-    .single();
+    .rpc('create_control_type_with_default_fields', {
+      p_organization_id: input.organizationId,
+      p_name: input.name,
+      p_description: input.description ?? null,
+      p_category: input.category,
+      p_frequency: input.frequency,
+      p_instructions: input.instructions ?? null,
+      p_created_by: input.createdBy,
+    });
 
   if (error) {
     throw error;
   }
 
-  const controlType = data as ControlType;
-  await ensureDefaultFieldsForControlType(controlType);
-
-  return controlType;
+  return data as ControlType;
 }
 
 export async function setControlTypeActive(
