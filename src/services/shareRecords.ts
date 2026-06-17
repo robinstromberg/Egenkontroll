@@ -45,6 +45,14 @@ export type SharedRunItem = {
   created_at: string;
 };
 
+export type ExportLogRecord = {
+  id: string;
+  share_link_id: string | null;
+  export_type: SharedExportType;
+  filters: Record<string, unknown>;
+  created_at: string;
+};
+
 export type SharedDeviation = {
   id: string;
   control_run_item_id: string | null;
@@ -105,6 +113,19 @@ export async function listAccessLinks(organizationId: string): Promise<AccessRec
   if (error) throw error;
 
   return (data ?? []) as AccessRecord[];
+}
+
+export async function listExportLogs(organizationId: string): Promise<ExportLogRecord[]> {
+  const { data, error } = await supabase
+    .from('export_logs')
+    .select('id, share_link_id, export_type, filters, created_at')
+    .eq('organization_id', organizationId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) throw error;
+
+  return (data ?? []) as ExportLogRecord[];
 }
 
 export async function readSharedControlTypeOptions(secret: string): Promise<SharedControlTypeOption[]> {

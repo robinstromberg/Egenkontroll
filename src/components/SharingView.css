@@ -86,12 +86,36 @@
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
 }
 
+.share-row.compact {
+  gap: 6px;
+  padding: 12px;
+}
+
 .share-row p {
   margin: 0;
   color: #4f5b73;
   font-size: 0.88rem;
   line-height: 1.35;
   font-weight: 650;
+}
+
+.share-export-list {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid rgba(91, 70, 225, 0.1);
+  padding-top: 8px;
+}
+
+.share-export-row {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.share-export-row span {
+  color: #5b46e1;
+  font-size: 0.72rem;
+  font-weight: 900;
 }
 
 .share-status {
@@ -178,6 +202,14 @@
 
   .share-row p {
     color: #b8c2d8;
+  }
+
+  .share-export-list {
+    border-color: rgba(159, 145, 255, 0.16);
+  }
+
+  .share-export-row span {
+    color: #b9afff;
   }
 
   .share-status.active {

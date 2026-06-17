@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
-import { createAccessLink, listAccessLinks } from '../services/shareRecords';
-import type { AccessRecord } from '../services/shareRecords';
+import { createAccessLink, listAccessLinks, listExportLogs } from '../services/shareRecords';
+import type { AccessRecord, ExportLogRecord } from '../services/shareRecords';
 import './SharingView.css';
 
 export type SharingViewProps = {
@@ -36,10 +36,31 @@ function getShareStatusText(status: string): string {
   return status;
 }
 
+function getExportTypeText(exportType: string): string {
+  if (exportType === 'pdf') return 'PDF';
+  if (exportType === 'csv') return 'CSV';
+  return exportType.toUpperCase();
+}
+
+function readFilterText(filters: Record<string, unknown>): string {
+  const periodStart = typeof filters.period_start === 'string' ? filters.period_start : '';
+  const periodEnd = typeof filters.period_end === 'string' ? filters.period_end : '';
+  const runCount = typeof filters.run_count === 'number' ? filters.run_count : null;
+  const openDeviations = typeof filters.open_deviations === 'number' ? filters.open_deviations : null;
+  const period = periodStart && periodEnd ? `${periodStart} - ${periodEnd}` : 'Okänd period';
+  const counts = [
+    runCount !== null ? `${runCount} kontroller` : '',
+    openDeviations !== null ? `${openDeviations} öppna avvikelser` : '',
+  ].filter(Boolean).join(' · ');
+
+  return counts ? `${period} · ${counts}` : period;
+}
+
 export function SharingView({ organizationId, userId }: SharingViewProps) {
   const [validityPreset, setValidityPreset] = useState('7');
   const [customValidUntil, setCustomValidUntil] = useState(dateAfter(7));
   const [links, setLinks] = useState<AccessRecord[]>([]);
+  const [exportLogs, setExportLogs] = useState<ExportLogRecord[]>([]);
   const [latestUrl, setLatestUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [message, setMessage] = useState('');
@@ -54,7 +75,12 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
   }, [latestUrl]);
 
   async function refresh() {
-    setLinks(await listAccessLinks(organizationId));
+    const [nextLinks, nextExportLogs] = await Promise.all([
+      listAccessLinks(organizationId),
+      listExportLogs(organizationId),
+    ]);
+    setLinks(nextLinks);
+    setExportLogs(nextExportLogs);
   }
 
   useEffect(() => {
@@ -169,6 +195,28 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
               {getShareStatusText(link.status)}
             </strong>
             <p>Giltig till: {new Date(link.valid_until).toLocaleDateString('sv-SE')}</p>
+            {exportLogs.some((log) => log.share_link_id === link.id) ? (
+              <div className="share-export-list">
+                {exportLogs.filter((log) => log.share_link_id === link.id).slice(0, 3).map((log) => (
+                  <p className="share-export-row" key={log.id}>
+                    <span>{getExportTypeText(log.export_type)}</span>
+                    {new Date(log.created_at).toLocaleString('sv-SE')} · {readFilterText(log.filters)}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+          </article>
+        ))}
+      </div>
+
+      <div className="share-list">
+        <h4>Senaste exporter</h4>
+        {exportLogs.length === 0 ? <p className="muted-copy">Inga exporter har loggats ännu.</p> : null}
+        {exportLogs.slice(0, 8).map((log) => (
+          <article className="share-row compact" key={log.id}>
+            <strong className="share-status active">{getExportTypeText(log.export_type)}</strong>
+            <p>{new Date(log.created_at).toLocaleString('sv-SE')}</p>
+            <p>{readFilterText(log.filters)}</p>
           </article>
         ))}
       </div>
