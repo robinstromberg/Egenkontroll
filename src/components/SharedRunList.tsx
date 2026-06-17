@@ -9,6 +9,15 @@ import type { SharedControlTypeOption, SharedRun, SharedRunItem } from '../servi
 type DeviationFilter = 'all' | 'with-open' | 'with-resolved' | 'without';
 type SortKey = 'performed-desc' | 'performed-asc' | 'control-type' | 'deviation-status';
 
+const categoryMeta: Record<string, { icon: string; className: string }> = {
+  temperature: { icon: '°C', className: 'temperature' },
+  checklist: { icon: 'OK', className: 'checklist' },
+  receiving: { icon: 'IN', className: 'receiving' },
+  traceability: { icon: 'SP', className: 'traceability' },
+  round: { icon: 'R', className: 'round' },
+  custom: { icon: '+', className: 'custom' },
+};
+
 export type SharedRunListProps = {
   shareKey: string;
 };
@@ -45,6 +54,10 @@ function readItemValue(item: SharedRunItem): string {
   if (item.value_date) return item.value_date;
   if (item.value_json && Object.keys(item.value_json).length > 0) return JSON.stringify(item.value_json);
   return 'Ej angivet';
+}
+
+function readCategoryMeta(category: string | null | undefined) {
+  return categoryMeta[category ?? ''] ?? categoryMeta.custom;
 }
 
 function countOpenDeviations(run: SharedRun): number {
@@ -282,6 +295,12 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                   onChange={() => toggleControlType(controlType.control_type_id)}
                   type="checkbox"
                 />
+                <span
+                  className={`inspector-type-mark ${readCategoryMeta(controlType.control_type_category).className}`}
+                  aria-hidden="true"
+                >
+                  {readCategoryMeta(controlType.control_type_category).icon}
+                </span>
                 {controlType.control_type_name}
               </label>
             ))
@@ -404,10 +423,18 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                 {visibleRuns.map((run) => (
                   <tr key={run.run_id}>
                     <td data-label="Datum">{formatDateTime(run.performed_at)}</td>
-                    <td data-label="Kontroll">
+                  <td data-label="Kontroll">
+                    <span className="inspector-type-cell">
+                      <span
+                        className={`inspector-type-mark ${readCategoryMeta(run.control_type_category).className}`}
+                        aria-hidden="true"
+                      >
+                        {readCategoryMeta(run.control_type_category).icon}
+                      </span>
                       <strong>{run.control_type_name}</strong>
-                      {run.notes ? <span className="inspector-table-note">{run.notes}</span> : null}
-                    </td>
+                    </span>
+                    {run.notes ? <span className="inspector-table-note">{run.notes}</span> : null}
+                  </td>
                     <td data-label="Status">
                       <span className="inspector-status-pill">{run.status}</span>
                     </td>

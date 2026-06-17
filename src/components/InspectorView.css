@@ -84,6 +84,51 @@
   font-weight: 800;
 }
 
+.inspector-type-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inspector-type-mark {
+  display: inline-flex;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #5b46e1;
+  background: #efeaff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.inspector-type-mark.temperature {
+  color: #047857;
+  background: #dff9ea;
+}
+
+.inspector-type-mark.checklist {
+  color: #1d4ed8;
+  background: #e4efff;
+}
+
+.inspector-type-mark.receiving {
+  color: #b45309;
+  background: #fff2d7;
+}
+
+.inspector-type-mark.traceability {
+  color: #5b46e1;
+  background: #efeaff;
+}
+
+.inspector-type-mark.round {
+  color: #0e7490;
+  background: #dff7fb;
+}
+
 .inspector-row {
   display: grid;
   gap: 14px;
@@ -284,6 +329,16 @@
   .inspector-check-option {
     border-color: rgba(159, 145, 255, 0.18);
     background: #121a2e;
+  }
+
+  .inspector-type-mark,
+  .inspector-type-mark.temperature,
+  .inspector-type-mark.checklist,
+  .inspector-type-mark.receiving,
+  .inspector-type-mark.traceability,
+  .inspector-type-mark.round {
+    color: #f7f9ff;
+    background: #26314a;
   }
 
   .inspector-table {

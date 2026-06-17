@@ -14,6 +14,7 @@ export type SharedRun = {
   run_id: string;
   control_type_id: string;
   control_type_name: string;
+  control_type_category: string;
   performed_at: string;
   status: string;
   notes: string | null;
@@ -25,6 +26,7 @@ export type SharedRun = {
 export type SharedControlTypeOption = {
   control_type_id: string;
   control_type_name: string;
+  control_type_category: string;
 };
 
 export type SharedRunItem = {
