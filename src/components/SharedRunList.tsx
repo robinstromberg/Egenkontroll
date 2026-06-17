@@ -100,6 +100,38 @@ function sortRuns(runs: SharedRun[], sortKey: SortKey): SharedRun[] {
   });
 }
 
+function formatCsvCell(value: string | number): string {
+  const text = String(value).replace(/"/g, '""');
+  return `"${text}"`;
+}
+
+function buildCsv(runs: SharedRun[]): string {
+  const headers = ['Datum', 'Kontroll', 'Status', 'Avvikelser', 'Anteckning'];
+  const rows = runs.map((run) => [
+    formatDateTime(run.performed_at),
+    run.control_type_name,
+    run.status,
+    readDeviationLabel(run),
+    run.notes ?? '',
+  ]);
+
+  return [headers, ...rows]
+    .map((row) => row.map(formatCsvCell).join(';'))
+    .join('\n');
+}
+
+function downloadTextFile(fileName: string, content: string, type: string) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 export function SharedRunList({ shareKey }: SharedRunListProps) {
   const [controlTypes, setControlTypes] = useState<SharedControlTypeOption[]>([]);
   const [selectedControlTypeIds, setSelectedControlTypeIds] = useState<string[]>([]);
@@ -108,6 +140,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   const [deviationFilter, setDeviationFilter] = useState<DeviationFilter>('all');
   const [sortKey, setSortKey] = useState<SortKey>('performed-desc');
   const [runs, setRuns] = useState<SharedRun[]>([]);
+  const [reportEmail, setReportEmail] = useState('');
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -173,6 +206,42 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
     runs.filter((run) => matchesDeviationFilter(run, deviationFilter)),
     sortKey,
   );
+  const selectedControlTypeNames = controlTypes
+    .filter((controlType) => selectedControlTypeIds.includes(controlType.control_type_id))
+    .map((controlType) => controlType.control_type_name);
+  const documentedDays = new Set(visibleRuns.map((run) => run.performed_at.slice(0, 10))).size;
+  const totalItems = visibleRuns.reduce((sum, run) => sum + run.items.length, 0);
+  const openDeviations = visibleRuns.reduce((sum, run) => sum + countOpenDeviations(run), 0);
+  const resolvedDeviations = visibleRuns.reduce((sum, run) => sum + countResolvedDeviations(run), 0);
+
+  function handleCsvExport() {
+    downloadTextFile(`egenkontroll-${periodStart}-${periodEnd}.csv`, buildCsv(visibleRuns), 'text/csv;charset=utf-8');
+  }
+
+  function handlePrintExport() {
+    window.print();
+  }
+
+  function handleEmailDraft() {
+    const subject = `Egenkontroll ${periodStart} - ${periodEnd}`;
+    const body = [
+      'Hej,',
+      '',
+      'Här är granskningsunderlaget för egenkontroll.',
+      '',
+      `Period: ${periodStart} - ${periodEnd}`,
+      `Kontrolltyper: ${selectedControlTypeNames.join(', ') || 'Alla valda'}`,
+      `Kontroller: ${visibleRuns.length}`,
+      `Dokumenterade dagar: ${documentedDays}`,
+      `Fält: ${totalItems}`,
+      `Öppna avvikelser: ${openDeviations}`,
+      `Åtgärdade avvikelser: ${resolvedDeviations}`,
+      '',
+      window.location.href,
+    ].join('\n');
+
+    window.location.href = `mailto:${encodeURIComponent(reportEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
 
   if (optionsLoading) return <p className="muted-copy">Laddar delning...</p>;
   if (message && !hasSearched) return <p className="form-message error-message">{message}</p>;
@@ -264,89 +333,146 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
       ) : null}
 
       {visibleRuns.length ? (
-        <div className="inspector-table-wrap">
-          <table className="inspector-table">
-            <thead>
-              <tr>
-                <th>Datum</th>
-                <th>Kontroll</th>
-                <th>Status</th>
-                <th>Avvikelser</th>
-                <th>Innehåll</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleRuns.map((run) => (
-                <tr key={run.run_id}>
-                  <td data-label="Datum">{formatDateTime(run.performed_at)}</td>
-                  <td data-label="Kontroll">
-                    <strong>{run.control_type_name}</strong>
-                    {run.notes ? <span className="inspector-table-note">{run.notes}</span> : null}
-                  </td>
-                  <td data-label="Status">
-                    <span className="inspector-status-pill">{run.status}</span>
-                  </td>
-                  <td data-label="Avvikelser">
-                    <span className={`inspector-deviation-pill ${readDeviationTone(run)}`}>
-                      {readDeviationLabel(run)}
-                    </span>
-                  </td>
-                  <td data-label="Innehåll">
-                    <details className="inspector-details">
-                      <summary>
-                        {run.items.length} fält
-                        {run.attachments.length ? ` · ${run.attachments.length} bilagor` : ''}
-                      </summary>
+        <>
+          <section className="inspector-report-panel">
+            <div>
+              <p className="inspector-report-eyebrow">Rapport</p>
+              <h3>Sammanfattning för valt urval</h3>
+              <p className="muted-copy">
+                {periodStart} - {periodEnd} · {selectedControlTypeNames.join(', ') || 'Valda kontrolltyper'}
+              </p>
+            </div>
 
-                      <div className="inspector-detail-list">
-                        {run.items.map((item) => (
-                          <section className="inspector-detail-card" key={item.id}>
-                            <strong>
-                              {readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · {readFieldLabel(item.field_snapshot)}
-                            </strong>
-                            <p>{readItemValue(item)}</p>
-                            <p className="muted-copy">Status: {item.status}</p>
-                            {item.deviation_detected ? (
-                              <p className="form-message error-message">Avvikelse: {item.deviation_reason ?? 'Åtgärd krävs'}</p>
-                            ) : null}
-                            {item.action_text ? <p className="muted-copy">Åtgärd: {item.action_text}</p> : null}
-                          </section>
-                        ))}
-                      </div>
+            <div className="inspector-report-metrics">
+              <div>
+                <strong>{visibleRuns.length}</strong>
+                <span>kontroller</span>
+              </div>
+              <div>
+                <strong>{documentedDays}</strong>
+                <span>dagar</span>
+              </div>
+              <div>
+                <strong>{openDeviations}</strong>
+                <span>öppna avvikelser</span>
+              </div>
+              <div>
+                <strong>{resolvedDeviations}</strong>
+                <span>åtgärdade</span>
+              </div>
+            </div>
 
-                      {run.deviations.length ? (
-                        <div className="inspector-detail-list">
-                          <h4>Avvikelser</h4>
-                          {run.deviations.map((deviation) => (
-                            <section className="inspector-detail-card" key={deviation.id}>
-                              <strong>{deviation.status} · {deviation.severity}</strong>
-                              <p>{deviation.description}</p>
-                              <p className="muted-copy">Åtgärd: {deviation.action_text}</p>
-                              {deviation.follow_up_comment ? <p className="muted-copy">Uppföljning: {deviation.follow_up_comment}</p> : null}
-                              {deviation.resolved_at ? <p className="muted-copy">Löst: {formatDateTime(deviation.resolved_at)}</p> : null}
-                            </section>
-                          ))}
-                        </div>
-                      ) : null}
+            <div className="inspector-export-actions">
+              <ActionButton type="button" onClick={handlePrintExport}>Skriv ut / spara PDF</ActionButton>
+              <ActionButton type="button" variant="secondary" onClick={handleCsvExport}>Exportera CSV</ActionButton>
+            </div>
 
-                      {run.attachments.length ? (
-                        <div className="inspector-detail-list">
-                          <h4>Bilagor</h4>
-                          {run.attachments.map((attachment) => (
-                            <section className="inspector-detail-card" key={attachment.id}>
-                              <strong>{attachment.file_name ?? 'Bilaga'}</strong>
-                              <p className="muted-copy">{attachment.storage_path}</p>
-                            </section>
-                          ))}
-                        </div>
-                      ) : null}
-                    </details>
-                  </td>
+            <div className="inspector-email-export">
+              <label>
+                E-postadress
+                <input
+                  className="text-input"
+                  type="email"
+                  value={reportEmail}
+                  onChange={(event) => setReportEmail(event.target.value)}
+                  placeholder="namn@example.com"
+                />
+              </label>
+              <ActionButton
+                type="button"
+                variant="secondary"
+                onClick={handleEmailDraft}
+                disabled={!reportEmail}
+              >
+                Skapa e-postutkast
+              </ActionButton>
+            </div>
+          </section>
+
+          <div className="inspector-table-wrap">
+            <table className="inspector-table">
+              <thead>
+                <tr>
+                  <th>Datum</th>
+                  <th>Kontroll</th>
+                  <th>Status</th>
+                  <th>Avvikelser</th>
+                  <th>Innehåll</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {visibleRuns.map((run) => (
+                  <tr key={run.run_id}>
+                    <td data-label="Datum">{formatDateTime(run.performed_at)}</td>
+                    <td data-label="Kontroll">
+                      <strong>{run.control_type_name}</strong>
+                      {run.notes ? <span className="inspector-table-note">{run.notes}</span> : null}
+                    </td>
+                    <td data-label="Status">
+                      <span className="inspector-status-pill">{run.status}</span>
+                    </td>
+                    <td data-label="Avvikelser">
+                      <span className={`inspector-deviation-pill ${readDeviationTone(run)}`}>
+                        {readDeviationLabel(run)}
+                      </span>
+                    </td>
+                    <td data-label="Innehåll">
+                      <details className="inspector-details">
+                        <summary>
+                          {run.items.length} fält
+                          {run.attachments.length ? ` · ${run.attachments.length} bilagor` : ''}
+                        </summary>
+
+                        <div className="inspector-detail-list">
+                          {run.items.map((item) => (
+                            <section className="inspector-detail-card" key={item.id}>
+                              <strong>
+                                {readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · {readFieldLabel(item.field_snapshot)}
+                              </strong>
+                              <p>{readItemValue(item)}</p>
+                              <p className="muted-copy">Status: {item.status}</p>
+                              {item.deviation_detected ? (
+                                <p className="form-message error-message">Avvikelse: {item.deviation_reason ?? 'Åtgärd krävs'}</p>
+                              ) : null}
+                              {item.action_text ? <p className="muted-copy">Åtgärd: {item.action_text}</p> : null}
+                            </section>
+                          ))}
+                        </div>
+
+                        {run.deviations.length ? (
+                          <div className="inspector-detail-list">
+                            <h4>Avvikelser</h4>
+                            {run.deviations.map((deviation) => (
+                              <section className="inspector-detail-card" key={deviation.id}>
+                                <strong>{deviation.status} · {deviation.severity}</strong>
+                                <p>{deviation.description}</p>
+                                <p className="muted-copy">Åtgärd: {deviation.action_text}</p>
+                                {deviation.follow_up_comment ? <p className="muted-copy">Uppföljning: {deviation.follow_up_comment}</p> : null}
+                                {deviation.resolved_at ? <p className="muted-copy">Löst: {formatDateTime(deviation.resolved_at)}</p> : null}
+                              </section>
+                            ))}
+                          </div>
+                        ) : null}
+
+                        {run.attachments.length ? (
+                          <div className="inspector-detail-list">
+                            <h4>Bilagor</h4>
+                            {run.attachments.map((attachment) => (
+                              <section className="inspector-detail-card" key={attachment.id}>
+                                <strong>{attachment.file_name ?? 'Bilaga'}</strong>
+                                <p className="muted-copy">{attachment.storage_path}</p>
+                              </section>
+                            ))}
+                          </div>
+                        ) : null}
+                      </details>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       ) : null}
     </div>
   );

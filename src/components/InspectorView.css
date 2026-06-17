@@ -93,6 +93,72 @@
   background: #fbfbff;
 }
 
+.inspector-report-panel {
+  display: grid;
+  gap: 16px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(62, 46, 135, 0.08);
+}
+
+.inspector-report-panel h3,
+.inspector-report-panel p {
+  margin: 0;
+}
+
+.inspector-report-eyebrow {
+  color: #5b46e1;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.inspector-report-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.inspector-report-metrics div {
+  display: grid;
+  gap: 4px;
+  border-radius: 14px;
+  padding: 12px;
+  background: #f7f5ff;
+}
+
+.inspector-report-metrics strong {
+  color: #172033;
+  font-size: 1.3rem;
+}
+
+.inspector-report-metrics span {
+  color: #66708a;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.inspector-export-actions,
+.inspector-email-export {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.inspector-email-export {
+  align-items: end;
+}
+
+.inspector-email-export label {
+  display: grid;
+  gap: 6px;
+  color: #28334d;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
 .inspector-table-wrap {
   overflow-x: auto;
   border: 1px solid rgba(91, 70, 225, 0.12);
@@ -194,6 +260,7 @@
 @media (prefers-color-scheme: dark) {
   .inspector-card,
   .inspector-filter-panel,
+  .inspector-report-panel,
   .inspector-row,
   .inspector-detail-card {
     border-color: rgba(159, 145, 255, 0.18);
@@ -237,6 +304,20 @@
     color: #aeb8d4;
   }
 
+  .inspector-report-eyebrow,
+  .inspector-report-metrics strong,
+  .inspector-email-export label {
+    color: #f7f9ff;
+  }
+
+  .inspector-report-metrics div {
+    background: #19233a;
+  }
+
+  .inspector-report-metrics span {
+    color: #aeb8d4;
+  }
+
   .inspector-status-pill,
   .inspector-deviation-pill.neutral {
     color: #dbe2f7;
@@ -251,6 +332,12 @@
 @media (max-width: 520px) {
   .inspector-filter-grid,
   .inspector-secondary-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .inspector-report-metrics,
+  .inspector-export-actions,
+  .inspector-email-export {
     grid-template-columns: 1fr;
   }
 
@@ -296,5 +383,34 @@
 
   .inspector-details {
     min-width: 0;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .inspector-filter-panel,
+  .inspector-export-actions,
+  .inspector-email-export {
+    display: none;
+  }
+
+  .inspector-view {
+    width: 100%;
+    padding: 0;
+  }
+
+  .inspector-card,
+  .inspector-report-panel,
+  .inspector-table-wrap {
+    border: 0;
+    box-shadow: none;
+  }
+
+  .inspector-table th {
+    color: #172033;
+    background: #eef1f8;
   }
 }
