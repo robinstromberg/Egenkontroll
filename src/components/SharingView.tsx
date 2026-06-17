@@ -9,13 +9,16 @@ export type SharingViewProps = {
   userId: string;
 };
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const validityOptions = [
+  { label: '24 timmar', value: '1' },
+  { label: '7 dagar', value: '7' },
+  { label: '30 dagar', value: '30' },
+  { label: 'Eget datum', value: 'custom' },
+];
 
-function nextWeek(): string {
+function dateAfter(days: number): string {
   const value = new Date();
-  value.setDate(value.getDate() + 7);
+  value.setDate(value.getDate() + days);
   return value.toISOString().slice(0, 10);
 }
 
@@ -34,13 +37,16 @@ function getShareStatusText(status: string): string {
 }
 
 export function SharingView({ organizationId, userId }: SharingViewProps) {
-  const [periodStart, setPeriodStart] = useState(today());
-  const [periodEnd, setPeriodEnd] = useState(today());
-  const [validUntil, setValidUntil] = useState(nextWeek());
+  const [validityPreset, setValidityPreset] = useState('7');
+  const [customValidUntil, setCustomValidUntil] = useState(dateAfter(7));
   const [links, setLinks] = useState<AccessRecord[]>([]);
   const [latestUrl, setLatestUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [message, setMessage] = useState('');
+
+  const selectedValidUntil = validityPreset === 'custom'
+    ? customValidUntil
+    : dateAfter(Number(validityPreset));
 
   const qrUrl = useMemo(() => {
     if (!latestUrl) return '';
@@ -63,9 +69,7 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
       const url = await createAccessLink({
         organizationId,
         createdBy: userId,
-        periodStart,
-        periodEnd,
-        validUntil,
+        validUntil: selectedValidUntil,
       });
       setLatestUrl(formatAccessUrl(url));
       setCopied(false);
@@ -91,22 +95,42 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
       <div>
         <p className="eyebrow">Delning</p>
         <h3 id="sharing-title">Inspektörslänk</h3>
-        <p className="muted-copy">Skapa en tidsbegränsad läslänk för kontrollhistorik.</p>
+        <p className="muted-copy">Skapa en tidsbegränsad läslänk. Inspektören väljer period i läsvyn.</p>
       </div>
 
       <form className="sharing-form" onSubmit={handleSubmit}>
-        <label>
-          Från
-          <input className="text-input" type="date" value={periodStart} onChange={(event) => setPeriodStart(event.target.value)} required />
-        </label>
-        <label>
-          Till
-          <input className="text-input" type="date" value={periodEnd} onChange={(event) => setPeriodEnd(event.target.value)} required />
-        </label>
-        <label>
-          Giltig till
-          <input className="text-input" type="date" value={validUntil} onChange={(event) => setValidUntil(event.target.value)} required />
-        </label>
+        <fieldset className="validity-options">
+          <legend>Giltighet</legend>
+          {validityOptions.map((option) => (
+            <label
+              className={validityPreset === option.value ? 'validity-option selected' : 'validity-option'}
+              key={option.value}
+            >
+              <input
+                checked={validityPreset === option.value}
+                name="validity"
+                onChange={() => setValidityPreset(option.value)}
+                type="radio"
+                value={option.value}
+              />
+              {option.label}
+            </label>
+          ))}
+        </fieldset>
+
+        {validityPreset === 'custom' ? (
+          <label>
+            Giltig till
+            <input
+              className="text-input"
+              type="date"
+              value={customValidUntil}
+              onChange={(event) => setCustomValidUntil(event.target.value)}
+              required
+            />
+          </label>
+        ) : null}
+
         <ActionButton type="submit">Skapa läslänk</ActionButton>
       </form>
 
@@ -118,7 +142,7 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
             <div>
               <p className="eyebrow">Delning skapad</p>
               <h3 id="share-modal-title">Inspektörslänk</h3>
-              <p className="muted-copy">Period: {periodStart} – {periodEnd}. Giltig till {validUntil}.</p>
+              <p className="muted-copy">Giltig till {selectedValidUntil}.</p>
             </div>
             {qrUrl ? <img className="qr-image large" src={qrUrl} alt="QR-kod för inspektörslänk" /> : null}
             <p className="share-link-box">{latestUrl}</p>
@@ -144,7 +168,6 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
             <strong className={link.status === 'active' ? 'share-status active' : 'share-status inactive'}>
               {getShareStatusText(link.status)}
             </strong>
-            <p>Period: {link.period_start} – {link.period_end}</p>
             <p>Giltig till: {new Date(link.valid_until).toLocaleDateString('sv-SE')}</p>
           </article>
         ))}

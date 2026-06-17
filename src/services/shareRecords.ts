@@ -12,6 +12,7 @@ export type AccessRecord = {
 
 export type SharedRun = {
   run_id: string;
+  control_type_id: string;
   control_type_name: string;
   performed_at: string;
   status: string;
@@ -19,6 +20,11 @@ export type SharedRun = {
   items: SharedRunItem[];
   deviations: SharedDeviation[];
   attachments: SharedAttachment[];
+};
+
+export type SharedControlTypeOption = {
+  control_type_id: string;
+  control_type_name: string;
 };
 
 export type SharedRunItem = {
@@ -62,8 +68,6 @@ export type SharedAttachment = {
 export async function createAccessLink(input: {
   organizationId: string;
   createdBy: string;
-  periodStart: string;
-  periodEnd: string;
   validUntil: string;
 }): Promise<string> {
   const secret = createShareToken();
@@ -74,8 +78,8 @@ export async function createAccessLink(input: {
     token_hash: secretHash,
     created_by: input.createdBy,
     valid_until: new Date(`${input.validUntil}T23:59:59`).toISOString(),
-    period_start: input.periodStart,
-    period_end: input.periodEnd,
+    period_start: '1900-01-01',
+    period_end: '9999-12-31',
     included_control_type_ids: [],
     status: 'active',
   });
@@ -99,8 +103,28 @@ export async function listAccessLinks(organizationId: string): Promise<AccessRec
   return (data ?? []) as AccessRecord[];
 }
 
-export async function readSharedRuns(secret: string): Promise<SharedRun[]> {
-  const { data, error } = await supabase.rpc('get_shared_control_runs', { raw_token: secret });
+export async function readSharedControlTypeOptions(secret: string): Promise<SharedControlTypeOption[]> {
+  const { data, error } = await supabase.rpc('get_shared_control_type_options', { raw_token: secret });
+
+  if (error) throw error;
+
+  return (data ?? []) as SharedControlTypeOption[];
+}
+
+export async function readSharedRuns(
+  secret: string,
+  filters: {
+    periodStart?: string;
+    periodEnd?: string;
+    controlTypeIds?: string[];
+  } = {},
+): Promise<SharedRun[]> {
+  const { data, error } = await supabase.rpc('get_shared_control_runs', {
+    raw_token: secret,
+    p_period_start: filters.periodStart || null,
+    p_period_end: filters.periodEnd || null,
+    p_control_type_ids: filters.controlTypeIds ?? [],
+  });
 
   if (error) throw error;
 
