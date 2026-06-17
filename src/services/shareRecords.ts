@@ -169,3 +169,33 @@ export async function logSharedExport(
 
   if (error) throw error;
 }
+
+export async function sendSharedReportEmail(input: {
+  secret: string;
+  email: string;
+  periodStart: string;
+  periodEnd: string;
+  controlTypeIds: string[];
+  controlTypeNames: string[];
+  summaryUrl: string;
+}): Promise<void> {
+  const response = await fetch('/api/send-inspector-report', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      rawToken: input.secret,
+      email: input.email,
+      periodStart: input.periodStart,
+      periodEnd: input.periodEnd,
+      controlTypeIds: input.controlTypeIds,
+      controlTypeNames: input.controlTypeNames,
+      summaryUrl: input.summaryUrl,
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(typeof payload.error === 'string' ? payload.error : 'Kunde inte skicka rapporten.');
+  }
+}

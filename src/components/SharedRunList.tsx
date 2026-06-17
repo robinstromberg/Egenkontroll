@@ -4,6 +4,7 @@ import {
   logSharedExport,
   readSharedControlTypeOptions,
   readSharedRuns,
+  sendSharedReportEmail,
 } from '../services/shareRecords';
 import type { SharedControlTypeOption, SharedExportType, SharedRun, SharedRunItem } from '../services/shareRecords';
 
@@ -324,6 +325,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   const [sortKey, setSortKey] = useState<SortKey>('performed-desc');
   const [runs, setRuns] = useState<SharedRun[]>([]);
   const [reportEmail, setReportEmail] = useState('');
+  const [emailSending, setEmailSending] = useState(false);
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -455,6 +457,27 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
     ].join('\n');
 
     window.location.href = `mailto:${encodeURIComponent(reportEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
+  async function handleEmailReport() {
+    try {
+      setEmailSending(true);
+      setMessage('');
+      await sendSharedReportEmail({
+        secret: shareKey,
+        email: reportEmail,
+        periodStart,
+        periodEnd,
+        controlTypeIds: selectedControlTypeIds,
+        controlTypeNames: selectedControlTypeNames,
+        summaryUrl: window.location.href,
+      });
+      setMessage('Rapporten skickades.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skicka rapporten.');
+    } finally {
+      setEmailSending(false);
+    }
   }
 
   if (optionsLoading) return <p className="muted-copy">Laddar delning...</p>;
@@ -601,10 +624,10 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
               <ActionButton
                 type="button"
                 variant="secondary"
-                onClick={handleEmailDraft}
-                disabled={!reportEmail}
+                onClick={handleEmailReport}
+                disabled={!reportEmail || emailSending}
               >
-                Skapa e-postutkast
+                {emailSending ? 'Skickar...' : 'Skicka PDF'}
               </ActionButton>
             </div>
           </section>
