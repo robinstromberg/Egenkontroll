@@ -10,6 +10,8 @@
 
 ## Manual browser test still required
 
+Detailed steps are documented in `docs/mvp-manual-test-plan.md`.
+
 - Login works with new magic link.
 - Magic link returns to Vercel and not localhost.
 - Organization setup works.
