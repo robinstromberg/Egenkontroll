@@ -8,6 +8,16 @@ import type { SharedControlTypeOption, SharedRun, SharedRunItem } from '../servi
 
 type DeviationFilter = 'all' | 'with-open' | 'with-resolved' | 'without';
 type SortKey = 'performed-desc' | 'performed-asc' | 'control-type' | 'deviation-status';
+type SharedReportSummary = {
+  periodStart: string;
+  periodEnd: string;
+  controlTypes: string;
+  runCount: number;
+  documentedDays: number;
+  itemCount: number;
+  openDeviations: number;
+  resolvedDeviations: number;
+};
 
 const categoryMeta: Record<string, { icon: string; className: string }> = {
   temperature: { icon: '°C', className: 'temperature' },
@@ -119,18 +129,177 @@ function formatCsvCell(value: string | number): string {
 }
 
 function buildCsv(runs: SharedRun[]): string {
-  const headers = ['Datum', 'Kontroll', 'Status', 'Avvikelser', 'Anteckning'];
-  const rows = runs.map((run) => [
-    formatDateTime(run.performed_at),
-    run.control_type_name,
-    run.status,
-    readDeviationLabel(run),
-    run.notes ?? '',
-  ]);
+  const headers = [
+    'Datum',
+    'Kontroll',
+    'Kategori',
+    'Status',
+    'Kontrollpunkt',
+    'Värde',
+    'Fältstatus',
+    'Avvikelse',
+    'Åtgärd',
+    'Anteckning',
+  ];
+  const rows = runs.flatMap((run) => {
+    if (run.items.length === 0) {
+      return [[
+        formatDateTime(run.performed_at),
+        run.control_type_name,
+        run.control_type_category,
+        run.status,
+        '',
+        '',
+        '',
+        readDeviationLabel(run),
+        '',
+        run.notes ?? '',
+      ]];
+    }
+
+    return run.items.map((item) => [
+      formatDateTime(run.performed_at),
+      run.control_type_name,
+      run.control_type_category,
+      run.status,
+      `${readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · ${readFieldLabel(item.field_snapshot)}`,
+      readItemValue(item),
+      item.status,
+      item.deviation_detected ? item.deviation_reason ?? 'Avvikelse' : '',
+      item.action_text ?? '',
+      run.notes ?? '',
+    ]);
+  });
 
   return [headers, ...rows]
     .map((row) => row.map(formatCsvCell).join(';'))
     .join('\n');
+}
+
+function escapeHtml(value: string | number): string {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): string {
+  const itemRows = runs.flatMap((run) => {
+    if (run.items.length === 0) {
+      return [`
+        <tr>
+          <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
+          <td>${escapeHtml(run.control_type_name)}</td>
+          <td>${escapeHtml(run.status)}</td>
+          <td></td>
+          <td></td>
+          <td>${escapeHtml(readDeviationLabel(run))}</td>
+          <td></td>
+        </tr>
+      `];
+    }
+
+    return run.items.map((item) => `
+      <tr>
+        <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
+        <td>${escapeHtml(run.control_type_name)}</td>
+        <td>${escapeHtml(run.status)}</td>
+        <td>${escapeHtml(`${readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · ${readFieldLabel(item.field_snapshot)}`)}</td>
+        <td>${escapeHtml(readItemValue(item))}</td>
+        <td>${escapeHtml(item.deviation_detected ? item.deviation_reason ?? 'Avvikelse' : '')}</td>
+        <td>${escapeHtml(item.action_text ?? '')}</td>
+      </tr>
+    `);
+  }).join('');
+
+  const deviationRows = runs.flatMap((run) => run.deviations.map((deviation) => `
+    <tr>
+      <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
+      <td>${escapeHtml(run.control_type_name)}</td>
+      <td>${escapeHtml(deviation.status)}</td>
+      <td>${escapeHtml(deviation.severity)}</td>
+      <td>${escapeHtml(deviation.description)}</td>
+      <td>${escapeHtml(deviation.action_text)}</td>
+      <td>${escapeHtml(deviation.resolved_at ? formatDateTime(deviation.resolved_at) : '')}</td>
+    </tr>
+  `)).join('');
+
+  return `
+    <!doctype html>
+    <html lang="sv">
+      <head>
+        <title>Egenkontroll - rapport</title>
+        <style>
+          body { color: #172033; font-family: Arial, sans-serif; margin: 0; padding: 28px; }
+          h1, h2, p { margin-top: 0; }
+          .muted { color: #5f6b85; }
+          .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0 24px; }
+          .metric { border: 1px solid #ddd8ff; border-radius: 12px; padding: 12px; background: #f7f5ff; }
+          .metric strong { display: block; font-size: 22px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
+          th, td { border: 1px solid #d9deea; padding: 8px; text-align: left; vertical-align: top; }
+          th { background: #f0edff; }
+          @media print { body { padding: 0; } .no-print { display: none; } }
+        </style>
+      </head>
+      <body>
+        <h1>Egenkontroll - rapport</h1>
+        <p class="muted">Period: ${escapeHtml(summary.periodStart)} - ${escapeHtml(summary.periodEnd)}</p>
+        <p class="muted">Kontrolltyper: ${escapeHtml(summary.controlTypes)}</p>
+        <div class="summary">
+          <div class="metric"><strong>${summary.runCount}</strong> kontroller</div>
+          <div class="metric"><strong>${summary.documentedDays}</strong> dokumenterade dagar</div>
+          <div class="metric"><strong>${summary.openDeviations}</strong> öppna avvikelser</div>
+          <div class="metric"><strong>${summary.resolvedDeviations}</strong> åtgärdade avvikelser</div>
+        </div>
+
+        <h2>Kontrollpunkter</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Datum</th>
+              <th>Kontroll</th>
+              <th>Status</th>
+              <th>Kontrollpunkt</th>
+              <th>Värde</th>
+              <th>Avvikelse</th>
+              <th>Åtgärd</th>
+            </tr>
+          </thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+
+        <h2>Avvikelser</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Datum</th>
+              <th>Kontroll</th>
+              <th>Status</th>
+              <th>Allvar</th>
+              <th>Beskrivning</th>
+              <th>Åtgärd</th>
+              <th>Löst</th>
+            </tr>
+          </thead>
+          <tbody>${deviationRows || '<tr><td colspan="7">Inga avvikelser i urvalet.</td></tr>'}</tbody>
+        </table>
+        <p class="no-print muted">Välj "Spara som PDF" i utskriftsdialogen för PDF.</p>
+      </body>
+    </html>
+  `;
+}
+
+function openPrintReport(runs: SharedRun[], summary: SharedReportSummary) {
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return;
+
+  printWindow.document.write(buildPrintReportHtml(runs, summary));
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
 }
 
 function downloadTextFile(fileName: string, content: string, type: string) {
@@ -226,13 +395,23 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   const totalItems = visibleRuns.reduce((sum, run) => sum + run.items.length, 0);
   const openDeviations = visibleRuns.reduce((sum, run) => sum + countOpenDeviations(run), 0);
   const resolvedDeviations = visibleRuns.reduce((sum, run) => sum + countResolvedDeviations(run), 0);
+  const reportSummary: SharedReportSummary = {
+    periodStart,
+    periodEnd,
+    controlTypes: selectedControlTypeNames.join(', ') || 'Valda kontrolltyper',
+    runCount: visibleRuns.length,
+    documentedDays,
+    itemCount: totalItems,
+    openDeviations,
+    resolvedDeviations,
+  };
 
   function handleCsvExport() {
     downloadTextFile(`egenkontroll-${periodStart}-${periodEnd}.csv`, buildCsv(visibleRuns), 'text/csv;charset=utf-8');
   }
 
   function handlePrintExport() {
-    window.print();
+    openPrintReport(visibleRuns, reportSummary);
   }
 
   function handleEmailDraft() {
