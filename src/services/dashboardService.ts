@@ -25,13 +25,6 @@ function getTodayRange() {
   };
 }
 
-function isScheduledToday(controlType: ControlType): boolean {
-  if (!controlType.active) return false;
-  if (controlType.frequency === 'daily') return true;
-  if (controlType.frequency === 'weekly') return true;
-  return false;
-}
-
 export async function listTodayControls(organizationId: string): Promise<TodayControl[]> {
   const { startIso, endIso } = getTodayRange();
 
@@ -47,9 +40,9 @@ export async function listTodayControls(organizationId: string): Promise<TodayCo
     throw controlTypesError;
   }
 
-  const scheduledTypes = ((controlTypes ?? []) as ControlType[]).filter(isScheduledToday);
+  const activeTypes = (controlTypes ?? []) as ControlType[];
 
-  if (scheduledTypes.length === 0) {
+  if (activeTypes.length === 0) {
     return [];
   }
 
@@ -65,7 +58,7 @@ export async function listTodayControls(organizationId: string): Promise<TodayCo
     throw runsError;
   }
 
-  return scheduledTypes.map((controlType) => {
+  return activeTypes.map((controlType) => {
     const latestRun = (runs ?? []).find((run) => run.control_type_id === controlType.id);
 
     return {

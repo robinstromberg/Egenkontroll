@@ -26,9 +26,11 @@ function getGreeting(value: Date): string {
   return 'God kväll';
 }
 
-function getStatusText(status: TodayControl['status']): string {
-  if (status === 'done') return 'Klar';
-  if (status === 'done_with_deviation') return 'Avvikelse';
+function getStatusText(control: TodayControl): string {
+  if (control.status === 'done') return 'Klar';
+  if (control.status === 'done_with_deviation') return 'Avvikelse';
+  if (control.controlType.frequency === 'per_delivery') return 'Vid behov';
+  if (control.controlType.frequency === 'weekly' || control.controlType.frequency === 'custom') return 'Återkommande';
   return 'Ej utförd';
 }
 
@@ -56,6 +58,55 @@ function getCategoryMeta(category: string) {
     return { className: 'round', label: 'R', name: 'Rond' };
   }
   return { className: 'custom', label: 'C', name: category };
+}
+
+function ControlSection({
+  title,
+  summary,
+  emptyText,
+  controls,
+  onStartControl,
+}: {
+  title: string;
+  summary: string;
+  emptyText: string;
+  controls: TodayControl[];
+  onStartControl: (controlTypeId: string) => void;
+}) {
+  return (
+    <section className="today-control-section" aria-label={title}>
+      <div className="today-list-heading">
+        <h4>{title}</h4>
+        <span>{summary}</span>
+      </div>
+
+      {controls.length === 0 ? (
+        <p className="muted-copy">{emptyText}</p>
+      ) : null}
+
+      {controls.map((control) => {
+        const categoryMeta = getCategoryMeta(control.controlType.category);
+        return (
+          <button
+            className={`today-control-row ${control.status}`}
+            key={control.controlType.id}
+            onClick={() => onStartControl(control.controlType.id)}
+            type="button"
+          >
+            <span className={`control-type-icon ${categoryMeta.className}`} aria-hidden="true">
+              {categoryMeta.label}
+            </span>
+            <span className="today-control-copy">
+              <strong>{control.controlType.name}</strong>
+              <span>{categoryMeta.name}</span>
+            </span>
+            <span className={getStatusClass(control.status)}>{getStatusText(control)}</span>
+            <span className="row-chevron" aria-hidden="true">›</span>
+          </button>
+        );
+      })}
+    </section>
+  );
 }
 
 export function TodayDashboard({ organizationId, userId, onStartControl }: TodayDashboardProps) {
@@ -92,14 +143,36 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
     };
   }, [organizationId]);
 
-  const completedCount = useMemo(
-    () => controls.filter((control) => control.status !== 'not_done').length,
+  const dailyControls = useMemo(
+    () => controls.filter((control) => control.controlType.frequency === 'daily'),
     [controls],
   );
 
-  const nextControl = useMemo(
-    () => controls.find((control) => control.status === 'not_done') ?? controls[0],
+  const onDemandControls = useMemo(
+    () => controls.filter((control) => control.controlType.frequency === 'per_delivery'),
     [controls],
+  );
+
+  const recurringControls = useMemo(
+    () =>
+      controls.filter(
+        (control) => control.controlType.frequency === 'weekly' || control.controlType.frequency === 'custom',
+      ),
+    [controls],
+  );
+
+  const completedCount = useMemo(
+    () => dailyControls.filter((control) => control.status !== 'not_done').length,
+    [dailyControls],
+  );
+
+  const nextControl = useMemo(
+    () =>
+      dailyControls.find((control) => control.status === 'not_done') ??
+      dailyControls[0] ??
+      onDemandControls[0] ??
+      recurringControls[0],
+    [dailyControls, onDemandControls, recurringControls],
   );
 
   async function handleResolve(deviationId: string) {
@@ -130,7 +203,7 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
       <div className="today-summary">
         <div>
           <span>Dagens kontroller</span>
-          <strong>{completedCount} av {controls.length} klara</strong>
+          <strong>{completedCount} av {dailyControls.length} klara</strong>
         </div>
         <div>
           <span>Öppna avvikelser</span>
@@ -139,36 +212,31 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
       </div>
 
       <div className="today-list" aria-label="Dagens kontroller">
-        <div className="today-list-heading">
-          <h4>Dagens kontroller</h4>
-          <span>{completedCount} av {controls.length} klara</span>
-        </div>
-
-        {controls.length === 0 && !loading ? (
-          <p className="muted-copy">Inga dagliga eller veckovisa kontroller är aktiva ännu.</p>
+        {!loading ? (
+          <>
+            <ControlSection
+              title="Ska göras idag"
+              summary={`${completedCount} av ${dailyControls.length} klara`}
+              emptyText="Inga dagliga kontroller är aktiva ännu."
+              controls={dailyControls}
+              onStartControl={onStartControl}
+            />
+            <ControlSection
+              title="Vid behov"
+              summary={`${onDemandControls.length} startbara`}
+              emptyText="Inga kontroller vid behov är aktiva ännu."
+              controls={onDemandControls}
+              onStartControl={onStartControl}
+            />
+            <ControlSection
+              title="Återkommande"
+              summary={`${recurringControls.length} aktiva`}
+              emptyText="Inga återkommande kontroller är aktiva ännu."
+              controls={recurringControls}
+              onStartControl={onStartControl}
+            />
+          </>
         ) : null}
-
-        {controls.map((control) => {
-          const categoryMeta = getCategoryMeta(control.controlType.category);
-          return (
-            <button
-              className={`today-control-row ${control.status}`}
-              key={control.controlType.id}
-              onClick={() => onStartControl(control.controlType.id)}
-              type="button"
-            >
-              <span className={`control-type-icon ${categoryMeta.className}`} aria-hidden="true">
-                {categoryMeta.label}
-              </span>
-              <span className="today-control-copy">
-                <strong>{control.controlType.name}</strong>
-                <span>{categoryMeta.name}</span>
-              </span>
-              <span className={getStatusClass(control.status)}>{getStatusText(control.status)}</span>
-              <span className="row-chevron" aria-hidden="true">›</span>
-            </button>
-          );
-        })}
       </div>
 
       {nextControl ? (

@@ -261,6 +261,26 @@ input.text-input[type="number"] {
   text-align: center;
 }
 
+input.text-input[type="date"] {
+  color-scheme: light;
+  padding-right: 12px;
+  text-align: left;
+}
+
+input.text-input[type="date"]::-webkit-calendar-picker-indicator {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  filter: invert(30%) sepia(77%) saturate(1612%) hue-rotate(230deg) brightness(90%) contrast(94%);
+  opacity: 1;
+}
+
+.text-input::placeholder {
+  color: #6b758d;
+  opacity: 1;
+}
+
 .text-input:focus {
   border-color: #5b46e1;
   box-shadow: 0 0 0 4px rgba(91, 70, 225, 0.12);
@@ -383,6 +403,20 @@ section + section {
     border-color: rgba(159, 145, 255, 0.22);
     color: #f7f9ff;
     background: #111a2f;
+  }
+
+  input.text-input[type="date"] {
+    color-scheme: dark;
+    color: #f7f9ff;
+    background: #111a2f;
+  }
+
+  input.text-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(82%) sepia(19%) saturate(1028%) hue-rotate(204deg) brightness(104%) contrast(99%);
+  }
+
+  .text-input::placeholder {
+    color: #aeb8d0;
   }
 
   .text-input:focus {

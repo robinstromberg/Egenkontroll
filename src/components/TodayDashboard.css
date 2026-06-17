@@ -70,6 +70,17 @@
   gap: 8px;
 }
 
+.today-control-section {
+  display: grid;
+  gap: 8px;
+}
+
+.today-control-section + .today-control-section {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(91, 70, 225, 0.1);
+}
+
 .today-list-heading {
   display: flex;
   align-items: center;
@@ -271,6 +282,10 @@
     color: #f7f9ff;
     background: #121a2e;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .today-control-section + .today-control-section {
+    border-top-color: rgba(159, 145, 255, 0.16);
   }
 
   .today-control-row.done {
