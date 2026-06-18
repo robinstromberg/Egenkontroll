@@ -93,3 +93,32 @@ export async function createFirstOrganization(
 
   await cloneTemplatesToOrganization(organizationId, templateIds, user.id);
 }
+
+export async function updateOrganizationBranding(input: {
+  organizationId: string;
+  name: string;
+  orgNumber: string;
+  logoUrl: string;
+  brandColor: string;
+}): Promise<Organization> {
+  const logoUrl = input.logoUrl.trim();
+  const brandColor = input.brandColor.trim();
+
+  const { data, error } = await supabase
+    .from('organizations')
+    .update({
+      name: input.name.trim(),
+      org_number: input.orgNumber.trim() || null,
+      logo_url: logoUrl || null,
+      brand_color: brandColor || null,
+    })
+    .eq('id', input.organizationId)
+    .select('*')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as Organization;
+}

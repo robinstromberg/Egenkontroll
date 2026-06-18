@@ -11,6 +11,8 @@ export type ExportType = 'pdf' | 'csv';
 export type Organization = {
   id: string;
   name: string;
+  logo_url: string | null;
+  brand_color: string | null;
   org_number: string | null;
   country_code: string;
   timezone: string;

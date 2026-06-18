@@ -13,6 +13,8 @@ export type AccessRecord = {
 export type SharedRun = {
   run_id: string;
   organization_name: string;
+  organization_logo_url: string | null;
+  organization_brand_color: string | null;
   control_type_id: string;
   control_type_name: string;
   control_type_category: string;
@@ -175,6 +177,8 @@ export async function sendSharedReportEmail(input: {
   secret: string;
   email: string;
   companyName?: string;
+  logoUrl?: string | null;
+  brandColor?: string | null;
   periodStart: string;
   periodEnd: string;
   controlTypeIds: string[];
@@ -188,6 +192,8 @@ export async function sendSharedReportEmail(input: {
       rawToken: input.secret,
       email: input.email,
       companyName: input.companyName,
+      logoUrl: input.logoUrl,
+      brandColor: input.brandColor,
       periodStart: input.periodStart,
       periodEnd: input.periodEnd,
       controlTypeIds: input.controlTypeIds,

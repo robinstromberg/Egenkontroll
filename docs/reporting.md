@@ -21,7 +21,7 @@ The endpoint:
 - validates that token, email and period are present
 - reads report rows through the token-scoped Supabase RPC `get_shared_control_runs`
 - generates a PDF attachment without extra npm dependencies
-- includes report title, shared organization name, a generated brand mark, selected period, generated timestamp, summary metrics, control rows, deviations, attachment names and page numbers
+- includes report title, shared organization name, report profile color, logo URL metadata, a generated brand mark, selected period, generated timestamp, summary metrics, control rows, deviations, attachment names and page numbers
 - can add seven-day signed attachment links to the PDF when a server-only Supabase service role key is configured
 - sends the email through Resend when email environment variables are configured
 - logs successful email exports through `log_shared_export`
@@ -49,4 +49,11 @@ When this server-only key is present, `POST /api/send-inspector-report` looks up
 
 ## Scope
 
-This is still a pragmatic first version. Reports show organization branding through the shared organization name and generated brand mark. Full logo upload/rendering still needs a dedicated organization branding model before real uploaded logos can be used in reports.
+Admins can edit organization report branding in the app menu under Verksamheten. The current profile supports:
+
+- organization name
+- organization number
+- HTTPS logo URL
+- report/profile color
+
+This is still a pragmatic first version. Browser print reports can show the logo URL as an image. The server-generated email PDF uses the organization name and profile color directly and includes the logo URL as report metadata. Uploading a private logo file and embedding it as an image in the server-generated PDF should be handled as a separate storage/rendering improvement.

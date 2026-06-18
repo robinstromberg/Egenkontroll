@@ -33,6 +33,19 @@ function readBrandInitials(value) {
   return words.slice(0, 2).map((word) => word[0]).join('').toUpperCase();
 }
 
+function readBrandColor(value) {
+  const text = String(value ?? '').trim();
+  if (!/^#[0-9A-Fa-f]{6}$/.test(text)) {
+    return [0.36, 0.27, 0.88];
+  }
+
+  return [
+    Number.parseInt(text.slice(1, 3), 16) / 255,
+    Number.parseInt(text.slice(3, 5), 16) / 255,
+    Number.parseInt(text.slice(5, 7), 16) / 255,
+  ];
+}
+
 function readItemValue(item) {
   if (item.value_text) return item.value_text;
   if (item.value_number !== null && item.value_number !== undefined) return String(item.value_number);
@@ -185,6 +198,7 @@ function buildReportLines(runs, input) {
     `Period: ${input.periodStart} - ${input.periodEnd}`,
     `Skapad: ${generatedAt}`,
     `Kontrolltyper: ${(input.controlTypeNames || []).join(', ') || 'Valda kontrolltyper'}`,
+    input.logoUrl ? `Logotyp: ${input.logoUrl}` : '',
     '',
     'Sammanfattning',
     `Kontroller i urval: ${runs.length}`,
@@ -230,6 +244,7 @@ function buildReportLines(runs, input) {
 
 function buildPdf(lines, options = {}) {
   const companyName = options.companyName || 'Verksamhet';
+  const brandColor = readBrandColor(options.brandColor);
   const initials = readBrandInitials(companyName);
   const pages = [];
   for (let index = 0; index < lines.length; index += MAX_LINES_PER_PAGE) {
@@ -251,7 +266,7 @@ function buildPdf(lines, options = {}) {
     const footer = `Sida ${pageIndex + 1} av ${pages.length}`;
     const stream = [
       'q',
-      '0.36 0.27 0.88 rg',
+      `${brandColor.map((part) => part.toFixed(3)).join(' ')} rg`,
       '50 782 38 38 re f',
       'Q',
       'BT',
@@ -383,9 +398,11 @@ export default async function handler(request, response) {
       p_control_type_ids: Array.isArray(input.controlTypeIds) ? input.controlTypeIds : [],
     });
     const runsWithAttachmentLinks = await addSignedAttachmentLinks(runs);
-    const lines = buildReportLines(runsWithAttachmentLinks, input);
     const companyName = input.companyName || input.organizationName || runsWithAttachmentLinks[0]?.organization_name || 'Verksamhet';
-    const pdf = buildPdf(lines, { companyName });
+    const logoUrl = input.logoUrl || runsWithAttachmentLinks[0]?.organization_logo_url || '';
+    const brandColor = input.brandColor || runsWithAttachmentLinks[0]?.organization_brand_color || '';
+    const lines = buildReportLines(runsWithAttachmentLinks, { ...input, logoUrl });
+    const pdf = buildPdf(lines, { companyName, brandColor });
     const subject = `Egenkontroll ${input.periodStart} - ${input.periodEnd}`;
     const text = [
       'Hej,',

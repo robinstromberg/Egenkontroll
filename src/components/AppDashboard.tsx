@@ -5,6 +5,7 @@ import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
 import { ControlTypesView } from './ControlTypesView';
 import { HistoryView } from './HistoryView';
 import { MenuView } from './MenuView';
+import { OrganizationBrandingView } from './OrganizationBrandingView';
 import { SavedControlView } from './SavedControlView';
 import type { SavedControlSummary } from './SavedControlView';
 import { SharingView } from './SharingView';
@@ -12,6 +13,7 @@ import { SuppliersView } from './SuppliersView';
 import { TodayDashboard } from './TodayDashboard';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
+import type { Organization } from '../types/database';
 
 export type AppDashboardProps = {
   activeView: AppView;
@@ -35,10 +37,15 @@ function getDisplayName(user: User): string {
 
 export function AppDashboard({ activeView, user, context, onChangeView, onSignOut }: AppDashboardProps) {
   const canManage = canManageOrganization(context.membership.role);
+  const [activeContext, setActiveContext] = useState(context);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
-  const [menuSubview, setMenuSubview] = useState<'suppliers' | null>(null);
+  const [menuSubview, setMenuSubview] = useState<'organization' | 'suppliers' | null>(null);
   const [savedSummary, setSavedSummary] = useState<SavedControlSummary | null>(null);
   const [dashboardKey, setDashboardKey] = useState(0);
+
+  useEffect(() => {
+    setActiveContext(context);
+  }, [context]);
 
   useEffect(() => {
     if (activeView !== 'today') {
@@ -61,6 +68,13 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
     setSavedSummary(null);
     setActiveControlTypeId(controlTypeId);
     onChangeView('today');
+  }
+
+  function handleOrganizationSaved(organization: Organization) {
+    setActiveContext((current) => ({
+      ...current,
+      organization,
+    }));
   }
 
   function renderView() {
@@ -117,6 +131,16 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
     }
 
     if (activeView === 'menu') {
+      if (menuSubview === 'organization') {
+        return (
+          <OrganizationBrandingView
+            organization={activeContext.organization}
+            onBack={() => setMenuSubview(null)}
+            onSaved={handleOrganizationSaved}
+          />
+        );
+      }
+
       if (menuSubview === 'suppliers') {
         return (
           <SuppliersView
@@ -129,10 +153,11 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
 
       return (
         <MenuView
-          context={context}
+          context={activeContext}
           userEmail={user.email}
           roleLabel={roleLabels[context.membership.role]}
           canManage={canManage}
+          onOpenOrganization={() => setMenuSubview('organization')}
           onOpenSuppliers={() => setMenuSubview('suppliers')}
           onSignOut={onSignOut}
         />
@@ -154,7 +179,7 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
       <div className="dashboard-header">
         <div>
           <p className="eyebrow">Inloggad</p>
-          <h2 id="dashboard-title">{context.organization.name}</h2>
+          <h2 id="dashboard-title">{activeContext.organization.name}</h2>
           <p className="muted-copy">
             {user.email} · {roleLabels[context.membership.role]}
           </p>

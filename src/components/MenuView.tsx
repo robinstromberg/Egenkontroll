@@ -7,6 +7,7 @@ export type MenuViewProps = {
   userEmail: string | null | undefined;
   roleLabel: string;
   canManage: boolean;
+  onOpenOrganization: () => void;
   onOpenSuppliers: () => void;
   onSignOut: () => Promise<void>;
 };
@@ -16,7 +17,7 @@ type MenuItem = {
   description: string;
   icon: string;
   adminOnly?: boolean;
-  action?: 'suppliers';
+  action?: 'organization' | 'suppliers';
 };
 
 const menuItems: MenuItem[] = [
@@ -30,6 +31,7 @@ const menuItems: MenuItem[] = [
     description: 'Grunduppgifter, plats och information som visas i rapporter.',
     icon: '⌂',
     adminOnly: true,
+    action: 'organization',
   },
   {
     title: 'Användare',
@@ -62,6 +64,7 @@ export function MenuView({
   userEmail,
   roleLabel,
   canManage,
+  onOpenOrganization,
   onOpenSuppliers,
   onSignOut,
 }: MenuViewProps) {
@@ -84,6 +87,7 @@ export function MenuView({
             type="button"
             key={item.title}
             onClick={() => {
+              if (item.action === 'organization') onOpenOrganization();
               if (item.action === 'suppliers') onOpenSuppliers();
             }}
           >
