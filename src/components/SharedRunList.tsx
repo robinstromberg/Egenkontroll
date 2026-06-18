@@ -26,6 +26,11 @@ type SharedReportSummary = {
   openDeviations: number;
   resolvedDeviations: number;
 };
+type DocumentationRow = {
+  id: string;
+  run: SharedRun;
+  item: SharedRunItem | null;
+};
 
 const categoryMeta: Record<string, { icon: string; className: string }> = {
   temperature: { icon: '°C', className: 'temperature' },
@@ -477,6 +482,11 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   const totalItems = visibleRuns.reduce((sum, run) => sum + run.items.length, 0);
   const openDeviations = visibleRuns.reduce((sum, run) => sum + countOpenDeviations(run), 0);
   const resolvedDeviations = visibleRuns.reduce((sum, run) => sum + countResolvedDeviations(run), 0);
+  const documentationRows = visibleRuns.flatMap<DocumentationRow>((run) => (
+    run.items.length
+      ? run.items.map((item) => ({ id: item.id, run, item }))
+      : [{ id: run.run_id, run, item: null }]
+  ));
   const companyName = visibleRuns[0]?.organization_name ?? 'Verksamhet';
   const logoUrl = visibleRuns[0]?.organization_logo_url ?? null;
   const brandColor = visibleRuns[0]?.organization_brand_color ?? '#5b46e1';
@@ -716,6 +726,59 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
               </ActionButton>
             </div>
           </section>
+
+          <div className="inspector-table-wrap">
+            <table className="inspector-table">
+              <thead>
+                <tr>
+                  <th>Datum</th>
+                  <th>Kontrolltyp</th>
+                  <th>Kontrollpunkt</th>
+                  <th>Värde/svar</th>
+                  <th>Status</th>
+                  <th>Avvikelse</th>
+                  <th>Åtgärd</th>
+                </tr>
+              </thead>
+              <tbody>
+                {documentationRows.map(({ id, run, item }) => (
+                  <tr key={id}>
+                    <td data-label="Datum">{formatDateTime(run.performed_at)}</td>
+                    <td data-label="Kontrolltyp">
+                      <span className="inspector-type-cell">
+                        <span
+                          className={`inspector-type-mark ${readCategoryMeta(run.control_type_category).className}`}
+                          aria-hidden="true"
+                        >
+                          {readCategoryMeta(run.control_type_category).icon}
+                        </span>
+                        <strong>{run.control_type_name}</strong>
+                      </span>
+                    </td>
+                    <td data-label="Kontrollpunkt">
+                      {item
+                        ? `${readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · ${readFieldLabel(item.field_snapshot)}`
+                        : 'Inga fält registrerade'}
+                    </td>
+                    <td data-label="Värde/svar">{item ? readItemValue(item) : '-'}</td>
+                    <td data-label="Status">
+                      <span className="inspector-status-pill">{item?.status ?? run.status}</span>
+                    </td>
+                    <td data-label="Avvikelse">
+                      {item?.deviation_detected ? (
+                        <span className="inspector-deviation-pill danger">
+                          {item.deviation_reason ?? 'Avvikelse'}
+                        </span>
+                      ) : (
+                        <span className="inspector-deviation-pill neutral">Ingen</span>
+                      )}
+                    </td>
+                    <td data-label="Åtgärd">{item?.action_text || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <div className="inspector-table-wrap">
             <table className="inspector-table">
