@@ -113,6 +113,8 @@ Pass criteria:
 
 Goal: confirm deviations can be created, followed up and resolved without disappearing from history.
 
+For a disposable local or staging database, `supabase/tests/deviation_lifecycle_smoke.sql` can be run as an additional rollback-based SQL smoke test for creating and resolving deviations.
+
 Steps:
 
 1. Sign in as Account A.
