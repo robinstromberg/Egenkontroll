@@ -55,6 +55,8 @@ Pass criteria:
 
 Goal: confirm inspector links work without normal login and cannot mutate data.
 
+For a disposable local or staging database, `supabase/tests/inspector_link_smoke.sql` can be run as an additional rollback-based SQL smoke test for active links, expired links and period filtering.
+
 Steps:
 
 1. Sign in as Account A owner/admin.
