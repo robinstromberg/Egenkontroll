@@ -86,7 +86,7 @@ function buildReportLines(runs, input) {
   const openDeviations = runs.reduce((sum, run) => sum + countOpenDeviations(run), 0);
   const resolvedDeviations = runs.reduce((sum, run) => sum + countResolvedDeviations(run), 0);
   const allDeviations = runs.reduce((sum, run) => sum + countAllDeviations(run), 0);
-  const companyName = input.companyName || input.organizationName || 'Verksamhet';
+  const companyName = input.companyName || input.organizationName || runs[0]?.organization_name || 'Verksamhet';
   const generatedAt = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });
   const lines = [
     companyName,

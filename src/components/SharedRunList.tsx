@@ -11,6 +11,7 @@ import type { SharedControlTypeOption, SharedExportType, SharedRun, SharedRunIte
 type DeviationFilter = 'all' | 'with-open' | 'with-resolved' | 'without';
 type SortKey = 'performed-desc' | 'performed-asc' | 'control-type' | 'deviation-status';
 type SharedReportSummary = {
+  companyName: string;
   periodStart: string;
   periodEnd: string;
   controlTypes: string;
@@ -248,6 +249,7 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
       </head>
       <body>
         <h1>Egenkontroll - rapport</h1>
+        <p class="muted">${escapeHtml(summary.companyName)}</p>
         <p class="muted">Period: ${escapeHtml(summary.periodStart)} - ${escapeHtml(summary.periodEnd)}</p>
         <p class="muted">Kontrolltyper: ${escapeHtml(summary.controlTypes)}</p>
         <div class="summary">
@@ -398,7 +400,9 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   const totalItems = visibleRuns.reduce((sum, run) => sum + run.items.length, 0);
   const openDeviations = visibleRuns.reduce((sum, run) => sum + countOpenDeviations(run), 0);
   const resolvedDeviations = visibleRuns.reduce((sum, run) => sum + countResolvedDeviations(run), 0);
+  const companyName = visibleRuns[0]?.organization_name ?? 'Verksamhet';
   const reportSummary: SharedReportSummary = {
+    companyName,
     periodStart,
     periodEnd,
     controlTypes: selectedControlTypeNames.join(', ') || 'Valda kontrolltyper',
@@ -466,6 +470,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
       await sendSharedReportEmail({
         secret: shareKey,
         email: reportEmail,
+        companyName,
         periodStart,
         periodEnd,
         controlTypeIds: selectedControlTypeIds,

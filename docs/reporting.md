@@ -21,7 +21,7 @@ The endpoint:
 - validates that token, email and period are present
 - reads report rows through the token-scoped Supabase RPC `get_shared_control_runs`
 - generates a PDF attachment without extra npm dependencies
-- includes report title, optional company name, selected period, generated timestamp, summary metrics, control rows, deviations, attachment names and page numbers
+- includes report title, shared organization name, selected period, generated timestamp, summary metrics, control rows, deviations, attachment names and page numbers
 - sends the email through Resend when email environment variables are configured
 - logs successful email exports through `log_shared_export`
 
