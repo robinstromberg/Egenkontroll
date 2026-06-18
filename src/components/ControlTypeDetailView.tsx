@@ -249,7 +249,8 @@ export function ControlTypeDetailView({
   return (
     <section className="control-type-detail" aria-labelledby="control-type-detail-title">
       <div className="control-type-detail-topbar">
-        <ActionButton variant="secondary" type="button" onClick={onBack}>
+        <ActionButton className="nav-back-button" variant="secondary" type="button" onClick={onBack}>
+          <span aria-hidden="true">←</span>
           Tillbaka
         </ActionButton>
         <div>

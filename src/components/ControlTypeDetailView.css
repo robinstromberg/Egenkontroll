@@ -4,8 +4,18 @@
 }
 
 .control-type-detail-topbar {
-  display: grid;
+  position: sticky;
+  top: 8px;
+  z-index: 8;
+  display: flex;
   gap: 12px;
+  align-items: center;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 18px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 28px rgba(62, 46, 135, 0.12);
+  backdrop-filter: blur(14px);
 }
 
 .control-type-detail-topbar h3 {
@@ -201,6 +211,7 @@
 
 @media (prefers-color-scheme: dark) {
   .control-type-detail-card,
+  .control-type-detail-topbar,
   .control-field-section,
   .control-field-form,
   .control-point-section,
@@ -210,6 +221,11 @@
     border-color: rgba(159, 145, 255, 0.18);
     background: #121a2e;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .control-type-detail-topbar {
+    background: rgba(18, 26, 46, 0.94);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
   }
 
   .control-field-section,
@@ -272,6 +288,14 @@
 }
 
 @media (max-width: 420px) {
+  .control-type-detail-topbar {
+    display: grid;
+  }
+
+  .control-type-detail-topbar .nav-back-button {
+    justify-self: start;
+  }
+
   .control-type-detail-card {
     grid-template-columns: 1fr;
   }

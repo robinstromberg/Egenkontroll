@@ -306,6 +306,24 @@ input.text-input[type="date"]::-webkit-calendar-picker-indicator {
   background: #efedff;
 }
 
+.nav-back-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(91, 70, 225, 0.2);
+  color: #2f24a3;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(62, 46, 135, 0.12);
+  white-space: nowrap;
+}
+
+.nav-back-button span {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 .form-message {
   margin: 0;
   border-radius: 18px;
@@ -392,6 +410,13 @@ section + section {
 
   .secondary-button {
     background: #211b45;
+  }
+
+  .nav-back-button {
+    border-color: rgba(185, 175, 255, 0.28);
+    color: #f7f9ff;
+    background: #1d2740;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.26);
   }
 
   .primary-button {

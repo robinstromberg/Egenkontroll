@@ -4,10 +4,19 @@
 }
 
 .suppliers-header {
+  position: sticky;
+  top: 8px;
+  z-index: 8;
   display: flex;
   gap: 12px;
   align-items: flex-start;
   justify-content: space-between;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 18px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 28px rgba(62, 46, 135, 0.12);
+  backdrop-filter: blur(14px);
 }
 
 .supplier-create-form,
@@ -90,6 +99,12 @@
     color: #f7f9ff;
   }
 
+  .suppliers-header {
+    border-color: rgba(159, 145, 255, 0.18);
+    background: rgba(18, 26, 46, 0.94);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
+  }
+
   .supplier-item {
     border-color: rgba(159, 145, 255, 0.18);
     background: #121a2e;
@@ -112,5 +127,10 @@
   .supplier-create-row {
     grid-template-columns: 1fr;
     display: grid;
+  }
+
+  .suppliers-header .nav-back-button {
+    justify-self: start;
+    order: -1;
   }
 }

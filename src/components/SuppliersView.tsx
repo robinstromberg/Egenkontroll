@@ -138,7 +138,8 @@ export function SuppliersView({ organizationId, userId, onBack }: SuppliersViewP
           <h3 id="suppliers-title">Leverantörer</h3>
           <p className="muted-copy">Återanvänd leverantörer i varumottagning och spårbarhet.</p>
         </div>
-        <ActionButton type="button" variant="secondary" onClick={onBack}>
+        <ActionButton className="nav-back-button" type="button" variant="secondary" onClick={onBack}>
+          <span aria-hidden="true">←</span>
           Tillbaka
         </ActionButton>
       </div>

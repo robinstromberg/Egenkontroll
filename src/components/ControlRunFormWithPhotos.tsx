@@ -414,7 +414,8 @@ export function ControlRunFormWithPhotos({
             <p className="eyebrow">Utför kontroll</p>
             <h3>{definition.controlType.name}</h3>
           </div>
-          <ActionButton type="button" variant="secondary" onClick={onCancel}>
+          <ActionButton className="nav-back-button" type="button" variant="secondary" onClick={onCancel}>
+            <span aria-hidden="true">←</span>
             Tillbaka
           </ActionButton>
         </div>
