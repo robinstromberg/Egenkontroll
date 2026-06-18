@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { createAccessLink, listAccessLinks, listExportLogs } from '../services/shareRecords';
 import type { AccessRecord, ExportLogRecord } from '../services/shareRecords';
@@ -74,18 +74,18 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
     return `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(latestUrl)}`;
   }, [latestUrl]);
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     const [nextLinks, nextExportLogs] = await Promise.all([
       listAccessLinks(organizationId),
       listExportLogs(organizationId),
     ]);
     setLinks(nextLinks);
     setExportLogs(nextExportLogs);
-  }
+  }, [organizationId]);
 
   useEffect(() => {
     void refresh();
-  }, [organizationId]);
+  }, [refresh]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

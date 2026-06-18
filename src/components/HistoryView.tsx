@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { collectReportRows, downloadCsvReport, openPrintReport } from '../services/reportService';
 import {
@@ -61,7 +61,7 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
-  async function loadRuns(nextFilters = filters) {
+  const loadRuns = useCallback(async (nextFilters: HistoryFilters) => {
     try {
       setLoading(true);
       setMessage('');
@@ -71,11 +71,11 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [organizationId]);
 
   useEffect(() => {
     void loadRuns({});
-  }, [organizationId]);
+  }, [loadRuns]);
 
   async function openDetail(runId: string) {
     try {

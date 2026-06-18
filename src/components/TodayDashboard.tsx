@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { listOpenDeviations, listTodayControls } from '../services/dashboardService';
 import { resolveDeviation } from '../services/deviationService';
@@ -117,7 +117,7 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
   const [message, setMessage] = useState('');
   const today = new Date();
 
-  async function loadDashboard(active = true) {
+  const loadDashboard = useCallback(async (active = true) => {
     try {
       setLoading(true);
       const [todayControls, openDeviations] = await Promise.all([
@@ -133,7 +133,7 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
     } finally {
       if (active) setLoading(false);
     }
-  }
+  }, [organizationId]);
 
   useEffect(() => {
     let active = true;
@@ -141,7 +141,7 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
     return () => {
       active = false;
     };
-  }, [organizationId]);
+  }, [loadDashboard]);
 
   const dailyControls = useMemo(
     () => controls.filter((control) => control.controlType.frequency === 'daily'),

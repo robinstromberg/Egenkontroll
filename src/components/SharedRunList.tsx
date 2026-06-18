@@ -477,27 +477,6 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
     openPrintReport(visibleRuns, reportSummary);
   }
 
-  function handleEmailDraft() {
-    const subject = `Egenkontroll ${periodStart} - ${periodEnd}`;
-    const body = [
-      'Hej,',
-      '',
-      'Här är granskningsunderlaget för egenkontroll.',
-      '',
-      `Period: ${periodStart} - ${periodEnd}`,
-      `Kontrolltyper: ${selectedControlTypeNames.join(', ') || 'Alla valda'}`,
-      `Kontroller: ${visibleRuns.length}`,
-      `Dokumenterade dagar: ${documentedDays}`,
-      `Fält: ${totalItems}`,
-      `Öppna avvikelser: ${openDeviations}`,
-      `Åtgärdade avvikelser: ${resolvedDeviations}`,
-      '',
-      window.location.href,
-    ].join('\n');
-
-    window.location.href = `mailto:${encodeURIComponent(reportEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  }
-
   async function handleEmailReport() {
     try {
       setEmailSending(true);
