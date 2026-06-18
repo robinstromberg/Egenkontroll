@@ -21,7 +21,7 @@ Latest advisor run: 2026-06-18
 - Inspector export logging uses `public.log_shared_export(raw_token text, p_export_type text, p_filters jsonb)` and only creates audit rows for valid active share tokens.
 - Inspector access is restricted by hashed token, active share status, validity period and included control type scope.
 - The inspector RPC returns run details, organization name, items, deviations and limited attachment metadata, but exposes no write path.
-- Inspector attachment metadata intentionally omits internal storage bucket/path values. Full file delivery should use a separate scoped signing flow.
+- Inspector attachment metadata intentionally omits internal storage bucket/path values. The server-side email PDF can add seven-day signed attachment links when a server-only Supabase service role key is configured; link creation is scoped to run IDs already returned by the valid share token RPC.
 - `npm run lint`, `npm run typecheck`, `node --check api/send-inspector-report.js` and `npm run build` pass after the latest inspector/reporting and lint cleanup changes.
 
 ## Supabase advisor findings
@@ -44,4 +44,4 @@ Performance advisor warnings from the latest run:
 - Test two separate real user accounts in the UI and confirm cross-organization reads return no rows.
 - Test staff vs admin controls for creating/editing control types and share links.
 - Test expired inspector links after `valid_until`.
-- Test attachment upload and attachment metadata in history/inspector views.
+- Test attachment upload, attachment metadata in history/inspector views and signed attachment links in emailed inspector reports when `SUPABASE_SERVICE_ROLE_KEY` is configured in Vercel.
