@@ -3,6 +3,9 @@
 ## Verified technically
 
 - Vercel build passes.
+- `npm run lint` passes.
+- `npm run typecheck` passes.
+- `node --check api/send-inspector-report.js` passes.
 - Public Vercel app responds.
 - Supabase starter templates exist.
 - RLS auth UID calls have been optimized where applicable.

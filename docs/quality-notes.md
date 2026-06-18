@@ -18,6 +18,7 @@ Current status:
 
 Latest technical verification:
 
+- `npm run lint`, `npm run typecheck`, `node --check api/send-inspector-report.js` and `npm run build` pass.
 - Vercel deployment for the current build passed after replacing `String.replaceAll` in `reportService` with a target-compatible regex replacement.
 - The public Vercel app responds with HTTP 200.
 - Supabase has 6 active starter templates available for onboarding.
