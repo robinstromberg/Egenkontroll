@@ -10,6 +10,7 @@ type ControlTypesViewProps = {
   organizationId: string;
   userId: string;
   canManage: boolean;
+  onBack?: () => void;
 };
 
 const categoryMeta: Record<ControlCategory, { icon: string; label: string; className: string }> = {
@@ -67,7 +68,7 @@ function writeControlTypeIdToHash(controlTypeId: string | null) {
   window.history.replaceState(null, '', nextUrl);
 }
 
-export function ControlTypesView({ organizationId, userId, canManage }: ControlTypesViewProps) {
+export function ControlTypesView({ organizationId, userId, canManage, onBack }: ControlTypesViewProps) {
   const [controlTypes, setControlTypes] = useState<ControlType[]>([]);
   const [selectedControlTypeId, setSelectedControlTypeId] = useState<string | null>(() => readControlTypeIdFromHash());
   const [loading, setLoading] = useState(true);
@@ -155,6 +156,11 @@ export function ControlTypesView({ organizationId, userId, canManage }: ControlT
   return (
     <section className="control-types-view" aria-labelledby="control-types-title">
       <div className="control-types-topbar">
+        {onBack ? (
+          <button className="nav-back-button" type="button" onClick={onBack}>
+            Tillbaka
+          </button>
+        ) : null}
         <p className="eyebrow">Lägg till</p>
         <h3 id="control-types-title">Kontrolltyper</h3>
       </div>

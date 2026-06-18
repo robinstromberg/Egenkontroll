@@ -407,7 +407,7 @@ export function ControlRunFormWithPhotos({
   const matrixField = matrixObjects.length > 1 ? definition.fields.find((field) => field.field_type === 'ok_not_ok') : undefined;
 
   return (
-    <form className="control-form" onSubmit={handleSubmit}>
+    <form className={`control-form control-form-${definition.controlType.category}`} onSubmit={handleSubmit}>
       <div className="control-form-header">
         <div className="control-form-topbar">
           <div>

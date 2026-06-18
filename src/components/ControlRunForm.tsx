@@ -160,7 +160,7 @@ export function ControlRunForm({
   const objects = definition.objects.length ? definition.objects : [null];
 
   return (
-    <form className="control-form" onSubmit={handleSubmit}>
+    <form className={`control-form control-form-${definition.controlType.category}`} onSubmit={handleSubmit}>
       <div className="control-form-header">
         <div className="control-form-topbar">
           <div>

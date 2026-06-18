@@ -219,6 +219,41 @@
   background: #ffe3e7;
 }
 
+.control-form-temperature {
+  gap: 10px;
+}
+
+.control-form-temperature .control-group {
+  gap: 8px;
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: none;
+}
+
+.control-form-temperature .control-group h4 {
+  margin-bottom: 2px;
+  font-size: 0.98rem;
+}
+
+.control-form-temperature .temperature-field {
+  gap: 5px;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.control-form-temperature .temperature-field.deviation {
+  border: 1px solid rgba(159, 29, 43, 0.22);
+  border-radius: 14px;
+  padding: 9px;
+}
+
+.control-form-temperature .temperature-input {
+  min-height: 42px;
+  font-size: 1.08rem;
+}
+
 .photo-capture-field {
   display: grid;
   gap: 8px;

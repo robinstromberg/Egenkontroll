@@ -7,55 +7,65 @@ export type MenuViewProps = {
   userEmail: string | null | undefined;
   roleLabel: string;
   canManage: boolean;
+  onOpenProfile: () => void;
   onOpenOrganization: () => void;
+  onOpenUsers: () => void;
+  onOpenControlTypes: () => void;
   onOpenSuppliers: () => void;
+  onOpenHelp: () => void;
   onSignOut: () => Promise<void>;
 };
+
+type MenuAction = 'profile' | 'organization' | 'users' | 'controlTypes' | 'suppliers' | 'help';
 
 type MenuItem = {
   title: string;
   description: string;
   icon: string;
+  action: MenuAction;
   adminOnly?: boolean;
-  action?: 'organization' | 'suppliers';
 };
 
 const menuItems: MenuItem[] = [
   {
     title: 'Min profil',
     description: 'Namn, e-post och personliga inställningar.',
-    icon: '◉',
+    icon: 'P',
+    action: 'profile',
   },
   {
     title: 'Verksamheten',
     description: 'Grunduppgifter, plats och information som visas i rapporter.',
-    icon: '⌂',
-    adminOnly: true,
+    icon: 'V',
     action: 'organization',
+    adminOnly: true,
   },
   {
     title: 'Användare',
-    description: 'Bjud in personal och hantera roller.',
-    icon: '◎',
+    description: 'Se personal och hantera roller.',
+    icon: 'A',
+    action: 'users',
     adminOnly: true,
   },
   {
     title: 'Kontrolltyper',
     description: 'Hantera kontroller, frekvenser och kontrollobjekt.',
-    icon: '□',
+    icon: 'K',
+    action: 'controlTypes',
     adminOnly: true,
   },
   {
     title: 'Leverantörer',
     description: 'Leverantörer för varumottagning och spårbarhet.',
-    icon: '◇',
-    adminOnly: true,
+    icon: 'L',
     action: 'suppliers',
+    adminOnly: true,
   },
   {
     title: 'Hjälp',
     description: 'Instruktioner, frågor och stöd vid kontroll.',
     icon: '?',
+    action: 'help',
   },
 ];
 
@@ -64,11 +74,23 @@ export function MenuView({
   userEmail,
   roleLabel,
   canManage,
+  onOpenProfile,
   onOpenOrganization,
+  onOpenUsers,
+  onOpenControlTypes,
   onOpenSuppliers,
+  onOpenHelp,
   onSignOut,
 }: MenuViewProps) {
   const visibleItems = menuItems.filter((item) => canManage || !item.adminOnly);
+  const actionHandlers: Record<MenuAction, () => void> = {
+    profile: onOpenProfile,
+    organization: onOpenOrganization,
+    users: onOpenUsers,
+    controlTypes: onOpenControlTypes,
+    suppliers: onOpenSuppliers,
+    help: onOpenHelp,
+  };
 
   return (
     <section className="menu-view" aria-labelledby="menu-title">
@@ -76,7 +98,7 @@ export function MenuView({
         <p className="eyebrow">Meny</p>
         <h3 id="menu-title">{context.organization.name}</h3>
         <p className="muted-copy">
-          {userEmail} · {roleLabel}
+          {userEmail} - {roleLabel}
         </p>
       </div>
 
@@ -86,10 +108,7 @@ export function MenuView({
             className="menu-list-item"
             type="button"
             key={item.title}
-            onClick={() => {
-              if (item.action === 'organization') onOpenOrganization();
-              if (item.action === 'suppliers') onOpenSuppliers();
-            }}
+            onClick={actionHandlers[item.action]}
           >
             <span className="menu-list-icon" aria-hidden="true">
               {item.icon}
@@ -99,7 +118,7 @@ export function MenuView({
               <span>{item.description}</span>
             </span>
             <span className="menu-list-chevron" aria-hidden="true">
-              ›
+              &rsaquo;
             </span>
           </button>
         ))}

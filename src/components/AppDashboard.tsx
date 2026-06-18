@@ -3,14 +3,17 @@ import { useEffect, useState } from 'react';
 import type { AppView } from './AppBottomNav';
 import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
 import { ControlTypesView } from './ControlTypesView';
+import { HelpView } from './HelpView';
 import { HistoryView } from './HistoryView';
 import { MenuView } from './MenuView';
 import { OrganizationBrandingView } from './OrganizationBrandingView';
+import { ProfileView } from './ProfileView';
 import { SavedControlView } from './SavedControlView';
 import type { SavedControlSummary } from './SavedControlView';
 import { SharingView } from './SharingView';
 import { SuppliersView } from './SuppliersView';
 import { TodayDashboard } from './TodayDashboard';
+import { UsersView } from './UsersView';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
 import type { Organization } from '../types/database';
@@ -39,7 +42,9 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
   const canManage = canManageOrganization(context.membership.role);
   const [activeContext, setActiveContext] = useState(context);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
-  const [menuSubview, setMenuSubview] = useState<'organization' | 'suppliers' | null>(null);
+  const [menuSubview, setMenuSubview] = useState<
+    'profile' | 'organization' | 'users' | 'controlTypes' | 'suppliers' | 'help' | null
+  >(null);
   const [savedSummary, setSavedSummary] = useState<SavedControlSummary | null>(null);
   const [dashboardKey, setDashboardKey] = useState(0);
 
@@ -131,12 +136,37 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
     }
 
     if (activeView === 'menu') {
+      if (menuSubview === 'profile') {
+        return <ProfileView user={user} onBack={() => setMenuSubview(null)} />;
+      }
+
       if (menuSubview === 'organization') {
         return (
           <OrganizationBrandingView
             organization={activeContext.organization}
             onBack={() => setMenuSubview(null)}
             onSaved={handleOrganizationSaved}
+          />
+        );
+      }
+
+      if (menuSubview === 'users') {
+        return (
+          <UsersView
+            organizationId={context.organization.id}
+            canManage={canManage}
+            onBack={() => setMenuSubview(null)}
+          />
+        );
+      }
+
+      if (menuSubview === 'controlTypes') {
+        return (
+          <ControlTypesView
+            organizationId={context.organization.id}
+            userId={user.id}
+            canManage={canManage}
+            onBack={() => setMenuSubview(null)}
           />
         );
       }
@@ -151,14 +181,22 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
         );
       }
 
+      if (menuSubview === 'help') {
+        return <HelpView onBack={() => setMenuSubview(null)} />;
+      }
+
       return (
         <MenuView
           context={activeContext}
           userEmail={user.email}
           roleLabel={roleLabels[context.membership.role]}
           canManage={canManage}
+          onOpenProfile={() => setMenuSubview('profile')}
           onOpenOrganization={() => setMenuSubview('organization')}
+          onOpenUsers={() => setMenuSubview('users')}
+          onOpenControlTypes={() => setMenuSubview('controlTypes')}
           onOpenSuppliers={() => setMenuSubview('suppliers')}
+          onOpenHelp={() => setMenuSubview('help')}
           onSignOut={onSignOut}
         />
       );

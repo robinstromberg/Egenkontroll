@@ -12,6 +12,16 @@ export type OrganizationContext = {
   organization: Organization;
 };
 
+export type OrganizationMemberSummary = {
+  id: string;
+  user_id: string;
+  role: OrganizationRole;
+  status: string;
+  email: string | null;
+  full_name: string;
+  created_at: string;
+};
+
 type MembershipWithOrganization = OrganizationMembership & {
   organizations: Organization | null;
 };
@@ -96,6 +106,63 @@ export async function createFirstOrganization(
   }
 
   await cloneTemplatesToOrganization(organizationId, templateIds, user.id);
+}
+
+export async function updateProfile(input: {
+  userId: string;
+  fullName: string;
+  email: string | null;
+}): Promise<void> {
+  const { error } = await supabase.from('profiles').upsert({
+    id: input.userId,
+    full_name: input.fullName.trim(),
+    email: input.email,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function listOrganizationMembers(organizationId: string): Promise<OrganizationMemberSummary[]> {
+  const { data: memberships, error: membershipError } = await supabase
+    .from('organization_memberships')
+    .select('id, user_id, role, status, created_at')
+    .eq('organization_id', organizationId)
+    .order('created_at', { ascending: true });
+
+  if (membershipError) {
+    throw membershipError;
+  }
+
+  const membershipRows = (memberships ?? []) as Pick<
+    OrganizationMembership,
+    'id' | 'user_id' | 'role' | 'status' | 'created_at'
+  >[];
+  const userIds = membershipRows.map((membership) => membership.user_id);
+
+  const { data: profiles, error: profileError } = userIds.length
+    ? await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds)
+    : { data: [], error: null };
+
+  const profileRows = profileError ? [] : (profiles ?? []) as { id: string; full_name: string; email: string | null }[];
+  const profileById = new Map(profileRows.map((profile) => [profile.id, profile]));
+
+  return membershipRows.map((membership) => {
+    const profile = profileById.get(membership.user_id);
+    return {
+      id: membership.id,
+      user_id: membership.user_id,
+      role: membership.role,
+      status: membership.status,
+      email: profile?.email ?? null,
+      full_name: profile?.full_name ?? '',
+      created_at: membership.created_at,
+    };
+  });
 }
 
 async function loadImage(file: File): Promise<HTMLImageElement> {
