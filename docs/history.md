@@ -30,4 +30,4 @@ Detaljvyn visar:
 
 ## Avgränsning
 
-Bilagor visas som metadata och storage path i historik, inspektörsvy och rapportunderlag. Bildförhandsvisning, signerade visningslänkar och inbäddade bilagor i PDF kan byggas vidare senare.
+Bilagor visas som metadata i historik, inspektörsvy och rapportunderlag utan att interna storage paths visas i gränssnittet. Bildförhandsvisning, signerade visningslänkar och inbäddade bilagor i PDF kan byggas vidare senare med ett separat åtkomstflöde.

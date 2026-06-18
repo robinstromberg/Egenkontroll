@@ -39,6 +39,21 @@ function getRunStatusText(status: string): string {
   return status;
 }
 
+function formatFileSize(value: number | null): string {
+  if (!value) return '';
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${Math.round(value / 1024)} kB`;
+  return `${(value / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`;
+}
+
+function readAttachmentMeta(attachment: ControlRunDetail['attachments'][number]): string {
+  return [
+    attachment.content_type,
+    formatFileSize(attachment.size_bytes),
+    `Registrerad ${formatDateTime(attachment.created_at)}`,
+  ].filter(Boolean).join(' · ');
+}
+
 export function HistoryView({ organizationId }: HistoryViewProps) {
   const [filters, setFilters] = useState<HistoryFilters>({});
   const [runs, setRuns] = useState<ControlRunSummary[]>([]);
@@ -205,7 +220,7 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
               {detail.attachments.map((attachment) => (
                 <article className="history-detail-card" key={attachment.id}>
                   <strong>{attachment.file_name ?? 'Bilaga'}</strong>
-                  <p className="muted-copy">{attachment.storage_path}</p>
+                  <p className="muted-copy">{readAttachmentMeta(attachment)}</p>
                 </article>
               ))}
             </div>
