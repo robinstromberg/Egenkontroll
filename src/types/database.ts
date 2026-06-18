@@ -13,6 +13,11 @@ export type Organization = {
   name: string;
   logo_url: string | null;
   brand_color: string | null;
+  logo_storage_bucket: string | null;
+  logo_storage_path: string | null;
+  logo_file_name: string | null;
+  logo_content_type: string | null;
+  logo_size_bytes: number | null;
   org_number: string | null;
   country_code: string;
   timezone: string;

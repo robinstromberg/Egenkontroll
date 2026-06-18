@@ -9,7 +9,7 @@ All kunddata ska vara kopplad till en verksamhet via `organization_id`. Det gör
 ## Centrala Tabeller
 
 ### `organizations`
-Verksamhetens rapportbranding lagras frivilligt som `logo_url` och `brand_color`.
+Verksamhetens rapportbranding lagras frivilligt som `logo_url`, `brand_color` och metadata fÃ¶r privat uppladdad logotyp i `organization-branding`.
 Verksamheter/kundkonton. Innehåller namn, land, tidszon, standardspråk och prenumerationsstatus.
 
 ### `profiles`

@@ -53,7 +53,10 @@ Admins can edit organization report branding in the app menu under Verksamheten.
 
 - organization name
 - organization number
-- HTTPS logo URL
+- private uploaded JPEG logo
+- optional HTTPS logo URL for browser print fallback
 - report/profile color
 
-This is still a pragmatic first version. Browser print reports can show the logo URL as an image. The server-generated email PDF uses the organization name and profile color directly and includes the logo URL as report metadata. Uploading a private logo file and embedding it as an image in the server-generated PDF should be handled as a separate storage/rendering improvement.
+Uploaded logos are stored in the private Supabase Storage bucket `organization-branding`, scoped by organization id. Admins can upload, read, update and delete files for their own organization. The public inspector RPC does not expose logo storage bucket/path values.
+
+Browser print reports can show the optional external logo URL as an image. The server-generated email PDF uses the private uploaded JPEG logo when available and the Vercel server has `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`; otherwise it falls back to organization name, profile color and generated initials.

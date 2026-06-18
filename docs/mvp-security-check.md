@@ -14,6 +14,7 @@ Latest advisor run: 2026-06-18
 - Organization membership/admin RLS helper functions now live in the private schema and are no longer directly executable as public RPCs.
 - The first organization onboarding path was smoke-tested with a rollback transaction: a signed-in creator can create an organization and their first owner membership.
 - Storage policies for `control-attachments` are scoped to authenticated organization members using the organization id in the storage path.
+- Storage policies for `organization-branding` are scoped to authenticated organization admins using the organization id in the storage path.
 - A live read-only check on 2026-06-18 confirmed the `control-attachments` bucket exists, is private, has a 10 MB file size limit and allows JPEG, PNG, WebP and PDF files.
 - A live read-only check on 2026-06-18 confirmed storage `SELECT` and `INSERT` policies for `control-attachments` are limited to `authenticated` users where the first storage path segment matches an organization membership.
 - Inspector documentation access is read-only through `public.get_shared_control_runs(raw_token text, p_period_start date, p_period_end date, p_control_type_ids uuid[])`.
@@ -45,3 +46,4 @@ Performance advisor warnings from the latest run:
 - Test staff vs admin controls for creating/editing control types and share links.
 - Test expired inspector links after `valid_until`.
 - Test attachment upload, attachment metadata in history/inspector views and signed attachment links in emailed inspector reports when `SUPABASE_SERVICE_ROLE_KEY` is configured in Vercel.
+- Test organization logo upload from Meny > Verksamheten and confirm server-generated inspector PDF falls back cleanly when no private JPEG logo exists.
