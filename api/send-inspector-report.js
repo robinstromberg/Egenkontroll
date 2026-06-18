@@ -112,6 +112,36 @@ function countAllDeviations(run) {
   return (run.deviations || []).length;
 }
 
+function matchesDeviationFilter(run, filter) {
+  const openCount = countOpenDeviations(run);
+  const resolvedCount = countResolvedDeviations(run);
+
+  if (filter === 'with-open') return openCount > 0;
+  if (filter === 'with-resolved') return resolvedCount > 0 && openCount === 0;
+  if (filter === 'without') return (run.deviations || []).length === 0;
+  return true;
+}
+
+function sortRuns(runs, sortKey) {
+  return [...runs].sort((first, second) => {
+    if (sortKey === 'performed-asc') {
+      return new Date(first.performed_at).getTime() - new Date(second.performed_at).getTime();
+    }
+
+    if (sortKey === 'control-type') {
+      return String(first.control_type_name || '').localeCompare(String(second.control_type_name || ''), 'sv-SE');
+    }
+
+    if (sortKey === 'deviation-status') {
+      return countOpenDeviations(second) - countOpenDeviations(first)
+        || countResolvedDeviations(second) - countResolvedDeviations(first)
+        || new Date(second.performed_at).getTime() - new Date(first.performed_at).getTime();
+    }
+
+    return new Date(second.performed_at).getTime() - new Date(first.performed_at).getTime();
+  });
+}
+
 function formatPercent(part, total) {
   if (!total) return '0%';
   return `${Math.round((part / total) * 100)}%`;
@@ -288,6 +318,8 @@ function buildReportLines(runs, input) {
     `Period: ${input.periodStart} - ${input.periodEnd}`,
     `Skapad: ${generatedAt}`,
     `Kontrolltyper: ${(input.controlTypeNames || []).join(', ') || 'Valda kontrolltyper'}`,
+    input.deviationFilterLabel ? `Avvikelsefilter: ${input.deviationFilterLabel}` : '',
+    input.sortLabel ? `Sortering: ${input.sortLabel}` : '',
     input.logoUrl ? `Logotyp: ${input.logoUrl}` : '',
     '',
     'Sammanfattning',
@@ -506,13 +538,29 @@ export default async function handler(request, response) {
       return jsonResponse(response, 400, { error: 'Token, e-post och period krävs.' });
     }
 
+    const email = String(input.email).trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return jsonResponse(response, 400, { error: 'Ange en giltig e-postadress.' });
+    }
+
     const runs = await callSupabaseRpc('get_shared_control_runs', {
       raw_token: input.rawToken,
       p_period_start: input.periodStart,
       p_period_end: input.periodEnd,
       p_control_type_ids: Array.isArray(input.controlTypeIds) ? input.controlTypeIds : [],
     });
-    const runsWithAttachmentLinks = await addSignedAttachmentLinks(runs);
+    const deviationFilter = typeof input.deviationFilter === 'string' ? input.deviationFilter : 'all';
+    const sort = typeof input.sort === 'string' ? input.sort : 'performed-desc';
+    const visibleRuns = sortRuns(
+      runs.filter((run) => matchesDeviationFilter(run, deviationFilter)),
+      sort,
+    );
+
+    if (visibleRuns.length === 0) {
+      return jsonResponse(response, 404, { error: 'Inga kontroller matchar urvalet.' });
+    }
+
+    const runsWithAttachmentLinks = await addSignedAttachmentLinks(visibleRuns);
     const privateLogo = await readPrivateReportLogo(runsWithAttachmentLinks);
     const companyName = input.companyName || input.organizationName || runsWithAttachmentLinks[0]?.organization_name || 'Verksamhet';
     const logoUrl = input.logoUrl || runsWithAttachmentLinks[0]?.organization_logo_url || '';
@@ -526,12 +574,12 @@ export default async function handler(request, response) {
       'Här kommer rapporten för egenkontroll som PDF.',
       '',
       `Period: ${input.periodStart} - ${input.periodEnd}`,
-      `Kontroller: ${runs.length}`,
+      `Kontroller: ${visibleRuns.length}`,
       input.summaryUrl ? `Länk: ${input.summaryUrl}` : '',
     ].filter(Boolean).join('\n');
 
     const sendResult = await sendWithResend({
-      to: input.email,
+      to: email,
       subject,
       text,
       filename: `egenkontroll-${input.periodStart}-${input.periodEnd}.pdf`,
@@ -546,9 +594,11 @@ export default async function handler(request, response) {
         period_end: input.periodEnd,
         control_type_ids: Array.isArray(input.controlTypeIds) ? input.controlTypeIds : [],
         control_type_names: Array.isArray(input.controlTypeNames) ? input.controlTypeNames : [],
+        deviation_filter: deviationFilter,
+        sort,
         delivery: 'email',
-        recipient: input.email,
-        run_count: runs.length,
+        recipient: email,
+        run_count: visibleRuns.length,
       },
     }).catch(() => null);
 

@@ -183,6 +183,10 @@ export async function sendSharedReportEmail(input: {
   periodEnd: string;
   controlTypeIds: string[];
   controlTypeNames: string[];
+  deviationFilter?: string;
+  deviationFilterLabel?: string;
+  sort?: string;
+  sortLabel?: string;
   summaryUrl: string;
 }): Promise<void> {
   const response = await fetch('/api/send-inspector-report', {
@@ -198,6 +202,10 @@ export async function sendSharedReportEmail(input: {
       periodEnd: input.periodEnd,
       controlTypeIds: input.controlTypeIds,
       controlTypeNames: input.controlTypeNames,
+      deviationFilter: input.deviationFilter,
+      deviationFilterLabel: input.deviationFilterLabel,
+      sort: input.sort,
+      sortLabel: input.sortLabel,
       summaryUrl: input.summaryUrl,
     }),
   });

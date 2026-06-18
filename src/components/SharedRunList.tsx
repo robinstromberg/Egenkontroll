@@ -207,6 +207,10 @@ function escapeHtml(value: string | number): string {
     .replace(/'/g, '&#039;');
 }
 
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 function readBrandInitials(value: string): string {
   const words = value.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return 'EK';
@@ -528,12 +532,18 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   }
 
   async function handleEmailReport() {
+    const email = reportEmail.trim();
+    if (!isValidEmail(email)) {
+      setMessage('Ange en giltig e-postadress.');
+      return;
+    }
+
     try {
       setEmailSending(true);
       setMessage('');
       await sendSharedReportEmail({
         secret: shareKey,
-        email: reportEmail,
+        email,
         companyName,
         logoUrl,
         brandColor,
@@ -541,6 +551,10 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
         periodEnd,
         controlTypeIds: selectedControlTypeIds,
         controlTypeNames: selectedControlTypeNames,
+        deviationFilter,
+        deviationFilterLabel: deviationFilterLabels[deviationFilter],
+        sort: sortKey,
+        sortLabel: sortLabels[sortKey],
         summaryUrl: window.location.href,
       });
       setMessage('Rapporten skickades.');
@@ -696,7 +710,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                 type="button"
                 variant="secondary"
                 onClick={handleEmailReport}
-                disabled={!reportEmail || emailSending}
+                disabled={!isValidEmail(reportEmail) || emailSending}
               >
                 {emailSending ? 'Skickar...' : 'Skicka PDF'}
               </ActionButton>
