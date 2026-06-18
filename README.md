@@ -30,7 +30,7 @@ Magic link-inloggning använder `VITE_APP_URL` som redirect-adress.
 I Vercel ska `VITE_APP_URL` peka på den publika appdomänen, till exempel:
 
 ```text
-https://egenkontroll-robinstrombergs-projects.vercel.app
+https://egenkontroll-indol.vercel.app
 ```
 
 I Supabase Auth behöver samma domän vara tillåten som Site URL/Redirect URL. `localhost` ska bara användas för lokal utveckling.
