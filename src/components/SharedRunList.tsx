@@ -17,6 +17,9 @@ type SharedReportSummary = {
   periodStart: string;
   periodEnd: string;
   controlTypes: string;
+  deviationFilter: string;
+  sort: string;
+  generatedAt: string;
   runCount: number;
   documentedDays: number;
   itemCount: number;
@@ -31,6 +34,20 @@ const categoryMeta: Record<string, { icon: string; className: string }> = {
   traceability: { icon: 'SP', className: 'traceability' },
   round: { icon: 'R', className: 'round' },
   custom: { icon: '+', className: 'custom' },
+};
+
+const deviationFilterLabels: Record<DeviationFilter, string> = {
+  all: 'Alla kontroller',
+  'with-open': 'Med öppna avvikelser',
+  'with-resolved': 'Med lösta avvikelser',
+  without: 'Utan avvikelser',
+};
+
+const sortLabels: Record<SortKey, string> = {
+  'performed-desc': 'Senaste först',
+  'performed-asc': 'Äldsta först',
+  'control-type': 'Kontrolltyp A-Ö',
+  'deviation-status': 'Avvikelser först',
 };
 
 export type SharedRunListProps = {
@@ -210,6 +227,7 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
           <td>${escapeHtml(run.status)}</td>
           <td></td>
           <td></td>
+          <td></td>
           <td>${escapeHtml(readDeviationLabel(run))}</td>
           <td></td>
         </tr>
@@ -223,6 +241,7 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
         <td>${escapeHtml(run.status)}</td>
         <td>${escapeHtml(`${readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · ${readFieldLabel(item.field_snapshot)}`)}</td>
         <td>${escapeHtml(readItemValue(item))}</td>
+        <td>${escapeHtml(item.status)}</td>
         <td>${escapeHtml(item.deviation_detected ? item.deviation_reason ?? 'Avvikelse' : '')}</td>
         <td>${escapeHtml(item.action_text ?? '')}</td>
       </tr>
@@ -264,9 +283,11 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
           .brand-logo { object-fit: contain; border: 1px solid #ddd8ff; }
           .brand h1 { margin: 0; }
           .muted { color: #5f6b85; }
-          .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0 24px; }
+          .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 18px 0 24px; }
           .metric { border: 1px solid #ddd8ff; border-radius: 12px; padding: 12px; background: #f7f5ff; }
           .metric strong { display: block; font-size: 22px; }
+          .filters { border: 1px solid #d9deea; border-radius: 12px; margin: 18px 0 24px; padding: 12px; }
+          .filters p { margin: 4px 0; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
           th, td { border: 1px solid #d9deea; padding: 8px; text-align: left; vertical-align: top; }
           th { background: #f0edff; }
@@ -281,11 +302,18 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
             <p class="muted">${escapeHtml(summary.companyName)}</p>
           </div>
         </div>
-        <p class="muted">Period: ${escapeHtml(summary.periodStart)} - ${escapeHtml(summary.periodEnd)}</p>
-        <p class="muted">Kontrolltyper: ${escapeHtml(summary.controlTypes)}</p>
+        <p class="muted">Skapad: ${escapeHtml(summary.generatedAt)}</p>
+        <section class="filters">
+          <h2>Urval</h2>
+          <p><strong>Period:</strong> ${escapeHtml(summary.periodStart)} - ${escapeHtml(summary.periodEnd)}</p>
+          <p><strong>Kontrolltyper:</strong> ${escapeHtml(summary.controlTypes)}</p>
+          <p><strong>Avvikelsefilter:</strong> ${escapeHtml(summary.deviationFilter)}</p>
+          <p><strong>Sortering:</strong> ${escapeHtml(summary.sort)}</p>
+        </section>
         <div class="summary">
           <div class="metric"><strong>${summary.runCount}</strong> kontroller</div>
           <div class="metric"><strong>${summary.documentedDays}</strong> dokumenterade dagar</div>
+          <div class="metric"><strong>${summary.itemCount}</strong> kontrollpunkter</div>
           <div class="metric"><strong>${summary.openDeviations}</strong> öppna avvikelser</div>
           <div class="metric"><strong>${summary.resolvedDeviations}</strong> åtgärdade avvikelser</div>
         </div>
@@ -299,6 +327,7 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
               <th>Status</th>
               <th>Kontrollpunkt</th>
               <th>Värde</th>
+              <th>Fältstatus</th>
               <th>Avvikelse</th>
               <th>Åtgärd</th>
             </tr>
@@ -339,14 +368,15 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
   `;
 }
 
-function openPrintReport(runs: SharedRun[], summary: SharedReportSummary) {
+function openPrintReport(runs: SharedRun[], summary: SharedReportSummary): boolean {
   const printWindow = window.open('', '_blank');
-  if (!printWindow) return;
+  if (!printWindow) return false;
 
   printWindow.document.write(buildPrintReportHtml(runs, summary));
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
+  return true;
 }
 
 function downloadTextFile(fileName: string, content: string, type: string) {
@@ -453,6 +483,9 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
     periodStart,
     periodEnd,
     controlTypes: selectedControlTypeNames.join(', ') || 'Valda kontrolltyper',
+    deviationFilter: deviationFilterLabels[deviationFilter],
+    sort: sortLabels[sortKey],
+    generatedAt: new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date()),
     runCount: visibleRuns.length,
     documentedDays,
     itemCount: totalItems,
@@ -485,8 +518,13 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   }
 
   async function handlePrintExport() {
+    const opened = openPrintReport(visibleRuns, reportSummary);
+    if (!opened) {
+      setMessage('Kunde inte öppna PDF-vyn. Tillåt popup-fönster och försök igen.');
+      return;
+    }
+
     await recordExport('pdf');
-    openPrintReport(visibleRuns, reportSummary);
   }
 
   async function handleEmailReport() {
