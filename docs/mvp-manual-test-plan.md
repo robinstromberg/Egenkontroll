@@ -36,6 +36,8 @@ Pass criteria:
 
 Goal: confirm that staff can work with controls but cannot administer structure or sharing.
 
+For a disposable local or staging database, `supabase/tests/admin_staff_permissions_smoke.sql` can be run as an additional rollback-based SQL smoke test for staff/admin permission boundaries.
+
 Steps:
 
 1. Sign in as Account A owner/admin.
