@@ -14,6 +14,8 @@ Do not use production customer data for these tests.
 
 Goal: confirm that organization-scoped data cannot leak between businesses.
 
+For a disposable local or staging database, `supabase/tests/rls_isolation_smoke.sql` can be run as an additional rollback-based SQL smoke test after migrations are applied.
+
 Steps:
 
 1. Sign in as Account A and create organization A.
