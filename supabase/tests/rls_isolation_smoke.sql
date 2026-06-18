@@ -158,6 +158,44 @@ values
     'RLS smoke action B'
   );
 
+insert into public.attachments (
+  id,
+  organization_id,
+  control_run_id,
+  control_run_item_id,
+  storage_bucket,
+  storage_path,
+  file_name,
+  content_type,
+  size_bytes,
+  uploaded_by
+)
+values
+  (
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa81',
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01',
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa31',
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa51',
+    'control-attachments',
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa31/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa51/rls-smoke-a.jpg',
+    'rls-smoke-a.jpg',
+    'image/jpeg',
+    128,
+    'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1'
+  ),
+  (
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb82',
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb02',
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb32',
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb52',
+    'control-attachments',
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb02/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb32/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb52/rls-smoke-b.jpg',
+    'rls-smoke-b.jpg',
+    'image/jpeg',
+    128,
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
+  );
+
 insert into public.share_links (
   id,
   organization_id,
@@ -231,6 +269,11 @@ begin
     raise exception 'RLS failure: Account A can read organization B deviations';
   end if;
 
+  select count(*) into visible_count from public.attachments where organization_id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb02';
+  if visible_count <> 0 then
+    raise exception 'RLS failure: Account A can read organization B attachments';
+  end if;
+
   select count(*) into visible_count from public.share_links where organization_id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb02';
   if visible_count <> 0 then
     raise exception 'RLS failure: Account A can read organization B share links';
@@ -256,6 +299,11 @@ begin
   select count(*) into visible_count from public.deviations where organization_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01';
   if visible_count <> 0 then
     raise exception 'RLS failure: Account B can read organization A deviations';
+  end if;
+
+  select count(*) into visible_count from public.attachments where organization_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa01';
+  if visible_count <> 0 then
+    raise exception 'RLS failure: Account B can read organization A attachments';
   end if;
 
   raise notice 'RLS isolation smoke test passed. Rolling back test data.';
