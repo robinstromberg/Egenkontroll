@@ -165,6 +165,54 @@
   background: #f7fff9;
 }
 
+.date-input-shell {
+  position: relative;
+  display: grid;
+}
+
+.date-input {
+  min-height: 50px;
+  padding-left: 52px;
+  font-weight: 800;
+}
+
+.date-input-calendar {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  z-index: 1;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 2px solid #5b46e1;
+  border-radius: 8px;
+  color: #5b46e1;
+  background: #efedff;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.date-input-calendar::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.date-input-calendar span {
+  width: 4px;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 7px 0 0 currentColor;
+}
+
 .temperature-field.deviation {
   border-color: rgba(159, 29, 43, 0.22);
   background: #fff8f9;
@@ -224,19 +272,31 @@
 }
 
 .control-form-temperature .control-group {
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(132px, 0.78fr);
+  gap: 8px 10px;
+  align-items: center;
   border-radius: 14px;
-  padding: 10px 12px;
+  padding: 9px 10px;
   box-shadow: none;
 }
 
 .control-form-temperature .control-group h4 {
   margin-bottom: 2px;
-  font-size: 0.98rem;
+  font-size: 0.94rem;
+  line-height: 1.15;
+}
+
+.control-form-temperature .control-group .muted-copy {
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+.control-form-temperature .control-field {
+  gap: 5px;
 }
 
 .control-form-temperature .temperature-field {
-  gap: 5px;
+  gap: 4px;
   border: 0;
   border-radius: 0;
   padding: 0;
@@ -250,8 +310,12 @@
 }
 
 .control-form-temperature .temperature-input {
-  min-height: 42px;
-  font-size: 1.08rem;
+  min-height: 38px;
+  font-size: 1rem;
+}
+
+.control-form-temperature .temperature-meta-row {
+  font-size: 0.72rem;
 }
 
 .photo-capture-field {
@@ -467,8 +531,14 @@
   }
 
   .temperature-unit,
-  .temperature-meta-row {
+  .temperature-meta-row,
+  .date-input-calendar {
     color: #aeb8d0;
+  }
+
+  .date-input-calendar {
+    border-color: rgba(185, 175, 255, 0.72);
+    background: #211b45;
   }
 
   .temperature-status.good {
@@ -551,5 +621,9 @@
 
   .temperature-meta-row {
     display: grid;
+  }
+
+  .control-form-temperature .control-group {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

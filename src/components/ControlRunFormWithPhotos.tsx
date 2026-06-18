@@ -63,6 +63,14 @@ type SupplierSelectFieldProps = {
   onChange: (value: string) => void;
 };
 
+type DateFieldProps = {
+  id: string;
+  label: string;
+  value: string;
+  required: boolean;
+  onChange: (value: string) => void;
+};
+
 function responseKey(objectId: string | null, fieldId: string): string {
   return `${objectId ?? 'global'}:${fieldId}`;
 }
@@ -275,6 +283,27 @@ function SupplierSelectField({
       {suppliers.length === 0 ? (
         <p className="field-hint">Lägg till leverantörer under Meny innan fältet används.</p>
       ) : null}
+    </>
+  );
+}
+
+function DateField({ id, label, value, required, onChange }: DateFieldProps) {
+  return (
+    <>
+      <label htmlFor={id}>{label}</label>
+      <div className="date-input-shell">
+        <span className="date-input-calendar" aria-hidden="true">
+          <span />
+        </span>
+        <input
+          className="text-input date-input"
+          id={id}
+          type="date"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          required={required}
+        />
+      </div>
     </>
   );
 }
@@ -502,6 +531,14 @@ export function ControlRunFormWithPhotos({
                       value={value}
                       required={field.required}
                       suppliers={suppliers}
+                      onChange={(nextValue) => updateResponse(key, nextValue)}
+                    />
+                  ) : field.field_type === 'date' ? (
+                    <DateField
+                      id={key}
+                      label={field.label}
+                      value={value}
+                      required={field.required}
                       onChange={(nextValue) => updateResponse(key, nextValue)}
                     />
                   ) : field.field_type === 'textarea' ? (

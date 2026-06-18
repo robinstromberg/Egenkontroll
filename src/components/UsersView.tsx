@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BackButton } from './ui/BackButton';
 import { listOrganizationMembers } from '../services/organizationService';
 import type { OrganizationMemberSummary } from '../services/organizationService';
 import './MenuDestinationView.css';
@@ -50,9 +51,7 @@ export function UsersView({ organizationId, canManage, onBack }: UsersViewProps)
   return (
     <section className="menu-destination-view" aria-labelledby="users-title">
       <div className="view-topbar">
-        <button className="nav-back-button" type="button" onClick={onBack}>
-          Tillbaka
-        </button>
+        <BackButton onClick={onBack} />
         <div>
           <p className="eyebrow">Användare</p>
           <h3 id="users-title">Roller och åtkomst</h3>

@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { BackButton } from './ui/BackButton';
 import type { Organization } from '../types/database';
 import { updateOrganizationBranding, uploadOrganizationLogo } from '../services/organizationService';
 import './OrganizationBrandingView.css';
@@ -70,9 +71,7 @@ export function OrganizationBrandingView({
   return (
     <section className="organization-branding-view" aria-labelledby="organization-branding-title">
       <div className="view-topbar">
-        <button className="nav-back-button" type="button" onClick={onBack}>
-          Tillbaka
-        </button>
+        <BackButton onClick={onBack} />
         <div>
           <p className="eyebrow">Verksamheten</p>
           <h3 id="organization-branding-title">Rapportprofil</h3>

@@ -1,3 +1,4 @@
+import { BackButton } from './ui/BackButton';
 import './MenuDestinationView.css';
 
 export type HelpViewProps = {
@@ -27,9 +28,7 @@ export function HelpView({ onBack }: HelpViewProps) {
   return (
     <section className="menu-destination-view" aria-labelledby="help-title">
       <div className="view-topbar">
-        <button className="nav-back-button" type="button" onClick={onBack}>
-          Tillbaka
-        </button>
+        <BackButton onClick={onBack} />
         <div>
           <p className="eyebrow">Hjälp</p>
           <h3 id="help-title">Snabbguide</h3>

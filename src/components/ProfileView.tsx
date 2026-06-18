@@ -1,6 +1,7 @@
 import type { User } from '@supabase/supabase-js';
 import { FormEvent, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { BackButton } from './ui/BackButton';
 import { updateProfile } from '../services/organizationService';
 import './MenuDestinationView.css';
 
@@ -41,9 +42,7 @@ export function ProfileView({ user, onBack }: ProfileViewProps) {
   return (
     <section className="menu-destination-view" aria-labelledby="profile-title">
       <div className="view-topbar">
-        <button className="nav-back-button" type="button" onClick={onBack}>
-          Tillbaka
-        </button>
+        <BackButton onClick={onBack} />
         <div>
           <p className="eyebrow">Min profil</p>
           <h3 id="profile-title">Personliga uppgifter</h3>

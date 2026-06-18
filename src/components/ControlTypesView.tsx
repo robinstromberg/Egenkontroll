@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AdminControls } from './AdminControls';
 import { ControlTypeDetailView } from './ControlTypeDetailView';
-import { ActionButton } from './ui/ActionButton';
+import { BackButton } from './ui/BackButton';
 import { listControlTypes } from '../services/controlAdminService';
 import type { ControlCategory, ControlFrequency, ControlType } from '../types/database';
 import './ControlTypesView.css';
@@ -143,9 +143,7 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
     return (
       <section className="control-types-view" aria-labelledby="control-types-title">
         <div className="control-types-topbar">
-          <ActionButton variant="secondary" type="button" onClick={() => setShowAdminControls(false)}>
-            Tillbaka
-          </ActionButton>
+          <BackButton onClick={() => setShowAdminControls(false)} />
           <h3 id="control-types-title">Lägg till kontrolltyp</h3>
         </div>
         <AdminControls organizationId={organizationId} userId={userId} />
@@ -157,9 +155,7 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
     <section className="control-types-view" aria-labelledby="control-types-title">
       <div className="control-types-topbar">
         {onBack ? (
-          <button className="nav-back-button" type="button" onClick={onBack}>
-            Tillbaka
-          </button>
+          <BackButton onClick={onBack} />
         ) : null}
         <p className="eyebrow">Lägg till</p>
         <h3 id="control-types-title">Kontrolltyper</h3>
