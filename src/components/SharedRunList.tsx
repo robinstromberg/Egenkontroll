@@ -188,6 +188,12 @@ function escapeHtml(value: string | number): string {
     .replace(/'/g, '&#039;');
 }
 
+function readBrandInitials(value: string): string {
+  const words = value.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return 'EK';
+  return words.slice(0, 2).map((word) => word[0]).join('').toUpperCase();
+}
+
 function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): string {
   const itemRows = runs.flatMap((run) => {
     if (run.items.length === 0) {
@@ -229,6 +235,15 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
     </tr>
   `)).join('');
 
+  const attachmentRows = runs.flatMap((run) => run.attachments.map((attachment) => `
+    <tr>
+      <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
+      <td>${escapeHtml(run.control_type_name)}</td>
+      <td>${escapeHtml(attachment.file_name ?? 'Bilaga')}</td>
+      <td>${escapeHtml(attachment.created_at ? formatDateTime(attachment.created_at) : '')}</td>
+    </tr>
+  `)).join('');
+
   return `
     <!doctype html>
     <html lang="sv">
@@ -237,6 +252,9 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
         <style>
           body { color: #172033; font-family: Arial, sans-serif; margin: 0; padding: 28px; }
           h1, h2, p { margin-top: 0; }
+          .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
+          .brand-mark { display: inline-flex; width: 42px; height: 42px; align-items: center; justify-content: center; color: #ffffff; background: #5b46e1; border-radius: 12px; font-weight: 800; }
+          .brand h1 { margin: 0; }
           .muted { color: #5f6b85; }
           .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0 24px; }
           .metric { border: 1px solid #ddd8ff; border-radius: 12px; padding: 12px; background: #f7f5ff; }
@@ -248,8 +266,13 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
         </style>
       </head>
       <body>
-        <h1>Egenkontroll - rapport</h1>
-        <p class="muted">${escapeHtml(summary.companyName)}</p>
+        <div class="brand">
+          <span class="brand-mark">${escapeHtml(readBrandInitials(summary.companyName))}</span>
+          <div>
+            <h1>Egenkontroll - rapport</h1>
+            <p class="muted">${escapeHtml(summary.companyName)}</p>
+          </div>
+        </div>
         <p class="muted">Period: ${escapeHtml(summary.periodStart)} - ${escapeHtml(summary.periodEnd)}</p>
         <p class="muted">Kontrolltyper: ${escapeHtml(summary.controlTypes)}</p>
         <div class="summary">
@@ -289,6 +312,18 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
             </tr>
           </thead>
           <tbody>${deviationRows || '<tr><td colspan="7">Inga avvikelser i urvalet.</td></tr>'}</tbody>
+        </table>
+        <h2>Bilagor</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Datum</th>
+              <th>Kontroll</th>
+              <th>Fil</th>
+              <th>Registrerad</th>
+            </tr>
+          </thead>
+          <tbody>${attachmentRows || '<tr><td colspan="4">Inga bilagor i urvalet.</td></tr>'}</tbody>
         </table>
         <p class="no-print muted">Välj "Spara som PDF" i utskriftsdialogen för PDF.</p>
       </body>
@@ -716,7 +751,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                             {run.attachments.map((attachment) => (
                               <section className="inspector-detail-card" key={attachment.id}>
                                 <strong>{attachment.file_name ?? 'Bilaga'}</strong>
-                                <p className="muted-copy">{attachment.storage_path}</p>
+                                <p className="muted-copy">Registrerad {formatDateTime(attachment.created_at)}</p>
                               </section>
                             ))}
                           </div>

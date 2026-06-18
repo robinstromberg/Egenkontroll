@@ -1,4 +1,4 @@
-const MAX_LINES_PER_PAGE = 42;
+const MAX_LINES_PER_PAGE = 38;
 
 function jsonResponse(response, statusCode, body) {
   response.statusCode = statusCode;
@@ -22,6 +22,12 @@ function normalizeText(value) {
 
 function pdfEscape(value) {
   return normalizeText(value).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+}
+
+function readBrandInitials(value) {
+  const words = normalizeText(value).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return 'EK';
+  return words.slice(0, 2).map((word) => word[0]).join('').toUpperCase();
 }
 
 function readItemValue(item) {
@@ -89,7 +95,6 @@ function buildReportLines(runs, input) {
   const companyName = input.companyName || input.organizationName || runs[0]?.organization_name || 'Verksamhet';
   const generatedAt = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });
   const lines = [
-    companyName,
     'Egenkontroll - inspektorsrapport',
     `Period: ${input.periodStart} - ${input.periodEnd}`,
     `Skapad: ${generatedAt}`,
@@ -131,7 +136,9 @@ function buildReportLines(runs, input) {
   return lines;
 }
 
-function buildPdf(lines) {
+function buildPdf(lines, options = {}) {
+  const companyName = options.companyName || 'Verksamhet';
+  const initials = readBrandInitials(companyName);
   const pages = [];
   for (let index = 0; index < lines.length; index += MAX_LINES_PER_PAGE) {
     pages.push(lines.slice(index, index + MAX_LINES_PER_PAGE));
@@ -151,14 +158,25 @@ function buildPdf(lines) {
   for (const [pageIndex, pageLines] of pages.entries()) {
     const footer = `Sida ${pageIndex + 1} av ${pages.length}`;
     const stream = [
+      'q',
+      '0.36 0.27 0.88 rg',
+      '50 782 38 38 re f',
+      'Q',
       'BT',
-      '/F1 12 Tf',
-      '50 806 Td',
-      `(Egenkontroll - inspektorsrapport) Tj`,
+      '/F1 14 Tf',
+      '1 1 1 rg',
+      `59 796 Td (${pdfEscape(initials)}) Tj`,
+      'ET',
+      'BT',
+      '/F1 14 Tf',
+      '0.09 0.13 0.20 rg',
+      `100 806 Td (${pdfEscape(companyName)}) Tj`,
+      '0 -16 Td (Egenkontroll - inspektorsrapport) Tj',
       'ET',
       'BT',
       '/F1 10 Tf',
-      '50 778 Td',
+      '0.09 0.13 0.20 rg',
+      '50 748 Td',
       ...pageLines.map((line, index) => `${index === 0 ? '' : '0 -14 Td ' }(${pdfEscape(line)}) Tj`),
       'ET',
       'BT',
@@ -273,7 +291,8 @@ export default async function handler(request, response) {
       p_control_type_ids: Array.isArray(input.controlTypeIds) ? input.controlTypeIds : [],
     });
     const lines = buildReportLines(runs, input);
-    const pdf = buildPdf(lines);
+    const companyName = input.companyName || input.organizationName || runs[0]?.organization_name || 'Verksamhet';
+    const pdf = buildPdf(lines, { companyName });
     const subject = `Egenkontroll ${input.periodStart} - ${input.periodEnd}`;
     const text = [
       'Hej,',

@@ -21,7 +21,7 @@ The endpoint:
 - validates that token, email and period are present
 - reads report rows through the token-scoped Supabase RPC `get_shared_control_runs`
 - generates a PDF attachment without extra npm dependencies
-- includes report title, shared organization name, selected period, generated timestamp, summary metrics, control rows, deviations, attachment names and page numbers
+- includes report title, shared organization name, a generated brand mark, selected period, generated timestamp, summary metrics, control rows, deviations, attachment names and page numbers
 - sends the email through Resend when email environment variables are configured
 - logs successful email exports through `log_shared_export`
 
@@ -42,4 +42,4 @@ The endpoint also needs the same Supabase public environment that the app uses:
 
 ## Scope
 
-This is still a pragmatic first version. Logo rendering and embedding attachment files in the PDF can be improved later.
+This is still a pragmatic first version. Reports show attachment metadata, but do not expose internal storage paths or public attachment URLs through inspector links. Full logo upload/rendering and embedded or signed attachment delivery should be added only with a scoped storage access design.
