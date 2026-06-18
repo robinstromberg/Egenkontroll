@@ -17,6 +17,7 @@ Latest advisor run: 2026-06-18
 - Storage policies for `organization-branding` are scoped to authenticated organization admins using the organization id in the storage path.
 - A live read-only check on 2026-06-18 confirmed the `control-attachments` bucket exists, is private, has a 10 MB file size limit and allows JPEG, PNG, WebP and PDF files.
 - A live read-only check on 2026-06-18 confirmed storage `SELECT` and `INSERT` policies for `control-attachments` are limited to `authenticated` users where the first storage path segment matches an organization membership.
+- A live advisor/log check on 2026-06-18 confirmed Vercel production has no warning/error/fatal runtime logs for the last 24 hours.
 - Inspector documentation access is read-only through `public.get_shared_control_runs(raw_token text, p_period_start date, p_period_end date, p_control_type_ids uuid[])`.
 - Inspector control-type filters are read-only through `public.get_shared_control_type_options(raw_token text)`.
 - Inspector export logging uses `public.log_shared_export(raw_token text, p_export_type text, p_filters jsonb)` and only creates audit rows for valid active share tokens.
