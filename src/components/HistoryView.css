@@ -2,13 +2,13 @@
   display: grid;
   width: min(100%, 560px);
   margin: 0 auto;
-  gap: 16px;
+  gap: 18px;
   padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }
 
 .history-filters {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .history-filter-field {
@@ -32,7 +32,7 @@
 .history-detail,
 .history-detail-list {
   display: grid;
-  gap: 10px;
+  gap: 11px;
 }
 
 .history-row {
@@ -41,10 +41,10 @@
   gap: 10px;
   align-items: center;
   width: 100%;
-  min-height: 64px;
+  min-height: 66px;
   border: 1px solid rgba(91, 70, 225, 0.12);
   border-radius: 18px;
-  padding: 12px;
+  padding: 13px;
   color: #172033;
   background: #ffffff;
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.06);
@@ -124,10 +124,10 @@
 
 .history-detail-card {
   display: grid;
-  gap: 6px;
+  gap: 7px;
   border: 1px solid rgba(91, 70, 225, 0.1);
   border-radius: 16px;
-  padding: 12px;
+  padding: 13px;
   color: #172033;
   background: #ffffff;
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);

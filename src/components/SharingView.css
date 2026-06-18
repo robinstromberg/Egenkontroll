@@ -2,7 +2,7 @@
   display: grid;
   width: min(100%, 560px);
   margin: 0 auto;
-  gap: 16px;
+  gap: 18px;
   padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }
 
@@ -10,13 +10,13 @@
 .share-list,
 .share-result {
   display: grid;
-  gap: 10px;
+  gap: 11px;
 }
 
 .sharing-form {
   border: 1px solid rgba(91, 70, 225, 0.1);
   border-radius: 18px;
-  padding: 16px;
+  padding: 17px;
   color: #172033;
   background: #ffffff;
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
@@ -77,10 +77,10 @@
 
 .share-row {
   display: grid;
-  gap: 8px;
+  gap: 9px;
   border: 1px solid rgba(91, 70, 225, 0.1);
   border-radius: 16px;
-  padding: 14px;
+  padding: 15px;
   color: #172033;
   background: #ffffff;
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
