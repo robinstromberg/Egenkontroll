@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 
 const MAX_LINES_PER_PAGE = 38;
 const ATTACHMENT_LINK_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7;
+const FALLBACK_SUPABASE_URL = 'https://eapjywbgxtudqjrlueep.supabase.co';
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY = ['sb', 'publishable', 'YsqN7EM6XP7U750bZyqVZw', 'Gi4p5SYg'].join('_');
 
 function jsonResponse(response, statusCode, body) {
   response.statusCode = statusCode;
@@ -11,6 +13,14 @@ function jsonResponse(response, statusCode, body) {
 
 function readEnv(name, fallbackName) {
   return process.env[name] || (fallbackName ? process.env[fallbackName] : '');
+}
+
+function readSupabaseUrl() {
+  return readEnv('SUPABASE_URL', 'VITE_SUPABASE_URL') || FALLBACK_SUPABASE_URL;
+}
+
+function readSupabasePublishableKey() {
+  return readEnv('SUPABASE_ANON_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY') || FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 }
 
 function normalizeText(value) {
@@ -146,7 +156,7 @@ function readServiceRoleKey() {
 }
 
 function createServiceClient() {
-  const supabaseUrl = readEnv('SUPABASE_URL', 'VITE_SUPABASE_URL');
+  const supabaseUrl = readSupabaseUrl();
   const serviceRoleKey = readServiceRoleKey();
 
   if (!supabaseUrl || !serviceRoleKey) {
@@ -421,11 +431,11 @@ function buildPdf(lines, options = {}) {
 }
 
 async function callSupabaseRpc(name, body) {
-  const supabaseUrl = readEnv('SUPABASE_URL', 'VITE_SUPABASE_URL');
-  const supabaseKey = readEnv('SUPABASE_ANON_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY');
+  const supabaseUrl = readSupabaseUrl();
+  const supabaseKey = readSupabasePublishableKey();
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase environment variables are missing.');
+    throw new Error('Rapportgeneratorn saknar Supabase-konfiguration.');
   }
 
   const result = await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/${name}`, {

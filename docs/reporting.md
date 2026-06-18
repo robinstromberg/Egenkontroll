@@ -36,10 +36,13 @@ Recommended Vercel environment variable:
 
 If `RESEND_FROM_EMAIL` is not set, the endpoint uses Resend's test sender `Egenkontroll <onboarding@resend.dev>`. For production use, verify a real sending domain in Resend and set `RESEND_FROM_EMAIL`.
 
-The endpoint also needs the same Supabase public environment that the app uses:
+The endpoint uses the same Supabase public configuration as the app when reading token-scoped inspector data.
+Configure these in Vercel when possible:
 
 - `VITE_SUPABASE_URL` or `SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY`
+
+If those variables are not present, the endpoint falls back to the checked-in public project URL and publishable key used by the frontend. It does not fall back to any private server key.
 
 Optional Vercel environment variable:
 
