@@ -238,6 +238,34 @@
   border-bottom: 0;
 }
 
+.inspector-data-row-temperature td:first-child {
+  box-shadow: inset 4px 0 0 #059669;
+}
+
+.inspector-data-row-checklist td:first-child {
+  box-shadow: inset 4px 0 0 #2563eb;
+}
+
+.inspector-data-row-receiving td:first-child {
+  box-shadow: inset 4px 0 0 #d97706;
+}
+
+.inspector-data-row-traceability td:first-child {
+  box-shadow: inset 4px 0 0 #5b46e1;
+}
+
+.inspector-data-row-round td:first-child {
+  box-shadow: inset 4px 0 0 #0891b2;
+}
+
+.inspector-data-row-danger td {
+  background: #fff8fa;
+}
+
+.inspector-data-row-success td {
+  background: #f3fbf6;
+}
+
 .inspector-table-note {
   display: block;
   margin-top: 4px;
@@ -353,6 +381,14 @@
   .inspector-table th {
     color: #bdb6ff;
     background: #19233a;
+  }
+
+  .inspector-data-row-danger td {
+    background: rgba(180, 35, 50, 0.13);
+  }
+
+  .inspector-data-row-success td {
+    background: rgba(5, 122, 85, 0.13);
   }
 
   .inspector-table-note {

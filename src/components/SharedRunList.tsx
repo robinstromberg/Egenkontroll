@@ -120,6 +120,23 @@ function readDeviationTone(run: SharedRun): string {
   return 'neutral';
 }
 
+function readItemDeviationTone(run: SharedRun, item: SharedRunItem | null): 'danger' | 'success' | 'neutral' {
+  if (!item) return readDeviationTone(run) as 'danger' | 'success' | 'neutral';
+
+  const relatedDeviations = run.deviations.filter((deviation) => deviation.control_run_item_id === item.id);
+  if (relatedDeviations.some((deviation) => deviation.status !== 'resolved')) return 'danger';
+  if (relatedDeviations.some((deviation) => deviation.status === 'resolved')) return 'success';
+  if (item.deviation_detected) return 'danger';
+  return 'neutral';
+}
+
+function readItemDeviationLabel(run: SharedRun, item: SharedRunItem | null): string {
+  const tone = readItemDeviationTone(run, item);
+  if (tone === 'danger') return item?.deviation_reason ?? 'Öppen avvikelse';
+  if (tone === 'success') return 'Åtgärdad avvikelse';
+  return 'Ingen';
+}
+
 function matchesDeviationFilter(run: SharedRun, filter: DeviationFilter): boolean {
   const openCount = countOpenDeviations(run);
   const resolvedCount = countResolvedDeviations(run);
@@ -229,8 +246,10 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
     : `<span class="brand-mark">${escapeHtml(readBrandInitials(summary.companyName))}</span>`;
   const itemRows = runs.flatMap((run) => {
     if (run.items.length === 0) {
+      const categoryClass = readCategoryMeta(run.control_type_category).className;
+      const tone = readDeviationTone(run);
       return [`
-        <tr>
+        <tr class="report-row report-row-${escapeHtml(categoryClass)} report-row-${escapeHtml(tone)}">
           <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
           <td>${escapeHtml(run.control_type_name)}</td>
           <td>${escapeHtml(run.status)}</td>
@@ -243,18 +262,22 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
       `];
     }
 
-    return run.items.map((item) => `
-      <tr>
+    return run.items.map((item) => {
+      const categoryClass = readCategoryMeta(run.control_type_category).className;
+      const tone = readItemDeviationTone(run, item);
+      return `
+      <tr class="report-row report-row-${escapeHtml(categoryClass)} report-row-${escapeHtml(tone)}">
         <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
         <td>${escapeHtml(run.control_type_name)}</td>
         <td>${escapeHtml(run.status)}</td>
         <td>${escapeHtml(`${readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · ${readFieldLabel(item.field_snapshot)}`)}</td>
         <td>${escapeHtml(readItemValue(item))}</td>
         <td>${escapeHtml(item.status)}</td>
-        <td>${escapeHtml(item.deviation_detected ? item.deviation_reason ?? 'Avvikelse' : '')}</td>
+        <td>${escapeHtml(readItemDeviationLabel(run, item))}</td>
         <td>${escapeHtml(item.action_text ?? '')}</td>
       </tr>
-    `);
+    `;
+    });
   }).join('');
 
   const deviationRows = runs.flatMap((run) => run.deviations.map((deviation) => `
@@ -300,6 +323,13 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
           table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
           th, td { border: 1px solid #d9deea; padding: 8px; text-align: left; vertical-align: top; }
           th { background: #f0edff; }
+          .report-row-temperature td:first-child { border-left: 5px solid #059669; }
+          .report-row-checklist td:first-child { border-left: 5px solid #2563eb; }
+          .report-row-receiving td:first-child { border-left: 5px solid #d97706; }
+          .report-row-traceability td:first-child { border-left: 5px solid #5b46e1; }
+          .report-row-round td:first-child { border-left: 5px solid #0891b2; }
+          .report-row-danger td { background: #fff5f6; }
+          .report-row-success td { background: #f1fbf5; }
           @media print { body { padding: 0; } .no-print { display: none; } }
         </style>
       </head>
@@ -741,8 +771,12 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                 </tr>
               </thead>
               <tbody>
-                {documentationRows.map(({ id, run, item }) => (
-                  <tr key={id}>
+                {documentationRows.map(({ id, run, item }) => {
+                  const categoryClass = readCategoryMeta(run.control_type_category).className;
+                  const deviationTone = readItemDeviationTone(run, item);
+
+                  return (
+                  <tr className={`inspector-data-row inspector-data-row-${categoryClass} inspector-data-row-${deviationTone}`} key={id}>
                     <td data-label="Datum">{formatDateTime(run.performed_at)}</td>
                     <td data-label="Kontrolltyp">
                       <span className="inspector-type-cell">
@@ -765,17 +799,14 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                       <span className="inspector-status-pill">{item?.status ?? run.status}</span>
                     </td>
                     <td data-label="Avvikelse">
-                      {item?.deviation_detected ? (
-                        <span className="inspector-deviation-pill danger">
-                          {item.deviation_reason ?? 'Avvikelse'}
-                        </span>
-                      ) : (
-                        <span className="inspector-deviation-pill neutral">Ingen</span>
-                      )}
+                      <span className={`inspector-deviation-pill ${deviationTone}`}>
+                        {readItemDeviationLabel(run, item)}
+                      </span>
                     </td>
                     <td data-label="Åtgärd">{item?.action_text || '-'}</td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -793,7 +824,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
               </thead>
               <tbody>
                 {visibleRuns.map((run) => (
-                  <tr key={run.run_id}>
+                  <tr className={`inspector-data-row inspector-data-row-${readCategoryMeta(run.control_type_category).className} inspector-data-row-${readDeviationTone(run)}`} key={run.run_id}>
                     <td data-label="Datum">{formatDateTime(run.performed_at)}</td>
                   <td data-label="Kontroll">
                     <span className="inspector-type-cell">
