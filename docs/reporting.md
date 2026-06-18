@@ -22,6 +22,7 @@ The endpoint:
 - reads report rows through the token-scoped Supabase RPC `get_shared_control_runs`
 - generates a PDF attachment without extra npm dependencies
 - includes report title, shared organization name, a generated brand mark, selected period, generated timestamp, summary metrics, control rows, deviations, attachment names and page numbers
+- can add seven-day signed attachment links to the PDF when a server-only Supabase service role key is configured
 - sends the email through Resend when email environment variables are configured
 - logs successful email exports through `log_shared_export`
 
@@ -40,6 +41,12 @@ The endpoint also needs the same Supabase public environment that the app uses:
 - `VITE_SUPABASE_URL` or `SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY`
 
+Optional Vercel environment variable:
+
+- `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`
+
+When this server-only key is present, `POST /api/send-inspector-report` looks up attachment storage paths only for run IDs already returned by the token-scoped read-only RPC. It then creates signed Supabase Storage links that are valid for seven days and writes those links into the generated PDF. The public inspector RPC still returns only attachment metadata and does not expose `storage_bucket` or `storage_path`.
+
 ## Scope
 
-This is still a pragmatic first version. Reports show attachment metadata, but do not expose internal storage paths or public attachment URLs through inspector links. Full logo upload/rendering and embedded or signed attachment delivery should be added only with a scoped storage access design.
+This is still a pragmatic first version. Reports show organization branding through the shared organization name and generated brand mark. Full logo upload/rendering still needs a dedicated organization branding model before real uploaded logos can be used in reports.

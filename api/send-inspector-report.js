@@ -1,4 +1,7 @@
+import { createClient } from '@supabase/supabase-js';
+
 const MAX_LINES_PER_PAGE = 38;
+const ATTACHMENT_LINK_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7;
 
 function jsonResponse(response, statusCode, body) {
   response.statusCode = statusCode;
@@ -73,6 +76,18 @@ function wrapLine(line, width = 96) {
   let current = '';
 
   for (const word of words) {
+    if (word.length > width) {
+      if (current) {
+        lines.push(current);
+        current = '';
+      }
+
+      for (let index = 0; index < word.length; index += width) {
+        lines.push(word.slice(index, index + width));
+      }
+      continue;
+    }
+
     const next = current ? `${current} ${word}` : word;
     if (next.length > width && current) {
       lines.push(current);
@@ -84,6 +99,78 @@ function wrapLine(line, width = 96) {
 
   if (current) lines.push(current);
   return lines;
+}
+
+function readServiceRoleKey() {
+  return readEnv('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY');
+}
+
+function createServiceClient() {
+  const supabaseUrl = readEnv('SUPABASE_URL', 'VITE_SUPABASE_URL');
+  const serviceRoleKey = readServiceRoleKey();
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return null;
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+}
+
+async function addSignedAttachmentLinks(runs) {
+  const serviceClient = createServiceClient();
+  if (!serviceClient || runs.length === 0) {
+    return runs;
+  }
+
+  const runIds = runs.map((run) => run.run_id).filter(Boolean);
+  if (runIds.length === 0) {
+    return runs;
+  }
+
+  const { data, error } = await serviceClient
+    .from('attachments')
+    .select('id, control_run_id, storage_bucket, storage_path, file_name')
+    .in('control_run_id', runIds);
+
+  if (error || !data?.length) {
+    return runs;
+  }
+
+  const signedUrlByAttachmentId = new Map();
+
+  for (const attachment of data) {
+    if (!attachment.id || !attachment.storage_bucket || !attachment.storage_path) {
+      continue;
+    }
+
+    const { data: signedData, error: signedError } = await serviceClient.storage
+      .from(attachment.storage_bucket)
+      .createSignedUrl(attachment.storage_path, ATTACHMENT_LINK_EXPIRES_IN_SECONDS);
+
+    if (!signedError && signedData?.signedUrl) {
+      signedUrlByAttachmentId.set(attachment.id, signedData.signedUrl);
+    }
+  }
+
+  if (signedUrlByAttachmentId.size === 0) {
+    return runs;
+  }
+
+  return runs.map((run) => ({
+    ...run,
+    attachments: (run.attachments || []).map((attachment) => ({
+      ...attachment,
+      signed_url: signedUrlByAttachmentId.get(attachment.id) || null,
+      signed_url_expires_in_seconds: signedUrlByAttachmentId.has(attachment.id)
+        ? ATTACHMENT_LINK_EXPIRES_IN_SECONDS
+        : null,
+    })),
+  }));
 }
 
 function buildReportLines(runs, input) {
@@ -128,7 +215,13 @@ function buildReportLines(runs, input) {
     }
 
     if ((run.attachments || []).length > 0) {
-      lines.push(...wrapLine(`Bilagor: ${(run.attachments || []).map((attachment) => attachment.file_name || 'Bilaga').join(', ')}`));
+      lines.push('Bilagor:');
+      for (const attachment of run.attachments || []) {
+        lines.push(...wrapLine(`- ${attachment.file_name || 'Bilaga'}`));
+        if (attachment.signed_url) {
+          lines.push(...wrapLine(`  Saker lank (giltig 7 dagar): ${attachment.signed_url}`));
+        }
+      }
     }
   }
 
@@ -289,8 +382,9 @@ export default async function handler(request, response) {
       p_period_end: input.periodEnd,
       p_control_type_ids: Array.isArray(input.controlTypeIds) ? input.controlTypeIds : [],
     });
-    const lines = buildReportLines(runs, input);
-    const companyName = input.companyName || input.organizationName || runs[0]?.organization_name || 'Verksamhet';
+    const runsWithAttachmentLinks = await addSignedAttachmentLinks(runs);
+    const lines = buildReportLines(runsWithAttachmentLinks, input);
+    const companyName = input.companyName || input.organizationName || runsWithAttachmentLinks[0]?.organization_name || 'Verksamhet';
     const pdf = buildPdf(lines, { companyName });
     const subject = `Egenkontroll ${input.periodStart} - ${input.periodEnd}`;
     const text = [
