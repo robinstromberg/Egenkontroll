@@ -7,6 +7,8 @@ Latest advisor run: 2026-06-18
 ## Verified
 
 - All `public` tables currently have RLS enabled.
+- A live read-only check on 2026-06-18 confirmed RLS is enabled for all 14 `public` tables in the Supabase project.
+- A live policy overview on 2026-06-18 showed one policy per table/action except the expected two `organization_memberships` `INSERT` policies for first-owner onboarding and admin-created memberships.
 - Authenticated users access organization-scoped data through RLS policies using organization membership/admin checks.
 - A rollback-based non-member check returned zero visible rows for organizations, control types, share links, deviations and attachments.
 - Organization membership/admin RLS helper functions now live in the private schema and are no longer directly executable as public RPCs.
