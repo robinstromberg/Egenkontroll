@@ -1,56 +1,66 @@
-# Auth redirect recovery
+# Auth Redirect Recovery
 
 ## Problem
 
-Magic link-inloggningen kan skicka användaren till `http://localhost:3000` om Supabase Auth eller appens miljövariabler pekar fel.
+Magic link-login can send the user to `http://localhost:3000` if Supabase Auth or the app environment points to the wrong URL.
 
-## Kodändring
+## Code Change
 
-Appen använder nu `environment.appUrl` som `emailRedirectTo` i `sendEmailLink`.
+The app uses `environment.appUrl` as `emailRedirectTo` when sending magic links.
 
-`environment.appUrl` hämtas från:
+`environment.appUrl` is read from:
 
 ```text
 VITE_APP_URL
 ```
 
-Om variabeln saknas faller appen tillbaka till:
+If the variable is missing, the app falls back to:
+
+```text
+https://egenkontroll-indol.vercel.app
+```
+
+The Vercel project currently also has these domains:
 
 ```text
 https://egenkontroll-robinstrombergs-projects.vercel.app
+https://egenkontroll-git-main-robinstrombergs-projects.vercel.app
 ```
 
 ## Vercel
 
-Sätt environment variable i Vercel-projektet:
+Recommended environment variable for production:
 
 ```text
-VITE_APP_URL=https://egenkontroll-robinstrombergs-projects.vercel.app
+VITE_APP_URL=https://egenkontroll-indol.vercel.app
 ```
+
+Use the matching preview URL only if a preview deployment must send magic links back to preview.
 
 ## Supabase Auth
 
-I Supabase Auth settings behöver följande peka mot den publika appen:
+In Supabase Auth settings, these should point to the public app:
 
 - Site URL
 - Redirect URLs / Additional Redirect URLs
 
-Rekommenderade URLs:
+Recommended URLs:
 
 ```text
+https://egenkontroll-indol.vercel.app
 https://egenkontroll-robinstrombergs-projects.vercel.app
 https://egenkontroll-git-main-robinstrombergs-projects.vercel.app
 http://localhost:5173
 ```
 
-`http://localhost:3000` bör tas bort om den inte används aktivt.
+Remove `http://localhost:3000` unless it is actively used.
 
 ## Test
 
-1. Vänta på ny Vercel-deploy eller trigga deploy när deploy-gränsen släpper.
-2. Öppna den publika Vercel-appen.
-3. Begär en ny magic link.
-4. Klicka på länken i mejlet.
-5. Kontrollera att länken går till Vercel-domänen och att sessionen skapas.
+1. Wait for a new Vercel deployment.
+2. Open the public Vercel app.
+3. Request a new magic link.
+4. Click the link in the email.
+5. Confirm the link goes to the Vercel domain and creates a session.
 
-Gamla magic links ska inte återanvändas. De kan redan vara förbrukade eller ha gått ut.
+Old magic links should not be reused. They may already be consumed or expired.
