@@ -1,4 +1,4 @@
-const MAX_LINES_PER_PAGE = 48;
+const MAX_LINES_PER_PAGE = 42;
 
 function jsonResponse(response, statusCode, body) {
   response.statusCode = statusCode;
@@ -49,6 +49,15 @@ function countResolvedDeviations(run) {
   return (run.deviations || []).filter((deviation) => deviation.status === 'resolved').length;
 }
 
+function countAllDeviations(run) {
+  return (run.deviations || []).length;
+}
+
+function formatPercent(part, total) {
+  if (!total) return '0%';
+  return `${Math.round((part / total) * 100)}%`;
+}
+
 function wrapLine(line, width = 96) {
   const clean = normalizeText(line);
   if (clean.length <= width) return [clean];
@@ -76,15 +85,23 @@ function buildReportLines(runs, input) {
   const itemCount = runs.reduce((sum, run) => sum + (run.items || []).length, 0);
   const openDeviations = runs.reduce((sum, run) => sum + countOpenDeviations(run), 0);
   const resolvedDeviations = runs.reduce((sum, run) => sum + countResolvedDeviations(run), 0);
+  const allDeviations = runs.reduce((sum, run) => sum + countAllDeviations(run), 0);
+  const companyName = input.companyName || input.organizationName || 'Verksamhet';
+  const generatedAt = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });
   const lines = [
+    companyName,
     'Egenkontroll - inspektorsrapport',
     `Period: ${input.periodStart} - ${input.periodEnd}`,
+    `Skapad: ${generatedAt}`,
     `Kontrolltyper: ${(input.controlTypeNames || []).join(', ') || 'Valda kontrolltyper'}`,
-    `Kontroller: ${runs.length}`,
+    '',
+    'Sammanfattning',
+    `Kontroller i urval: ${runs.length}`,
     `Dokumenterade dagar: ${documentedDays}`,
     `Kontrollpunkter: ${itemCount}`,
     `Oppna avvikelser: ${openDeviations}`,
     `Atgardade avvikelser: ${resolvedDeviations}`,
+    `Atgardsgrad: ${formatPercent(resolvedDeviations, allDeviations)}`,
     '',
     'Kontrollpunkter',
   ];
@@ -101,7 +118,13 @@ function buildReportLines(runs, input) {
     }
 
     for (const deviation of run.deviations || []) {
-      lines.push(...wrapLine(`! ${deviation.status} ${deviation.severity}: ${deviation.description}. Atgard: ${deviation.action_text}`));
+      const resolved = deviation.resolved_at ? ` Lost: ${new Date(deviation.resolved_at).toLocaleString('sv-SE')}` : '';
+      const followUp = deviation.follow_up_comment ? ` Uppfoljning: ${deviation.follow_up_comment}` : '';
+      lines.push(...wrapLine(`! ${deviation.status} ${deviation.severity}: ${deviation.description}. Atgard: ${deviation.action_text}.${followUp}${resolved}`));
+    }
+
+    if ((run.attachments || []).length > 0) {
+      lines.push(...wrapLine(`Bilagor: ${(run.attachments || []).map((attachment) => attachment.file_name || 'Bilaga').join(', ')}`));
     }
   }
 
@@ -125,12 +148,22 @@ function buildPdf(lines) {
   const fontId = addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
   const pageIds = [];
 
-  for (const pageLines of pages) {
+  for (const [pageIndex, pageLines] of pages.entries()) {
+    const footer = `Sida ${pageIndex + 1} av ${pages.length}`;
     const stream = [
       'BT',
+      '/F1 12 Tf',
+      '50 806 Td',
+      `(Egenkontroll - inspektorsrapport) Tj`,
+      'ET',
+      'BT',
       '/F1 10 Tf',
-      '50 792 Td',
+      '50 778 Td',
       ...pageLines.map((line, index) => `${index === 0 ? '' : '0 -14 Td ' }(${pdfEscape(line)}) Tj`),
+      'ET',
+      'BT',
+      '/F1 8 Tf',
+      `50 34 Td (${pdfEscape(footer)}) Tj`,
       'ET',
     ].join('\n');
     const contentId = addObject(`<< /Length ${Buffer.byteLength(stream, 'ascii')} >>\nstream\n${stream}\nendstream`);
