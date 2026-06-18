@@ -71,8 +71,8 @@ export type SharedAttachment = {
   control_run_item_id: string | null;
   deviation_id: string | null;
   file_name: string | null;
-  storage_bucket: string;
-  storage_path: string;
+  content_type: string | null;
+  size_bytes: number | null;
   created_at: string;
 };
 

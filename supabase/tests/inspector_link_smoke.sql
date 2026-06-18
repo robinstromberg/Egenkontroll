@@ -87,6 +87,29 @@ values (
   'ok'
 );
 
+insert into public.attachments (
+  id,
+  organization_id,
+  control_run_id,
+  control_run_item_id,
+  storage_bucket,
+  storage_path,
+  file_name,
+  content_type,
+  size_bytes
+)
+values (
+  'cccccccc-cccc-4ccc-8ccc-cccccccccc61',
+  'cccccccc-cccc-4ccc-8ccc-cccccccccc01',
+  'cccccccc-cccc-4ccc-8ccc-cccccccccc31',
+  'cccccccc-cccc-4ccc-8ccc-cccccccccc51',
+  'control-attachments',
+  'cccccccc-cccc-4ccc-8ccc-cccccccccc01/cccccccc-cccc-4ccc-8ccc-cccccccccc31/cccccccc-cccc-4ccc-8ccc-cccccccccc51/inspector-smoke.jpg',
+  'inspector-smoke.jpg',
+  'image/jpeg',
+  128
+);
+
 insert into public.share_links (
   id,
   organization_id,
@@ -128,6 +151,7 @@ set local role anon;
 do $$
 declare
   row_count int;
+  shared_row record;
 begin
   select count(*)
   into row_count
@@ -140,6 +164,32 @@ begin
 
   if row_count <> 1 then
     raise exception 'Inspector smoke failure: active token returned % rows, expected 1', row_count;
+  end if;
+
+  select *
+  into shared_row
+  from public.get_shared_control_runs(
+    'inspector-smoke-active-token',
+    current_date - 1,
+    current_date + 1,
+    array[]::uuid[]
+  )
+  limit 1;
+
+  if shared_row.organization_name <> 'Inspector Smoke Org' then
+    raise exception 'Inspector smoke failure: organization_name was %, expected Inspector Smoke Org', shared_row.organization_name;
+  end if;
+
+  if jsonb_array_length(shared_row.attachments) <> 1 then
+    raise exception 'Inspector smoke failure: attachment metadata count was %, expected 1', jsonb_array_length(shared_row.attachments);
+  end if;
+
+  if shared_row.attachments #>> '{0,file_name}' <> 'inspector-smoke.jpg' then
+    raise exception 'Inspector smoke failure: attachment file_name was %, expected inspector-smoke.jpg', shared_row.attachments #>> '{0,file_name}';
+  end if;
+
+  if (shared_row.attachments -> 0) ? 'storage_path' or (shared_row.attachments -> 0) ? 'storage_bucket' then
+    raise exception 'Inspector smoke failure: shared attachment metadata exposes internal storage fields';
   end if;
 
   select count(*)
