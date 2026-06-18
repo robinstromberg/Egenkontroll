@@ -1,11 +1,11 @@
 # Access view
 
-Issue #12 adds the first external read-only access flow.
+Issue #12 added the first external read-only access flow. Issue #79 expanded it into the current inspector portal and export flow.
 
-An admin can create a temporary access record with a date period and an expiry date. The app stores the record and shows a link plus QR code.
+An admin can create a temporary access record with an expiry date. The app stores the record and shows a link plus QR code.
 
-A separate read-only UI shell exists for external review.
+The inspector opens a separate read-only UI and chooses the review period and control types in that view.
 
-The backend read function was applied directly in Supabase. It checks the active record, expiry date and selected period before returning matching control run summaries.
+The backend read functions check the hashed token, active status, expiry date, share scope, selected period and selected control types before returning matching documentation.
 
-More detailed rows, attachments and export are handled in later issues.
+The read-only view now includes detailed rows, deviations, attachment metadata, CSV export, print/PDF support and optional emailed PDF reports through the Vercel API route.

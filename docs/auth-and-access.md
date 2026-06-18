@@ -31,7 +31,7 @@ MVP har tre interna roller:
 - `admin` – kan hantera verksamhetens struktur,
 - `staff` – kan utföra kontroller och se relevant historik.
 
-Inspektörsåtkomst byggs senare via tidsbegränsad read-only-länk, inte som vanlig inloggad roll.
+Inspektörsåtkomst sker via tidsbegränsad read-only-länk, inte som vanlig inloggad roll.
 
 ## UI-regel
 
