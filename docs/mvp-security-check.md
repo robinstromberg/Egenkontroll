@@ -1,12 +1,14 @@
 # MVP security check
 
-Date: 2026-06-17
+Date: 2026-06-19
 
-Latest advisor run: 2026-06-18
+Latest advisor run: 2026-06-19
 
 ## Verified
 
 - All `public` tables currently have RLS enabled.
+- A live read-only check on 2026-06-19 confirmed RLS is enabled for all 14 `public` tables in the Supabase project.
+- A live policy overview on 2026-06-19 confirmed the expected organization-scoped authenticated policies, with the known two `organization_memberships` `INSERT` policies for first-owner onboarding and admin-created memberships.
 - A live read-only check on 2026-06-18 confirmed RLS is enabled for all 14 `public` tables in the Supabase project.
 - A live policy overview on 2026-06-18 showed one policy per table/action except the expected two `organization_memberships` `INSERT` policies for first-owner onboarding and admin-created memberships.
 - Authenticated users access organization-scoped data through RLS policies using organization membership/admin checks.
@@ -25,6 +27,7 @@ Latest advisor run: 2026-06-18
 - The inspector RPC returns run details, organization name, items, deviations and limited attachment metadata, but exposes no write path.
 - Inspector attachment metadata intentionally omits internal storage bucket/path values. The server-side email PDF can add seven-day signed attachment links when a server-only Supabase service role key is configured; link creation is scoped to run IDs already returned by the valid share token RPC.
 - `npm run lint`, `npm run typecheck`, `node --check api/send-inspector-report.js` and `npm run build` pass after the latest inspector/reporting and lint cleanup changes.
+- `npm run lint`, `npm run typecheck` and `npm run build` passed on 2026-06-18 after the latest UI/inspector work.
 
 ## Supabase advisor findings
 
@@ -40,6 +43,12 @@ Performance advisor warnings from the latest run:
 
 - Several indexes are reported as unused. This is expected in the current low-traffic test database and should not be removed until realistic usage exists.
 - Most overlapping permissive policy warnings were consolidated by splitting broad admin `ALL` policies into action-specific policies. One expected overlap remains on `organization_memberships` inserts because first-owner onboarding and existing-admin invitations are intentionally separate paths.
+
+## Automated smoke checks
+
+- Rollback-based SQL smoke tests exist in `supabase/tests/` for RLS isolation, admin/staff permission boundaries, inspector links and deviation lifecycle.
+- These scripts intentionally say not to run against production customer data because they insert temporary auth and business rows inside a transaction.
+- They should be run against a disposable local, branch or staging database after migrations are applied.
 
 ## Remaining manual checks
 
