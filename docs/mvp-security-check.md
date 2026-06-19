@@ -47,8 +47,10 @@ Performance advisor warnings from the latest run:
 ## Automated smoke checks
 
 - Rollback-based SQL smoke tests exist in `supabase/tests/` for RLS isolation, admin/staff permission boundaries, inspector links and deviation lifecycle.
-- These scripts intentionally say not to run against production customer data because they insert temporary auth and business rows inside a transaction.
-- They should be run against a disposable local, branch or staging database after migrations are applied.
+- Because the app is still pre-customer and only contains owner-created test data, the rollback smoke checks were also run against the live Supabase project on 2026-06-19.
+- Passed on 2026-06-19: RLS isolation smoke, admin/staff permission smoke, inspector link smoke and deviation lifecycle smoke.
+- A post-run cleanup check on the fixed smoke UUIDs and test email addresses returned zero leftover rows in `auth.users`, `organizations`, `control_types`, `control_runs`, `control_run_items`, `deviations` and `share_links`.
+- Supabase Branching was attempted first, but branch creation is unavailable on the current plan because it requires Supabase Pro or above.
 
 ## Remaining manual checks
 
