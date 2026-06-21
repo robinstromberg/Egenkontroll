@@ -8,7 +8,7 @@ type BackButtonProps = {
 export function BackButton({ onClick, label = 'Tillbaka' }: BackButtonProps) {
   return (
     <ActionButton className="nav-back-button" type="button" variant="secondary" onClick={onClick}>
-      <span aria-hidden="true">{'<'}</span>
+      <span aria-hidden="true">←</span>
       {label}
     </ActionButton>
   );
