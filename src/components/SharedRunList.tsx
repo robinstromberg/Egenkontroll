@@ -12,8 +12,6 @@ type DeviationFilter = 'all' | 'with-open' | 'with-resolved' | 'without';
 type SortKey = 'performed-desc' | 'performed-asc' | 'control-type' | 'deviation-status';
 type SharedReportSummary = {
   companyName: string;
-  logoUrl: string | null;
-  brandColor: string;
   periodStart: string;
   periodEnd: string;
   controlTypes: string;
@@ -233,17 +231,9 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-function readBrandInitials(value: string): string {
-  const words = value.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return 'EK';
-  return words.slice(0, 2).map((word) => word[0]).join('').toUpperCase();
-}
-
 function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): string {
-  const brandColor = /^#[0-9A-Fa-f]{6}$/.test(summary.brandColor) ? summary.brandColor : '#5b46e1';
-  const brandMark = summary.logoUrl
-    ? `<img class="brand-logo" src="${escapeHtml(summary.logoUrl)}" alt="" />`
-    : `<span class="brand-mark">${escapeHtml(readBrandInitials(summary.companyName))}</span>`;
+  const brandColor = '#5b46e1';
+  const brandMark = '<span class="brand-mark">EK</span>';
   const itemRows = runs.flatMap((run) => {
     if (run.items.length === 0) {
       const categoryClass = readCategoryMeta(run.control_type_category).className;
@@ -310,9 +300,8 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
           body { color: #172033; font-family: Arial, sans-serif; margin: 0; padding: 28px; }
           h1, h2, p { margin-top: 0; }
           .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
-          .brand-mark, .brand-logo { display: inline-flex; width: 42px; height: 42px; align-items: center; justify-content: center; border-radius: 12px; }
+          .brand-mark { display: inline-flex; width: 42px; height: 42px; align-items: center; justify-content: center; border-radius: 12px; }
           .brand-mark { color: #ffffff; background: ${escapeHtml(brandColor)}; font-weight: 800; }
-          .brand-logo { object-fit: contain; border: 1px solid #ddd8ff; }
           .brand h1 { margin: 0; }
           .muted { color: #5f6b85; }
           .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 18px 0 24px; }
@@ -518,12 +507,8 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
       : [{ id: run.run_id, run, item: null }]
   ));
   const companyName = visibleRuns[0]?.organization_name ?? 'Verksamhet';
-  const logoUrl = visibleRuns[0]?.organization_logo_url ?? null;
-  const brandColor = visibleRuns[0]?.organization_brand_color ?? '#5b46e1';
   const reportSummary: SharedReportSummary = {
     companyName,
-    logoUrl,
-    brandColor,
     periodStart,
     periodEnd,
     controlTypes: selectedControlTypeNames.join(', ') || 'Valda kontrolltyper',
@@ -585,8 +570,6 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
         secret: shareKey,
         email,
         companyName,
-        logoUrl,
-        brandColor,
         periodStart,
         periodEnd,
         controlTypeIds: selectedControlTypeIds,

@@ -177,8 +177,6 @@ export async function sendSharedReportEmail(input: {
   secret: string;
   email: string;
   companyName?: string;
-  logoUrl?: string | null;
-  brandColor?: string | null;
   periodStart: string;
   periodEnd: string;
   controlTypeIds: string[];
@@ -196,8 +194,6 @@ export async function sendSharedReportEmail(input: {
       rawToken: input.secret,
       email: input.email,
       companyName: input.companyName,
-      logoUrl: input.logoUrl,
-      brandColor: input.brandColor,
       periodStart: input.periodStart,
       periodEnd: input.periodEnd,
       controlTypeIds: input.controlTypeIds,

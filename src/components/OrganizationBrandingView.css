@@ -4,7 +4,6 @@
 }
 
 .branding-preview {
-  --brand-color: #5b46e1;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 14px;
@@ -16,7 +15,6 @@
   box-shadow: 0 16px 34px rgba(62, 46, 135, 0.08);
 }
 
-.branding-preview img,
 .branding-preview span {
   display: grid;
   width: 58px;
@@ -24,15 +22,9 @@
   place-items: center;
   border-radius: 16px;
   color: #ffffff;
-  background: var(--brand-color);
+  background: #5b46e1;
   font-size: 1.2rem;
   font-weight: 900;
-}
-
-.branding-preview img {
-  object-fit: contain;
-  background: #ffffff;
-  border: 1px solid rgba(91, 70, 225, 0.14);
 }
 
 .branding-preview div {
@@ -51,22 +43,6 @@
   line-height: 1.35;
 }
 
-.brand-color-field {
-  display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 10px;
-  align-items: center;
-}
-
-.brand-color-field input[type="color"] {
-  width: 52px;
-  height: 48px;
-  border: 1px solid rgba(91, 70, 225, 0.16);
-  border-radius: 14px;
-  padding: 4px;
-  background: #ffffff;
-}
-
 @media (prefers-color-scheme: dark) {
   .branding-preview {
     border-color: rgba(159, 145, 255, 0.18);
@@ -80,10 +56,5 @@
 
   .branding-preview small {
     color: #aeb8d0;
-  }
-
-  .brand-color-field input[type="color"] {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: #121a2e;
   }
 }

@@ -37,12 +37,6 @@ function pdfEscape(value) {
   return normalizeText(value).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 }
 
-function readBrandInitials(value) {
-  const words = normalizeText(value).split(/\s+/).filter(Boolean);
-  if (words.length === 0) return 'EK';
-  return words.slice(0, 2).map((word) => word[0]).join('').toUpperCase();
-}
-
 function readBrandColor(value) {
   const text = String(value ?? '').trim();
   if (!/^#[0-9A-Fa-f]{6}$/.test(text)) {
@@ -54,33 +48,6 @@ function readBrandColor(value) {
     Number.parseInt(text.slice(3, 5), 16) / 255,
     Number.parseInt(text.slice(5, 7), 16) / 255,
   ];
-}
-
-function readJpegSize(buffer) {
-  if (!Buffer.isBuffer(buffer) || buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) {
-    return null;
-  }
-
-  let offset = 2;
-  while (offset < buffer.length) {
-    if (buffer[offset] !== 0xff) {
-      offset += 1;
-      continue;
-    }
-
-    const marker = buffer[offset + 1];
-    const length = buffer.readUInt16BE(offset + 2);
-    if (marker >= 0xc0 && marker <= 0xc3) {
-      return {
-        height: buffer.readUInt16BE(offset + 5),
-        width: buffer.readUInt16BE(offset + 7),
-      };
-    }
-
-    offset += 2 + length;
-  }
-
-  return null;
 }
 
 function readItemValue(item) {
@@ -253,59 +220,6 @@ async function addSignedAttachmentLinks(runs) {
   }));
 }
 
-async function readPrivateReportLogo(runs) {
-  const serviceClient = createServiceClient();
-  const firstRunId = runs[0]?.run_id;
-  if (!serviceClient || !firstRunId) {
-    return null;
-  }
-
-  const { data: runRecord, error: runError } = await serviceClient
-    .from('control_runs')
-    .select('organization_id')
-    .eq('id', firstRunId)
-    .single();
-
-  if (runError || !runRecord?.organization_id) {
-    return null;
-  }
-
-  const { data: organization, error: organizationError } = await serviceClient
-    .from('organizations')
-    .select('logo_storage_bucket, logo_storage_path, logo_content_type')
-    .eq('id', runRecord.organization_id)
-    .single();
-
-  if (
-    organizationError
-    || !organization?.logo_storage_bucket
-    || !organization.logo_storage_path
-    || organization.logo_content_type !== 'image/jpeg'
-  ) {
-    return null;
-  }
-
-  const { data: logoBlob, error: downloadError } = await serviceClient.storage
-    .from(organization.logo_storage_bucket)
-    .download(organization.logo_storage_path);
-
-  if (downloadError || !logoBlob) {
-    return null;
-  }
-
-  const buffer = Buffer.from(await logoBlob.arrayBuffer());
-  const size = readJpegSize(buffer);
-  if (!size) {
-    return null;
-  }
-
-  return {
-    buffer,
-    width: size.width,
-    height: size.height,
-  };
-}
-
 function buildReportLines(runs, input) {
   const documentedDays = new Set(runs.map((run) => String(run.performed_at).slice(0, 10))).size;
   const itemCount = runs.reduce((sum, run) => sum + (run.items || []).length, 0);
@@ -320,7 +234,6 @@ function buildReportLines(runs, input) {
     `Kontrolltyper: ${(input.controlTypeNames || []).join(', ') || 'Valda kontrolltyper'}`,
     input.deviationFilterLabel ? `Avvikelsefilter: ${input.deviationFilterLabel}` : '',
     input.sortLabel ? `Sortering: ${input.sortLabel}` : '',
-    input.logoUrl ? `Logotyp: ${input.logoUrl}` : '',
     '',
     'Sammanfattning',
     `Kontroller i urval: ${runs.length}`,
@@ -366,9 +279,8 @@ function buildReportLines(runs, input) {
 
 function buildPdf(lines, options = {}) {
   const companyName = options.companyName || 'Verksamhet';
-  const brandColor = readBrandColor(options.brandColor);
-  const logoImage = options.logoImage || null;
-  const initials = readBrandInitials(companyName);
+  const brandColor = readBrandColor();
+  const initials = 'EK';
   const pages = [];
   for (let index = 0; index < lines.length; index += MAX_LINES_PER_PAGE) {
     pages.push(lines.slice(index, index + MAX_LINES_PER_PAGE));
@@ -383,43 +295,20 @@ function buildPdf(lines, options = {}) {
   const catalogId = addObject('');
   const pagesId = addObject('');
   const fontId = addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
-  const logoImageId = logoImage ? addObject(
-    [
-      `<< /Type /XObject /Subtype /Image /Width ${logoImage.width} /Height ${logoImage.height}`,
-      '/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter [/ASCIIHexDecode /DCTDecode]',
-      `/Length ${logoImage.buffer.toString('hex').length + 1} >>`,
-      'stream',
-      `${logoImage.buffer.toString('hex')}>`,
-      'endstream',
-    ].join('\n'),
-  ) : null;
   const pageIds = [];
 
   for (const [pageIndex, pageLines] of pages.entries()) {
     const footer = `Sida ${pageIndex + 1} av ${pages.length}`;
-    const stream = [
-      'q',
-      ...(logoImageId
-        ? [
-            '1 1 1 rg',
-            '50 782 38 38 re f',
-            '38 0 0 38 50 782 cm',
-            '/Logo Do',
-          ]
-        : [
-            `${brandColor.map((part) => part.toFixed(3)).join(' ')} rg`,
-            '50 782 38 38 re f',
-          ]),
+      const stream = [
+        'q',
+      `${brandColor.map((part) => part.toFixed(3)).join(' ')} rg`,
+      '50 782 38 38 re f',
       'Q',
-      ...(logoImageId
-        ? []
-        : [
-            'BT',
-            '/F1 14 Tf',
-            '1 1 1 rg',
-            `59 796 Td (${pdfEscape(initials)}) Tj`,
-            'ET',
-          ]),
+      'BT',
+      '/F1 14 Tf',
+      '1 1 1 rg',
+      `59 796 Td (${pdfEscape(initials)}) Tj`,
+      'ET',
       'BT',
       '/F1 14 Tf',
       '0.09 0.13 0.20 rg',
@@ -438,8 +327,7 @@ function buildPdf(lines, options = {}) {
       'ET',
     ].join('\n');
     const contentId = addObject(`<< /Length ${Buffer.byteLength(stream, 'ascii')} >>\nstream\n${stream}\nendstream`);
-    const xObjectResources = logoImageId ? `/XObject << /Logo ${logoImageId} 0 R >>` : '';
-    const pageId = addObject(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 ${fontId} 0 R >> ${xObjectResources} >> /Contents ${contentId} 0 R >>`);
+    const pageId = addObject(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentId} 0 R >>`);
     pageIds.push(pageId);
   }
 
@@ -561,12 +449,9 @@ export default async function handler(request, response) {
     }
 
     const runsWithAttachmentLinks = await addSignedAttachmentLinks(visibleRuns);
-    const privateLogo = await readPrivateReportLogo(runsWithAttachmentLinks);
     const companyName = input.companyName || input.organizationName || runsWithAttachmentLinks[0]?.organization_name || 'Verksamhet';
-    const logoUrl = input.logoUrl || runsWithAttachmentLinks[0]?.organization_logo_url || '';
-    const brandColor = input.brandColor || runsWithAttachmentLinks[0]?.organization_brand_color || '';
-    const lines = buildReportLines(runsWithAttachmentLinks, { ...input, logoUrl });
-    const pdf = buildPdf(lines, { companyName, brandColor, logoImage: privateLogo });
+    const lines = buildReportLines(runsWithAttachmentLinks, input);
+    const pdf = buildPdf(lines, { companyName });
     const subject = `Egenkontroll ${input.periodStart} - ${input.periodEnd}`;
     const text = [
       'Hej,',
