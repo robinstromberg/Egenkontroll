@@ -160,6 +160,26 @@ Undantag ska vara medvetna och dokumenterade. Historiska registreringar, revisio
 
 Nya funktioner ska inte betraktas som kompletta enbart för att användaren kan lägga till data.
 
+### Gemensamma UI-komponenter och konsekvens
+
+Återkommande UI-element ska byggas som gemensamma komponenter och återanvändas, inte återskapas lokalt i varje vy.
+
+Detta gäller särskilt:
+
+- tillbaka-knappar,
+- sidhuvuden,
+- formulärfält,
+- datumfält,
+- primär- och sekundärknappar,
+- statusbadges,
+- kortlayout,
+- tabeller/listor,
+- tomma tillstånd och felmeddelanden.
+
+Innan en ny vy eller funktion implementeras ska AI/Codex först kontrollera om det redan finns en komponent eller ett etablerat mönster som ska återanvändas.
+
+Om en vy behöver avvika från ett befintligt UI-mönster ska avvikelsen vara medveten och motiveras i issue eller PR. Små visuella skillnader, som olika pilsymboler i tillbaka-knappar, olika datumfält eller olika statusbadges, ska betraktas som inkonsekvenser om de inte är uttryckligen motiverade.
+
 Visuell riktning:
 
 - ljus, ren layout,
