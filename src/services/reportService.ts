@@ -9,8 +9,7 @@ type ReportRow = {
   performedAt: string;
   controlType: string;
   status: string;
-  item: string;
-  value: string;
+  values: string;
   deviation: string;
   action: string;
 };
@@ -18,7 +17,7 @@ type ReportRow = {
 function readItemLabel(item: Awaited<ReturnType<typeof getControlRunDetail>>['items'][number]): string {
   const fieldLabel = typeof item.field_snapshot.label === 'string' ? item.field_snapshot.label : 'Fält';
   const objectName = typeof item.object_snapshot.name === 'string' ? item.object_snapshot.name : 'Kontroll';
-  return `${objectName} · ${fieldLabel}`;
+  return fieldLabel === 'Status' ? objectName : `${objectName} · ${fieldLabel}`;
 }
 
 function readItemValue(item: Awaited<ReturnType<typeof getControlRunDetail>>['items'][number]): string {
@@ -27,6 +26,41 @@ function readItemValue(item: Awaited<ReturnType<typeof getControlRunDetail>>['it
   if (item.value_boolean !== null) return item.value_boolean ? 'Ja' : 'Nej';
   if (item.value_date) return item.value_date;
   return '';
+}
+
+function uniqueNonEmpty(values: Array<string | null | undefined>): string[] {
+  return [...new Set(values.map((value) => value?.trim()).filter(Boolean) as string[])];
+}
+
+function readRunValueSummary(items: Awaited<ReturnType<typeof getControlRunDetail>>['items']): string {
+  const valuesByLabel = new Map<string, string[]>();
+
+  for (const item of items) {
+    const label = readItemLabel(item);
+    valuesByLabel.set(label, [...(valuesByLabel.get(label) ?? []), readItemValue(item) || 'Ej angivet']);
+  }
+
+  return [...valuesByLabel.entries()]
+    .map(([label, values]) => `${label}: ${uniqueNonEmpty(values).join(', ')}`)
+    .join(' | ');
+}
+
+function readRunDeviationSummary(
+  detail: Awaited<ReturnType<typeof getControlRunDetail>>,
+): string {
+  return uniqueNonEmpty([
+    ...detail.items.filter((item) => item.deviation_detected).map((item) => item.deviation_reason ?? 'Avvikelse'),
+    ...detail.deviations.map((deviation) => deviation.description),
+  ]).join('; ');
+}
+
+function readRunActionSummary(
+  detail: Awaited<ReturnType<typeof getControlRunDetail>>,
+): string {
+  return uniqueNonEmpty([
+    ...detail.items.map((item) => item.action_text),
+    ...detail.deviations.map((deviation) => deviation.action_text),
+  ]).join('; ');
 }
 
 function escapeCsv(value: string): string {
@@ -52,24 +86,21 @@ export async function collectReportRows(
 
   for (const run of runs) {
     const detail = await getControlRunDetail(organizationId, run.id);
-    for (const item of detail.items) {
-      rows.push({
-        performedAt: run.performed_at,
-        controlType: run.control_type_name ?? 'Kontroll',
-        status: run.status,
-        item: readItemLabel(item),
-        value: readItemValue(item),
-        deviation: item.deviation_detected ? item.deviation_reason ?? 'Avvikelse' : '',
-        action: item.action_text ?? '',
-      });
-    }
+    rows.push({
+      performedAt: run.performed_at,
+      controlType: run.control_type_name ?? 'Kontroll',
+      status: run.status,
+      values: readRunValueSummary(detail.items) || 'Inga fält registrerade',
+      deviation: readRunDeviationSummary(detail),
+      action: readRunActionSummary(detail),
+    });
   }
 
   return rows;
 }
 
 export function downloadCsvReport(rows: ReportRow[]) {
-  const headers = ['Tidpunkt', 'Kontrolltyp', 'Status', 'Kontrollpunkt', 'Värde', 'Avvikelse', 'Åtgärd'];
+  const headers = ['Tidpunkt', 'Kontrolltyp', 'Status', 'Värden', 'Avvikelse', 'Åtgärd'];
   const lines = [
     headers.map(escapeCsv).join(','),
     ...rows.map((row) =>
@@ -77,8 +108,7 @@ export function downloadCsvReport(rows: ReportRow[]) {
         row.performedAt,
         row.controlType,
         row.status,
-        row.item,
-        row.value,
+        row.values,
         row.deviation,
         row.action,
       ].map(escapeCsv).join(','),
@@ -95,8 +125,7 @@ export function openPrintReport(rows: ReportRow[]) {
         <td>${row.performedAt}</td>
         <td>${row.controlType}</td>
         <td>${row.status}</td>
-        <td>${row.item}</td>
-        <td>${row.value}</td>
+        <td>${row.values}</td>
         <td>${row.deviation}</td>
         <td>${row.action}</td>
       </tr>
@@ -127,8 +156,7 @@ export function openPrintReport(rows: ReportRow[]) {
               <th>Tidpunkt</th>
               <th>Kontrolltyp</th>
               <th>Status</th>
-              <th>Kontrollpunkt</th>
-              <th>Värde</th>
+              <th>Värden</th>
               <th>Avvikelse</th>
               <th>Åtgärd</th>
             </tr>

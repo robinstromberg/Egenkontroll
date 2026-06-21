@@ -79,6 +79,52 @@ function countAllDeviations(run) {
   return (run.deviations || []).length;
 }
 
+function uniqueNonEmpty(values) {
+  return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
+}
+
+function readRunStatusLabel(run) {
+  const hasItemDeviation = (run.items || []).some((item) => item.deviation_detected);
+  if (countOpenDeviations(run) > 0 || hasItemDeviation || run.status === 'completed_with_deviation') return 'Avvikelse';
+  if (run.status === 'completed') return 'OK';
+  return run.status || 'Registrerad';
+}
+
+function readReportCellLabel(item) {
+  const objectName = readSnapshotName(item.object_snapshot, 'Kontrollpunkt');
+  const fieldLabel = readFieldLabel(item.field_snapshot);
+  return fieldLabel === 'Status' ? objectName : `${objectName} - ${fieldLabel}`;
+}
+
+function readRunValueSummary(run) {
+  const valuesByLabel = new Map();
+
+  for (const item of run.items || []) {
+    const label = readReportCellLabel(item);
+    const values = valuesByLabel.get(label) || [];
+    values.push(readItemValue(item));
+    valuesByLabel.set(label, values);
+  }
+
+  return [...valuesByLabel.entries()].map(([label, values]) => `${label}: ${uniqueNonEmpty(values).join(', ')}`);
+}
+
+function readRunDeviationSummary(run) {
+  return uniqueNonEmpty([
+    ...(run.items || [])
+      .filter((item) => item.deviation_detected)
+      .map((item) => item.deviation_reason || 'Avvikelse'),
+    ...(run.deviations || []).map((deviation) => deviation.description),
+  ]).join('; ');
+}
+
+function readRunActionSummary(run) {
+  return uniqueNonEmpty([
+    ...(run.items || []).map((item) => item.action_text),
+    ...(run.deviations || []).map((deviation) => deviation.action_text),
+  ]).join('; ');
+}
+
 function matchesDeviationFilter(run, filter) {
   const openCount = countOpenDeviations(run);
   const resolvedCount = countResolvedDeviations(run);
@@ -243,33 +289,45 @@ function buildReportLines(runs, input) {
     `Atgardade avvikelser: ${resolvedDeviations}`,
     `Atgardsgrad: ${formatPercent(resolvedDeviations, allDeviations)}`,
     '',
-    'Kontrollpunkter',
+    'Utforda kontroller',
   ];
 
   for (const run of runs) {
+    const valueSummary = readRunValueSummary(run);
+    const visibleValues = valueSummary.slice(0, 12);
+    const hiddenValueCount = valueSummary.length - visibleValues.length;
+    const hiddenText = hiddenValueCount > 0 ? ` | +${hiddenValueCount} falt till` : '';
+    const deviationSummary = readRunDeviationSummary(run);
+    const actionSummary = readRunActionSummary(run);
+
     lines.push('');
-    lines.push(`${new Date(run.performed_at).toLocaleString('sv-SE')} - ${run.control_type_name} - ${run.status}`);
+    lines.push(`${new Date(run.performed_at).toLocaleString('sv-SE')} - ${run.control_type_name} - ${readRunStatusLabel(run)}`);
+    lines.push(...wrapLine(`Varden: ${visibleValues.join(' | ') || 'Inga falt registrerade'}${hiddenText}`));
+    if (deviationSummary) lines.push(...wrapLine(`Avvikelse: ${deviationSummary}`));
+    if (actionSummary) lines.push(...wrapLine(`Atgard: ${actionSummary}`));
+  }
 
-    for (const item of run.items || []) {
-      const label = `${readSnapshotName(item.object_snapshot, 'Kontrollpunkt')} - ${readFieldLabel(item.field_snapshot)}`;
-      const deviation = item.deviation_detected ? ` Avvikelse: ${item.deviation_reason || 'Atgard kravs'}` : '';
-      const action = item.action_text ? ` Atgard: ${item.action_text}` : '';
-      lines.push(...wrapLine(`- ${label}: ${readItemValue(item)} (${item.status}).${deviation}${action}`));
-    }
-
-    for (const deviation of run.deviations || []) {
+  lines.push('', 'Avvikelser');
+  const deviations = runs.flatMap((run) => (run.deviations || []).map((deviation) => ({ run, deviation })));
+  if (deviations.length === 0) {
+    lines.push('Inga avvikelser i urvalet.');
+  } else {
+    for (const { run, deviation } of deviations) {
       const resolved = deviation.resolved_at ? ` Lost: ${new Date(deviation.resolved_at).toLocaleString('sv-SE')}` : '';
       const followUp = deviation.follow_up_comment ? ` Uppfoljning: ${deviation.follow_up_comment}` : '';
-      lines.push(...wrapLine(`! ${deviation.status} ${deviation.severity}: ${deviation.description}. Atgard: ${deviation.action_text}.${followUp}${resolved}`));
+      lines.push(...wrapLine(`${new Date(run.performed_at).toLocaleString('sv-SE')} - ${run.control_type_name} - ${deviation.status} ${deviation.severity}: ${deviation.description}. Atgard: ${deviation.action_text}.${followUp}${resolved}`));
     }
+  }
 
-    if ((run.attachments || []).length > 0) {
-      lines.push('Bilagor:');
-      for (const attachment of run.attachments || []) {
-        lines.push(...wrapLine(`- ${attachment.file_name || 'Bilaga'}`));
-        if (attachment.signed_url) {
-          lines.push(...wrapLine(`  Saker lank (giltig 7 dagar): ${attachment.signed_url}`));
-        }
+  lines.push('', 'Bilagor');
+  const attachments = runs.flatMap((run) => (run.attachments || []).map((attachment) => ({ run, attachment })));
+  if (attachments.length === 0) {
+    lines.push('Inga bilagor i urvalet.');
+  } else {
+    for (const { run, attachment } of attachments) {
+      lines.push(...wrapLine(`${new Date(run.performed_at).toLocaleString('sv-SE')} - ${run.control_type_name} - ${attachment.file_name || 'Bilaga'}`));
+      if (attachment.signed_url) {
+        lines.push(...wrapLine(`Saker lank (giltig 7 dagar): ${attachment.signed_url}`));
       }
     }
   }

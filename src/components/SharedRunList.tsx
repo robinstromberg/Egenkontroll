@@ -29,6 +29,17 @@ type DocumentationRow = {
   run: SharedRun;
   item: SharedRunItem | null;
 };
+type ReportValueColumn = {
+  key: string;
+  label: string;
+};
+type ReportValueCell = ReportValueColumn & {
+  value: string;
+  deviation: string;
+  action: string;
+};
+
+const MAX_REPORT_VALUE_COLUMNS = 10;
 
 const categoryMeta: Record<string, { icon: string; className: string }> = {
   temperature: { icon: '°C', className: 'temperature' },
@@ -135,6 +146,136 @@ function readItemDeviationLabel(run: SharedRun, item: SharedRunItem | null): str
   return 'Ingen';
 }
 
+function uniqueNonEmpty(values: Array<string | null | undefined>): string[] {
+  return [...new Set(values.map((value) => value?.trim()).filter(Boolean) as string[])];
+}
+
+function readRunStatusLabel(run: SharedRun): string {
+  const hasItemDeviation = run.items.some((item) => item.deviation_detected);
+  if (countOpenDeviations(run) > 0 || hasItemDeviation || run.status === 'completed_with_deviation') return 'Avvikelse';
+  if (run.status === 'completed') return 'OK';
+  return run.status;
+}
+
+function readReportCellLabel(item: SharedRunItem): string {
+  const objectLabel = readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt');
+  const fieldLabel = readFieldLabel(item.field_snapshot);
+  return fieldLabel === 'Status' ? objectLabel : `${objectLabel} · ${fieldLabel}`;
+}
+
+function readReportValueCells(run: SharedRun): ReportValueCell[] {
+  const cellByKey = new Map<string, ReportValueCell>();
+
+  for (const item of run.items) {
+    const label = readReportCellLabel(item);
+    const existing = cellByKey.get(label);
+    const value = readItemValue(item);
+    const deviation = item.deviation_detected ? item.deviation_reason ?? 'Avvikelse' : '';
+    const action = item.action_text ?? '';
+
+    if (existing) {
+      existing.value = uniqueNonEmpty([existing.value, value]).join('; ');
+      existing.deviation = uniqueNonEmpty([existing.deviation, deviation]).join('; ');
+      existing.action = uniqueNonEmpty([existing.action, action]).join('; ');
+    } else {
+      cellByKey.set(label, { key: label, label, value, deviation, action });
+    }
+  }
+
+  return [...cellByKey.values()];
+}
+
+function readRunDeviationSummary(run: SharedRun): string {
+  return uniqueNonEmpty([
+    ...run.items.filter((item) => item.deviation_detected).map((item) => item.deviation_reason ?? 'Avvikelse'),
+    ...run.deviations.map((deviation) => deviation.description),
+  ]).join('; ');
+}
+
+function readRunActionSummary(run: SharedRun): string {
+  return uniqueNonEmpty([
+    ...run.items.map((item) => item.action_text),
+    ...run.deviations.map((deviation) => deviation.action_text),
+  ]).join('; ');
+}
+
+function buildReportValueColumns(runs: SharedRun[]): ReportValueColumn[] {
+  const columns = new Map<string, ReportValueColumn>();
+
+  for (const run of runs) {
+    for (const cell of readReportValueCells(run)) {
+      if (!columns.has(cell.key)) columns.set(cell.key, { key: cell.key, label: cell.label });
+    }
+  }
+
+  return [...columns.values()];
+}
+
+function buildPerformedControlTables(runs: SharedRun[]): string {
+  const groups = new Map<string, SharedRun[]>();
+
+  for (const run of runs) {
+    const groupKey = run.control_type_id || run.control_type_name;
+    groups.set(groupKey, [...(groups.get(groupKey) ?? []), run]);
+  }
+
+  return [...groups.values()].map((groupRuns) => {
+    const firstRun = groupRuns[0];
+    const categoryClass = readCategoryMeta(firstRun.control_type_category).className;
+    const columns = buildReportValueColumns(groupRuns);
+    const visibleColumns = columns.slice(0, MAX_REPORT_VALUE_COLUMNS);
+    const overflowColumns = columns.slice(MAX_REPORT_VALUE_COLUMNS);
+    const hasOverflow = overflowColumns.length > 0;
+    const columnHeaders = visibleColumns.map((column) => `<th>${escapeHtml(column.label)}</th>`).join('');
+    const rows = groupRuns.map((run) => {
+      const cells = readReportValueCells(run);
+      const cellByKey = new Map(cells.map((cell) => [cell.key, cell]));
+      const overflowText = overflowColumns
+        .map((column) => {
+          const cell = cellByKey.get(column.key);
+          return cell ? `${column.label}: ${cell.value}` : '';
+        })
+        .filter(Boolean)
+        .join('; ');
+      const valueCells = visibleColumns
+        .map((column) => `<td>${escapeHtml(cellByKey.get(column.key)?.value ?? '')}</td>`)
+        .join('');
+      const tone = readDeviationTone(run);
+      const deviationSummary = readRunDeviationSummary(run) || readDeviationLabel(run);
+
+      return `
+        <tr class="report-row report-row-${escapeHtml(categoryClass)} report-row-${escapeHtml(tone)}">
+          <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
+          ${valueCells || '<td>Registrerad</td>'}
+          ${hasOverflow ? `<td>${escapeHtml(overflowText)}</td>` : ''}
+          <td>${escapeHtml(readRunStatusLabel(run))}</td>
+          <td>${escapeHtml(deviationSummary)}</td>
+          <td>${escapeHtml(readRunActionSummary(run))}</td>
+        </tr>
+      `;
+    }).join('');
+
+    return `
+      <h3>${escapeHtml(firstRun.control_type_name)}</h3>
+      <div class="report-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Datum</th>
+              ${columnHeaders || '<th>Registrering</th>'}
+              ${hasOverflow ? '<th>Övrigt</th>' : ''}
+              <th>Status</th>
+              <th>Avvikelse</th>
+              <th>Åtgärd</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
+}
+
 function matchesDeviationFilter(run: SharedRun, filter: DeviationFilter): boolean {
   const openCount = countOpenDeviations(run);
   const resolvedCount = countResolvedDeviations(run);
@@ -234,42 +375,7 @@ function isValidEmail(value: string): boolean {
 function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): string {
   const brandColor = '#5b46e1';
   const brandMark = '<span class="brand-mark">EK</span>';
-  const itemRows = runs.flatMap((run) => {
-    if (run.items.length === 0) {
-      const categoryClass = readCategoryMeta(run.control_type_category).className;
-      const tone = readDeviationTone(run);
-      return [`
-        <tr class="report-row report-row-${escapeHtml(categoryClass)} report-row-${escapeHtml(tone)}">
-          <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
-          <td>${escapeHtml(run.control_type_name)}</td>
-          <td>${escapeHtml(run.status)}</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td>${escapeHtml(readDeviationLabel(run))}</td>
-          <td></td>
-        </tr>
-      `];
-    }
-
-    return run.items.map((item) => {
-      const categoryClass = readCategoryMeta(run.control_type_category).className;
-      const tone = readItemDeviationTone(run, item);
-      return `
-      <tr class="report-row report-row-${escapeHtml(categoryClass)} report-row-${escapeHtml(tone)}">
-        <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
-        <td>${escapeHtml(run.control_type_name)}</td>
-        <td>${escapeHtml(run.status)}</td>
-        <td>${escapeHtml(`${readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · ${readFieldLabel(item.field_snapshot)}`)}</td>
-        <td>${escapeHtml(readItemValue(item))}</td>
-        <td>${escapeHtml(item.status)}</td>
-        <td>${escapeHtml(readItemDeviationLabel(run, item))}</td>
-        <td>${escapeHtml(item.action_text ?? '')}</td>
-      </tr>
-    `;
-    });
-  }).join('');
-
+  const performedControlTables = buildPerformedControlTables(runs);
   const deviationRows = runs.flatMap((run) => run.deviations.map((deviation) => `
     <tr>
       <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
@@ -309,8 +415,10 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
           .metric strong { display: block; font-size: 22px; }
           .filters { border: 1px solid #d9deea; border-radius: 12px; margin: 18px 0 24px; padding: 12px; }
           .filters p { margin: 4px 0; }
+          h3 { margin: 22px 0 10px; }
+          .report-table-wrap { overflow-x: auto; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
-          th, td { border: 1px solid #d9deea; padding: 8px; text-align: left; vertical-align: top; }
+          th, td { border: 1px solid #d9deea; padding: 8px; text-align: left; vertical-align: top; word-break: break-word; }
           th { background: #f0edff; }
           .report-row-temperature td:first-child { border-left: 5px solid #059669; }
           .report-row-checklist td:first-child { border-left: 5px solid #2563eb; }
@@ -346,22 +454,8 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
           <div class="metric"><strong>${summary.resolvedDeviations}</strong> åtgärdade avvikelser</div>
         </div>
 
-        <h2>Kontrollpunkter</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Datum</th>
-              <th>Kontroll</th>
-              <th>Status</th>
-              <th>Kontrollpunkt</th>
-              <th>Värde</th>
-              <th>Fältstatus</th>
-              <th>Avvikelse</th>
-              <th>Åtgärd</th>
-            </tr>
-          </thead>
-          <tbody>${itemRows}</tbody>
-        </table>
+        <h2>Utförda kontroller</h2>
+        ${performedControlTables || '<p>Inga kontroller i urvalet.</p>'}
 
         <h2>Avvikelser</h2>
         <table>
