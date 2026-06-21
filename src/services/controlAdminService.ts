@@ -190,6 +190,50 @@ export async function setControlTypeActive(
   }
 }
 
+export async function updateControlType(
+  controlTypeId: string,
+  organizationId: string,
+  updates: Pick<ControlType, 'name' | 'active'>,
+): Promise<ControlType> {
+  const name = updates.name.trim();
+  if (!name) {
+    throw new Error('Kontrolltypens namn krävs.');
+  }
+
+  const { data, error } = await supabase
+    .from('control_types')
+    .update({
+      name,
+      active: updates.active,
+    })
+    .eq('id', controlTypeId)
+    .eq('organization_id', organizationId)
+    .select('*')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as ControlType;
+}
+
+export async function deleteControlType(controlTypeId: string, organizationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('control_types')
+    .delete()
+    .eq('id', controlTypeId)
+    .eq('organization_id', organizationId);
+
+  if (error) {
+    if (error.code === '23503') {
+      throw new Error('Kontrolltypen har historik och kan inte raderas. Inaktivera den istället.');
+    }
+
+    throw error;
+  }
+}
+
 export async function listControlObjects(
   organizationId: string,
   controlTypeId: string,
