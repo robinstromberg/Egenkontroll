@@ -1,8 +1,21 @@
 import { supabase } from '../lib/supabaseClient';
 
 const bucketName = 'control-attachments';
+const signedUrlExpiresInSeconds = 60 * 10;
 const maxImageWidth = 1200;
 const jpegQuality = 0.82;
+
+export type AttachmentStorageReference = {
+  id: string;
+  storage_bucket: string | null;
+  storage_path: string | null;
+};
+
+export type SignedAttachmentUrl = {
+  id: string;
+  signed_url: string | null;
+  signed_url_expires_at: string | null;
+};
 
 function safeName(name: string): string {
   return name.split(' ').join('-');
@@ -98,4 +111,44 @@ export async function uploadControlAttachment(input: {
   if (metadataError) {
     throw metadataError;
   }
+}
+
+export function isImageAttachment(attachment: { content_type?: string | null; file_name?: string | null }): boolean {
+  if (attachment.content_type?.startsWith('image/')) return true;
+
+  return /\.(avif|gif|jpe?g|png|webp)$/i.test(attachment.file_name ?? '');
+}
+
+export async function createSignedAttachmentUrl(
+  attachment: AttachmentStorageReference,
+  expiresInSeconds = signedUrlExpiresInSeconds,
+): Promise<SignedAttachmentUrl> {
+  if (!attachment.storage_bucket || !attachment.storage_path) {
+    return { id: attachment.id, signed_url: null, signed_url_expires_at: null };
+  }
+
+  const { data, error } = await supabase.storage
+    .from(attachment.storage_bucket)
+    .createSignedUrl(attachment.storage_path, expiresInSeconds);
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    id: attachment.id,
+    signed_url: data.signedUrl,
+    signed_url_expires_at: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
+  };
+}
+
+export async function createSignedAttachmentUrls(
+  attachments: AttachmentStorageReference[],
+  expiresInSeconds = signedUrlExpiresInSeconds,
+): Promise<Map<string, SignedAttachmentUrl>> {
+  const signedUrls = await Promise.all(
+    attachments.map((attachment) => createSignedAttachmentUrl(attachment, expiresInSeconds)),
+  );
+
+  return new Map(signedUrls.map((signedUrl) => [signedUrl.id, signedUrl]));
 }

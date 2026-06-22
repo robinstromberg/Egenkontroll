@@ -12,6 +12,8 @@ export type HistoryAttachment = {
   file_name: string | null;
   content_type: string | null;
   size_bytes: number | null;
+  storage_bucket: string | null;
+  storage_path: string | null;
   created_at: string;
 };
 
@@ -89,7 +91,7 @@ export async function getControlRunDetail(
       .order('opened_at', { ascending: true }),
     supabase
       .from('attachments')
-      .select('id, file_name, content_type, size_bytes, created_at')
+      .select('id, file_name, content_type, size_bytes, storage_bucket, storage_path, created_at')
       .eq('organization_id', organizationId)
       .eq('control_run_id', controlRunId)
       .order('created_at', { ascending: true }),
