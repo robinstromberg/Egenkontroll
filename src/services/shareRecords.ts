@@ -194,6 +194,10 @@ export async function createSharedAttachmentSignedUrl(
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (payload?.code === 'SERVER_CONFIGURATION_MISSING') {
+      throw new Error('Bilden kan inte öppnas just nu.');
+    }
+
     throw new Error(typeof payload.error === 'string' ? payload.error : 'Kunde inte skapa bildlänk.');
   }
 

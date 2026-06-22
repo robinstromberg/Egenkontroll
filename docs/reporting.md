@@ -50,6 +50,21 @@ Optional Vercel environment variable:
 
 When this server-only key is present, `POST /api/send-inspector-report` looks up attachment storage paths only for run IDs already returned by the token-scoped read-only RPC. It then creates signed Supabase Storage links that are valid for seven days and writes those links into the generated PDF. The public inspector RPC still returns only attachment metadata and does not expose `storage_bucket` or `storage_path`.
 
+## Vercel environment matrix
+
+Set these in both `production` and `preview` when the matching feature should work there:
+
+| Variable | Production | Preview | Notes |
+| --- | --- | --- | --- |
+| `VITE_APP_URL` | Required | Required | Public app URL used when creating links. |
+| `VITE_SUPABASE_URL` or `SUPABASE_URL` | Recommended | Recommended | API routes fall back to the checked-in project URL when absent. |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY` | Recommended | Recommended | API routes fall back to the checked-in publishable key when absent. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Required for private attachment images | Required for private attachment images in preview | Server-only. Do not use a `VITE_` prefix. Required by `/api/shared-attachment-url` and optional signed links in emailed reports. |
+| `RESEND_API_KEY` | Required for email PDF | Optional | Needed only when sending reports by email. |
+| `RESEND_FROM_EMAIL` | Recommended | Optional | Use a verified Resend sender for production. |
+
+If `SUPABASE_SERVICE_ROLE_KEY` is missing, the inspector can still read the token-scoped report data, but private image attachments cannot be opened because the public share RPC intentionally does not expose Storage paths. The API route logs `shared-attachment-url missing Supabase server configuration` with safe diagnostics, while the public inspector UI shows a non-technical image-unavailable message.
+
 ## Scope
 
 Admins can edit organization report branding in the app menu under Verksamheten. The current profile supports:

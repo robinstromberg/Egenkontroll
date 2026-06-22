@@ -22,6 +22,15 @@ function readServiceRoleKey() {
   return readEnv('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY');
 }
 
+function readServerConfigDiagnostics() {
+  return {
+    hasSupabaseUrl: Boolean(readSupabaseUrl()),
+    hasServiceRoleKey: Boolean(readServiceRoleKey()),
+    acceptsServiceRoleKey: 'SUPABASE_SERVICE_ROLE_KEY',
+    acceptsLegacySecretKey: 'SUPABASE_SECRET_KEY',
+  };
+}
+
 function createServiceClient() {
   const supabaseUrl = readSupabaseUrl();
   const serviceRoleKey = readServiceRoleKey();
@@ -72,7 +81,11 @@ export default async function handler(request, response) {
 
     const serviceClient = createServiceClient();
     if (!serviceClient) {
-      return jsonResponse(response, 501, { error: 'Servern saknar Supabase service-konfiguration.' });
+      console.error('shared-attachment-url missing Supabase server configuration', readServerConfigDiagnostics());
+      return jsonResponse(response, 503, {
+        error: 'Bilden kan inte öppnas just nu.',
+        code: 'SERVER_CONFIGURATION_MISSING',
+      });
     }
 
     const now = new Date();
