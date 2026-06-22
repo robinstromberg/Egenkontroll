@@ -94,6 +94,16 @@
   white-space: nowrap;
 }
 
+.attachment-count-pill {
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: #3421a8;
+  background: #efedff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .status-pill.done {
   color: #0f5c35;
   background: #dff8e8;
@@ -152,6 +162,61 @@
   font-weight: 600;
 }
 
+.history-attachment-card {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.history-attachment-thumb {
+  display: block;
+  width: 74px;
+  height: 74px;
+  overflow: hidden;
+  border: 1px solid rgba(91, 70, 225, 0.16);
+  border-radius: 14px;
+  padding: 0;
+  background: #f6f4ff;
+  cursor: pointer;
+}
+
+.history-attachment-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.history-image-modal {
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(17, 23, 44, 0.72);
+}
+
+.history-image-modal-content {
+  display: grid;
+  width: min(100%, 720px);
+  max-height: min(92vh, 760px);
+  gap: 12px;
+  overflow: auto;
+  border-radius: 20px;
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: 0 24px 80px rgba(17, 23, 44, 0.34);
+}
+
+.history-image-modal-content > img {
+  display: block;
+  width: 100%;
+  max-height: 68vh;
+  border-radius: 14px;
+  object-fit: contain;
+  background: #f4f6fb;
+}
+
 .history-row-header {
   display: flex;
   gap: 10px;
@@ -200,6 +265,11 @@
     background: #1d2740;
   }
 
+  .attachment-count-pill {
+    color: #c7bfff;
+    background: #211b45;
+  }
+
   .status-pill.done {
     color: #62dc94;
     background: rgba(33, 130, 76, 0.24);
@@ -233,6 +303,19 @@
   .history-detail-card .muted-copy {
     color: #b8c2d8;
   }
+
+  .history-attachment-thumb {
+    border-color: rgba(159, 145, 255, 0.22);
+    background: #1d2740;
+  }
+
+  .history-image-modal-content {
+    background: #121a2e;
+  }
+
+  .history-image-modal-content > img {
+    background: #0a111f;
+  }
 }
 
 @media (max-width: 420px) {
@@ -246,5 +329,18 @@
 
   .status-pill {
     padding-inline: 8px;
+  }
+
+  .attachment-count-pill {
+    display: none;
+  }
+
+  .history-attachment-card {
+    grid-template-columns: 1fr;
+  }
+
+  .history-attachment-thumb {
+    width: 100%;
+    height: 148px;
   }
 }

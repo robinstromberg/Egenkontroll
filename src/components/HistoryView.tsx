@@ -54,10 +54,15 @@ function readAttachmentMeta(attachment: ControlRunDetail['attachments'][number])
   ].filter(Boolean).join(' · ');
 }
 
+function formatAttachmentCount(count: number): string {
+  return count === 1 ? '1 bild' : `${count} bilder`;
+}
+
 export function HistoryView({ organizationId }: HistoryViewProps) {
   const [filters, setFilters] = useState<HistoryFilters>({});
   const [runs, setRuns] = useState<ControlRunSummary[]>([]);
   const [detail, setDetail] = useState<ControlRunDetail | null>(null);
+  const [previewImage, setPreviewImage] = useState<ControlRunDetail['attachments'][number] | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
@@ -80,6 +85,7 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
   async function openDetail(runId: string) {
     try {
       setMessage('');
+      setPreviewImage(null);
       setDetail(await getControlRunDetail(organizationId, runId));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte läsa detaljvyn.');
@@ -109,6 +115,11 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa utskriftsvy.');
     }
+  }
+
+  function closeDetail() {
+    setDetail(null);
+    setPreviewImage(null);
   }
 
   return (
@@ -167,8 +178,14 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
             <span className="history-icon" aria-hidden="true">↺</span>
             <span className="history-copy">
               <strong>{run.control_type_name ?? 'Kontroll'}</strong>
-              <span>{formatDateTime(run.performed_at)} · {getRunStatusText(run.status)}</span>
+              <span>
+                {formatDateTime(run.performed_at)} · {getRunStatusText(run.status)}
+                {run.attachment_count ? ` · ${formatAttachmentCount(run.attachment_count)}` : ''}
+              </span>
             </span>
+            {run.attachment_count ? (
+              <span className="attachment-count-pill">{formatAttachmentCount(run.attachment_count)}</span>
+            ) : null}
             <span className={run.status === 'completed_with_deviation' ? 'status-pill warning' : 'status-pill done'}>
               {getRunStatusText(run.status)}
             </span>
@@ -184,7 +201,7 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
               <h4>{detail.run.control_type_name ?? 'Kontroll'}</h4>
               <p className="muted-copy">{formatDateTime(detail.run.performed_at)} · {getRunStatusText(detail.run.status)}</p>
             </div>
-            <ActionButton type="button" variant="secondary" onClick={() => setDetail(null)}>
+            <ActionButton type="button" variant="secondary" onClick={closeDetail}>
               Stäng
             </ActionButton>
           </div>
@@ -218,13 +235,48 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
             <div className="history-detail-list">
               <h4>Bilagor</h4>
               {detail.attachments.map((attachment) => (
-                <article className="history-detail-card" key={attachment.id}>
-                  <strong>{attachment.file_name ?? 'Bilaga'}</strong>
-                  <p className="muted-copy">{readAttachmentMeta(attachment)}</p>
+                <article className="history-detail-card history-attachment-card" key={attachment.id}>
+                  {attachment.signed_url ? (
+                    <button
+                      className="history-attachment-thumb"
+                      type="button"
+                      onClick={() => setPreviewImage(attachment)}
+                      aria-label={`Visa ${attachment.file_name ?? 'bilaga'} större`}
+                    >
+                      <img src={attachment.signed_url} alt={attachment.file_name ?? 'Bilaga'} loading="lazy" />
+                    </button>
+                  ) : null}
+                  <div>
+                    <strong>{attachment.file_name ?? 'Bilaga'}</strong>
+                    <p className="muted-copy">{readAttachmentMeta(attachment)}</p>
+                  </div>
                 </article>
               ))}
             </div>
           ) : null}
+        </div>
+      ) : null}
+
+      {previewImage?.signed_url ? (
+        <div
+          className="history-image-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label={previewImage.file_name ?? 'Bilaga'}
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="history-image-modal-content" onClick={(event) => event.stopPropagation()}>
+            <div className="history-row-header">
+              <div>
+                <h4>{previewImage.file_name ?? 'Bilaga'}</h4>
+                <p className="muted-copy">{readAttachmentMeta(previewImage)}</p>
+              </div>
+              <ActionButton type="button" variant="secondary" onClick={() => setPreviewImage(null)}>
+                Stäng
+              </ActionButton>
+            </div>
+            <img src={previewImage.signed_url} alt={previewImage.file_name ?? 'Bilaga'} />
+          </div>
         </div>
       ) : null}
     </section>
