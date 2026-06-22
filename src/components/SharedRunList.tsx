@@ -1,12 +1,13 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import {
+  createSharedAttachmentSignedUrl,
   logSharedExport,
   readSharedControlTypeOptions,
   readSharedRuns,
   sendSharedReportEmail,
 } from '../services/shareRecords';
-import type { SharedControlTypeOption, SharedExportType, SharedRun, SharedRunItem } from '../services/shareRecords';
+import type { SharedAttachment, SharedControlTypeOption, SharedExportType, SharedRun, SharedRunItem } from '../services/shareRecords';
 
 type DeviationFilter = 'all' | 'with-open' | 'with-resolved' | 'without';
 type SortKey = 'performed-desc' | 'performed-asc' | 'control-type' | 'deviation-status';
@@ -37,6 +38,11 @@ type ReportValueCell = ReportValueColumn & {
   value: string;
   deviation: string;
   action: string;
+};
+type SharedAttachmentPreview = {
+  attachment: SharedAttachment;
+  run: SharedRun;
+  signedUrl: string;
 };
 
 const MAX_REPORT_VALUE_COLUMNS = 10;
@@ -100,6 +106,12 @@ function readItemValue(item: SharedRunItem): string {
   if (item.value_date) return item.value_date;
   if (item.value_json && Object.keys(item.value_json).length > 0) return JSON.stringify(item.value_json);
   return 'Ej angivet';
+}
+
+function isImageAttachment(attachment: SharedAttachment): boolean {
+  if (attachment.content_type?.startsWith('image/')) return true;
+
+  return /\.(avif|gif|jpe?g|png|webp)$/i.test(attachment.file_name ?? '');
 }
 
 function readCategoryMeta(category: string | null | undefined) {
@@ -523,6 +535,8 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   const [runs, setRuns] = useState<SharedRun[]>([]);
   const [reportEmail, setReportEmail] = useState('');
   const [emailSending, setEmailSending] = useState(false);
+  const [attachmentPreview, setAttachmentPreview] = useState<SharedAttachmentPreview | null>(null);
+  const [loadingAttachmentId, setLoadingAttachmentId] = useState<string | null>(null);
   const [optionsLoading, setOptionsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -582,6 +596,23 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
         ? current.filter((item) => item !== controlTypeId)
         : [...current, controlTypeId]
     ));
+  }
+
+  async function openAttachmentPreview(run: SharedRun, attachment: SharedAttachment) {
+    try {
+      setMessage('');
+      setLoadingAttachmentId(attachment.id);
+      const signed = await createSharedAttachmentSignedUrl(shareKey, attachment.id);
+      setAttachmentPreview({
+        attachment,
+        run,
+        signedUrl: signed.signedUrl,
+      });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte öppna bilden.');
+    } finally {
+      setLoadingAttachmentId(null);
+    }
   }
 
   const visibleRuns = sortRuns(
@@ -965,9 +996,21 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                           <div className="inspector-detail-list">
                             <h4>Bilagor</h4>
                             {run.attachments.map((attachment) => (
-                              <section className="inspector-detail-card" key={attachment.id}>
-                                <strong>{attachment.file_name ?? 'Bilaga'}</strong>
-                                <p className="muted-copy">Registrerad {formatDateTime(attachment.created_at)}</p>
+                              <section className="inspector-detail-card inspector-attachment-card" key={attachment.id}>
+                                <div>
+                                  <strong>{attachment.file_name ?? 'Bilaga'}</strong>
+                                  <p className="muted-copy">Registrerad {formatDateTime(attachment.created_at)}</p>
+                                </div>
+                                {isImageAttachment(attachment) ? (
+                                  <ActionButton
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={() => openAttachmentPreview(run, attachment)}
+                                    disabled={loadingAttachmentId === attachment.id}
+                                  >
+                                    {loadingAttachmentId === attachment.id ? 'Öppnar...' : 'Visa bild'}
+                                  </ActionButton>
+                                ) : null}
                               </section>
                             ))}
                           </div>
@@ -980,6 +1023,31 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
             </table>
           </div>
         </>
+      ) : null}
+
+      {attachmentPreview ? (
+        <div
+          className="inspector-image-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label={attachmentPreview.attachment.file_name ?? 'Bilaga'}
+          onClick={() => setAttachmentPreview(null)}
+        >
+          <div className="inspector-image-modal-content" onClick={(event) => event.stopPropagation()}>
+            <div className="inspector-image-modal-header">
+              <div>
+                <h4>{attachmentPreview.attachment.file_name ?? 'Bilaga'}</h4>
+                <p className="muted-copy">
+                  {attachmentPreview.run.control_type_name} · {formatDateTime(attachmentPreview.run.performed_at)}
+                </p>
+              </div>
+              <ActionButton type="button" variant="secondary" onClick={() => setAttachmentPreview(null)}>
+                Stäng
+              </ActionButton>
+            </div>
+            <img src={attachmentPreview.signedUrl} alt={attachmentPreview.attachment.file_name ?? 'Bilaga'} />
+          </div>
+        </div>
       ) : null}
     </div>
   );

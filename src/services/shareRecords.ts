@@ -80,6 +80,11 @@ export type SharedAttachment = {
 
 export type SharedExportType = 'pdf' | 'csv';
 
+export type SharedAttachmentSignedUrl = {
+  signedUrl: string;
+  expiresAt: string;
+};
+
 export async function createAccessLink(input: {
   organizationId: string;
   createdBy: string;
@@ -171,6 +176,28 @@ export async function logSharedExport(
   });
 
   if (error) throw error;
+}
+
+export async function createSharedAttachmentSignedUrl(
+  secret: string,
+  attachmentId: string,
+): Promise<SharedAttachmentSignedUrl> {
+  const response = await fetch('/api/shared-attachment-url', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      rawToken: secret,
+      attachmentId,
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(typeof payload.error === 'string' ? payload.error : 'Kunde inte skapa bildlänk.');
+  }
+
+  return payload as SharedAttachmentSignedUrl;
 }
 
 export async function sendSharedReportEmail(input: {
