@@ -11,6 +11,8 @@ export type ExportType = 'pdf' | 'csv';
 export type Organization = {
   id: string;
   name: string;
+  industry: 'food';
+  business_type: 'restaurant' | 'cafe' | 'bakery' | 'kiosk' | 'foodtruck' | 'catering' | 'chilled_store' | null;
   logo_url: string | null;
   brand_color: string | null;
   logo_storage_bucket: string | null;

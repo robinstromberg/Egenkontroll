@@ -2,6 +2,7 @@ import type { User } from '@supabase/supabase-js';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { createFirstOrganization } from '../services/organizationService';
+import type { BusinessType } from '../services/organizationService';
 import { listActiveControlTemplates } from '../services/templateService';
 import type { ControlTemplate } from '../types/database';
 import './OrganizationSetup.css';
@@ -11,8 +12,19 @@ export type OrganizationSetupProps = {
   onCreated: () => Promise<void>;
 };
 
+const businessTypes: { id: BusinessType; label: string; description: string }[] = [
+  { id: 'restaurant', label: 'Restaurang', description: 'Dagliga rutiner för kök, servering och temperaturer.' },
+  { id: 'cafe', label: 'Café', description: 'Enkel start för beredning, servering och kylda varor.' },
+  { id: 'bakery', label: 'Bageri/konditori', description: 'Passar produktion, städning och spårbarhet.' },
+  { id: 'kiosk', label: 'Kiosk', description: 'Fokus på datummärkning, varor och kylar.' },
+  { id: 'foodtruck', label: 'Foodtruck', description: 'Mobil verksamhet med tydliga dagliga kontroller.' },
+  { id: 'catering', label: 'Catering', description: 'Bra för produktion, transport och leveransrutiner.' },
+  { id: 'chilled_store', label: 'Butik med kylda varor', description: 'Startar med kylar, mottagning och märkning.' },
+];
+
 export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
   const [organizationName, setOrganizationName] = useState('');
+  const [businessType, setBusinessType] = useState<BusinessType>('restaurant');
   const [templates, setTemplates] = useState<ControlTemplate[]>([]);
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -66,7 +78,10 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
     setMessage('');
 
     try {
-      await createFirstOrganization(user, organizationName.trim(), selectedTemplateIds);
+      await createFirstOrganization(user, organizationName.trim(), selectedTemplateIds, {
+        industry: 'food',
+        businessType,
+      });
       await onCreated();
     } catch (error) {
       setStatus('error');
@@ -79,8 +94,14 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
       <p className="eyebrow">Första start</p>
       <h2 id="setup-title">Skapa din verksamhet</h2>
       <p className="muted-copy">
-        Välj de startmallar som ska kopieras in i verksamheten. Allt går att ändra senare.
+        Välj verksamhetstyp och startmallar. Vi skapar en användbar första yta direkt, och allt går att ändra senare.
       </p>
+
+      <ol className="setup-steps" aria-label="Onboardingsteg">
+        <li className="active">Konto</li>
+        <li className="active">Verksamhet</li>
+        <li>Startmallar</li>
+      </ol>
 
       <form className="form-stack" onSubmit={handleSubmit}>
         <label className="field-label" htmlFor="organization-name">
@@ -94,6 +115,35 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
           placeholder="Exempel: Café Solgläntan"
           required
         />
+
+        <div className="industry-panel" aria-label="Bransch">
+          <span className="industry-icon" aria-hidden="true">LV</span>
+          <span>
+            <strong>Bransch: Livsmedel</strong>
+            <small>Fler branscher kan läggas till senare utan att ändra onboardingflödet.</small>
+          </span>
+        </div>
+
+        <fieldset className="business-type-picker">
+          <legend>Verksamhetstyp</legend>
+          <div className="business-type-list">
+            {businessTypes.map((type) => {
+              const selected = businessType === type.id;
+              return (
+                <button
+                  aria-pressed={selected}
+                  className={selected ? 'business-type-card selected' : 'business-type-card'}
+                  key={type.id}
+                  onClick={() => setBusinessType(type.id)}
+                  type="button"
+                >
+                  <strong>{type.label}</strong>
+                  <span>{type.description}</span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
 
         <div className="template-picker" aria-label="Startmallar">
           <div className="template-picker-header">

@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabaseClient';
 import { cloneInactiveDefaultTemplatesToOrganization, cloneTemplatesToOrganization } from './templateService';
 import type { OrganizationMembership, Organization, OrganizationRole } from '../types/database';
 
+export type BusinessType = NonNullable<Organization['business_type']>;
+
 export type OrganizationContext = {
   membership: OrganizationMembership;
   organization: Organization;
@@ -72,6 +74,7 @@ export async function createFirstOrganization(
   user: User,
   organizationName: string,
   templateIds: string[] = [],
+  businessProfile: { industry: Organization['industry']; businessType: BusinessType },
 ): Promise<void> {
   await ensureProfile(user);
 
@@ -79,6 +82,8 @@ export async function createFirstOrganization(
     .from('organizations')
     .insert({
       name: organizationName,
+      industry: businessProfile.industry,
+      business_type: businessProfile.businessType,
       created_by: user.id,
     })
     .select('id')
