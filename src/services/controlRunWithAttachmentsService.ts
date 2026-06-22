@@ -105,7 +105,7 @@ export async function saveControlRun(
       : null;
     const valueBoolean = field.field_type === 'boolean' ? toBoolean(response.value) : null;
     const valueDate = field.field_type === 'date' ? response.value || null : null;
-    const valueText = ['text', 'textarea', 'ok_not_ok', 'select', 'photo'].includes(field.field_type)
+    const valueText = ['text', 'textarea', 'ok_not_ok', 'select', 'photo', 'datetime'].includes(field.field_type)
       ? response.value
       : null;
 

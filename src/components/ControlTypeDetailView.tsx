@@ -66,6 +66,8 @@ const fieldTypeOptions: Array<{
   { fieldType: 'temperature', label: 'Temperatur', description: 'Temperaturvärde som kan jämföras mot gränsvärden.', defaultLabel: 'Temperatur' },
   { fieldType: 'text', label: 'Text', description: 'Kort text, till exempel batchnummer eller märkning.', defaultLabel: 'Text' },
   { fieldType: 'date', label: 'Datum', description: 'Datumfält, till exempel bäst före.', defaultLabel: 'Datum' },
+  { fieldType: 'datetime', label: 'Datum och tid', description: 'Tidpunkt eller tidssteg, till exempel start/slut.', defaultLabel: 'Tidpunkt' },
+  { fieldType: 'select', label: 'Val', description: 'Fördefinierat val när alternativen kommer från mall.', defaultLabel: 'Val' },
   { fieldType: 'photo', label: 'Foto', description: 'Bild eller dokumentation från mobilen.', defaultLabel: 'Foto' },
 ];
 

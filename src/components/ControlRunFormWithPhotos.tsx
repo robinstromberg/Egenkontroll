@@ -26,6 +26,10 @@ export type ControlRunFormWithPhotosProps = {
 type ResponseState = Record<string, string>;
 type DeviationState = Record<string, string>;
 type FileState = Record<string, File | null>;
+type SelectOption = {
+  label: string;
+  value: string;
+};
 
 type PhotoCaptureFieldProps = {
   id: string;
@@ -78,7 +82,23 @@ function responseKey(objectId: string | null, fieldId: string): string {
 function getFieldInputType(field: ControlFieldDefinition): string {
   if (field.field_type === 'temperature' || field.field_type === 'number') return 'number';
   if (field.field_type === 'date') return 'date';
+  if (field.field_type === 'datetime') return 'datetime-local';
   return 'text';
+}
+
+function readSelectOptions(field: ControlFieldDefinition): SelectOption[] {
+  return field.options
+    .map((option) => {
+      if (typeof option === 'string') return { label: option, value: option };
+      if (option && typeof option === 'object' && 'label' in option && 'value' in option) {
+        const item = option as { label?: unknown; value?: unknown };
+        if (typeof item.label === 'string' && typeof item.value === 'string') {
+          return { label: item.label, value: item.value };
+        }
+      }
+      return null;
+    })
+    .filter((option): option is SelectOption => Boolean(option));
 }
 
 function getDeviationReason(field: ControlFieldDefinition, object: ControlObject | null, value: string): string | null {
@@ -533,6 +553,24 @@ export function ControlRunFormWithPhotos({
                       suppliers={suppliers}
                       onChange={(nextValue) => updateResponse(key, nextValue)}
                     />
+                  ) : field.field_type === 'select' && readSelectOptions(field).length > 0 ? (
+                    <>
+                      <label htmlFor={key}>{field.label}</label>
+                      <select
+                        className="text-input"
+                        id={key}
+                        value={value}
+                        onChange={(event) => updateResponse(key, event.target.value)}
+                        required={field.required}
+                      >
+                        <option value="">Välj</option>
+                        {readSelectOptions(field).map((option) => (
+                          <option value={option.value} key={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </>
                   ) : field.field_type === 'date' ? (
                     <DateField
                       id={key}
