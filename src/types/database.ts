@@ -25,6 +25,9 @@ export type Organization = {
   timezone: string;
   default_locale: string;
   subscription_status: 'inactive' | 'trial' | 'active' | 'past_due' | 'cancelled';
+  billing_plan: 'monthly' | 'annual' | null;
+  trial_started_at: string | null;
+  trial_ends_at: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

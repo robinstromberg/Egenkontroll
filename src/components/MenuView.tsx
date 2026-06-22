@@ -1,4 +1,5 @@
 import { ActionButton } from './ui/ActionButton';
+import { billingPlans, daysUntilTrialEnds, subscriptionStatusLabel } from '../config/subscription';
 import type { OrganizationContext } from '../services/organizationService';
 import './MenuView.css';
 
@@ -83,6 +84,9 @@ export function MenuView({
   onSignOut,
 }: MenuViewProps) {
   const visibleItems = menuItems.filter((item) => canManage || !item.adminOnly);
+  const organization = context.organization;
+  const daysLeft = daysUntilTrialEnds(organization.trial_ends_at);
+  const billingPlan = organization.billing_plan ? billingPlans[organization.billing_plan] : null;
   const actionHandlers: Record<MenuAction, () => void> = {
     profile: onOpenProfile,
     organization: onOpenOrganization,
@@ -96,11 +100,29 @@ export function MenuView({
     <section className="menu-view" aria-labelledby="menu-title">
       <div className="menu-card">
         <p className="eyebrow">Meny</p>
-        <h3 id="menu-title">{context.organization.name}</h3>
+        <h3 id="menu-title">{organization.name}</h3>
         <p className="muted-copy">
           {userEmail} - {roleLabel}
         </p>
       </div>
+
+      {canManage ? (
+        <div className="subscription-card">
+          <div>
+            <p className="eyebrow">Abonnemang</p>
+            <h3>{subscriptionStatusLabel(organization.subscription_status)}</h3>
+            <p>
+              {organization.subscription_status === 'trial' && daysLeft !== null
+                ? `${daysLeft} dagar kvar av testperioden.`
+                : 'Statusen styr åtkomst och kan kopplas till vald betalningsleverantör senare.'}
+            </p>
+          </div>
+          <div className="subscription-plan-pill">
+            <span>{billingPlan?.label ?? 'Ingen plan'}</span>
+            <strong>{billingPlan?.priceLabel ?? '-'}</strong>
+          </div>
+        </div>
+      ) : null}
 
       <div className="menu-list" aria-label="Menyval">
         {visibleItems.map((item) => (

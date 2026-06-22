@@ -1,4 +1,5 @@
 import './PublicLandingPage.css';
+import { billingPlans, trialDays } from '../config/subscription';
 
 type PublicLandingPageProps = {
   onStartTrial: () => void;
@@ -146,17 +147,17 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
         <div>
           <p className="public-eyebrow">Pris</p>
           <h2>En produkt, två sätt att betala.</h2>
-          <p className="public-copy">Starta med 30 dagar testperiod. Avsluta innan första debitering om det inte passar.</p>
+          <p className="public-copy">Starta med {trialDays} dagar testperiod. Avsluta innan första debitering om det inte passar.</p>
         </div>
         <div className="price-cards">
           <article className="price-card">
-            <p>Månadsvis</p>
-            <strong>129 kr/mån</strong>
+            <p>{billingPlans.monthly.label}</p>
+            <strong>{billingPlans.monthly.priceLabel}</strong>
             <span>Flexibelt för att komma igång.</span>
           </article>
           <article className="price-card highlighted">
-            <p>Årsvis</p>
-            <strong>99 kr/mån</strong>
+            <p>{billingPlans.annual.label}</p>
+            <strong>{billingPlans.annual.priceLabel}</strong>
             <span>Debiteras årsvis.</span>
           </article>
         </div>

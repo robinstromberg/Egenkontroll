@@ -60,7 +60,8 @@
   line-height: 1.45;
 }
 
-.business-type-picker {
+.business-type-picker,
+.billing-plan-picker {
   display: grid;
   gap: 10px;
   min-width: 0;
@@ -69,31 +70,78 @@
   padding: 0;
 }
 
-.business-type-picker legend {
+.business-type-picker legend,
+.billing-plan-picker legend {
   margin-bottom: 2px;
   color: #28334d;
   font-weight: 800;
 }
 
-.business-type-list {
+.business-type-list,
+.billing-plan-list {
   display: grid;
   gap: 10px;
 }
 
-.business-type-card {
+.business-type-card,
+.billing-plan-card,
+.trial-summary {
   display: grid;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.business-type-card,
+.billing-plan-card {
   gap: 5px;
   width: 100%;
-  border-radius: 18px;
   padding: 14px;
   color: #172033;
   text-align: left;
 }
 
-.business-type-card.selected {
+.business-type-card.selected,
+.billing-plan-card.selected {
   border-color: rgba(91, 70, 225, 0.42);
   background: #f4f1ff;
   box-shadow: 0 10px 24px rgba(62, 46, 135, 0.08);
+}
+
+.trial-summary {
+  gap: 4px;
+  padding: 14px;
+  background: #dff8e9;
+}
+
+.trial-summary strong {
+  color: #0b5f3f;
+}
+
+.trial-summary span {
+  color: #305646;
+  line-height: 1.45;
+}
+
+.billing-plan-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.billing-plan-card span {
+  display: grid;
+  gap: 4px;
+}
+
+.billing-plan-card small {
+  color: #5f6a82;
+  line-height: 1.45;
+}
+
+.billing-plan-card b {
+  color: #5b46e1;
+  white-space: nowrap;
 }
 
 .template-picker {

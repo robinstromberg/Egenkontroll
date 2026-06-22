@@ -1,4 +1,6 @@
 import type { User } from '@supabase/supabase-js';
+import type { BillingPlan } from '../config/subscription';
+import { createTrialWindow } from '../config/subscription';
 import { supabase } from '../lib/supabaseClient';
 import { cloneInactiveDefaultTemplatesToOrganization, cloneTemplatesToOrganization } from './templateService';
 import type { OrganizationMembership, Organization, OrganizationRole } from '../types/database';
@@ -75,8 +77,10 @@ export async function createFirstOrganization(
   organizationName: string,
   templateIds: string[] = [],
   businessProfile: { industry: Organization['industry']; businessType: BusinessType },
+  subscription: { billingPlan: BillingPlan },
 ): Promise<void> {
   await ensureProfile(user);
+  const trialWindow = createTrialWindow();
 
   const { data: organization, error: organizationError } = await supabase
     .from('organizations')
@@ -84,6 +88,10 @@ export async function createFirstOrganization(
       name: organizationName,
       industry: businessProfile.industry,
       business_type: businessProfile.businessType,
+      subscription_status: 'trial',
+      billing_plan: subscription.billingPlan,
+      trial_started_at: trialWindow.trialStartedAt,
+      trial_ends_at: trialWindow.trialEndsAt,
       created_by: user.id,
     })
     .select('id')

@@ -1,6 +1,8 @@
 import type { User } from '@supabase/supabase-js';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import type { BillingPlan } from '../config/subscription';
+import { billingPlans, trialDays } from '../config/subscription';
 import { createFirstOrganization } from '../services/organizationService';
 import type { BusinessType } from '../services/organizationService';
 import { listActiveControlTemplates } from '../services/templateService';
@@ -25,6 +27,7 @@ const businessTypes: { id: BusinessType; label: string; description: string }[] 
 export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
   const [organizationName, setOrganizationName] = useState('');
   const [businessType, setBusinessType] = useState<BusinessType>('restaurant');
+  const [billingPlan, setBillingPlan] = useState<BillingPlan>('monthly');
   const [templates, setTemplates] = useState<ControlTemplate[]>([]);
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -81,6 +84,8 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
       await createFirstOrganization(user, organizationName.trim(), selectedTemplateIds, {
         industry: 'food',
         businessType,
+      }, {
+        billingPlan,
       });
       await onCreated();
     } catch (error) {
@@ -139,6 +144,34 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
                 >
                   <strong>{type.label}</strong>
                   <span>{type.description}</span>
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <fieldset className="billing-plan-picker">
+          <legend>Testperiod och betalning</legend>
+          <div className="trial-summary">
+            <strong>{trialDays} dagar gratis</strong>
+            <span>Första debitering sker efter testperioden. Betalmetod kopplas in när betalningsleverantör är vald.</span>
+          </div>
+          <div className="billing-plan-list">
+            {(Object.entries(billingPlans) as [BillingPlan, typeof billingPlans[BillingPlan]][]).map(([planId, plan]) => {
+              const selected = billingPlan === planId;
+              return (
+                <button
+                  aria-pressed={selected}
+                  className={selected ? 'billing-plan-card selected' : 'billing-plan-card'}
+                  key={planId}
+                  onClick={() => setBillingPlan(planId)}
+                  type="button"
+                >
+                  <span>
+                    <strong>{plan.label}</strong>
+                    <small>{plan.description}</small>
+                  </span>
+                  <b>{plan.priceLabel}</b>
                 </button>
               );
             })}

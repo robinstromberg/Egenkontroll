@@ -1,3 +1,41 @@
+.subscription-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(62, 46, 135, 0.06);
+}
+
+.subscription-card h3,
+.subscription-card p {
+  margin-bottom: 0;
+}
+
+.subscription-card p {
+  color: #657089;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.subscription-plan-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: 16px;
+  padding: 12px;
+  color: #0b5f3f;
+  background: #dff8e9;
+  font-weight: 900;
+}
+
+.subscription-plan-pill strong {
+  color: #172033;
+  white-space: nowrap;
+}
+
 .menu-list {
   display: grid;
   gap: 10px;
@@ -53,6 +91,25 @@
 }
 
 @media (prefers-color-scheme: dark) {
+  .subscription-card {
+    border-color: rgba(159, 145, 255, 0.18);
+    background: #121a2e;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  }
+
+  .subscription-card p {
+    color: #aeb8d0;
+  }
+
+  .subscription-plan-pill {
+    color: #61d992;
+    background: rgba(39, 128, 83, 0.2);
+  }
+
+  .subscription-plan-pill strong {
+    color: #f7f9ff;
+  }
+
   .menu-list-item {
     border-color: rgba(159, 145, 255, 0.18);
     color: #f7f9ff;
