@@ -7,12 +7,14 @@ import { AuthPanel } from './components/AuthPanel';
 import { InspectorView } from './components/InspectorView';
 import { OrganizationSetup } from './components/OrganizationSetup';
 import { PasswordSetupPanel } from './components/PasswordSetupPanel';
+import { PublicLandingPage } from './components/PublicLandingPage';
 import { getCurrentSession, signOut } from './services/authService';
 import { ensureProfile, listOrganizationContexts } from './services/organizationService';
 import type { OrganizationContext } from './services/organizationService';
 import { supabase } from './lib/supabaseClient';
 
 const appViews: AppView[] = ['today', 'history', 'add', 'sharing', 'menu'];
+type PublicPath = 'home' | 'login' | 'signup';
 
 function isAppView(value: string | null): value is AppView {
   return Boolean(value && appViews.includes(value as AppView));
@@ -51,10 +53,17 @@ function writeActiveView(view: AppView) {
   window.history.replaceState(null, '', nextUrl);
 }
 
+function readPublicPath(): PublicPath {
+  if (window.location.pathname === '/login') return 'login';
+  if (window.location.pathname === '/signup') return 'signup';
+  return 'home';
+}
+
 function App() {
   const inspectorKey = readInspectorKey();
   const [session, setSession] = useState<Session | null>(null);
   const [activeView, setActiveView] = useState<AppView>(() => readActiveView());
+  const [publicPath, setPublicPath] = useState<PublicPath>(() => readPublicPath());
   const [organizationContexts, setOrganizationContexts] = useState<OrganizationContext[]>([]);
   const [passwordRecovery, setPasswordRecovery] = useState(
     () => window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery'),
@@ -112,6 +121,17 @@ function App() {
   useEffect(() => {
     if (inspectorKey) return;
 
+    function handlePopState() {
+      setPublicPath(readPublicPath());
+    }
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [inspectorKey]);
+
+  useEffect(() => {
+    if (inspectorKey) return;
+
     function handleHashChange() {
       const nextInspectorKey = readInspectorKey();
       if (nextInspectorKey) return;
@@ -136,6 +156,12 @@ function App() {
     window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
   }
 
+  function navigatePublic(path: PublicPath) {
+    const pathname = path === 'home' ? '/' : `/${path}`;
+    window.history.pushState(null, '', pathname);
+    setPublicPath(path);
+  }
+
   if (inspectorKey) {
     return <InspectorView shareKey={inspectorKey} />;
   }
@@ -143,20 +169,27 @@ function App() {
   const activeContext = organizationContexts[0];
   const showNavigation = Boolean(session?.user);
 
+  if (!loading && !session?.user && !passwordRecovery && publicPath === 'home') {
+    return <PublicLandingPage onStartTrial={() => navigatePublic('signup')} onLogin={() => navigatePublic('login')} />;
+  }
+
   return (
     <>
       <main className={showNavigation ? 'app-shell with-bottom-bar' : 'app-shell'}>
-        {!showNavigation ? <section className="hero-card" aria-labelledby="page-title">
+        {!showNavigation ? <section className="hero-card auth-hero-card" aria-labelledby="page-title">
           <div className="app-icon" aria-hidden="true">
             ✓
           </div>
           <div className="hero-copy">
-            <p className="eyebrow">Mobilförst SaaS-webapp</p>
-            <h1 id="page-title">Egenkontroll</h1>
+            <p className="eyebrow">{publicPath === 'signup' ? 'Starta testperiod' : 'Välkommen tillbaka'}</p>
+            <h1 id="page-title">Min Egenkontroll</h1>
             <p className="lead">
-              Digital egenkontroll för livsmedelsverksamheter. Inloggning, verksamhetsyta
-              och rollbaserad åtkomst är nu på plats som grund för kommande kontrollflöden.
+              Digital egenkontroll för livsmedelsverksamheter. Logga in, skapa testkonto eller
+              använd magic link som reserv.
             </p>
+            <button className="secondary-button auth-back-button" type="button" onClick={() => navigatePublic('home')}>
+              Till startsidan
+            </button>
           </div>
         </section> : null}
 
@@ -168,7 +201,7 @@ function App() {
             <h2>Kontrollerar session...</h2>
           </section>
         ) : !session?.user ? (
-          <AuthPanel />
+          <AuthPanel key={publicPath} initialMode={publicPath === 'signup' ? 'create' : 'enter'} />
         ) : passwordRecovery ? (
           <PasswordSetupPanel onSaved={() => setPasswordRecovery(false)} onSkip={() => setPasswordRecovery(false)} />
         ) : activeContext ? (

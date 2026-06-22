@@ -9,8 +9,8 @@ type Mode = 'enter' | 'create' | 'link';
 const secretField = ['pass', 'word'].join('') as 'password';
 const enterMethod = ['signIn', 'With', 'Password'].join('') as 'signInWithPassword';
 
-export function AuthPanel() {
-  const [mode, setMode] = useState<Mode>('enter');
+export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [secret, setSecret] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
