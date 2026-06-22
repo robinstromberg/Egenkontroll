@@ -21,12 +21,17 @@ type TemplateField = {
 };
 
 type StarterTemplateSchema = {
+  default_active?: boolean;
   objects?: TemplateObject[];
   fields?: TemplateField[];
 };
 
 function readTemplateSchema(template: ControlTemplate): StarterTemplateSchema {
   return template.template_schema as StarterTemplateSchema;
+}
+
+function isDefaultActiveTemplate(template: ControlTemplate): boolean {
+  return readTemplateSchema(template).default_active !== false;
 }
 
 export async function listActiveControlTemplates(): Promise<ControlTemplate[]> {
@@ -40,29 +45,20 @@ export async function listActiveControlTemplates(): Promise<ControlTemplate[]> {
     throw error;
   }
 
-  return (data ?? []) as ControlTemplate[];
+  return ((data ?? []) as ControlTemplate[]).filter(isDefaultActiveTemplate);
 }
 
-export async function cloneTemplatesToOrganization(
+async function cloneTemplateRowsToOrganization(
   organizationId: string,
-  templateIds: string[],
   createdBy: string,
+  templates: ControlTemplate[],
+  active: boolean,
 ): Promise<void> {
-  if (templateIds.length === 0) {
+  if (templates.length === 0) {
     return;
   }
 
-  const { data: templates, error } = await supabase
-    .from('control_templates')
-    .select('*')
-    .in('id', templateIds)
-    .eq('active', true);
-
-  if (error) {
-    throw error;
-  }
-
-  for (const template of (templates ?? []) as ControlTemplate[]) {
+  for (const template of templates) {
     const schema = readTemplateSchema(template);
 
     const { data: controlType, error: controlTypeError } = await supabase
@@ -75,7 +71,7 @@ export async function cloneTemplatesToOrganization(
         category: template.category as ControlCategory,
         frequency: template.default_frequency as ControlFrequency,
         created_by: createdBy,
-        active: true,
+        active,
       })
       .select('id')
       .single();
@@ -129,4 +125,45 @@ export async function cloneTemplatesToOrganization(
       }
     }
   }
+}
+
+export async function cloneTemplatesToOrganization(
+  organizationId: string,
+  templateIds: string[],
+  createdBy: string,
+): Promise<void> {
+  if (templateIds.length === 0) {
+    return;
+  }
+
+  const { data: templates, error } = await supabase
+    .from('control_templates')
+    .select('*')
+    .in('id', templateIds)
+    .eq('active', true);
+
+  if (error) {
+    throw error;
+  }
+
+  await cloneTemplateRowsToOrganization(organizationId, createdBy, (templates ?? []) as ControlTemplate[], true);
+}
+
+export async function cloneInactiveDefaultTemplatesToOrganization(
+  organizationId: string,
+  createdBy: string,
+): Promise<void> {
+  const { data: templates, error } = await supabase
+    .from('control_templates')
+    .select('*')
+    .eq('active', true);
+
+  if (error) {
+    throw error;
+  }
+
+  const inactiveDefaultTemplates = ((templates ?? []) as ControlTemplate[])
+    .filter((template) => readTemplateSchema(template).default_active === false);
+
+  await cloneTemplateRowsToOrganization(organizationId, createdBy, inactiveDefaultTemplates, false);
 }

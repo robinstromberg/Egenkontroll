@@ -1,6 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
-import { cloneTemplatesToOrganization } from './templateService';
+import { cloneInactiveDefaultTemplatesToOrganization, cloneTemplatesToOrganization } from './templateService';
 import type { OrganizationMembership, Organization, OrganizationRole } from '../types/database';
 
 export type OrganizationContext = {
@@ -102,6 +102,7 @@ export async function createFirstOrganization(
   }
 
   await cloneTemplatesToOrganization(organizationId, templateIds, user.id);
+  await cloneInactiveDefaultTemplatesToOrganization(organizationId, user.id);
 }
 
 export async function updateProfile(input: {
