@@ -44,6 +44,9 @@ type SharedAttachmentPreview = {
   run: SharedRun;
   signedUrl: string;
 };
+type PrintableAttachmentImage = SharedAttachmentPreview & {
+  reference: string;
+};
 
 const MAX_REPORT_VALUE_COLUMNS = 10;
 
@@ -112,6 +115,10 @@ function isImageAttachment(attachment: SharedAttachment): boolean {
   if (attachment.content_type?.startsWith('image/')) return true;
 
   return /\.(avif|gif|jpe?g|png|webp)$/i.test(attachment.file_name ?? '');
+}
+
+function readAttachmentReference(index: number): string {
+  return `Bilaga ${String.fromCharCode(65 + index)}`;
 }
 
 function readCategoryMeta(category: string | null | undefined) {
@@ -384,10 +391,17 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): string {
+function buildPrintReportHtml(
+  runs: SharedRun[],
+  summary: SharedReportSummary,
+  attachmentImages: PrintableAttachmentImage[] = [],
+): string {
   const brandColor = '#5b46e1';
   const brandMark = '<span class="brand-mark">EK</span>';
   const performedControlTables = buildPerformedControlTables(runs);
+  const attachmentImageReferenceById = new Map(
+    attachmentImages.map((image) => [image.attachment.id, image.reference]),
+  );
   const deviationRows = runs.flatMap((run) => run.deviations.map((deviation) => `
     <tr>
       <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
@@ -405,9 +419,18 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
       <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
       <td>${escapeHtml(run.control_type_name)}</td>
       <td>${escapeHtml(attachment.file_name ?? 'Bilaga')}</td>
+      <td>${escapeHtml(attachmentImageReferenceById.get(attachment.id) ?? '')}</td>
       <td>${escapeHtml(attachment.created_at ? formatDateTime(attachment.created_at) : '')}</td>
     </tr>
   `)).join('');
+  const attachmentImageSections = attachmentImages.map((image) => `
+    <section class="attachment-appendix-card">
+      <h3>${escapeHtml(image.reference)}</h3>
+      <p>${escapeHtml(image.run.control_type_name)} - ${escapeHtml(formatDateTime(image.run.performed_at))}</p>
+      <p>${escapeHtml(image.attachment.file_name ?? 'Bilaga')}</p>
+      <img src="${escapeHtml(image.signedUrl)}" alt="${escapeHtml(image.attachment.file_name ?? image.reference)}" />
+    </section>
+  `).join('');
 
   return `
     <!doctype html>
@@ -432,6 +455,11 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
           table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
           th, td { border: 1px solid #d9deea; padding: 8px; text-align: left; vertical-align: top; word-break: break-word; }
           th { background: #f0edff; }
+          .attachment-appendix { break-before: page; page-break-before: always; }
+          .attachment-appendix-card { break-inside: avoid; page-break-inside: avoid; margin: 0 0 24px; border: 1px solid #e5e1ff; border-radius: 14px; padding: 14px; }
+          .attachment-appendix-card h3 { margin: 0 0 8px; color: ${escapeHtml(brandColor)}; }
+          .attachment-appendix-card p { margin: 0 0 6px; color: #4f5b73; }
+          .attachment-appendix-card img { display: block; width: 100%; max-height: 620px; margin-top: 12px; border-radius: 10px; object-fit: contain; background: #f6f7fb; }
           .report-row-temperature td:first-child { border-left: 5px solid #059669; }
           .report-row-checklist td:first-child { border-left: 5px solid #2563eb; }
           .report-row-receiving td:first-child { border-left: 5px solid #d97706; }
@@ -491,26 +519,35 @@ function buildPrintReportHtml(runs: SharedRun[], summary: SharedReportSummary): 
               <th>Datum</th>
               <th>Kontroll</th>
               <th>Fil</th>
+              <th>Referens</th>
               <th>Registrerad</th>
             </tr>
           </thead>
-          <tbody>${attachmentRows || '<tr><td colspan="4">Inga bilagor i urvalet.</td></tr>'}</tbody>
+          <tbody>${attachmentRows || '<tr><td colspan="5">Inga bilagor i urvalet.</td></tr>'}</tbody>
         </table>
+        ${attachmentImages.length ? `
+          <section class="attachment-appendix">
+            <h2>Bildbilagor</h2>
+            ${attachmentImageSections}
+          </section>
+        ` : ''}
         <p class="no-print muted">Välj "Spara som PDF" i utskriftsdialogen för PDF.</p>
       </body>
     </html>
   `;
 }
 
-function openPrintReport(runs: SharedRun[], summary: SharedReportSummary): boolean {
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) return false;
-
-  printWindow.document.write(buildPrintReportHtml(runs, summary));
+function writePrintReport(
+  printWindow: Window,
+  runs: SharedRun[],
+  summary: SharedReportSummary,
+  attachmentImages: PrintableAttachmentImage[] = [],
+): void {
+  printWindow.document.open();
+  printWindow.document.write(buildPrintReportHtml(runs, summary, attachmentImages));
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
-  return true;
 }
 
 function downloadTextFile(fileName: string, content: string, type: string) {
@@ -615,6 +652,29 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
     }
   }
 
+  async function createPrintableAttachmentImages(sourceRuns: SharedRun[]): Promise<PrintableAttachmentImage[]> {
+    const imagePairs = sourceRuns.flatMap((run) => (
+      run.attachments
+        .filter(isImageAttachment)
+        .map((attachment) => ({ run, attachment }))
+    ));
+
+    const signedImages = await Promise.all(
+      imagePairs.map(async ({ run, attachment }, index) => {
+        const signed = await createSharedAttachmentSignedUrl(shareKey, attachment.id);
+
+        return {
+          attachment,
+          run,
+          signedUrl: signed.signedUrl,
+          reference: readAttachmentReference(index),
+        };
+      }),
+    );
+
+    return signedImages;
+  }
+
   const visibleRuns = sortRuns(
     runs.filter((run) => matchesDeviationFilter(run, deviationFilter)),
     sortKey,
@@ -672,13 +732,25 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   }
 
   async function handlePrintExport() {
-    const opened = openPrintReport(visibleRuns, reportSummary);
-    if (!opened) {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
       setMessage('Kunde inte öppna PDF-vyn. Tillåt popup-fönster och försök igen.');
       return;
     }
 
-    await recordExport('pdf');
+    printWindow.document.write('<!doctype html><html lang="sv"><body><p>Förbereder bildbilagor...</p></body></html>');
+    printWindow.document.close();
+
+    try {
+      setMessage('');
+      const attachmentImages = await createPrintableAttachmentImages(visibleRuns);
+      writePrintReport(printWindow, visibleRuns, reportSummary, attachmentImages);
+
+      await recordExport('pdf');
+    } catch (error) {
+      printWindow.close();
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa PDF-vyn.');
+    }
   }
 
   async function handleEmailReport() {
