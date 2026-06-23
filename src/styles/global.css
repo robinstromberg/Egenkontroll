@@ -86,16 +86,14 @@ button:disabled {
   height: 64px;
   place-items: center;
   border-radius: 20px;
-  color: #ffffff;
-  background: linear-gradient(135deg, #5b46e1, #3864ff);
-  font-size: 2rem;
-  font-weight: 800;
+  overflow: hidden;
+  background: transparent;
 }
 
 .app-icon img {
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .hero-copy {

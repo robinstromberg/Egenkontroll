@@ -21,16 +21,14 @@
   height: 58px;
   place-items: center;
   border-radius: 16px;
-  color: #ffffff;
-  background: #5b46e1;
-  font-size: 1.2rem;
-  font-weight: 900;
+  overflow: hidden;
+  background: transparent;
 }
 
 .branding-preview span img {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .branding-preview div {
