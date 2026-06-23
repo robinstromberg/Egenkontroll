@@ -26,6 +26,7 @@
 .industry-panel,
 .business-type-card {
   border: 1px solid rgba(91, 70, 225, 0.12);
+  color: #172033;
   background: #ffffff;
 }
 
@@ -56,8 +57,9 @@
 
 .industry-panel small,
 .business-type-card span {
-  color: #5f6a82;
+  color: #4f5b73;
   line-height: 1.45;
+  font-weight: 650;
 }
 
 .business-type-picker,
@@ -96,9 +98,17 @@
 .billing-plan-card {
   gap: 5px;
   width: 100%;
+  min-height: 92px;
   padding: 14px;
   color: #172033;
   text-align: left;
+}
+
+.business-type-card strong,
+.billing-plan-card strong,
+.template-card strong,
+.industry-panel strong {
+  color: #11172c;
 }
 
 .business-type-card.selected,
@@ -135,8 +145,9 @@
 }
 
 .billing-plan-card small {
-  color: #5f6a82;
+  color: #4f5b73;
   line-height: 1.45;
+  font-weight: 650;
 }
 
 .billing-plan-card b {
@@ -187,6 +198,7 @@
   border: 1px solid rgba(91, 70, 225, 0.12);
   border-radius: 18px;
   padding: 14px;
+  color: #172033;
   background: #ffffff;
 }
 
@@ -196,9 +208,18 @@
 }
 
 .template-card input {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
   margin-top: 2px;
+  accent-color: #5b46e1;
+  appearance: auto;
+  opacity: 1;
+}
+
+.template-card input:focus-visible {
+  outline: 2px solid rgba(91, 70, 225, 0.42);
+  outline-offset: 2px;
 }
 
 .template-card span {
@@ -207,12 +228,85 @@
 }
 
 .template-card small {
-  color: #5f6a82;
+  color: #4f5b73;
   line-height: 1.45;
+  font-weight: 650;
 }
 
 @media (min-width: 680px) {
   .business-type-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .setup-steps li {
+    color: #d8d2ff;
+    background: #211b45;
+  }
+
+  .setup-steps li.active {
+    color: #92e7b4;
+    background: rgba(39, 128, 83, 0.24);
+  }
+
+  .industry-panel,
+  .business-type-card,
+  .billing-plan-card,
+  .template-card,
+  .template-picker {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #f7f9ff;
+    background: #121a2e;
+  }
+
+  .business-type-card.selected,
+  .billing-plan-card.selected,
+  .template-card.selected {
+    border-color: rgba(185, 175, 255, 0.46);
+    background: #211b45;
+  }
+
+  .industry-panel strong,
+  .business-type-card strong,
+  .billing-plan-card strong,
+  .template-card strong,
+  .business-type-picker legend,
+  .billing-plan-picker legend {
+    color: #f7f9ff;
+  }
+
+  .industry-panel small,
+  .business-type-card span,
+  .billing-plan-card small,
+  .template-card small {
+    color: #aeb8d0;
+  }
+
+  .trial-summary {
+    background: rgba(39, 128, 83, 0.24);
+  }
+
+  .trial-summary strong {
+    color: #92e7b4;
+  }
+
+  .trial-summary span {
+    color: #c4f2d6;
+  }
+
+  .template-toggle {
+    color: #d8d2ff;
+    background: #211b45;
+  }
+}
+
+@media (max-width: 420px) {
+  .template-picker-header {
+    display: grid;
+  }
+
+  .template-toggle {
+    width: 100%;
   }
 }
