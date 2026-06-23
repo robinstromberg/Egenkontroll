@@ -10,6 +10,7 @@ const uiIconBase = '/ui-icons';
 export const appUiIcons = {
   today: `${uiIconBase}/idag.svg`,
   history: `${uiIconBase}/historik.png`,
+  kpi: `${uiIconBase}/verifiering.png`,
   add: `${uiIconBase}/lagg-till.svg`,
   sharing: `${uiIconBase}/delning.png`,
   menu: `${uiIconBase}/meny.svg`,

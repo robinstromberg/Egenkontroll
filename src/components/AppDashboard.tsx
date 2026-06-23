@@ -5,6 +5,7 @@ import { ControlRunFormWithPhotos } from './ControlRunFormWithPhotos';
 import { ControlTypesView } from './ControlTypesView';
 import { HelpView } from './HelpView';
 import { HistoryView } from './HistoryView';
+import { KpiView } from './KpiView';
 import { MenuView } from './MenuView';
 import { OrganizationBrandingView } from './OrganizationBrandingView';
 import { ProfileView } from './ProfileView';
@@ -113,14 +114,8 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
       return <HistoryView organizationId={context.organization.id} />;
     }
 
-    if (activeView === 'add') {
-      return (
-        <ControlTypesView
-          organizationId={context.organization.id}
-          userId={user.id}
-          canManage={canManage}
-        />
-      );
+    if (activeView === 'kpi') {
+      return <KpiView organizationId={context.organization.id} />;
     }
 
     if (activeView === 'sharing') {

@@ -14,7 +14,7 @@ import { ensureProfile, listOrganizationContexts } from './services/organization
 import type { OrganizationContext } from './services/organizationService';
 import { supabase } from './lib/supabaseClient';
 
-const appViews: AppView[] = ['today', 'history', 'add', 'sharing', 'menu'];
+const appViews: AppView[] = ['today', 'history', 'kpi', 'sharing', 'menu'];
 type PublicPath = 'home' | 'login' | 'signup';
 
 function isAppView(value: string | null): value is AppView {
@@ -42,11 +42,6 @@ function writeActiveView(view: AppView) {
 
   if (view !== 'today') {
     params.set('view', view);
-  }
-
-  const controlTypeId = readHashParams().get('controlTypeId');
-  if (view === 'add' && controlTypeId) {
-    params.set('controlTypeId', controlTypeId);
   }
 
   const nextHash = params.toString() ? `#${params.toString()}` : '';

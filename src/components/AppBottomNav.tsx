@@ -2,12 +2,12 @@ import { appUiIcons } from '../config/assets';
 import { t } from '../locales';
 import { AssetIcon } from './ui/AssetIcon';
 
-export type AppView = 'today' | 'history' | 'add' | 'sharing' | 'menu';
+export type AppView = 'today' | 'history' | 'kpi' | 'sharing' | 'menu';
 
 const items: { id: AppView; icon: string; fallback: string; label: string }[] = [
   { id: 'today', icon: appUiIcons.today, fallback: '□', label: t.navigationToday },
   { id: 'history', icon: appUiIcons.history, fallback: '↺', label: t.navigationHistory },
-  { id: 'add', icon: appUiIcons.add, fallback: '+', label: t.navigationAdd },
+  { id: 'kpi', icon: appUiIcons.kpi, fallback: 'KPI', label: 'KPI' },
   { id: 'sharing', icon: appUiIcons.sharing, fallback: '◇', label: t.navigationSharing },
   { id: 'menu', icon: appUiIcons.menu, fallback: '≡', label: t.navigationMenu },
 ];
