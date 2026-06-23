@@ -389,6 +389,10 @@ function escapeHtml(value: string | number): string {
     .replace(/'/g, '&#039;');
 }
 
+function absoluteAssetUrl(path: string): string {
+  return new URL(path, window.location.origin).href;
+}
+
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
@@ -399,7 +403,7 @@ function buildPrintReportHtml(
   attachmentImages: PrintableAttachmentImage[] = [],
 ): string {
   const brandColor = '#5b46e1';
-  const brandMark = `<img class="brand-mark" src="${escapeHtml(brandAssets.icon)}" alt="" />`;
+  const brandMark = `<img class="brand-mark" src="${escapeHtml(absoluteAssetUrl(brandAssets.icon))}" alt="" />`;
   const performedControlTables = buildPerformedControlTables(runs);
   const attachmentImageReferenceById = new Map(
     attachmentImages.map((image) => [image.attachment.id, image.reference]),
@@ -533,6 +537,18 @@ function buildPrintReportHtml(
           </section>
         ` : ''}
         <p class="no-print muted">Välj "Spara som PDF" i utskriftsdialogen för PDF.</p>
+        <script>
+          Promise.all(Array.from(document.images).map((image) => {
+            if (image.complete) return Promise.resolve();
+            return new Promise((resolve) => {
+              image.addEventListener('load', resolve, { once: true });
+              image.addEventListener('error', resolve, { once: true });
+            });
+          })).finally(() => {
+            window.focus();
+            window.print();
+          });
+        </script>
       </body>
     </html>
   `;
@@ -547,8 +563,6 @@ function writePrintReport(
   printWindow.document.open();
   printWindow.document.write(buildPrintReportHtml(runs, summary, attachmentImages));
   printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
 }
 
 function downloadTextFile(fileName: string, content: string, type: string) {
