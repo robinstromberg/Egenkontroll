@@ -127,6 +127,14 @@ function readCategoryMeta(category: string | null | undefined) {
   return categoryMeta[category ?? ''] ?? categoryMeta.custom;
 }
 
+function readControlTypeMeta(category: string | null | undefined, name: string | null | undefined) {
+  const meta = readCategoryMeta(category);
+  return {
+    ...meta,
+    icon: readControlTypeIcon({ category, name }),
+  };
+}
+
 function countOpenDeviations(run: SharedRun): number {
   return run.deviations.filter((deviation) => deviation.status !== 'resolved').length;
 }
@@ -840,12 +848,12 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                   type="checkbox"
                 />
                 <span
-                  className={`inspector-type-mark ${readCategoryMeta(controlType.control_type_category).className}`}
+                  className={`inspector-type-mark ${readControlTypeMeta(controlType.control_type_category, controlType.control_type_name).className}`}
                   aria-hidden="true"
                 >
                   <AssetIcon
-                    src={readCategoryMeta(controlType.control_type_category).icon}
-                    fallback={readCategoryMeta(controlType.control_type_category).fallback}
+                    src={readControlTypeMeta(controlType.control_type_category, controlType.control_type_name).icon}
+                    fallback={readControlTypeMeta(controlType.control_type_category, controlType.control_type_name).fallback}
                   />
                 </span>
                 {controlType.control_type_name}
@@ -979,12 +987,12 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                     <td data-label="Kontrolltyp">
                       <span className="inspector-type-cell">
                         <span
-                          className={`inspector-type-mark ${readCategoryMeta(run.control_type_category).className}`}
+                          className={`inspector-type-mark ${readControlTypeMeta(run.control_type_category, run.control_type_name).className}`}
                           aria-hidden="true"
                         >
                           <AssetIcon
-                            src={readCategoryMeta(run.control_type_category).icon}
-                            fallback={readCategoryMeta(run.control_type_category).fallback}
+                            src={readControlTypeMeta(run.control_type_category, run.control_type_name).icon}
+                            fallback={readControlTypeMeta(run.control_type_category, run.control_type_name).fallback}
                           />
                         </span>
                         <strong>{run.control_type_name}</strong>
@@ -1030,12 +1038,12 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                   <td data-label="Kontroll">
                     <span className="inspector-type-cell">
                       <span
-                        className={`inspector-type-mark ${readCategoryMeta(run.control_type_category).className}`}
+                        className={`inspector-type-mark ${readControlTypeMeta(run.control_type_category, run.control_type_name).className}`}
                         aria-hidden="true"
                       >
                         <AssetIcon
-                          src={readCategoryMeta(run.control_type_category).icon}
-                          fallback={readCategoryMeta(run.control_type_category).fallback}
+                          src={readControlTypeMeta(run.control_type_category, run.control_type_name).icon}
+                          fallback={readControlTypeMeta(run.control_type_category, run.control_type_name).fallback}
                         />
                       </span>
                       <strong>{run.control_type_name}</strong>
