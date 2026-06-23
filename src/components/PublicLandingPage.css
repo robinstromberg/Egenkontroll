@@ -104,7 +104,8 @@
   color: #ffffff;
   font-size: clamp(2.55rem, 10vw, 5.65rem);
   line-height: 1;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  text-wrap: balance;
 }
 
 .public-hero-copy > p:not(.public-eyebrow),
