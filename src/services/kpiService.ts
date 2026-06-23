@@ -28,6 +28,10 @@ type KpiDeviationRow = {
   control_types?: { name?: string | null } | null;
 };
 
+type KpiOrganizationRow = {
+  created_at: string;
+};
+
 export type KpiRiskArea = {
   name: string;
   deviationCount: number;
@@ -35,6 +39,7 @@ export type KpiRiskArea = {
 
 export type KpiSummary = {
   periodDays: number;
+  countedDays: number;
   documentationDays: number;
   currentDocumentationStreak: number;
   longestDocumentationStreak: number;
@@ -57,6 +62,10 @@ function addDays(date: Date, days: number): Date {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
   return next;
+}
+
+function maxDate(a: Date, b: Date): Date {
+  return a > b ? a : b;
 }
 
 function toDateKey(value: Date | string): string {
@@ -179,6 +188,7 @@ export async function getKpiSummary(organizationId: string): Promise<KpiSummary>
   const lookbackStart = addDays(periodEnd, -streakLookbackDays);
 
   const [
+    { data: organization, error: organizationError },
     { data: controlTypes, error: controlTypesError },
     { data: periodRuns, error: periodRunsError },
     { data: lookbackRuns, error: lookbackRunsError },
@@ -186,6 +196,11 @@ export async function getKpiSummary(organizationId: string): Promise<KpiSummary>
     { data: openDeviations, error: openDeviationsError },
     { data: resolvedDeviations, error: resolvedDeviationsError },
   ] = await Promise.all([
+    supabase
+      .from('organizations')
+      .select('created_at')
+      .eq('id', organizationId)
+      .single(),
     supabase
       .from('control_types')
       .select('id, name, frequency, active')
@@ -223,6 +238,7 @@ export async function getKpiSummary(organizationId: string): Promise<KpiSummary>
       .lt('resolved_at', periodEnd.toISOString()),
   ]);
 
+  if (organizationError) throw organizationError;
   if (controlTypesError) throw controlTypesError;
   if (periodRunsError) throw periodRunsError;
   if (lookbackRunsError) throw lookbackRunsError;
@@ -230,14 +246,19 @@ export async function getKpiSummary(organizationId: string): Promise<KpiSummary>
   if (openDeviationsError) throw openDeviationsError;
   if (resolvedDeviationsError) throw resolvedDeviationsError;
 
+  const organizationCreatedAt = startOfLocalDay(new Date(((organization as KpiOrganizationRow).created_at)));
+  const countedPeriodStart = maxDate(periodStart, organizationCreatedAt);
+  const countedDays = Math.max(1, getDateKeys(countedPeriodStart, periodEnd).length);
   const activeControlTypes = (controlTypes ?? []) as KpiControlType[];
   const plannedControlTypes = activeControlTypes.filter((controlType) => isPlannedFrequency(controlType.frequency));
-  const periodRunRows = (periodRuns ?? []) as KpiRunRow[];
+  const periodRunRows = ((periodRuns ?? []) as KpiRunRow[])
+    .filter((run) => new Date(run.performed_at) >= countedPeriodStart);
   const lookbackRunRows = (lookbackRuns ?? []) as KpiRunRow[];
-  const periodDeviationRows = (periodDeviations ?? []) as KpiDeviationRow[];
+  const periodDeviationRows = ((periodDeviations ?? []) as KpiDeviationRow[])
+    .filter((deviation) => new Date(deviation.opened_at) >= countedPeriodStart);
   const openDeviationRows = (openDeviations ?? []) as KpiDeviationRow[];
   const resolvedDeviationRows = (resolvedDeviations ?? []) as KpiDeviationRow[];
-  const plannedControls = countPlannedControls(plannedControlTypes, defaultPeriodDays);
+  const plannedControls = countPlannedControls(plannedControlTypes, countedDays);
   const completedControls = periodRunRows.length;
   const compliancePercent = plannedControls > 0
     ? Math.min(100, Math.round((completedControls / plannedControls) * 100))
@@ -246,7 +267,8 @@ export async function getKpiSummary(organizationId: string): Promise<KpiSummary>
 
   return {
     periodDays: defaultPeriodDays,
-    documentationDays: readDocumentationCoverage(periodRunRows, activeControlTypes, periodStart, periodEnd),
+    countedDays,
+    documentationDays: readDocumentationCoverage(periodRunRows, activeControlTypes, countedPeriodStart, periodEnd),
     ...readDocumentationStreaks(lookbackRunRows, activeControlTypes, lookbackStart, today),
     compliancePercent,
     completedControls,

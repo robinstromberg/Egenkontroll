@@ -84,8 +84,8 @@ export function KpiView({ organizationId }: KpiViewProps) {
               <span>av planerade kontroller utförda</span>
               <small>
                 {summary.plannedControls > 0
-                  ? `${summary.completedControls} av ${summary.plannedControls} planerade`
-                  : 'Ingen planerad frekvens hittad'}
+                  ? `${summary.completedControls} av ${summary.plannedControls} som hittills borde vara gjorda`
+                  : 'Uppföljning byggs upp över tid'}
               </small>
             </article>
 
@@ -95,7 +95,11 @@ export function KpiView({ organizationId }: KpiViewProps) {
               </span>
               <strong>{summary.completedControls}</strong>
               <span>kontroller utförda</span>
-              <small>senaste {summary.periodDays} dagarna</small>
+              <small>
+                {summary.countedDays === summary.periodDays
+                  ? `senaste ${summary.periodDays} dagarna`
+                  : `under de första ${summary.countedDays} dagarna`}
+              </small>
             </article>
 
             <article className={summary.openDeviations > 0 ? 'kpi-card warning' : 'kpi-card'}>
@@ -120,9 +124,13 @@ export function KpiView({ organizationId }: KpiViewProps) {
               <span className="kpi-card-icon" aria-hidden="true">
                 <AssetIcon src={appUiIcons.document} fallback="D" />
               </span>
-              <strong>{summary.documentationDays} av {summary.periodDays}</strong>
+              <strong>{summary.documentationDays} av {summary.countedDays}</strong>
               <span>dagar med dokumentation</span>
-              <small>tillsynsberedskap</small>
+              <small>
+                {summary.countedDays === summary.periodDays
+                  ? 'tillsynsberedskap'
+                  : `${summary.countedDays} dagar räknas hittills`}
+              </small>
             </article>
           </div>
 
