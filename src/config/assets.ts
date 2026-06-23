@@ -40,7 +40,7 @@ export const controlTypeIcons: Record<string, string> = {
   hygien: `${uiIconBase}/hygien.png`,
   vatten: `${uiIconBase}/vatten.png`,
   skadedjur: `${uiIconBase}/skadedjur.png`,
-  avfallshantering: `${uiIconBase}/Avfallshantering.png`,
+  avfallshantering: `${uiIconBase}/avfallshantering.png`,
   verifiering: `${uiIconBase}/verifiering.png`,
   dokument: `${uiIconBase}/dokument.png`,
   custom: `${uiIconBase}/verifiering.png`,
