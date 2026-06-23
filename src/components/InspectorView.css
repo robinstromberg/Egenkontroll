@@ -84,6 +84,21 @@
   font-weight: 800;
 }
 
+.inspector-check-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin: 0;
+  accent-color: #5b46e1;
+  appearance: auto;
+  opacity: 1;
+}
+
+.inspector-check-option input[type="checkbox"]:focus-visible {
+  outline: 2px solid rgba(91, 70, 225, 0.42);
+  outline-offset: 2px;
+}
+
 .inspector-type-cell {
   display: inline-flex;
   align-items: center;
