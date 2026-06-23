@@ -17,7 +17,7 @@ export const appUiIcons = {
   profile: `${uiIconBase}/Profil.png`,
   organization: `${uiIconBase}/installningar.png`,
   users: `${uiIconBase}/anvandare.png`,
-  suppliers: `${uiIconBase}/leverantorer.svg`,
+  suppliers: `${uiIconBase}/varumottagning.png`,
   help: `${uiIconBase}/hjalp.svg`,
   document: `${uiIconBase}/dokument.png`,
   export: `${uiIconBase}/export.png`,
