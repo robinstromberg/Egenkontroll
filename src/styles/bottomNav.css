@@ -37,7 +37,7 @@
   font-weight: 900;
   text-align: center;
   user-select: none;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .bottom-bar-item.selected {

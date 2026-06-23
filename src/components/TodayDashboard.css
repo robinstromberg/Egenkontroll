@@ -147,21 +147,17 @@
 }
 
 .today-control-copy strong {
-  overflow: hidden;
   color: #11172c;
   font-size: 0.95rem;
   line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .today-control-copy span {
-  overflow: hidden;
   color: #657089;
   font-size: 0.78rem;
   line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .control-type-icon {

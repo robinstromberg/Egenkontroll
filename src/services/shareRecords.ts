@@ -89,6 +89,9 @@ export async function createAccessLink(input: {
   organizationId: string;
   createdBy: string;
   validUntil: string;
+  periodStart?: string;
+  periodEnd?: string;
+  includedControlTypeIds?: string[];
 }): Promise<string> {
   const secret = createShareToken();
   const secretHash = await hashShareToken(secret);
@@ -98,9 +101,9 @@ export async function createAccessLink(input: {
     token_hash: secretHash,
     created_by: input.createdBy,
     valid_until: new Date(`${input.validUntil}T23:59:59`).toISOString(),
-    period_start: '1900-01-01',
-    period_end: '9999-12-31',
-    included_control_type_ids: [],
+    period_start: input.periodStart ?? '1900-01-01',
+    period_end: input.periodEnd ?? '9999-12-31',
+    included_control_type_ids: input.includedControlTypeIds ?? [],
     status: 'active',
   });
 

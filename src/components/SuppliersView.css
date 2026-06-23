@@ -64,11 +64,10 @@
 }
 
 .supplier-item-main strong {
-  overflow: hidden;
   color: #172033;
   font-size: 1rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
+  white-space: normal;
 }
 
 .supplier-item-main span {

@@ -22,6 +22,16 @@ function dateAfter(days: number): string {
   return value.toISOString().slice(0, 10);
 }
 
+function dateDaysAgo(days: number): string {
+  const value = new Date();
+  value.setDate(value.getDate() - days);
+  return value.toISOString().slice(0, 10);
+}
+
+function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function formatAccessUrl(value: string): string {
   const marker = ['s', 'hare', ''].join('/');
   const key = value.split(marker)[1];
@@ -62,7 +72,9 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
   const [links, setLinks] = useState<AccessRecord[]>([]);
   const [exportLogs, setExportLogs] = useState<ExportLogRecord[]>([]);
   const [latestUrl, setLatestUrl] = useState('');
+  const [latestValidUntil, setLatestValidUntil] = useState('');
   const [copied, setCopied] = useState(false);
+  const [quickSharing, setQuickSharing] = useState(false);
   const [message, setMessage] = useState('');
 
   const selectedValidUntil = validityPreset === 'custom'
@@ -98,10 +110,35 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
         validUntil: selectedValidUntil,
       });
       setLatestUrl(formatAccessUrl(url));
+      setLatestValidUntil(selectedValidUntil);
       setCopied(false);
       await refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa delning.');
+    }
+  }
+
+  async function handleQuickShare() {
+    const validUntil = dateAfter(7);
+
+    try {
+      setQuickSharing(true);
+      setMessage('');
+      const url = await createAccessLink({
+        organizationId,
+        createdBy: userId,
+        validUntil,
+        periodStart: dateDaysAgo(30),
+        periodEnd: today(),
+      });
+      setLatestUrl(formatAccessUrl(url));
+      setLatestValidUntil(validUntil);
+      setCopied(false);
+      await refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa delning.');
+    } finally {
+      setQuickSharing(false);
     }
   }
 
@@ -116,6 +153,21 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
     }
   }
 
+  async function handleNativeShare() {
+    if (!latestUrl || !('share' in navigator)) return;
+
+    try {
+      await navigator.share({
+        title: 'Min Egenkontroll',
+        text: 'Dokumentation från Min Egenkontroll.',
+        url: latestUrl,
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      setMessage('Kunde inte öppna delning på den här enheten.');
+    }
+  }
+
   return (
     <section className="sharing-view" aria-labelledby="sharing-title">
       <div>
@@ -124,7 +176,22 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
         <p className="muted-copy">Skapa en tidsbegränsad läslänk. Inspektören väljer period i läsvyn.</p>
       </div>
 
+      <section className="quick-share-card" aria-labelledby="quick-share-title">
+        <div>
+          <p className="eyebrow">Snabbdelning</p>
+          <h4 id="quick-share-title">Dela dokumentation</h4>
+          <p>Skapar en read-only länk för senaste 30 dagarna. Länken gäller i 7 dagar.</p>
+        </div>
+        <ActionButton type="button" onClick={handleQuickShare} disabled={quickSharing}>
+          {quickSharing ? 'Skapar...' : 'Dela dokumentation'}
+        </ActionButton>
+      </section>
+
       <form className="sharing-form" onSubmit={handleSubmit}>
+        <div>
+          <p className="eyebrow">Avancerat</p>
+          <h4>Skapa egen läslänk</h4>
+        </div>
         <fieldset className="validity-options">
           <legend>Giltighet</legend>
           {validityOptions.map((option) => (
@@ -168,7 +235,7 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
             <div>
               <p className="eyebrow">Delning skapad</p>
               <h3 id="share-modal-title">Inspektörslänk</h3>
-              <p className="muted-copy">Giltig till {selectedValidUntil}.</p>
+              <p className="muted-copy">Giltig till {latestValidUntil || selectedValidUntil}.</p>
             </div>
             {qrUrl ? <img className="qr-image large" src={qrUrl} alt="QR-kod för inspektörslänk" /> : null}
             <p className="share-link-box">{latestUrl}</p>
@@ -176,6 +243,11 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
               <ActionButton type="button" onClick={handleCopy}>
                 {copied ? 'Kopierad' : 'Kopiera länk'}
               </ActionButton>
+              {'share' in navigator ? (
+                <ActionButton type="button" variant="secondary" onClick={handleNativeShare}>
+                  Dela
+                </ActionButton>
+              ) : null}
               <ActionButton type="button" variant="secondary" onClick={() => window.open(latestUrl, '_blank', 'noopener,noreferrer')}>
                 Öppna läsvy
               </ActionButton>

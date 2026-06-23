@@ -7,10 +7,31 @@
 }
 
 .sharing-form,
+.quick-share-card,
 .share-list,
 .share-result {
   display: grid;
   gap: 11px;
+}
+
+.quick-share-card {
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 17px;
+  color: #172033;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(62, 46, 135, 0.08);
+}
+
+.quick-share-card h4,
+.quick-share-card p {
+  margin-bottom: 0;
+}
+
+.quick-share-card p:not(.eyebrow) {
+  color: #4f5b73;
+  line-height: 1.45;
+  font-weight: 700;
 }
 
 .sharing-form {
@@ -28,6 +49,10 @@
   color: #28334d;
   font-size: 0.82rem;
   font-weight: 900;
+}
+
+.sharing-form h4 {
+  margin: 0;
 }
 
 .validity-options {
@@ -180,6 +205,7 @@
 
 @media (prefers-color-scheme: dark) {
   .sharing-form,
+  .quick-share-card,
   .share-row,
   .share-modal {
     border-color: rgba(159, 145, 255, 0.18);
@@ -189,9 +215,14 @@
   }
 
   .sharing-form label,
+  .quick-share-card h4,
   .share-list h4,
   .validity-options legend {
     color: #f7f9ff;
+  }
+
+  .quick-share-card p:not(.eyebrow) {
+    color: #b8c2d8;
   }
 
   .sharing-form .text-input {

@@ -104,11 +104,10 @@
 }
 
 .check-matrix-name {
-  overflow: hidden;
   color: #172033;
   font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
+  white-space: normal;
 }
 
 .matrix-choice {
