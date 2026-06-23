@@ -4,7 +4,7 @@ Lägg produktens fasta varumärkesfiler här.
 
 Rekommenderade filnamn:
 
-- `min-egenkontroll-logo.png` – full logotyp med text.
+- `min-egenkontroll-logo2.png` – full logotyp med text.
 - `min-egenkontroll-icon.png` – ikon/symbol utan text.
 
 Dessa filer ska kunna användas i appen, landing page, PDF-export, rapporter, inspektörsvy och eventuell favicon/app icon.

@@ -1,7 +1,7 @@
 import type { ControlCategory } from '../types/database';
 
 export const brandAssets = {
-  logo: '/brand/min-egenkontroll-logo.png',
+  logo: '/brand/min-egenkontroll-logo2.png',
   icon: '/brand/min-egenkontroll-icon.png',
 };
 
