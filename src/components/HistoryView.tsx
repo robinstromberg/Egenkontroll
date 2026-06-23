@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { AssetIcon } from './ui/AssetIcon';
+import { appUiIcons } from '../config/assets';
 import { collectReportRows, downloadCsvReport, openPrintReport } from '../services/reportService';
 import {
   getControlRunDetail,
@@ -175,7 +177,9 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
         {runs.length === 0 && !loading ? <p className="muted-copy">Ingen historik hittades.</p> : null}
         {runs.map((run) => (
           <button className="history-row" key={run.id} onClick={() => openDetail(run.id)} type="button">
-            <span className="history-icon" aria-hidden="true">↺</span>
+            <span className="history-icon" aria-hidden="true">
+              <AssetIcon src={appUiIcons.history} fallback="H" />
+            </span>
             <span className="history-copy">
               <strong>{run.control_type_name ?? 'Kontroll'}</strong>
               <span>
