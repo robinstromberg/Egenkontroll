@@ -42,15 +42,11 @@
   font-weight: 900;
 }
 
-.public-brand span {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
-  place-items: center;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #7055ff, #16b981);
-  box-shadow: 0 12px 26px rgba(112, 85, 255, 0.3);
+.public-brand img {
+  width: min(238px, 70vw);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 26px rgba(112, 85, 255, 0.18));
 }
 
 .public-nav-actions {
@@ -254,6 +250,12 @@
   border-radius: 12px;
   color: #0b5f3f;
   background: #dff8e9;
+}
+
+.phone-row-mark img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .mark-2 {

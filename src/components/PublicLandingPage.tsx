@@ -1,4 +1,6 @@
 import './PublicLandingPage.css';
+import { AssetIcon } from './ui/AssetIcon';
+import { brandAssets, readControlTypeIcon } from '../config/assets';
 import { billingPlans, trialDays } from '../config/subscription';
 
 type PublicLandingPageProps = {
@@ -13,6 +15,13 @@ const controlTypes = [
   'Varumottagning',
   'Spårbarhet',
   'Egenkontrollrunda',
+];
+
+const phoneControlRows = [
+  { name: 'Kyltemperaturer', fallback: '°C' },
+  { name: 'Städning', fallback: 'OK' },
+  { name: 'Datummärkning', fallback: 'DM' },
+  { name: 'Varumottagning', fallback: 'IN' },
 ];
 
 const faqItems = [
@@ -46,10 +55,12 @@ function MiniAppScreen() {
         <strong>0 öppna avvikelser</strong>
       </div>
       <div className="phone-list">
-        {controlTypes.slice(0, 4).map((name, index) => (
-          <div className="phone-row" key={name}>
-            <span className={`phone-row-mark mark-${index + 1}`}>{index === 0 ? '°C' : index === 1 ? 'OK' : index === 2 ? 'DM' : 'IN'}</span>
-            <span>{name}</span>
+        {phoneControlRows.map((control, index) => (
+          <div className="phone-row" key={control.name}>
+            <span className={`phone-row-mark mark-${index + 1}`}>
+              <AssetIcon src={readControlTypeIcon({ name: control.name })} fallback={control.fallback} />
+            </span>
+            <span>{control.name}</span>
             <strong>{index < 2 ? 'Klar' : 'Ej utförd'}</strong>
           </div>
         ))}
@@ -64,8 +75,7 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
     <main className="public-site">
       <nav className="public-nav" aria-label="Publik navigation">
         <a className="public-brand" href="/">
-          <span aria-hidden="true">✓</span>
-          Min Egenkontroll
+          <img src={brandAssets.logo} alt="Min Egenkontroll" />
         </a>
         <div className="public-nav-actions">
           <a href="#pricing">Pris</a>

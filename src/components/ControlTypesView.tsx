@@ -2,7 +2,9 @@ import { FormEvent, useEffect, useState } from 'react';
 import { AdminControls } from './AdminControls';
 import { ControlTypeDetailView } from './ControlTypeDetailView';
 import { ActionButton } from './ui/ActionButton';
+import { AssetIcon } from './ui/AssetIcon';
 import { BackButton } from './ui/BackButton';
+import { readControlTypeIcon } from '../config/assets';
 import {
   deleteControlType,
   listControlTypes,
@@ -65,11 +67,12 @@ function ControlTypeRow({
   onToggleActive,
 }: ControlTypeRowProps) {
   const meta = categoryMeta[controlType.category] ?? categoryMeta.custom;
+  const iconSrc = readControlTypeIcon({ category: controlType.category, name: controlType.name });
 
   return (
     <article className={controlType.active ? 'control-type-row' : 'control-type-row inactive'}>
       <span className={`control-type-icon ${meta.className}`} aria-hidden="true">
-        {meta.icon}
+        <AssetIcon src={iconSrc} fallback={meta.icon} />
       </span>
       <div className="control-type-copy">
         {editing ? (

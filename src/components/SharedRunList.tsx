@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { AssetIcon } from './ui/AssetIcon';
+import { brandAssets, readControlTypeIcon } from '../config/assets';
 import {
   createSharedAttachmentSignedUrl,
   logSharedExport,
@@ -50,13 +52,13 @@ type PrintableAttachmentImage = SharedAttachmentPreview & {
 
 const MAX_REPORT_VALUE_COLUMNS = 10;
 
-const categoryMeta: Record<string, { icon: string; className: string }> = {
-  temperature: { icon: '°C', className: 'temperature' },
-  checklist: { icon: 'OK', className: 'checklist' },
-  receiving: { icon: 'IN', className: 'receiving' },
-  traceability: { icon: 'SP', className: 'traceability' },
-  round: { icon: 'R', className: 'round' },
-  custom: { icon: '+', className: 'custom' },
+const categoryMeta: Record<string, { icon: string; className: string; fallback: string }> = {
+  temperature: { icon: readControlTypeIcon({ category: 'temperature' }), className: 'temperature', fallback: '°C' },
+  checklist: { icon: readControlTypeIcon({ category: 'checklist' }), className: 'checklist', fallback: 'OK' },
+  receiving: { icon: readControlTypeIcon({ category: 'receiving' }), className: 'receiving', fallback: 'IN' },
+  traceability: { icon: readControlTypeIcon({ category: 'traceability' }), className: 'traceability', fallback: 'SP' },
+  round: { icon: readControlTypeIcon({ category: 'round' }), className: 'round', fallback: 'R' },
+  custom: { icon: readControlTypeIcon({ category: 'custom' }), className: 'custom', fallback: '+' },
 };
 
 const deviationFilterLabels: Record<DeviationFilter, string> = {
@@ -397,7 +399,7 @@ function buildPrintReportHtml(
   attachmentImages: PrintableAttachmentImage[] = [],
 ): string {
   const brandColor = '#5b46e1';
-  const brandMark = '<span class="brand-mark">EK</span>';
+  const brandMark = `<img class="brand-mark" src="${escapeHtml(brandAssets.icon)}" alt="" />`;
   const performedControlTables = buildPerformedControlTables(runs);
   const attachmentImageReferenceById = new Map(
     attachmentImages.map((image) => [image.attachment.id, image.reference]),
@@ -441,8 +443,7 @@ function buildPrintReportHtml(
           body { color: #172033; font-family: Arial, sans-serif; margin: 0; padding: 28px; }
           h1, h2, p { margin-top: 0; }
           .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
-          .brand-mark { display: inline-flex; width: 42px; height: 42px; align-items: center; justify-content: center; border-radius: 12px; }
-          .brand-mark { color: #ffffff; background: ${escapeHtml(brandColor)}; font-weight: 800; }
+          .brand-mark { display: inline-flex; width: 42px; height: 42px; border-radius: 12px; object-fit: contain; }
           .brand h1 { margin: 0; }
           .muted { color: #5f6b85; }
           .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 18px 0 24px; }
@@ -828,7 +829,10 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                   className={`inspector-type-mark ${readCategoryMeta(controlType.control_type_category).className}`}
                   aria-hidden="true"
                 >
-                  {readCategoryMeta(controlType.control_type_category).icon}
+                  <AssetIcon
+                    src={readCategoryMeta(controlType.control_type_category).icon}
+                    fallback={readCategoryMeta(controlType.control_type_category).fallback}
+                  />
                 </span>
                 {controlType.control_type_name}
               </label>
@@ -964,7 +968,10 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                           className={`inspector-type-mark ${readCategoryMeta(run.control_type_category).className}`}
                           aria-hidden="true"
                         >
-                          {readCategoryMeta(run.control_type_category).icon}
+                          <AssetIcon
+                            src={readCategoryMeta(run.control_type_category).icon}
+                            fallback={readCategoryMeta(run.control_type_category).fallback}
+                          />
                         </span>
                         <strong>{run.control_type_name}</strong>
                       </span>
@@ -1012,7 +1019,10 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                         className={`inspector-type-mark ${readCategoryMeta(run.control_type_category).className}`}
                         aria-hidden="true"
                       >
-                        {readCategoryMeta(run.control_type_category).icon}
+                        <AssetIcon
+                          src={readCategoryMeta(run.control_type_category).icon}
+                          fallback={readCategoryMeta(run.control_type_category).fallback}
+                        />
                       </span>
                       <strong>{run.control_type_name}</strong>
                     </span>

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { AssetIcon } from './ui/AssetIcon';
+import { readControlTypeIcon } from '../config/assets';
 import { listOpenDeviations, listTodayControls } from '../services/dashboardService';
 import { resolveDeviation } from '../services/deviationService';
 import type { OpenDeviationSummary, TodayControl } from '../services/dashboardService';
@@ -86,6 +88,10 @@ function ControlSection({
 
       {controls.map((control) => {
         const categoryMeta = getCategoryMeta(control.controlType.category);
+        const iconSrc = readControlTypeIcon({
+          category: control.controlType.category,
+          name: control.controlType.name,
+        });
         return (
           <button
             className={`today-control-row ${control.status}`}
@@ -94,7 +100,7 @@ function ControlSection({
             type="button"
           >
             <span className={`control-type-icon ${categoryMeta.className}`} aria-hidden="true">
-              {categoryMeta.label}
+              <AssetIcon src={iconSrc} fallback={categoryMeta.label} />
             </span>
             <span className="today-control-copy">
               <strong>{control.controlType.name}</strong>

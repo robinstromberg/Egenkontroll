@@ -45,6 +45,12 @@
   font-weight: 900;
 }
 
+.control-type-icon img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
 .control-type-icon.temperature {
   color: #0c7a43;
   background: #e6f8ed;

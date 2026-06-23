@@ -104,6 +104,12 @@
   font-weight: 900;
 }
 
+.inspector-type-mark img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
 .inspector-type-mark.temperature {
   color: #047857;
   background: #dff9ea;

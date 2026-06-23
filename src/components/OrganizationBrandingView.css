@@ -27,6 +27,12 @@
   font-weight: 900;
 }
 
+.branding-preview span img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
 .branding-preview div {
   display: grid;
   gap: 4px;

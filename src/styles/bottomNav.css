@@ -59,6 +59,12 @@
   line-height: 1;
 }
 
+.bottom-bar-icon img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
 @media (prefers-color-scheme: dark) {
   .bottom-bar {
     border-color: rgba(159, 145, 255, 0.24);

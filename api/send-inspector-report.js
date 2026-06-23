@@ -338,7 +338,7 @@ function buildReportLines(runs, input) {
 function buildPdf(lines, options = {}) {
   const companyName = options.companyName || 'Verksamhet';
   const brandColor = readBrandColor();
-  const initials = 'EK';
+  const initials = 'ME';
   const pages = [];
   for (let index = 0; index < lines.length; index += MAX_LINES_PER_PAGE) {
     pages.push(lines.slice(index, index + MAX_LINES_PER_PAGE));
@@ -371,7 +371,7 @@ function buildPdf(lines, options = {}) {
       '/F1 14 Tf',
       '0.09 0.13 0.20 rg',
       `100 806 Td (${pdfEscape(companyName)}) Tj`,
-      '0 -16 Td (Egenkontroll - inspektorsrapport) Tj',
+      '0 -16 Td (Min Egenkontroll - inspektorsrapport) Tj',
       'ET',
       'BT',
       '/F1 10 Tf',

@@ -8,6 +8,7 @@ import { InspectorView } from './components/InspectorView';
 import { OrganizationSetup } from './components/OrganizationSetup';
 import { PasswordSetupPanel } from './components/PasswordSetupPanel';
 import { PublicLandingPage } from './components/PublicLandingPage';
+import { brandAssets } from './config/assets';
 import { getCurrentSession, signOut } from './services/authService';
 import { ensureProfile, listOrganizationContexts } from './services/organizationService';
 import type { OrganizationContext } from './services/organizationService';
@@ -178,7 +179,7 @@ function App() {
       <main className={showNavigation ? 'app-shell with-bottom-bar' : 'app-shell'}>
         {!showNavigation ? <section className="hero-card auth-hero-card" aria-labelledby="page-title">
           <div className="app-icon" aria-hidden="true">
-            ✓
+            <img src={brandAssets.icon} alt="" />
           </div>
           <div className="hero-copy">
             <p className="eyebrow">{publicPath === 'signup' ? 'Starta testperiod' : 'Välkommen tillbaka'}</p>

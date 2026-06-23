@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { BackButton } from './ui/BackButton';
+import { brandAssets } from '../config/assets';
 import type { Organization } from '../types/database';
 import { updateOrganizationBranding } from '../services/organizationService';
 import './OrganizationBrandingView.css';
@@ -52,7 +53,9 @@ export function OrganizationBrandingView({
       </div>
 
       <div className="branding-preview">
-        <span aria-hidden="true">EK</span>
+        <span aria-hidden="true">
+          <img src={brandAssets.icon} alt="" />
+        </span>
         <div>
           <strong>{name || 'Verksamhet'}</strong>
           <small>Egenkontrolls gemensamma logotyp används i rapporter.</small>
