@@ -229,6 +229,25 @@ Ny bransch ska inte behandlas som en enkel kopia av livsmedelsflödet. Codex ska
 
 Målet är att nya branscher ska läggas till som mallpaket och generiska byggstenar ovanpå samma kontrollmotor, utan att bryta livsmedels-MVP:n.
 
+## Framtida privatläge
+
+När appen i framtiden ska utökas med privatläge, hushållsläge eller personlig egenkontroll ska AI/Codex först läsa `docs/FUTURE_PERSONAL_MODE.md`.
+
+Privatläge ska inte byggas som en separat app eller ett separat loginflöde om det kan undvikas. Rekommenderad riktning är ett användarkonto med flera arbetsytor, till exempel företag, privat yta och hushåll.
+
+Privatläge ska återanvända samma kontrollmotor, men med annan terminologi och andra standardflöden:
+
+- kontrolltyp blir rutinområde,
+- kontrollpunkt blir rutin eller sak,
+- utförd kontroll blir check-in,
+- avvikelse blir hinder eller missad rutin,
+- åtgärd blir justering eller nästa steg,
+- inspektörsvy blir självinspektion, analysläge eller rapport.
+
+Privatläge ska inte ärva myndighets- eller inspektörslogik som standard, men ska kunna återanvända historik, rapport, export och läslänkar som frivillig självinspektion och egen analys.
+
+Privatdata ska behandlas som känslig som standard och får inte blandas med företagsdata eller företagsrapporter.
+
 ## Datamodell – principer
 
 Datamodellen ska förberedas för SaaS och multi-tenant från start.
