@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminControls } from './AdminControls';
 import { ControlTypeDetailView } from './ControlTypeDetailView';
 import { ActionButton } from './ui/ActionButton';
@@ -9,7 +9,6 @@ import {
   deleteControlType,
   listControlTypes,
   setControlTypeActive,
-  updateControlType,
 } from '../services/controlAdminService';
 import type { ControlCategory, ControlFrequency, ControlType } from '../types/database';
 import './ControlTypesView.css';
@@ -40,30 +39,18 @@ const frequencyLabels: Record<ControlFrequency, string> = {
 type ControlTypeRowProps = {
   controlType: ControlType;
   canManage: boolean;
-  editing: boolean;
-  editingName: string;
   saving: boolean;
-  onCancelEdit: () => void;
-  onChangeEditingName: (name: string) => void;
   onDelete: () => void;
   onOpen: () => void;
-  onSaveEdit: (event: FormEvent<HTMLFormElement>) => void;
-  onStartEdit: () => void;
   onToggleActive: () => void;
 };
 
 function ControlTypeRow({
   controlType,
   canManage,
-  editing,
-  editingName,
   saving,
-  onCancelEdit,
-  onChangeEditingName,
   onDelete,
   onOpen,
-  onSaveEdit,
-  onStartEdit,
   onToggleActive,
 }: ControlTypeRowProps) {
   const meta = categoryMeta[controlType.category] ?? categoryMeta.custom;
@@ -75,47 +62,20 @@ function ControlTypeRow({
         <AssetIcon src={iconSrc} fallback={meta.icon} />
       </span>
       <div className="control-type-copy">
-        {editing ? (
-          <form className="control-type-edit-form" onSubmit={onSaveEdit}>
-            <label>
-              <span>Namn</span>
-              <input
-                className="text-input"
-                value={editingName}
-                onChange={(event) => onChangeEditingName(event.target.value)}
-                required
-              />
-            </label>
-            <div className="control-type-actions">
-              <ActionButton type="submit" disabled={saving || !editingName.trim()}>
-                Spara
-              </ActionButton>
-              <ActionButton type="button" variant="secondary" onClick={onCancelEdit} disabled={saving}>
-                Avbryt
-              </ActionButton>
-            </div>
-          </form>
-        ) : (
-          <>
-            <button className="control-type-open-button" type="button" aria-label={`Öppna ${controlType.name}`} onClick={onOpen}>
-              <span>
-                <strong>{controlType.name}</strong>
-                <span>{frequencyLabels[controlType.frequency] ?? meta.label}</span>
-              </span>
-              <span className="control-type-chevron" aria-hidden="true">
-                ›
-              </span>
-            </button>
-            <span className={controlType.active ? 'control-type-status active' : 'control-type-status inactive'}>
-              {controlType.active ? 'Aktiv' : 'Inaktiv'}
-            </span>
-          </>
-        )}
+        <button className="control-type-open-button" type="button" aria-label={`Öppna ${controlType.name}`} onClick={onOpen}>
+          <span>
+            <strong>{controlType.name}</strong>
+            <span>{frequencyLabels[controlType.frequency] ?? meta.label}</span>
+          </span>
+        </button>
+        <span className={controlType.active ? 'control-type-status active' : 'control-type-status inactive'}>
+          {controlType.active ? 'Aktiv' : 'Inaktiv'}
+        </span>
       </div>
 
-      {canManage && !editing ? (
+      {canManage ? (
         <div className="control-type-actions" aria-label={`Åtgärder för ${controlType.name}`}>
-          <ActionButton type="button" variant="secondary" onClick={onStartEdit} disabled={saving}>
+          <ActionButton type="button" variant="secondary" onClick={onOpen} disabled={saving}>
             Redigera
           </ActionButton>
           <ActionButton type="button" variant="secondary" onClick={onToggleActive} disabled={saving}>
@@ -157,8 +117,6 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [showAdminControls, setShowAdminControls] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState('');
 
   async function refreshControlTypes() {
     const nextTypes = await listControlTypes(organizationId);
@@ -210,37 +168,6 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
     writeControlTypeIdToHash(null);
   }
 
-  function startEditing(controlType: ControlType) {
-    setEditingId(controlType.id);
-    setEditingName(controlType.name);
-    setMessage('');
-  }
-
-  function cancelEditing() {
-    setEditingId(null);
-    setEditingName('');
-  }
-
-  async function handleSaveEdit(event: FormEvent<HTMLFormElement>, controlType: ControlType) {
-    event.preventDefault();
-    if (!editingName.trim()) return;
-
-    try {
-      setSaving(true);
-      setMessage('');
-      const updatedControlType = await updateControlType(controlType.id, organizationId, {
-        name: editingName,
-        active: controlType.active,
-      });
-      setControlTypes((current) => current.map((item) => (item.id === controlType.id ? updatedControlType : item)));
-      cancelEditing();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte uppdatera kontrolltypen.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function handleToggleActive(controlType: ControlType) {
     try {
       setSaving(true);
@@ -267,7 +194,6 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
       setMessage('');
       await deleteControlType(controlType.id, organizationId);
       setControlTypes((current) => current.filter((item) => item.id !== controlType.id));
-      if (editingId === controlType.id) cancelEditing();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte radera kontrolltypen.');
     } finally {
@@ -321,16 +247,10 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
             <ControlTypeRow
               canManage={canManage}
               controlType={controlType}
-              editing={editingId === controlType.id}
-              editingName={editingName}
               key={controlType.id}
               saving={saving}
-              onCancelEdit={cancelEditing}
-              onChangeEditingName={setEditingName}
               onDelete={() => handleDelete(controlType)}
               onOpen={() => openControlType(controlType.id)}
-              onSaveEdit={(event) => handleSaveEdit(event, controlType)}
-              onStartEdit={() => startEditing(controlType)}
               onToggleActive={() => handleToggleActive(controlType)}
             />
           ))}
