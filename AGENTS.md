@@ -211,6 +211,24 @@ Föreslagen standard om inget annat är beslutat:
 
 Om teknisk stack redan har skapats i repo ska den analyseras innan ändringar. Byt inte stack utan att först förklara varför och få godkännande.
 
+## Framtida branschutökning
+
+När appen i framtiden ska expandera från livsmedel till andra branscher ska AI/Codex först läsa `docs/FUTURE_INDUSTRY_EXPANSION.md`.
+
+Ny bransch ska inte behandlas som en enkel kopia av livsmedelsflödet. Codex ska först analysera branschspecifika behov för:
+
+- kontrollparametrar,
+- kontrollpunkter/objekt,
+- kontrolltyper,
+- avvikelser och åtgärder,
+- KPI:er,
+- historik,
+- rapporter,
+- export,
+- extern mottagare av dokumentationen.
+
+Målet är att nya branscher ska läggas till som mallpaket och generiska byggstenar ovanpå samma kontrollmotor, utan att bryta livsmedels-MVP:n.
+
 ## Datamodell – principer
 
 Datamodellen ska förberedas för SaaS och multi-tenant från start.
