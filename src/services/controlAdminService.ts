@@ -45,6 +45,10 @@ export type UpdateControlFieldInput = {
   active: boolean;
 };
 
+export type UpdateControlTypeInput = Pick<ControlType, 'name' | 'active'> & {
+  instructions?: string | null;
+};
+
 function createFieldKey(label: string, fieldType: ControlFieldDefinition['field_type']): string {
   const normalized = label
     .trim()
@@ -193,19 +197,25 @@ export async function setControlTypeActive(
 export async function updateControlType(
   controlTypeId: string,
   organizationId: string,
-  updates: Pick<ControlType, 'name' | 'active'>,
+  updates: UpdateControlTypeInput,
 ): Promise<ControlType> {
   const name = updates.name.trim();
   if (!name) {
     throw new Error('Kontrolltypens namn krävs.');
   }
 
+  const payload: { name: string; active: boolean; instructions?: string | null } = {
+    name,
+    active: updates.active,
+  };
+
+  if ('instructions' in updates) {
+    payload.instructions = updates.instructions?.trim() || null;
+  }
+
   const { data, error } = await supabase
     .from('control_types')
-    .update({
-      name,
-      active: updates.active,
-    })
+    .update(payload)
     .eq('id', controlTypeId)
     .eq('organization_id', organizationId)
     .select('*')
