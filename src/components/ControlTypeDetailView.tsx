@@ -8,6 +8,7 @@ import {
   setControlObjectActive,
   setControlTypeActive,
   updateControlField,
+  updateControlType,
 } from '../services/controlAdminService';
 import type {
   ControlCategory,
@@ -102,6 +103,8 @@ export function ControlTypeDetailView({
   const [fieldLabel, setFieldLabel] = useState('Status');
   const [fieldType, setFieldType] = useState<ControlFieldDefinition['field_type']>('ok_not_ok');
   const [fieldRequired, setFieldRequired] = useState(true);
+  const [instructionDraft, setInstructionDraft] = useState(controlType.instructions ?? '');
+  const [savingInstructions, setSavingInstructions] = useState(false);
   const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
   const [editFieldLabel, setEditFieldLabel] = useState('');
   const [editFieldRequired, setEditFieldRequired] = useState(false);
@@ -118,6 +121,10 @@ export function ControlTypeDetailView({
     const nextFields = await listControlFields(organizationId, controlType.id);
     setFields(nextFields);
   }
+
+  useEffect(() => {
+    setInstructionDraft(controlType.instructions ?? '');
+  }, [controlType.id, controlType.instructions]);
 
   useEffect(() => {
     let active = true;
@@ -191,6 +198,26 @@ export function ControlTypeDetailView({
     }
   }
 
+  async function handleSaveInstructions(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage('');
+
+    try {
+      setSavingInstructions(true);
+      await updateControlType(controlType.id, organizationId, {
+        name: controlType.name,
+        active: controlType.active,
+        instructions: instructionDraft,
+      });
+      await onChanged();
+      setMessage('Rutinen har sparats.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte spara rutinen.');
+    } finally {
+      setSavingInstructions(false);
+    }
+  }
+
   async function handleToggleType() {
     setMessage('');
     try {
@@ -261,7 +288,7 @@ export function ControlTypeDetailView({
         </div>
       </div>
 
-      {message ? <p className="form-message error-message">{message}</p> : null}
+      {message ? <p className={message === 'Rutinen har sparats.' ? 'form-message success-message' : 'form-message error-message'}>{message}</p> : null}
 
       <div className="control-type-detail-card">
         <div>
@@ -277,6 +304,39 @@ export function ControlTypeDetailView({
           <strong>{controlType.active ? 'Aktiv' : 'Inaktiv'}</strong>
         </div>
       </div>
+
+      {canManage ? (
+        <form className="control-type-instructions-form" onSubmit={handleSaveInstructions}>
+          <div>
+            <p className="eyebrow">Rutin / instruktion</p>
+            <h4>Hur ska kontrollen göras?</h4>
+            <p className="muted-copy">
+              Beskriv hur kontrollen ska göras, när den ska göras och vad personalen ska göra vid avvikelse.
+            </p>
+          </div>
+          <label>
+            <span>Rutintext</span>
+            <textarea
+              className="text-input"
+              value={instructionDraft}
+              onChange={(event) => setInstructionDraft(event.target.value)}
+              placeholder="Exempel: Kontrollera samtliga kylar innan öppning. Vid temperatur över gränsvärde ska ansvarig kontaktas och åtgärd dokumenteras innan kontrollen sparas."
+              rows={5}
+            />
+          </label>
+          <ActionButton type="submit" disabled={savingInstructions}>
+            {savingInstructions ? 'Sparar...' : 'Spara rutin'}
+          </ActionButton>
+        </form>
+      ) : controlType.instructions ? (
+        <div className="control-type-instructions-form">
+          <div>
+            <p className="eyebrow">Rutin / instruktion</p>
+            <h4>Hur ska kontrollen göras?</h4>
+          </div>
+          <p>{controlType.instructions}</p>
+        </div>
+      ) : null}
 
       {canManage ? (
         <ActionButton variant="secondary" type="button" onClick={handleToggleType}>
