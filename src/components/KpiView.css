@@ -144,6 +144,216 @@
   font-size: 0.78rem;
 }
 
+.kpi-analysis-panel {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 20px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+}
+
+.kpi-analysis-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.kpi-analysis-heading h3,
+.kpi-analysis-heading h4,
+.kpi-analysis-heading p {
+  margin-bottom: 0;
+}
+
+.kpi-tab-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  border-radius: 16px;
+  padding: 5px;
+  background: #f2efff;
+}
+
+.kpi-tab-list button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  color: #5b46e1;
+  background: transparent;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.kpi-tab-list button.active {
+  color: #ffffff;
+  background: #5b46e1;
+  box-shadow: 0 8px 18px rgba(91, 70, 225, 0.24);
+}
+
+.kpi-analysis-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.kpi-filter-label {
+  color: #172033;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.kpi-filter-input {
+  width: 100%;
+}
+
+.kpi-analysis-card,
+.kpi-empty-state {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 18px;
+  padding: 14px;
+  background: #fbfaff;
+}
+
+.kpi-empty-state {
+  min-height: 132px;
+  place-content: center;
+  text-align: center;
+}
+
+.kpi-empty-state strong {
+  color: #172033;
+  font-size: 1rem;
+}
+
+.kpi-empty-state span {
+  color: #657089;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.kpi-status-pill {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: #2c2188;
+  background: #efedff;
+  font-size: 0.72rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.kpi-line-chart,
+.kpi-chart-empty,
+.kpi-bar-chart {
+  width: 100%;
+  height: 118px;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.kpi-line-chart {
+  display: block;
+  overflow: visible;
+  padding: 12px;
+}
+
+.kpi-line-chart polyline {
+  fill: none;
+  stroke: #5b46e1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.kpi-limit-line {
+  stroke: #ef4444;
+  stroke-dasharray: 6 6;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.kpi-chart-empty {
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  color: #657089;
+  font-size: 0.84rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.kpi-metric-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kpi-metric-row span {
+  display: grid;
+  gap: 4px;
+  border-radius: 14px;
+  padding: 10px;
+  color: #657089;
+  background: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.kpi-metric-row strong {
+  color: #11172c;
+  font-size: 1rem;
+}
+
+.kpi-bar-chart {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 5px;
+  align-items: end;
+  padding: 12px 8px 8px;
+}
+
+.kpi-bar-group {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  align-items: end;
+  height: 100%;
+}
+
+.kpi-bars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  align-items: end;
+  height: 82px;
+}
+
+.kpi-bars span {
+  display: block;
+  min-height: 8px;
+  border-radius: 999px 999px 4px 4px;
+  background: #ef4444;
+}
+
+.kpi-bars span + span {
+  background: #10b981;
+}
+
+.kpi-bar-group small {
+  overflow: hidden;
+  color: #657089;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-align: center;
+  white-space: nowrap;
+}
+
 @media (max-width: 370px) {
   .kpi-grid {
     grid-template-columns: 1fr;
@@ -157,7 +367,9 @@
   }
 
   .kpi-card,
-  .kpi-risk-card {
+  .kpi-risk-card,
+  .kpi-analysis-panel,
+  .kpi-analysis-card {
     border-color: rgba(159, 145, 255, 0.18);
     color: #f7f9ff;
     background: #121a2e;
@@ -174,15 +386,33 @@
 
   .kpi-card strong,
   .kpi-card span,
-  .kpi-risk-row {
+  .kpi-risk-row,
+  .kpi-filter-label,
+  .kpi-empty-state strong,
+  .kpi-metric-row strong {
     color: #f7f9ff;
   }
 
-  .kpi-card small {
+  .kpi-card small,
+  .kpi-empty-state span,
+  .kpi-chart-empty,
+  .kpi-bar-group small {
     color: #aeb8d0;
   }
 
   .kpi-risk-row {
+    background: #18213a;
+  }
+
+  .kpi-tab-list,
+  .kpi-status-pill {
+    background: #211b45;
+  }
+
+  .kpi-line-chart,
+  .kpi-chart-empty,
+  .kpi-bar-chart,
+  .kpi-metric-row span {
     background: #18213a;
   }
 }
