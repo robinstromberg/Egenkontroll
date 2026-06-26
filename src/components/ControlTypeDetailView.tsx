@@ -7,6 +7,7 @@ import {
   listControlObjects,
   setControlObjectActive,
   setControlTypeActive,
+  updateControlType,
   updateControlField,
 } from '../services/controlAdminService';
 import type {
@@ -106,7 +107,10 @@ export function ControlTypeDetailView({
   const [editFieldLabel, setEditFieldLabel] = useState('');
   const [editFieldRequired, setEditFieldRequired] = useState(false);
   const [editFieldActive, setEditFieldActive] = useState(true);
+  const [typeName, setTypeName] = useState(controlType.name);
+  const [typeInstructions, setTypeInstructions] = useState(controlType.instructions ?? '');
   const [loading, setLoading] = useState(true);
+  const [savingType, setSavingType] = useState(false);
   const [message, setMessage] = useState('');
 
   async function refreshObjects() {
@@ -147,6 +151,32 @@ export function ControlTypeDetailView({
       active = false;
     };
   }, [organizationId, controlType.id]);
+
+  useEffect(() => {
+    setTypeName(controlType.name);
+    setTypeInstructions(controlType.instructions ?? '');
+  }, [controlType.id, controlType.instructions, controlType.name]);
+
+  async function handleSaveControlType(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!typeName.trim()) return;
+
+    try {
+      setSavingType(true);
+      setMessage('');
+      await updateControlType(controlType.id, organizationId, {
+        name: typeName,
+        active: controlType.active,
+        instructions: typeInstructions,
+      });
+      await onChanged();
+      setMessage('Kontrolltypen sparades.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte spara kontrolltypen.');
+    } finally {
+      setSavingType(false);
+    }
+  }
 
   async function handleCreateObject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -277,6 +307,46 @@ export function ControlTypeDetailView({
           <strong>{controlType.active ? 'Aktiv' : 'Inaktiv'}</strong>
         </div>
       </div>
+
+      {canManage ? (
+        <form className="control-type-settings-form" onSubmit={handleSaveControlType}>
+          <div className="control-point-heading">
+            <div>
+              <p className="eyebrow">Grunduppgifter</p>
+              <h4>Namn och rutin</h4>
+            </div>
+          </div>
+          <label>
+            <span>Namn</span>
+            <input
+              className="text-input"
+              value={typeName}
+              onChange={(event) => setTypeName(event.target.value)}
+              required
+            />
+          </label>
+          <label>
+            <span>Rutin eller instruktion</span>
+            <textarea
+              className="text-input control-type-instructions-input"
+              value={typeInstructions}
+              onChange={(event) => setTypeInstructions(event.target.value)}
+              placeholder="Beskriv hur kontrollen ska göras, när den ska göras och vad personalen ska göra vid avvikelse."
+              rows={5}
+            />
+          </label>
+          <ActionButton type="submit" disabled={savingType || !typeName.trim()}>
+            {savingType ? 'Sparar...' : 'Spara kontrolltyp'}
+          </ActionButton>
+        </form>
+      ) : controlType.instructions ? (
+        <div className="control-type-settings-form">
+          <div>
+            <p className="eyebrow">Rutin eller instruktion</p>
+            <p className="control-type-instructions-copy">{controlType.instructions}</p>
+          </div>
+        </div>
+      ) : null}
 
       {canManage ? (
         <ActionButton variant="secondary" type="button" onClick={handleToggleType}>

@@ -193,19 +193,25 @@ export async function setControlTypeActive(
 export async function updateControlType(
   controlTypeId: string,
   organizationId: string,
-  updates: Pick<ControlType, 'name' | 'active'>,
+  updates: Pick<ControlType, 'name' | 'active'> & { instructions?: string | null },
 ): Promise<ControlType> {
   const name = updates.name.trim();
   if (!name) {
     throw new Error('Kontrolltypens namn krävs.');
   }
 
+  const updatePayload: { name: string; active: boolean; instructions?: string | null } = {
+    name,
+    active: updates.active,
+  };
+
+  if ('instructions' in updates) {
+    updatePayload.instructions = updates.instructions ?? null;
+  }
+
   const { data, error } = await supabase
     .from('control_types')
-    .update({
-      name,
-      active: updates.active,
-    })
+    .update(updatePayload)
     .eq('id', controlTypeId)
     .eq('organization_id', organizationId)
     .select('*')

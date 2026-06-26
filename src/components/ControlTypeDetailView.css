@@ -23,6 +23,7 @@
 }
 
 .control-type-detail-card,
+.control-type-settings-form,
 .control-field-section,
 .control-field-form,
 .control-point-section,
@@ -42,7 +43,13 @@
   gap: 10px;
 }
 
+.control-type-settings-form {
+  display: grid;
+  gap: 12px;
+}
+
 .control-type-detail-card div,
+.control-type-settings-form label,
 .control-field-form,
 .control-field-form label,
 .control-field-edit-form,
@@ -53,6 +60,7 @@
 }
 
 .control-type-detail-card span,
+.control-type-settings-form label span,
 .control-field-form label span,
 .control-field-edit-form label span,
 .control-point-form label span {
@@ -64,6 +72,18 @@
 .control-type-detail-card strong {
   color: #172033;
   font-size: 0.9rem;
+}
+
+.control-type-instructions-input {
+  min-height: 128px;
+  resize: vertical;
+}
+
+.control-type-instructions-copy {
+  margin: 0;
+  color: #34405a;
+  line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .control-field-section,
@@ -212,6 +232,7 @@
 @media (prefers-color-scheme: dark) {
   .control-type-detail-card,
   .control-type-detail-topbar,
+  .control-type-settings-form,
   .control-field-section,
   .control-field-form,
   .control-point-section,
@@ -234,6 +255,7 @@
   }
 
   .control-type-detail-card strong,
+  .control-type-settings-form label span,
   .control-point-heading h4,
   .control-field-card h4,
   .control-field-form h4,
@@ -246,6 +268,7 @@
   }
 
   .control-type-detail-card span,
+  .control-type-instructions-copy,
   .control-field-card p,
   .control-point-card p {
     color: #aeb8d0;

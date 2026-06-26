@@ -164,12 +164,6 @@
   font-weight: 900;
 }
 
-.control-type-chevron {
-  color: #6e7590;
-  font-size: 1.6rem;
-  line-height: 1;
-}
-
 .add-control-type-button {
   display: flex;
   min-height: 64px;
@@ -199,8 +193,7 @@
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
   }
 
-  .control-type-open-button span span,
-  .control-type-chevron {
+  .control-type-open-button span span {
     color: #aeb8d0;
   }
 
