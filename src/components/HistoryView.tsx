@@ -169,6 +169,16 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
             <option value="completed_with_deviation">Klar med avvikelse</option>
           </select>
         </label>
+        <label className="history-filter-field">
+          <span>Sök</span>
+          <input
+            className="text-input"
+            type="search"
+            value={filters.query ?? ''}
+            onChange={(event) => updateFilters({ ...filters, query: event.target.value || undefined })}
+            placeholder="Produkt, leverantör, batch eller dokument"
+          />
+        </label>
       </div>
 
       <div className="report-actions">

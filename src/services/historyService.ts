@@ -6,6 +6,7 @@ export type HistoryFilters = {
   fromDate?: string;
   toDate?: string;
   status?: string;
+  query?: string;
 };
 
 export type HistoryAttachment = {
@@ -72,6 +73,7 @@ export async function listHistoryRuns(
     return [];
   }
 
+  const normalizedQuery = filters.query?.trim().toLowerCase() ?? '';
   const runIds = rows.map((row) => row.id);
   const { data: attachments, error: attachmentsError } = await supabase
     .from('attachments')
@@ -92,7 +94,49 @@ export async function listHistoryRuns(
     );
   }
 
-  return rows.map((row) => ({
+  let filteredRows = rows;
+
+  if (normalizedQuery) {
+    const { data: items, error: itemsError } = await supabase
+      .from('control_run_items')
+      .select('control_run_id, object_snapshot, field_snapshot, value_text, value_number, value_boolean, value_date, value_json, deviation_reason, action_text')
+      .eq('organization_id', organizationId)
+      .in('control_run_id', runIds);
+
+    if (itemsError) {
+      throw itemsError;
+    }
+
+    const searchableTextByRunId = new Map<string, string[]>();
+    for (const item of items ?? []) {
+      const parts = searchableTextByRunId.get(item.control_run_id) ?? [];
+      parts.push(JSON.stringify([
+        item.object_snapshot,
+        item.field_snapshot,
+        item.value_text,
+        item.value_number,
+        item.value_boolean,
+        item.value_date,
+        item.value_json,
+        item.deviation_reason,
+        item.action_text,
+      ]));
+      searchableTextByRunId.set(item.control_run_id, parts);
+    }
+
+    filteredRows = rows.filter((row) => {
+      const text = [
+        row.control_type_name,
+        row.status,
+        row.notes,
+        ...(searchableTextByRunId.get(row.id) ?? []),
+      ].join(' ').toLowerCase();
+
+      return text.includes(normalizedQuery);
+    });
+  }
+
+  return filteredRows.map((row) => ({
     ...row,
     attachment_count: attachmentCountByRunId.get(row.id) ?? 0,
   }));

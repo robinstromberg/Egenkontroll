@@ -19,6 +19,7 @@ type SharedReportSummary = {
   periodEnd: string;
   controlTypes: string;
   deviationFilter: string;
+  search: string;
   sort: string;
   generatedAt: string;
   runCount: number;
@@ -354,6 +355,31 @@ function sortRuns(runs: SharedRun[], sortKey: SortKey): SharedRun[] {
   });
 }
 
+function matchesSearch(run: SharedRun, query: string): boolean {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return true;
+
+  const text = [
+    run.control_type_name,
+    run.control_type_category,
+    run.control_type_instructions,
+    run.status,
+    run.notes,
+    readRunRoutineSummary(run),
+    ...run.items.map((item) => JSON.stringify([
+      item.object_snapshot,
+      item.field_snapshot,
+      readItemValue(item),
+      item.deviation_reason,
+      item.action_text,
+    ])),
+    ...run.deviations.map((deviation) => JSON.stringify(deviation)),
+    ...run.attachments.map((attachment) => attachment.file_name ?? ''),
+  ].join(' ').toLowerCase();
+
+  return text.includes(normalizedQuery);
+}
+
 function formatCsvCell(value: string | number): string {
   const text = String(value).replace(/"/g, '""');
   return `"${text}"`;
@@ -520,6 +546,7 @@ function buildPrintReportHtml(
           <p><strong>Period:</strong> ${escapeHtml(summary.periodStart)} - ${escapeHtml(summary.periodEnd)}</p>
           <p><strong>Kontrolltyper:</strong> ${escapeHtml(summary.controlTypes)}</p>
           <p><strong>Avvikelsefilter:</strong> ${escapeHtml(summary.deviationFilter)}</p>
+          <p><strong>Sökning:</strong> ${escapeHtml(summary.search || 'Ingen')}</p>
           <p><strong>Sortering:</strong> ${escapeHtml(summary.sort)}</p>
         </section>
         <div class="summary">
@@ -614,6 +641,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   const [periodStart, setPeriodStart] = useState(dateDaysAgo(30));
   const [periodEnd, setPeriodEnd] = useState(today());
   const [deviationFilter, setDeviationFilter] = useState<DeviationFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('performed-desc');
   const [runs, setRuns] = useState<SharedRun[]>([]);
   const [reportEmail, setReportEmail] = useState('');
@@ -722,7 +750,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
   }
 
   const visibleRuns = sortRuns(
-    runs.filter((run) => matchesDeviationFilter(run, deviationFilter)),
+    runs.filter((run) => matchesDeviationFilter(run, deviationFilter) && matchesSearch(run, searchQuery)),
     sortKey,
   );
   const selectedControlTypeNames = controlTypes
@@ -744,6 +772,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
     periodEnd,
     controlTypes: selectedControlTypeNames.join(', ') || 'Valda kontrolltyper',
     deviationFilter: deviationFilterLabels[deviationFilter],
+    search: searchQuery.trim(),
     sort: sortLabels[sortKey],
     generatedAt: new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date()),
     runCount: visibleRuns.length,
@@ -761,6 +790,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
         control_type_ids: selectedControlTypeIds,
         control_type_names: selectedControlTypeNames,
         deviation_filter: deviationFilter,
+        search_query: searchQuery.trim(),
         sort: sortKey,
         run_count: visibleRuns.length,
         item_count: totalItems,
@@ -889,6 +919,17 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
 
         <div className="inspector-secondary-filters">
           <label>
+            Sök
+            <input
+              className="text-input"
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Produkt, leverantör, batch eller dokument"
+            />
+          </label>
+
+          <label>
             Avvikelser
             <select
               className="text-input"
@@ -926,7 +967,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
       {!hasSearched ? <p className="muted-copy">Välj period och kontrolltyper för att visa dokumentationen.</p> : null}
       {hasSearched && !loading && runs.length === 0 ? <p className="muted-copy">Inga kontroller hittades för urvalet.</p> : null}
       {hasSearched && !loading && runs.length > 0 && visibleRuns.length === 0 ? (
-        <p className="muted-copy">Inga kontroller matchar avvikelsefiltret.</p>
+        <p className="muted-copy">Inga kontroller matchar sökningen eller avvikelsefiltret.</p>
       ) : null}
 
       {visibleRuns.length ? (

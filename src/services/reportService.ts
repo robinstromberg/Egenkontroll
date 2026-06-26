@@ -1,10 +1,8 @@
 import { brandAssets } from '../config/assets';
 import { getControlRunDetail, listHistoryRuns } from './historyService';
+import type { HistoryFilters } from './historyService';
 
-type ReportFilters = {
-  fromDate?: string;
-  toDate?: string;
-};
+type ReportFilters = HistoryFilters;
 
 type ReportAttachment = {
   id: string;
