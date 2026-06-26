@@ -54,6 +54,8 @@
 .control-field-form label,
 .control-field-edit-form,
 .control-field-edit-form label,
+.control-point-edit-form,
+.control-point-edit-form label,
 .control-point-form label {
   display: grid;
   gap: 5px;
@@ -63,6 +65,7 @@
 .control-type-settings-form label span,
 .control-field-form label span,
 .control-field-edit-form label span,
+.control-point-edit-form label span,
 .control-point-form label span {
   color: #657089;
   font-size: 0.78rem;
@@ -180,6 +183,10 @@
   grid-column: span 2;
 }
 
+.control-point-edit-form {
+  grid-column: span 2;
+}
+
 .control-field-actions {
   display: flex;
   flex-wrap: wrap;
@@ -229,6 +236,11 @@
   line-height: 1.25;
 }
 
+.control-point-instructions {
+  margin-top: 6px;
+  white-space: pre-wrap;
+}
+
 @media (prefers-color-scheme: dark) {
   .control-type-detail-card,
   .control-type-detail-topbar,
@@ -261,6 +273,7 @@
   .control-field-form h4,
   .control-field-form label span,
   .control-field-edit-form label span,
+  .control-point-edit-form label span,
   .control-point-card h4,
   .control-point-form h4,
   .control-point-form label span {
@@ -333,6 +346,7 @@
   }
 
   .control-field-edit-form,
+  .control-point-edit-form,
   .control-point-action {
     grid-column: 1 / -1;
   }

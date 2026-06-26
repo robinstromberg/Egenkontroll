@@ -45,6 +45,16 @@ export type UpdateControlFieldInput = {
   active: boolean;
 };
 
+export type UpdateControlObjectInput = {
+  controlObjectId: string;
+  organizationId: string;
+  name: string;
+  location?: string | null;
+  instructions?: string | null;
+  limitMax?: number | null;
+  active: boolean;
+};
+
 function createFieldKey(label: string, fieldType: ControlFieldDefinition['field_type']): string {
   const normalized = label
     .trim()
@@ -282,6 +292,29 @@ export async function createControlObject(input: CreateControlObjectInput): Prom
   }
 
   return data as ControlObject;
+}
+
+export async function updateControlObject(input: UpdateControlObjectInput): Promise<void> {
+  const name = input.name.trim();
+  if (!name) {
+    throw new Error('Kontrollpunktens namn krävs.');
+  }
+
+  const { error } = await supabase
+    .from('control_objects')
+    .update({
+      name,
+      location: input.location?.trim() || null,
+      instructions: input.instructions ?? null,
+      limit_max: input.limitMax ?? null,
+      active: input.active,
+    })
+    .eq('id', input.controlObjectId)
+    .eq('organization_id', input.organizationId);
+
+  if (error) {
+    throw error;
+  }
 }
 
 export async function setControlObjectActive(

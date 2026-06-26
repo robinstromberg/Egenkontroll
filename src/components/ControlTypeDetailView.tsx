@@ -7,6 +7,7 @@ import {
   listControlObjects,
   setControlObjectActive,
   setControlTypeActive,
+  updateControlObject,
   updateControlType,
   updateControlField,
 } from '../services/controlAdminService';
@@ -99,6 +100,7 @@ export function ControlTypeDetailView({
   const [fields, setFields] = useState<ControlFieldDefinition[]>([]);
   const [objectName, setObjectName] = useState('');
   const [objectLocation, setObjectLocation] = useState('');
+  const [objectInstructions, setObjectInstructions] = useState('');
   const [limitMax, setLimitMax] = useState('');
   const [fieldLabel, setFieldLabel] = useState('Status');
   const [fieldType, setFieldType] = useState<ControlFieldDefinition['field_type']>('ok_not_ok');
@@ -107,6 +109,12 @@ export function ControlTypeDetailView({
   const [editFieldLabel, setEditFieldLabel] = useState('');
   const [editFieldRequired, setEditFieldRequired] = useState(false);
   const [editFieldActive, setEditFieldActive] = useState(true);
+  const [editingObjectId, setEditingObjectId] = useState<string | null>(null);
+  const [editObjectName, setEditObjectName] = useState('');
+  const [editObjectLocation, setEditObjectLocation] = useState('');
+  const [editObjectInstructions, setEditObjectInstructions] = useState('');
+  const [editObjectLimitMax, setEditObjectLimitMax] = useState('');
+  const [editObjectActive, setEditObjectActive] = useState(true);
   const [typeName, setTypeName] = useState(controlType.name);
   const [typeInstructions, setTypeInstructions] = useState(controlType.instructions ?? '');
   const [loading, setLoading] = useState(true);
@@ -188,11 +196,13 @@ export function ControlTypeDetailView({
         controlTypeId: controlType.id,
         name: objectName.trim(),
         location: objectLocation.trim() || undefined,
+        instructions: objectInstructions,
         limitMax: limitMax ? Number(limitMax) : null,
         unit: controlType.category === 'temperature' ? '°C' : undefined,
       });
       setObjectName('');
       setObjectLocation('');
+      setObjectInstructions('');
       setLimitMax('');
       await refreshObjects();
     } catch (error) {
@@ -238,6 +248,37 @@ export function ControlTypeDetailView({
       await refreshObjects();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte ändra kontrollpunkten.');
+    }
+  }
+
+  function handleStartEditObject(controlObject: ControlObject) {
+    setEditingObjectId(controlObject.id);
+    setEditObjectName(controlObject.name);
+    setEditObjectLocation(controlObject.location ?? '');
+    setEditObjectInstructions(controlObject.instructions ?? '');
+    setEditObjectLimitMax(controlObject.limit_max === null ? '' : String(controlObject.limit_max));
+    setEditObjectActive(controlObject.active);
+  }
+
+  async function handleSaveObject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editingObjectId) return;
+    setMessage('');
+
+    try {
+      await updateControlObject({
+        controlObjectId: editingObjectId,
+        organizationId,
+        name: editObjectName,
+        location: editObjectLocation,
+        instructions: editObjectInstructions,
+        limitMax: controlType.category === 'temperature' && editObjectLimitMax ? Number(editObjectLimitMax) : null,
+        active: editObjectActive,
+      });
+      setEditingObjectId(null);
+      await refreshObjects();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte uppdatera kontrollpunkten.');
     }
   }
 
@@ -483,17 +524,83 @@ export function ControlTypeDetailView({
               <div className="control-point-icon" aria-hidden="true">
                 {controlType.category === 'temperature' ? '°C' : '✓'}
               </div>
-              <div>
-                <h4>{controlObject.name}</h4>
-                <p>
-                  {controlObject.location ?? 'Ingen plats'} · {controlObject.limit_max ?? 'Ingen gräns'} {controlObject.unit ?? ''}
-                </p>
-              </div>
-              {canManage ? (
-                <button className="control-point-action" type="button" onClick={() => handleToggleObject(controlObject)}>
-                  {controlObject.active ? 'Inaktivera' : 'Aktivera'}
-                </button>
-              ) : null}
+              {editingObjectId === controlObject.id ? (
+                <form className="control-point-edit-form" onSubmit={handleSaveObject}>
+                  <label>
+                    <span>Namn</span>
+                    <input
+                      className="text-input"
+                      value={editObjectName}
+                      onChange={(event) => setEditObjectName(event.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    <span>Plats</span>
+                    <input
+                      className="text-input"
+                      value={editObjectLocation}
+                      onChange={(event) => setEditObjectLocation(event.target.value)}
+                    />
+                  </label>
+                  {controlType.category === 'temperature' ? (
+                    <label>
+                      <span>Maxgräns</span>
+                      <input
+                        className="text-input"
+                        value={editObjectLimitMax}
+                        onChange={(event) => setEditObjectLimitMax(event.target.value)}
+                        type="number"
+                      />
+                    </label>
+                  ) : null}
+                  <label>
+                    <span>Instruktion</span>
+                    <textarea
+                      className="text-input control-type-instructions-input"
+                      value={editObjectInstructions}
+                      onChange={(event) => setEditObjectInstructions(event.target.value)}
+                      rows={4}
+                    />
+                  </label>
+                  <label className="control-field-checkbox">
+                    <input
+                      checked={editObjectActive}
+                      onChange={(event) => setEditObjectActive(event.target.checked)}
+                      type="checkbox"
+                    />
+                    Aktiv
+                  </label>
+                  <div className="control-field-actions">
+                    <button className="control-point-action" type="submit">Spara</button>
+                    <button className="control-point-action" type="button" onClick={() => setEditingObjectId(null)}>
+                      Avbryt
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div>
+                    <h4>{controlObject.name}</h4>
+                    <p>
+                      {controlObject.location ?? 'Ingen plats'} · {controlObject.limit_max ?? 'Ingen gräns'} {controlObject.unit ?? ''}
+                    </p>
+                    {controlObject.instructions ? (
+                      <p className="control-point-instructions">{controlObject.instructions}</p>
+                    ) : null}
+                  </div>
+                  {canManage ? (
+                    <div className="control-field-actions">
+                      <button className="control-point-action" type="button" onClick={() => handleStartEditObject(controlObject)}>
+                        Redigera
+                      </button>
+                      <button className="control-point-action" type="button" onClick={() => handleToggleObject(controlObject)}>
+                        {controlObject.active ? 'Inaktivera' : 'Aktivera'}
+                      </button>
+                    </div>
+                  ) : null}
+                </>
+              )}
             </article>
           ))}
         </div>
@@ -532,6 +639,16 @@ export function ControlTypeDetailView({
                 />
               </label>
             ) : null}
+            <label>
+              <span>Instruktion</span>
+              <textarea
+                className="text-input control-type-instructions-input"
+                value={objectInstructions}
+                onChange={(event) => setObjectInstructions(event.target.value)}
+                placeholder="Instruktion för just den här kontrollpunkten, frivilligt"
+                rows={4}
+              />
+            </label>
             <ActionButton type="submit">Lägg till kontrollpunkt</ActionButton>
           </form>
         ) : null}
