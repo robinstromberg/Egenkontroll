@@ -113,6 +113,23 @@ function readItemValue(item: SharedRunItem): string {
   return 'Ej angivet';
 }
 
+function readObjectInstructions(item: SharedRunItem): string | null {
+  return typeof item.object_snapshot.instructions === 'string' && item.object_snapshot.instructions.trim()
+    ? item.object_snapshot.instructions
+    : null;
+}
+
+function readRunRoutineSummary(run: SharedRun): string {
+  return uniqueNonEmpty([
+    run.control_type_instructions ?? '',
+    ...run.items.map((item) => {
+      const instructions = readObjectInstructions(item);
+      if (!instructions) return '';
+      return `${readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')}: ${instructions}`;
+    }),
+  ]).join('; ');
+}
+
 function isImageAttachment(attachment: SharedAttachment): boolean {
   if (attachment.content_type?.startsWith('image/')) return true;
 
@@ -251,6 +268,7 @@ function buildPerformedControlTables(runs: SharedRun[]): string {
   return [...groups.values()].map((groupRuns) => {
     const firstRun = groupRuns[0];
     const categoryClass = readCategoryMeta(firstRun.control_type_category).className;
+    const routineSummary = readRunRoutineSummary(firstRun);
     const columns = buildReportValueColumns(groupRuns);
     const visibleColumns = columns.slice(0, MAX_REPORT_VALUE_COLUMNS);
     const overflowColumns = columns.slice(MAX_REPORT_VALUE_COLUMNS);
@@ -286,6 +304,7 @@ function buildPerformedControlTables(runs: SharedRun[]): string {
 
     return `
       <h3>${escapeHtml(firstRun.control_type_name)}</h3>
+      ${routineSummary ? `<p class="routine"><strong>Rutin/instruktion:</strong> ${escapeHtml(routineSummary)}</p>` : ''}
       <div class="report-table-wrap">
         <table>
           <thead>
@@ -345,6 +364,7 @@ function buildCsv(runs: SharedRun[]): string {
     'Datum',
     'Kontroll',
     'Kategori',
+    'Rutin/instruktion',
     'Status',
     'Kontrollpunkt',
     'Värde',
@@ -359,6 +379,7 @@ function buildCsv(runs: SharedRun[]): string {
         formatDateTime(run.performed_at),
         run.control_type_name,
         run.control_type_category,
+        readRunRoutineSummary(run),
         run.status,
         '',
         '',
@@ -373,6 +394,7 @@ function buildCsv(runs: SharedRun[]): string {
       formatDateTime(run.performed_at),
       run.control_type_name,
       run.control_type_category,
+      readRunRoutineSummary(run),
       run.status,
       `${readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · ${readFieldLabel(item.field_snapshot)}`,
       readItemValue(item),
@@ -463,6 +485,7 @@ function buildPrintReportHtml(
           .metric strong { display: block; font-size: 22px; }
           .filters { border: 1px solid #d9deea; border-radius: 12px; margin: 18px 0 24px; padding: 12px; }
           .filters p { margin: 4px 0; }
+          .routine { color: #4f5b73; margin: -4px 0 10px; }
           h3 { margin: 22px 0 10px; }
           .report-table-wrap { overflow-x: auto; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
@@ -1049,6 +1072,9 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                       <strong>{run.control_type_name}</strong>
                     </span>
                     {run.notes ? <span className="inspector-table-note">{run.notes}</span> : null}
+                    {run.control_type_instructions ? (
+                      <span className="inspector-table-note">Rutin: {run.control_type_instructions}</span>
+                    ) : null}
                   </td>
                     <td data-label="Status">
                       <span className="inspector-status-pill">{run.status}</span>
@@ -1071,6 +1097,9 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                               <strong>
                                 {readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt')} · {readFieldLabel(item.field_snapshot)}
                               </strong>
+                              {readObjectInstructions(item) ? (
+                                <p className="muted-copy">Instruktion: {readObjectInstructions(item)}</p>
+                              ) : null}
                               <p>{readItemValue(item)}</p>
                               <p className="muted-copy">Status: {item.status}</p>
                               {item.deviation_detected ? (

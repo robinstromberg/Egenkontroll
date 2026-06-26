@@ -495,6 +495,7 @@ export function ControlRunFormWithPhotos({
             <div>
               <h4>{object?.name ?? definition.controlType.name}</h4>
               {object?.location ? <p className="muted-copy">{object.location}</p> : null}
+              {object?.instructions ? <p className="muted-copy">{object.instructions}</p> : null}
             </div>
 
             {visibleFields.map((field) => {

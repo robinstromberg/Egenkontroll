@@ -22,6 +22,7 @@ export type HistoryAttachment = {
 
 export type ControlRunSummary = ControlRun & {
   control_type_name?: string;
+  control_type_instructions?: string | null;
   attachment_count: number;
 };
 
@@ -38,7 +39,7 @@ export async function listHistoryRuns(
 ): Promise<ControlRunSummary[]> {
   let query = supabase
     .from('control_runs')
-    .select('*, control_types(name)')
+    .select('*, control_types(name, instructions)')
     .eq('organization_id', organizationId)
     .order('performed_at', { ascending: false })
     .limit(50);
@@ -64,6 +65,7 @@ export async function listHistoryRuns(
   const rows = (data ?? []).map((row) => ({
     ...(row as ControlRun),
     control_type_name: row.control_types?.name,
+    control_type_instructions: row.control_types?.instructions ?? null,
   }));
 
   if (rows.length === 0) {
@@ -102,7 +104,7 @@ export async function getControlRunDetail(
 ): Promise<ControlRunDetail> {
   const { data: run, error: runError } = await supabase
     .from('control_runs')
-    .select('*, control_types(name)')
+    .select('*, control_types(name, instructions)')
     .eq('organization_id', organizationId)
     .eq('id', controlRunId)
     .single();
@@ -142,6 +144,7 @@ export async function getControlRunDetail(
     run: {
       ...(run as ControlRun),
       control_type_name: run.control_types?.name,
+      control_type_instructions: run.control_types?.instructions ?? null,
       attachment_count: detailAttachments.length,
     },
     items: (items ?? []) as ControlRunItem[],

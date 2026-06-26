@@ -35,6 +35,12 @@ function readItemValue(item: ControlRunDetail['items'][number]): string {
   return 'Ej angivet';
 }
 
+function readObjectInstructions(item: ControlRunDetail['items'][number]): string | null {
+  return typeof item.object_snapshot.instructions === 'string' && item.object_snapshot.instructions.trim()
+    ? item.object_snapshot.instructions
+    : null;
+}
+
 function getRunStatusText(status: string): string {
   if (status === 'completed_with_deviation') return 'Avvikelse';
   if (status === 'completed') return 'Klar';
@@ -210,10 +216,18 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
             </ActionButton>
           </div>
 
+          {detail.run.control_type_instructions ? (
+            <article className="history-detail-card">
+              <strong>Rutin eller instruktion</strong>
+              <p>{detail.run.control_type_instructions}</p>
+            </article>
+          ) : null}
+
           <div className="history-detail-list">
             {detail.items.map((item) => (
               <article className="history-detail-card" key={item.id}>
                 <strong>{readItemLabel(item)}</strong>
+                {readObjectInstructions(item) ? <p className="muted-copy">Instruktion: {readObjectInstructions(item)}</p> : null}
                 <p>{readItemValue(item)}</p>
                 {item.deviation_detected ? <p className="form-message error-message">Avvikelse: {item.deviation_reason}</p> : null}
                 {item.action_text ? <p className="muted-copy">Åtgärd: {item.action_text}</p> : null}

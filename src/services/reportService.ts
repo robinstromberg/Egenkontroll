@@ -20,6 +20,7 @@ type ReportRow = {
   id: string;
   performedAt: string;
   controlType: string;
+  routine: string;
   status: string;
   values: string;
   deviation: string;
@@ -56,6 +57,14 @@ function readRunValueSummary(items: Awaited<ReturnType<typeof getControlRunDetai
   return [...valuesByLabel.entries()]
     .map(([label, values]) => `${label}: ${uniqueNonEmpty(values).join(', ')}`)
     .join(' | ');
+}
+
+function readObjectInstructionSummary(items: Awaited<ReturnType<typeof getControlRunDetail>>['items']): string {
+  return uniqueNonEmpty(items.map((item) => {
+    const objectName = typeof item.object_snapshot.name === 'string' ? item.object_snapshot.name : 'Kontrollpunkt';
+    const instructions = typeof item.object_snapshot.instructions === 'string' ? item.object_snapshot.instructions : '';
+    return instructions ? `${objectName}: ${instructions}` : '';
+  })).join(' | ');
 }
 
 function readRunDeviationSummary(
@@ -113,10 +122,15 @@ export async function collectReportRows(
   for (const run of runs) {
     const detail = await getControlRunDetail(organizationId, run.id);
     const controlType = run.control_type_name ?? 'Kontroll';
+    const routine = uniqueNonEmpty([
+      detail.run.control_type_instructions ?? '',
+      readObjectInstructionSummary(detail.items),
+    ]).join(' | ');
     rows.push({
       id: run.id,
       performedAt: run.performed_at,
       controlType,
+      routine,
       status: run.status,
       values: readRunValueSummary(detail.items) || 'Inga fält registrerade',
       deviation: readRunDeviationSummary(detail),
@@ -137,13 +151,14 @@ export async function collectReportRows(
 }
 
 export function downloadCsvReport(rows: ReportRow[]) {
-  const headers = ['Tidpunkt', 'Kontrolltyp', 'Status', 'Värden', 'Avvikelse', 'Åtgärd'];
+  const headers = ['Tidpunkt', 'Kontrolltyp', 'Rutin/instruktion', 'Status', 'Värden', 'Avvikelse', 'Åtgärd'];
   const lines = [
     headers.map(escapeCsv).join(','),
     ...rows.map((row) =>
       [
         row.performedAt,
         row.controlType,
+        row.routine,
         row.status,
         row.values,
         row.deviation,
@@ -162,6 +177,7 @@ export function openPrintReport(rows: ReportRow[]) {
       <tr>
         <td>${escapeHtml(row.performedAt)}</td>
         <td>${escapeHtml(row.controlType)}</td>
+        <td>${escapeHtml(row.routine)}</td>
         <td>${escapeHtml(row.status)}</td>
         <td>${escapeHtml(row.values)}</td>
         <td>${escapeHtml(row.deviation)}</td>
@@ -230,13 +246,14 @@ export function openPrintReport(rows: ReportRow[]) {
             <tr>
               <th>Tidpunkt</th>
               <th>Kontrolltyp</th>
+              <th>Rutin/instruktion</th>
               <th>Status</th>
               <th>Värden</th>
               <th>Avvikelse</th>
               <th>Åtgärd</th>
             </tr>
           </thead>
-          <tbody>${htmlRows || '<tr><td colspan="6">Inga kontroller i urvalet.</td></tr>'}</tbody>
+          <tbody>${htmlRows || '<tr><td colspan="7">Inga kontroller i urvalet.</td></tr>'}</tbody>
         </table>
         <h2>Bilagor</h2>
         <table>
