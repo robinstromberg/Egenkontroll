@@ -116,6 +116,8 @@ export function ControlTypeDetailView({
   const [editObjectLimitMax, setEditObjectLimitMax] = useState('');
   const [editObjectActive, setEditObjectActive] = useState(true);
   const [typeName, setTypeName] = useState(controlType.name);
+  const [typeCategory, setTypeCategory] = useState<ControlCategory>(controlType.category);
+  const [typeFrequency, setTypeFrequency] = useState<ControlFrequency>(controlType.frequency);
   const [typeInstructions, setTypeInstructions] = useState(controlType.instructions ?? '');
   const [loading, setLoading] = useState(true);
   const [savingType, setSavingType] = useState(false);
@@ -162,8 +164,10 @@ export function ControlTypeDetailView({
 
   useEffect(() => {
     setTypeName(controlType.name);
+    setTypeCategory(controlType.category);
+    setTypeFrequency(controlType.frequency);
     setTypeInstructions(controlType.instructions ?? '');
-  }, [controlType.id, controlType.instructions, controlType.name]);
+  }, [controlType.category, controlType.frequency, controlType.id, controlType.instructions, controlType.name]);
 
   async function handleSaveControlType(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -175,6 +179,8 @@ export function ControlTypeDetailView({
       await updateControlType(controlType.id, organizationId, {
         name: typeName,
         active: controlType.active,
+        category: typeCategory,
+        frequency: typeFrequency,
         instructions: typeInstructions,
       });
       await onChanged();
@@ -367,6 +373,30 @@ export function ControlTypeDetailView({
             />
           </label>
           <label>
+            <span>Kategori</span>
+            <select
+              className="text-input"
+              value={typeCategory}
+              onChange={(event) => setTypeCategory(event.target.value as ControlCategory)}
+            >
+              {Object.entries(categoryLabels).map(([value, label]) => (
+                <option value={value} key={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Frekvens</span>
+            <select
+              className="text-input"
+              value={typeFrequency}
+              onChange={(event) => setTypeFrequency(event.target.value as ControlFrequency)}
+            >
+              {Object.entries(frequencyLabels).map(([value, label]) => (
+                <option value={value} key={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
             <span>Rutin eller instruktion</span>
             <textarea
               className="text-input control-type-instructions-input"
@@ -391,7 +421,7 @@ export function ControlTypeDetailView({
 
       {canManage ? (
         <ActionButton variant="secondary" type="button" onClick={handleToggleType}>
-          {controlType.active ? 'Inaktivera kontrolltyp' : 'Aktivera kontrolltyp'}
+          {controlType.active ? 'Arkivera kontrolltyp' : 'Återaktivera kontrolltyp'}
         </ActionButton>
       ) : null}
 
@@ -417,7 +447,7 @@ export function ControlTypeDetailView({
               {editingFieldId === field.id ? (
                 <form className="control-field-edit-form" onSubmit={handleSaveField}>
                   <label>
-                    <span>Fältnamn</span>
+                    <span>Fråga eller fält</span>
                     <input
                       className="text-input"
                       value={editFieldLabel}
@@ -470,7 +500,7 @@ export function ControlTypeDetailView({
 
         {canManage ? (
           <form className="control-field-form" onSubmit={handleCreateField}>
-            <h4>Lägg till fält</h4>
+            <h4>Lägg till fråga eller fält</h4>
             <div className="field-type-grid" role="group" aria-label="Fälttyp">
               {fieldTypeOptions.map((option) => (
                 <button
@@ -485,7 +515,7 @@ export function ControlTypeDetailView({
               ))}
             </div>
             <label>
-              <span>Fältnamn</span>
+              <span>Fråga eller fält</span>
               <input
                 className="text-input"
                 value={fieldLabel}
@@ -595,7 +625,7 @@ export function ControlTypeDetailView({
                         Redigera
                       </button>
                       <button className="control-point-action" type="button" onClick={() => handleToggleObject(controlObject)}>
-                        {controlObject.active ? 'Inaktivera' : 'Aktivera'}
+                        {controlObject.active ? 'Arkivera' : 'Återaktivera'}
                       </button>
                     </div>
                   ) : null}

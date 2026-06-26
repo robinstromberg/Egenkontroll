@@ -203,17 +203,35 @@ export async function setControlTypeActive(
 export async function updateControlType(
   controlTypeId: string,
   organizationId: string,
-  updates: Pick<ControlType, 'name' | 'active'> & { instructions?: string | null },
+  updates: Pick<ControlType, 'name' | 'active'> & {
+    category?: ControlCategory;
+    frequency?: ControlFrequency;
+    instructions?: string | null;
+  },
 ): Promise<ControlType> {
   const name = updates.name.trim();
   if (!name) {
     throw new Error('Kontrolltypens namn krävs.');
   }
 
-  const updatePayload: { name: string; active: boolean; instructions?: string | null } = {
+  const updatePayload: {
+    name: string;
+    active: boolean;
+    category?: ControlCategory;
+    frequency?: ControlFrequency;
+    instructions?: string | null;
+  } = {
     name,
     active: updates.active,
   };
+
+  if (updates.category) {
+    updatePayload.category = updates.category;
+  }
+
+  if (updates.frequency) {
+    updatePayload.frequency = updates.frequency;
+  }
 
   if ('instructions' in updates) {
     updatePayload.instructions = updates.instructions ?? null;

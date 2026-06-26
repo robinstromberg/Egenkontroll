@@ -6,7 +6,6 @@ import { AssetIcon } from './ui/AssetIcon';
 import { BackButton } from './ui/BackButton';
 import { readControlTypeIcon } from '../config/assets';
 import {
-  deleteControlType,
   listControlTypes,
   setControlTypeActive,
 } from '../services/controlAdminService';
@@ -40,7 +39,6 @@ type ControlTypeRowProps = {
   controlType: ControlType;
   canManage: boolean;
   saving: boolean;
-  onDelete: () => void;
   onOpen: () => void;
   onToggleActive: () => void;
 };
@@ -49,7 +47,6 @@ function ControlTypeRow({
   controlType,
   canManage,
   saving,
-  onDelete,
   onOpen,
   onToggleActive,
 }: ControlTypeRowProps) {
@@ -79,10 +76,7 @@ function ControlTypeRow({
             Redigera
           </ActionButton>
           <ActionButton type="button" variant="secondary" onClick={onToggleActive} disabled={saving}>
-            {controlType.active ? 'Inaktivera' : 'Aktivera'}
-          </ActionButton>
-          <ActionButton type="button" variant="secondary" onClick={onDelete} disabled={saving}>
-            Radera
+            {controlType.active ? 'Arkivera' : 'Återaktivera'}
           </ActionButton>
         </div>
       ) : null}
@@ -183,24 +177,6 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
     }
   }
 
-  async function handleDelete(controlType: ControlType) {
-    const confirmed = window.confirm(
-      `Radera kontrolltypen "${controlType.name}"?\n\nOm det finns historik kopplad till kontrolltypen går den inte att radera. Då kan du inaktivera den istället.`,
-    );
-    if (!confirmed) return;
-
-    try {
-      setSaving(true);
-      setMessage('');
-      await deleteControlType(controlType.id, organizationId);
-      setControlTypes((current) => current.filter((item) => item.id !== controlType.id));
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte radera kontrolltypen.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
   if (selectedControlType) {
     return (
       <ControlTypeDetailView
@@ -249,7 +225,6 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
               controlType={controlType}
               key={controlType.id}
               saving={saving}
-              onDelete={() => handleDelete(controlType)}
               onOpen={() => openControlType(controlType.id)}
               onToggleActive={() => handleToggleActive(controlType)}
             />
