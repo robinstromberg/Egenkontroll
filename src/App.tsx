@@ -183,9 +183,6 @@ function App() {
               Digital egenkontroll för livsmedelsverksamheter. Gå med i förhandslanseringen, logga in eller
               använd magic link som reserv.
             </p>
-            <button className="secondary-button auth-back-button" type="button" onClick={() => navigatePublic('home')}>
-              Till startsidan
-            </button>
           </div>
         </section> : null}
 
