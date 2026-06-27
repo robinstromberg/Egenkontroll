@@ -27,15 +27,15 @@ const phoneControlRows = [
 const faqItems = [
   {
     question: 'Behöver personalen installera något?',
-    answer: 'Nej. Appen körs i webbläsaren och är byggd för mobil användning i det dagliga arbetet.',
+    answer: 'Nej. Min Egenkontroll körs i webbläsaren och är byggd för snabb användning direkt i mobilen.',
   },
   {
     question: 'Kan jag dela dokumentation med kontrollant?',
-    answer: 'Ja. Du kan skapa en tidsbegränsad läslänk och dela historik, avvikelser och bilagor.',
+    answer: 'Ja. Skapa en tidsbegränsad läslänk och visa historik, avvikelser och bilagor utan att leta i pärmar eller mappar.',
   },
   {
     question: 'Ingår mallar från start?',
-    answer: 'Ja. Vanliga kontrolltyper för livsmedelsverksamhet finns färdiga och kan anpassas.',
+    answer: 'Ja. Vanliga kontrolltyper finns färdiga från start och kan anpassas efter hur din verksamhet faktiskt fungerar.',
   },
 ];
 
@@ -86,10 +86,9 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
       <section className="public-hero">
         <div className="public-hero-copy">
           <p className="public-eyebrow">Digital egenkontroll för livsmedelsverksamheter</p>
-          <h1>Dokumentera kontrollerna innan dagen springer iväg.</h1>
+          <h1>Det nya, enkla sättet att sköta egenkontrollen.</h1>
           <p>
-            Min Egenkontroll samlar temperaturer, städning, spårbarhet, avvikelser och delning
-            i ett mobilvänligt arbetsflöde som personalen faktiskt kan använda.
+            Inget mer letande! Visa precis den dokumentation kontrollanten vill se – med ett knapptryck.
           </p>
           <div className="public-hero-actions">
             <button className="public-primary" type="button" onClick={onStartTrial}>Starta 30 dagars testperiod</button>
@@ -102,14 +101,14 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
       <section className="public-band" id="how">
         <div className="public-section-heading">
           <p className="public-eyebrow">Så fungerar det</p>
-          <h2>Samma enkla flöde för varje kontroll.</h2>
+          <h2>Gör kontrollen direkt när den ska göras.</h2>
         </div>
         <div className="public-steps">
           {[
-            ['Öppna dagens kontroller', 'Personalen ser vad som ska göras och vad som redan är klart.'],
-            ['Fyll i värden eller status', 'Temperatur, OK/Ej OK, foto och kommentar samlas på rätt kontroll.'],
-            ['Hantera avvikelse direkt', 'Åtgärd och uppföljning sparas tillsammans med kontrollen.'],
-            ['Dela vid kontroll', 'Skapa en tidsbegränsad läslänk när dokumentation behöver visas.'],
+            ['Öppna dagens kontroller', 'Personalen ser direkt vad som ska göras, vad som är klart och vad som återstår.'],
+            ['Fyll i värden eller status', 'Temperatur, OK/Ej OK, foto och kommentar sparas på rätt kontroll utan krångel.'],
+            ['Hantera avvikelse direkt', 'Om något avviker dokumenteras åtgärden direkt tillsammans med kontrollen.'],
+            ['Dela vid kontroll', 'När kontrollanten kommer skapar du en tidsbegränsad läslänk med rätt dokumentation.'],
           ].map(([title, copy], index) => (
             <article className="public-card" key={title}>
               <span className="step-number">{index + 1}</span>
@@ -123,9 +122,9 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
       <section className="public-grid-section">
         <div>
           <p className="public-eyebrow">Kontrolltyper</p>
-          <h2>Byggd för vardagen i kök, café, butik och produktion.</h2>
+          <h2>Allt samlat för vardagen i kök, café, butik och produktion.</h2>
           <p className="public-copy">
-            Startmallar finns för de vanligaste delarna i egenkontrollen och kan justeras när verksamheten behöver mer precision.
+            Börja med färdiga mallar för de vanligaste delarna av egenkontrollen och anpassa dem efter din verksamhet.
           </p>
         </div>
         <div className="control-chip-grid">
@@ -136,14 +135,14 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
       <section className="public-band insights-band" id="insights">
         <div className="public-section-heading">
           <p className="public-eyebrow">Statistik och insikter</p>
-          <h2>Se mönster innan de blir problem.</h2>
+          <h2>Se vad som fungerar – och vad som behöver följas upp.</h2>
         </div>
         <div className="insight-grid">
           {[
-            ['96 %', 'kontrollföljsamhet senaste 30 dagarna'],
-            ['4', 'avvikelser senaste 30 dagarna, ned 33 %'],
-            ['2 områden', 'står för flest åtgärder just nu'],
-            ['90 dagar', 'dokumentation redo för tillsyn'],
+            ['96 %', 'kontroller utförda senaste 30 dagarna'],
+            ['4', 'avvikelser dokumenterade och redo att följas upp'],
+            ['2 områden', 'behöver mest uppmärksamhet just nu'],
+            ['90 dagar', 'dokumentation samlad och redo att visas'],
           ].map(([value, label]) => (
             <article className="insight-card" key={label}>
               <strong>{value}</strong>
@@ -156,19 +155,19 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
       <section className="public-grid-section" id="pricing">
         <div>
           <p className="public-eyebrow">Pris</p>
-          <h2>En produkt, två sätt att betala.</h2>
-          <p className="public-copy">Starta med {trialDays} dagar testperiod. Avsluta innan första debitering om det inte passar.</p>
+          <h2>Kom igång utan bindningstid.</h2>
+          <p className="public-copy">Testa Min Egenkontroll gratis i {trialDays} dagar. Avsluta innan första debitering om det inte passar.</p>
         </div>
         <div className="price-cards">
           <article className="price-card">
             <p>{billingPlans.monthly.label}</p>
             <strong>{billingPlans.monthly.priceLabel}</strong>
-            <span>Flexibelt för att komma igång.</span>
+            <span>Flexibelt när du vill komma igång snabbt.</span>
           </article>
           <article className="price-card highlighted">
             <p>{billingPlans.annual.label}</p>
             <strong>{billingPlans.annual.priceLabel}</strong>
-            <span>Debiteras årsvis.</span>
+            <span>Lägre månadskostnad när du betalar årsvis.</span>
           </article>
         </div>
       </section>
@@ -190,7 +189,7 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
 
       <section className="public-cta">
         <p className="public-eyebrow">Redo för kontroll</p>
-        <h2>Starta testperioden och skapa din första verksamhet.</h2>
+        <h2>Starta testperioden och gör egenkontrollen enklare redan idag.</h2>
         <button className="public-primary" type="button" onClick={onStartTrial}>Starta 30 dagars testperiod</button>
       </section>
     </main>
