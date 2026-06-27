@@ -14,7 +14,7 @@ const controlTypes = [
   'Datummärkning',
   'Varumottagning',
   'Spårbarhet',
-  'Egenkontrollrunda',
+  'Kontrollrunda',
 ];
 
 const phoneControlRows = [
