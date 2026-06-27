@@ -18,7 +18,7 @@ Startresan bör kunna omfatta:
 - skapa workspace/verksamhet
 - ange grunduppgifter
 - välja bransch eller verksamhetstyp
-- välja plan eller testperiod
+- välja plan eller förhandslanseringsvillkor
 - välja startmallar
 - skapa första kontrollmiljön
 - börja använda appen
@@ -92,7 +92,7 @@ Ett workspace kan på sikt ha:
 
 - betalningsstatus
 - plan
-- testperiod
+- förhandslansering eller framtida provperiod
 - betalningsansvarig
 - tillägg
 

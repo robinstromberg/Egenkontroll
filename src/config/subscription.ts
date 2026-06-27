@@ -16,7 +16,7 @@ export const billingPlans: Record<BillingPlan, {
   annual: {
     label: 'Årsvis',
     priceLabel: '99 kr/mån',
-    description: 'Debiteras årsvis när betalningsleverantör är aktiverad.',
+    description: 'Planerad årsbetalning efter lansering när betalning är aktiverad.',
   },
 };
 
@@ -44,7 +44,7 @@ export function daysUntilTrialEnds(trialEndsAt: string | null): number | null {
 export function subscriptionStatusLabel(status: SubscriptionStatus): string {
   switch (status) {
     case 'trial':
-      return 'Testperiod';
+      return 'Förhandslansering';
     case 'active':
       return 'Aktiv';
     case 'past_due':

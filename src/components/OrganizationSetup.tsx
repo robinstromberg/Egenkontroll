@@ -2,7 +2,7 @@ import type { User } from '@supabase/supabase-js';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import type { BillingPlan } from '../config/subscription';
-import { billingPlans, trialDays } from '../config/subscription';
+import { billingPlans } from '../config/subscription';
 import { createFirstOrganization } from '../services/organizationService';
 import type { BusinessType } from '../services/organizationService';
 import { listActiveControlTemplates } from '../services/templateService';
@@ -151,10 +151,10 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
         </fieldset>
 
         <fieldset className="billing-plan-picker">
-          <legend>Testperiod och betalning</legend>
+          <legend>Förhandslansering och betalning</legend>
           <div className="trial-summary">
-            <strong>{trialDays} dagar gratis</strong>
-            <span>Första debitering sker efter testperioden. Betalmetod kopplas in när betalningsleverantör är vald.</span>
+            <strong>Kostnadsfritt under förhandslanseringen</strong>
+            <span>Ingen betalmetod krävs nu. Betalning kan kopplas på senare, med tydlig information i god tid.</span>
           </div>
           <div className="billing-plan-list">
             {(Object.entries(billingPlans) as [BillingPlan, typeof billingPlans[BillingPlan]][]).map(([planId, plan]) => {

@@ -22,7 +22,7 @@ export function PasswordSetupPanel({ onSaved, onSkip }: PasswordSetupPanelProps)
 
     if (secret !== confirmSecret) {
       setStatus('error');
-      setMessage('Testkoderna matchar inte.');
+      setMessage('Lösenorden matchar inte.');
       return;
     }
 
@@ -35,7 +35,7 @@ export function PasswordSetupPanel({ onSaved, onSkip }: PasswordSetupPanelProps)
       onSaved();
     } catch (error) {
       setStatus('error');
-      setMessage(error instanceof Error ? error.message : 'Det gick inte att spara testkoden.');
+      setMessage(error instanceof Error ? error.message : 'Det gick inte att spara lösenordet.');
     }
   }
 
@@ -43,11 +43,11 @@ export function PasswordSetupPanel({ onSaved, onSkip }: PasswordSetupPanelProps)
 
   return (
     <section className="auth-card" aria-labelledby="password-setup-title">
-      <p className="eyebrow">Testkod</p>
-      <h2 id="password-setup-title">Sätt ny testkod</h2>
-      <p className="muted-copy">Välj en testkod för e-postinloggning. Magic link fortsätter att fungera som reserv.</p>
+      <p className="eyebrow">Lösenord</p>
+      <h2 id="password-setup-title">Sätt nytt lösenord</h2>
+      <p className="muted-copy">Välj ett lösenord för e-postinloggning. Magic link fortsätter att fungera som reserv.</p>
       <form className="form-stack" onSubmit={handleSubmit}>
-        <label className="field-label" htmlFor="new-secret">Ny testkod</label>
+        <label className="field-label" htmlFor="new-secret">Nytt lösenord</label>
         <input
           id="new-secret"
           className="text-input"
@@ -58,7 +58,7 @@ export function PasswordSetupPanel({ onSaved, onSkip }: PasswordSetupPanelProps)
           minLength={6}
           required
         />
-        <label className="field-label" htmlFor="confirm-secret">Upprepa testkod</label>
+        <label className="field-label" htmlFor="confirm-secret">Upprepa lösenord</label>
         <input
           id="confirm-secret"
           className="text-input"
@@ -71,7 +71,7 @@ export function PasswordSetupPanel({ onSaved, onSkip }: PasswordSetupPanelProps)
         />
         <div className="form-actions">
           <ActionButton type="submit" disabled={loading}>
-            {loading ? 'Sparar...' : 'Spara testkod'}
+            {loading ? 'Sparar...' : 'Spara lösenord'}
           </ActionButton>
           <ActionButton type="button" variant="secondary" onClick={onSkip} disabled={loading}>
             Fortsätt

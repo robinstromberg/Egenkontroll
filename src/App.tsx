@@ -177,10 +177,10 @@ function App() {
             <img src={brandAssets.icon} alt="" />
           </div>
           <div className="hero-copy">
-            <p className="eyebrow">{publicPath === 'signup' ? 'Starta testperiod' : 'Välkommen tillbaka'}</p>
+            <p className="eyebrow">{publicPath === 'signup' ? 'Förhandslansering' : 'Välkommen tillbaka'}</p>
             <h1 id="page-title">Min Egenkontroll</h1>
             <p className="lead">
-              Digital egenkontroll för livsmedelsverksamheter. Logga in, skapa testkonto eller
+              Digital egenkontroll för livsmedelsverksamheter. Gå med i förhandslanseringen, logga in eller
               använd magic link som reserv.
             </p>
             <button className="secondary-button auth-back-button" type="button" onClick={() => navigatePublic('home')}>

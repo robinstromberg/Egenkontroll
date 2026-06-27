@@ -1,7 +1,7 @@
 import './PublicLandingPage.css';
 import { AssetIcon } from './ui/AssetIcon';
 import { brandAssets, readControlTypeIcon } from '../config/assets';
-import { billingPlans, trialDays } from '../config/subscription';
+import { billingPlans } from '../config/subscription';
 
 type PublicLandingPageProps = {
   onStartTrial: () => void;

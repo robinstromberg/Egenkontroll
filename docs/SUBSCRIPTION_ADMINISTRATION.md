@@ -17,14 +17,14 @@ Appen har redan grundbegrepp för:
 - `trial_started_at`
 - `trial_ends_at`
 
-`MenuView` visar också nuvarande abonnemangsstatus och testperiod för verksamheten.
+`MenuView` visar också nuvarande abonnemangsstatus och förhandslanseringsinformation för verksamheten.
 
 ## Leverantörsoberoende
 
 Arkitektur och UI-copy ska använda neutrala begrepp:
 
 - plan
-- testperiod
+- förhandslansering eller framtida provperiod
 - betalningsstatus
 - betalningsansvarig
 - förnyelsedatum
@@ -39,7 +39,7 @@ En framtida prenumerationsvy bör kunna visa:
 
 - aktuell plan
 - aktuell status
-- testperiod och återstående tid
+- förhandslanseringsstatus eller framtida provperiod
 - eventuella aktiva tillägg
 - kommande förnyelse eller slutdatum
 - betalningsansvarig

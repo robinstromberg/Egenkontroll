@@ -17,7 +17,7 @@ Exempel:
 
 ## Nuläge
 
-Appen har e-postbaserad inloggning med testkonto/lösenord och magic link som reserv.
+Appen har e-postbaserad inloggning med konto/lösenord och magic link som reserv.
 
 Framtida kontoadministration ska bygga vidare på Supabase Auth utan att låsa ute befintliga användare eller ändra den dagliga appupplevelsen.
 

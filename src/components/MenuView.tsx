@@ -122,7 +122,7 @@ export function MenuView({
             <h3>{subscriptionStatusLabel(organization.subscription_status)}</h3>
             <p>
               {organization.subscription_status === 'trial' && daysLeft !== null
-                ? `${daysLeft} dagar kvar av testperioden.`
+                ? 'Kostnadsfritt under förhandslanseringen. Betalning kopplas inte på utan information i god tid.'
                 : 'Statusen styr åtkomst och kan kopplas till vald betalningsleverantör senare.'}
             </p>
           </div>

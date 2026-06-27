@@ -26,8 +26,8 @@ Den kortaste trygga vägen bör vara:
 
 Nuvarande app har redan flera byggstenar:
 
-- `AuthPanel` hanterar login, testkonto och magic link.
-- `OrganizationSetup` skapar verksamhet, testperiod och startmallar.
+- `AuthPanel` hanterar login, kontoskapande och magic link.
+- `OrganizationSetup` skapar verksamhet, förhandslanseringsstatus och startmallar.
 - `TodayDashboard` visar dagens kontroller.
 - Kontrollflödet sparar utförda kontroller.
 - `SavedControlView` ger väg till historik efter sparad kontroll.
