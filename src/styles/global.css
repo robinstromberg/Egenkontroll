@@ -535,3 +535,41 @@ section + section {
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+@media (max-width: 560px) {
+  .app-shell:not(.with-bottom-bar) {
+    padding-bottom: max(96px, env(safe-area-inset-bottom));
+  }
+
+  .auth-hero-card {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .auth-hero-card .app-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+  }
+
+  .auth-hero-card .hero-copy {
+    gap: 8px;
+  }
+
+  .auth-hero-card h1 {
+    font-size: 2.2rem;
+  }
+
+  .auth-hero-card .lead {
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+
+  .auth-card {
+    margin-top: 12px;
+  }
+
+  .auth-card .text-input {
+    scroll-margin-block: 22vh;
+  }
+}

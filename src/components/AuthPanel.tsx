@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FocusEvent, FormEvent, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { sendEmailLink } from '../services/authService';
 import { environment } from '../config/environment';
@@ -8,6 +8,17 @@ type Mode = 'enter' | 'create' | 'link';
 
 const secretField = ['pass', 'word'].join('') as 'password';
 const enterMethod = ['signIn', 'With', 'Password'].join('') as 'signInWithPassword';
+
+function keepAuthFieldVisible(event: FocusEvent<HTMLInputElement>) {
+  const narrowViewport = window.matchMedia('(max-width: 560px)').matches;
+  const keyboardLikelyOpen = window.visualViewport ? window.visualViewport.height < window.innerHeight * 0.82 : false;
+
+  if (!narrowViewport && !keyboardLikelyOpen) return;
+
+  window.setTimeout(() => {
+    event.currentTarget.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, 220);
+}
 
 export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
   const [mode, setMode] = useState<Mode>(initialMode);
@@ -103,8 +114,8 @@ export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
       </div>
       <form className="form-stack" onSubmit={mode === 'create' ? handleCreate : mode === 'link' ? handleLink : handleEnter}>
         <label className="field-label" htmlFor="email">E-postadress</label>
-        <input id="email" className="text-input" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="namn@foretag.se" required />
-        {mode !== 'link' ? <><label className="field-label" htmlFor="secret">Lösenord</label><input id="secret" className="text-input" type={secretField} autoComplete={mode === 'create' ? 'new-password' : 'current-password'} value={secret} onChange={(event) => setSecret(event.target.value)} minLength={6} required /></> : null}
+        <input id="email" className="text-input" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} onFocus={keepAuthFieldVisible} placeholder="namn@foretag.se" required />
+        {mode !== 'link' ? <><label className="field-label" htmlFor="secret">Lösenord</label><input id="secret" className="text-input" type={secretField} autoComplete={mode === 'create' ? 'new-password' : 'current-password'} value={secret} onChange={(event) => setSecret(event.target.value)} onFocus={keepAuthFieldVisible} minLength={6} required /></> : null}
         <ActionButton type="submit" disabled={loading}>{loading ? 'Vänta...' : mode === 'create' ? 'Skapa konto' : mode === 'link' ? 'Skicka magic link' : 'Logga in'}</ActionButton>
       </form>
       {message ? <p className={status === 'error' ? 'form-message error-message' : 'form-message success-message'}>{message}</p> : null}

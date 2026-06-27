@@ -422,18 +422,6 @@
   justify-items: center;
 }
 
-.auth-back-button {
-  width: fit-content;
-  min-height: auto;
-  border-radius: 0;
-  padding: 0;
-  color: #6b758d;
-  background: transparent;
-  box-shadow: none;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
 @media (min-width: 760px) {
   .public-hero,
   .public-grid-section {
