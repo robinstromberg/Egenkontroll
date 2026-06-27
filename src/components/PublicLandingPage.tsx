@@ -26,6 +26,10 @@ const phoneControlRows = [
 
 const faqItems = [
   {
+    question: 'Vad innebär förhandslanseringen?',
+    answer: 'Min Egenkontroll är just nu i förhandslansering. Under denna period använder du tjänsten kostnadsfritt medan vi fortsätter utveckla den tillsammans med våra användare. Innan några abonnemang börjar gälla informeras alla användare i god tid.',
+  },
+  {
     question: 'Behöver personalen installera något?',
     answer: 'Nej. Min Egenkontroll körs i webbläsaren och är byggd för snabb användning direkt i mobilen.',
   },
@@ -85,13 +89,16 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
 
       <section className="public-hero">
         <div className="public-hero-copy">
-          <p className="public-eyebrow">Digital egenkontroll för livsmedelsverksamheter</p>
+          <p className="public-eyebrow">Förhandslansering · kostnadsfritt under utvecklingen</p>
           <h1>Det nya, enkla sättet att sköta egenkontrollen.</h1>
           <p>
             Inget mer letande! Visa precis den dokumentation kontrollanten vill se – med ett knapptryck.
           </p>
+          <p className="public-copy">
+            Min Egenkontroll är just nu i förhandslansering. Du använder tjänsten kostnadsfritt medan vi fortsätter utveckla den tillsammans med våra användare.
+          </p>
           <div className="public-hero-actions">
-            <button className="public-primary" type="button" onClick={onStartTrial}>Starta 30 dagars testperiod</button>
+            <button className="public-primary" type="button" onClick={onStartTrial}>Gå med i förhandslanseringen</button>
             <a className="public-secondary" href="#how">Se hur det fungerar</a>
           </div>
         </div>
@@ -155,19 +162,26 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
       <section className="public-grid-section" id="pricing">
         <div>
           <p className="public-eyebrow">Pris</p>
-          <h2>Kom igång utan bindningstid.</h2>
-          <p className="public-copy">Testa Min Egenkontroll gratis i {trialDays} dagar. Avsluta innan första debitering om det inte passar.</p>
+          <h2>Kostnadsfritt under förhandslanseringen.</h2>
+          <p className="public-copy">
+            Du kan använda Min Egenkontroll gratis medan tjänsten utvecklas. Innan betalda abonnemang börjar gälla får du tydlig information i god tid.
+          </p>
         </div>
         <div className="price-cards">
-          <article className="price-card">
-            <p>{billingPlans.monthly.label}</p>
-            <strong>{billingPlans.monthly.priceLabel}</strong>
-            <span>Flexibelt när du vill komma igång snabbt.</span>
-          </article>
           <article className="price-card highlighted">
+            <p>Förhandslansering</p>
+            <strong>0 kr</strong>
+            <span>Kostnadsfri tillgång under utvecklingsperioden.</span>
+          </article>
+          <article className="price-card">
+            <p>Efter lansering</p>
+            <strong>{billingPlans.monthly.priceLabel}</strong>
+            <span>Planerade abonnemang blir aktuella först när tjänsten lanseras skarpt.</span>
+          </article>
+          <article className="price-card">
             <p>{billingPlans.annual.label}</p>
             <strong>{billingPlans.annual.priceLabel}</strong>
-            <span>Lägre månadskostnad när du betalar årsvis.</span>
+            <span>Lägre månadskostnad när du betalar årsvis efter lansering.</span>
           </article>
         </div>
       </section>
@@ -188,9 +202,9 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
       </section>
 
       <section className="public-cta">
-        <p className="public-eyebrow">Redo för kontroll</p>
-        <h2>Starta testperioden och gör egenkontrollen enklare redan idag.</h2>
-        <button className="public-primary" type="button" onClick={onStartTrial}>Starta 30 dagars testperiod</button>
+        <p className="public-eyebrow">Förhandslansering</p>
+        <h2>Gå med kostnadsfritt och hjälp oss forma ett enklare sätt att sköta egenkontrollen.</h2>
+        <button className="public-primary" type="button" onClick={onStartTrial}>Gå med i förhandslanseringen</button>
       </section>
     </main>
   );
