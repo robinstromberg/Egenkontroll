@@ -21,6 +21,8 @@ export type ControlRunFormWithPhotosProps = {
   performedBy: string;
   onCancel: () => void;
   onSaved: (summary: SavedControlSummary) => Promise<void>;
+  canManage: boolean;
+  onConfigureControlType: () => void;
 };
 
 type ResponseState = Record<string, string>;
@@ -335,6 +337,8 @@ export function ControlRunFormWithPhotos({
   performedBy,
   onCancel,
   onSaved,
+  canManage,
+  onConfigureControlType,
 }: ControlRunFormWithPhotosProps) {
   const [definition, setDefinition] = useState<ControlRunDefinition | null>(null);
   const [responses, setResponses] = useState<ResponseState>({});
@@ -454,6 +458,7 @@ export function ControlRunFormWithPhotos({
   const objects = definition.objects.length ? definition.objects : [null];
   const matrixObjects = definition.objects;
   const matrixField = matrixObjects.length > 1 ? definition.fields.find((field) => field.field_type === 'ok_not_ok') : undefined;
+  const canRunControl = definition.fields.length > 0;
 
   return (
     <form className={`control-form control-form-${definition.controlType.category}`} onSubmit={handleSubmit}>
@@ -468,10 +473,32 @@ export function ControlRunFormWithPhotos({
             Tillbaka
           </ActionButton>
         </div>
-        <p className="muted-copy">{definition.controlType.instructions ?? 'Fyll i kontrollpunkterna nedan.'}</p>
+      <p className="muted-copy">{definition.controlType.instructions ?? 'Fyll i kontrollpunkterna nedan.'}</p>
       </div>
 
       {message ? <p className="form-message error-message">{message}</p> : null}
+
+      {!canRunControl ? (
+        <section className="control-empty-state" aria-labelledby="control-empty-title">
+          <p className="eyebrow">Kontrollen saknar innehåll</p>
+          <h4 id="control-empty-title">Lägg till formulärfält innan den kan sparas</h4>
+          <p className="muted-copy">
+            {canManage
+              ? 'Öppna kontrolltypen och lägg till minst ett fält, till exempel OK/Ej OK, temperatur eller kommentar.'
+              : 'En administratör behöver lägga till fält i kontrolltypen innan personal kan utföra den.'}
+          </p>
+          <div className="form-actions">
+            {canManage ? (
+              <ActionButton type="button" onClick={onConfigureControlType}>
+                Öppna kontrolltyp
+              </ActionButton>
+            ) : null}
+            <ActionButton type="button" variant="secondary" onClick={onCancel}>
+              Tillbaka till Idag
+            </ActionButton>
+          </div>
+        </section>
+      ) : null}
 
       {matrixField ? (
         <ChecklistMatrix

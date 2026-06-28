@@ -38,6 +38,21 @@
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
 }
 
+.control-empty-state {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+}
+
+.control-empty-state h4 {
+  margin: 0;
+  color: #11172c;
+}
+
 .control-field {
   display: grid;
   gap: 7px;
@@ -465,7 +480,8 @@
 
 @media (prefers-color-scheme: dark) {
   .control-group,
-  .check-matrix {
+  .check-matrix,
+  .control-empty-state {
     border-color: rgba(159, 145, 255, 0.18);
     background: #121a2e;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
@@ -475,7 +491,8 @@
   .control-field label,
   .action-label,
   .check-matrix-header strong,
-  .check-matrix-name {
+  .check-matrix-name,
+  .control-empty-state h4 {
     color: #f7f9ff;
   }
 

@@ -197,6 +197,25 @@ h3 {
   gap: 16px;
 }
 
+.workspace-switcher {
+  display: grid;
+  gap: 6px;
+  color: #172033;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.workspace-switcher select {
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid rgba(91, 70, 225, 0.16);
+  border-radius: 14px;
+  padding: 0 12px;
+  color: #172033;
+  background: #ffffff;
+  font-weight: 800;
+}
+
 .with-bottom-bar .dashboard-header {
   gap: 8px;
 }
@@ -460,8 +479,15 @@ section + section {
   h2,
   h3,
   .with-bottom-bar .dashboard-header h2,
+  .workspace-switcher,
   .field-label {
     color: #f7f9ff;
+  }
+
+  .workspace-switcher select {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #f7f9ff;
+    background: #121a2e;
   }
 
   .lead,

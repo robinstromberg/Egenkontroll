@@ -14,6 +14,8 @@ export type OrganizationSetupProps = {
   onCreated: () => Promise<void>;
 };
 
+export const FIRST_RUN_ORGANIZATION_KEY = 'egenkontroll:first-run-organization-id';
+
 const businessTypes: { id: BusinessType; label: string; description: string }[] = [
   { id: 'restaurant', label: 'Restaurang', description: 'Dagliga rutiner för kök, servering och temperaturer.' },
   { id: 'cafe', label: 'Café', description: 'Enkel start för beredning, servering och kylda varor.' },
@@ -81,12 +83,13 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
     setMessage('');
 
     try {
-      await createFirstOrganization(user, organizationName.trim(), selectedTemplateIds, {
+      const organizationId = await createFirstOrganization(user, organizationName.trim(), selectedTemplateIds, {
         industry: 'food',
         businessType,
       }, {
         billingPlan,
       });
+      window.localStorage.setItem(FIRST_RUN_ORGANIZATION_KEY, organizationId);
       await onCreated();
     } catch (error) {
       setStatus('error');
@@ -192,7 +195,15 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
           {loadingTemplates ? <p className="muted-copy">Laddar mallar...</p> : null}
 
           {!loadingTemplates && templates.length === 0 ? (
-            <p className="muted-copy">Inga mallar hittades. Du kan ändå skapa verksamheten.</p>
+            <p className="muted-copy">
+              Inga startmallar hittades. Du kan skapa verksamheten ändå och lägga till kontrolltyper från Meny senare.
+            </p>
+          ) : null}
+
+          {!loadingTemplates && templates.length > 0 && selectedTemplateIds.length === 0 ? (
+            <p className="muted-copy">
+              Du har inte valt några startmallar. Verksamheten skapas ändå, men Idag är tomt tills du aktiverar kontroller.
+            </p>
           ) : null}
 
           <div className="template-list">

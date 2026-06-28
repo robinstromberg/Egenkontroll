@@ -16,6 +16,7 @@ import { supabase } from './lib/supabaseClient';
 
 const appViews: AppView[] = ['today', 'history', 'kpi', 'sharing', 'menu'];
 type PublicPath = 'home' | 'login' | 'signup';
+const ACTIVE_ORGANIZATION_KEY = 'egenkontroll:active-organization-id';
 
 function isAppView(value: string | null): value is AppView {
   return Boolean(value && appViews.includes(value as AppView));
@@ -55,12 +56,17 @@ function readPublicPath(): PublicPath {
   return 'home';
 }
 
+function readStoredOrganizationId(): string | null {
+  return window.localStorage.getItem(ACTIVE_ORGANIZATION_KEY);
+}
+
 function App() {
   const inspectorKey = readInspectorKey();
   const [session, setSession] = useState<Session | null>(null);
   const [activeView, setActiveView] = useState<AppView>(() => readActiveView());
   const [publicPath, setPublicPath] = useState<PublicPath>(() => readPublicPath());
   const [organizationContexts, setOrganizationContexts] = useState<OrganizationContext[]>([]);
+  const [activeOrganizationId, setActiveOrganizationId] = useState<string | null>(() => readStoredOrganizationId());
   const [passwordRecovery, setPasswordRecovery] = useState(
     () => window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery'),
   );
@@ -147,9 +153,17 @@ function App() {
     await signOut();
     setSession(null);
     setOrganizationContexts([]);
+    setActiveOrganizationId(null);
     setActiveView('today');
     setPasswordRecovery(false);
+    window.localStorage.removeItem(ACTIVE_ORGANIZATION_KEY);
     window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+  }
+
+  function handleChangeOrganization(organizationId: string) {
+    setActiveOrganizationId(organizationId);
+    window.localStorage.setItem(ACTIVE_ORGANIZATION_KEY, organizationId);
+    setActiveView('today');
   }
 
   function navigatePublic(path: PublicPath) {
@@ -158,12 +172,23 @@ function App() {
     setPublicPath(path);
   }
 
+  const activeContext =
+    organizationContexts.find((context) => context.organization.id === activeOrganizationId) ??
+    organizationContexts[0];
+
+  useEffect(() => {
+    if (!session?.user || organizationContexts.length === 0) return;
+    if (activeContext && activeContext.organization.id === activeOrganizationId) return;
+
+    const nextOrganizationId = activeContext?.organization.id ?? organizationContexts[0].organization.id;
+    setActiveOrganizationId(nextOrganizationId);
+    window.localStorage.setItem(ACTIVE_ORGANIZATION_KEY, nextOrganizationId);
+  }, [activeContext, activeOrganizationId, organizationContexts, session?.user]);
+  const showNavigation = Boolean(session?.user);
+
   if (inspectorKey) {
     return <InspectorView shareKey={inspectorKey} />;
   }
-
-  const activeContext = organizationContexts[0];
-  const showNavigation = Boolean(session?.user);
 
   if (!loading && !session?.user && !passwordRecovery && publicPath === 'home') {
     return <PublicLandingPage onStartTrial={() => navigatePublic('signup')} onLogin={() => navigatePublic('login')} />;
@@ -202,6 +227,8 @@ function App() {
             activeView={activeView}
             user={session.user}
             context={activeContext}
+            contexts={organizationContexts}
+            onChangeOrganization={handleChangeOrganization}
             onChangeView={setActiveView}
             onSignOut={handleSignOut}
           />

@@ -11,6 +11,9 @@ export type TodayDashboardProps = {
   organizationId: string;
   userId: string;
   onStartControl: (controlTypeId: string) => void;
+  canManage: boolean;
+  showFirstRunHelp: boolean;
+  onOpenControlTypes: () => void;
 };
 
 function formatDate(value: Date): string {
@@ -115,7 +118,14 @@ function ControlSection({
   );
 }
 
-export function TodayDashboard({ organizationId, userId, onStartControl }: TodayDashboardProps) {
+export function TodayDashboard({
+  organizationId,
+  userId,
+  onStartControl,
+  canManage,
+  showFirstRunHelp,
+  onOpenControlTypes,
+}: TodayDashboardProps) {
   const [controls, setControls] = useState<TodayControl[]>([]);
   const [deviations, setDeviations] = useState<OpenDeviationSummary[]>([]);
   const [followUps, setFollowUps] = useState<Record<string, string>>({});
@@ -181,6 +191,8 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
     [dailyControls, onDemandControls, recurringControls],
   );
 
+  const hasAnyControls = controls.length > 0;
+
   async function handleResolve(deviationId: string) {
     setMessage('');
     try {
@@ -206,6 +218,23 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
       {message ? <p className="form-message error-message">{message}</p> : null}
       {loading ? <p className="muted-copy">Laddar dagens arbete...</p> : null}
 
+      {showFirstRunHelp && !loading ? (
+        <section className="first-run-panel" aria-labelledby="first-run-title">
+          <div>
+            <p className="eyebrow">Kom igång</p>
+            <h4 id="first-run-title">Verksamheten är skapad</h4>
+            <p className="muted-copy">
+              Startkontrollerna är redo. Spara din första kontroll här, så hamnar dokumentationen i Historik.
+            </p>
+          </div>
+          {nextControl ? (
+            <ActionButton type="button" onClick={() => onStartControl(nextControl.controlType.id)}>
+              Utför första kontrollen
+            </ActionButton>
+          ) : null}
+        </section>
+      ) : null}
+
       <div className="today-summary">
         <div>
           <span>Dagens kontroller</span>
@@ -220,6 +249,22 @@ export function TodayDashboard({ organizationId, userId, onStartControl }: Today
       <div className="today-list" aria-label="Dagens kontroller">
         {!loading ? (
           <>
+            {!hasAnyControls ? (
+              <section className="empty-view-card today-empty-state" aria-labelledby="today-empty-title">
+                <p className="eyebrow">Inga aktiva kontroller</p>
+                <h4 id="today-empty-title">Det finns inget att utföra ännu</h4>
+                <p className="muted-copy">
+                  {canManage
+                    ? 'Aktivera eller skapa kontrolltyper under Meny -> Kontrolltyper. När minst en kontroll är aktiv visas den här.'
+                    : 'En administratör behöver aktivera eller skapa kontroller innan du kan utföra dagens arbete.'}
+                </p>
+                {canManage ? (
+                  <ActionButton type="button" variant="secondary" onClick={onOpenControlTypes}>
+                    Öppna kontrolltyper
+                  </ActionButton>
+                ) : null}
+              </section>
+            ) : null}
             <ControlSection
               title="Ska göras idag"
               summary={`${completedCount} av ${dailyControls.length} klara`}

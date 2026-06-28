@@ -435,7 +435,16 @@ export function ControlTypeDetailView({
         </div>
 
         {loading ? <p className="muted-copy">Laddar formulärfält...</p> : null}
-        {!loading && fields.length === 0 ? <p className="muted-copy">Inga formulärfält finns ännu.</p> : null}
+        {!loading && fields.length === 0 ? (
+          <div className="control-detail-empty">
+            <strong>Inga formulärfält finns ännu</strong>
+            <p className="muted-copy">
+              {canManage
+                ? 'Lägg till minst ett fält, till exempel OK/Ej OK eller temperatur. Annars kan kontrollen inte sparas.'
+                : 'En administratör behöver lägga till fält innan kontrollen kan utföras.'}
+            </p>
+          </div>
+        ) : null}
 
         <div className="control-field-list">
           {fields.map((field) => (
@@ -546,7 +555,16 @@ export function ControlTypeDetailView({
         </div>
 
         {loading ? <p className="muted-copy">Laddar kontrollpunkter...</p> : null}
-        {!loading && objects.length === 0 ? <p className="muted-copy">Inga kontrollpunkter finns ännu.</p> : null}
+        {!loading && objects.length === 0 ? (
+          <div className="control-detail-empty">
+            <strong>Inga kontrollpunkter finns ännu</strong>
+            <p className="muted-copy">
+              {canManage
+                ? 'Lägg till kontrollpunkter som personalen ska gå igenom, till exempel kylar, områden eller produkter.'
+                : 'En administratör behöver lägga till kontrollpunkter om kontrollen ska utföras per plats eller produkt.'}
+            </p>
+          </div>
+        ) : null}
 
         <div className="control-point-list">
           {objects.map((controlObject) => (

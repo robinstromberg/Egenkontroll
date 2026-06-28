@@ -15,6 +15,7 @@ import { SharingView } from './SharingView';
 import { SuppliersView } from './SuppliersView';
 import { TodayDashboard } from './TodayDashboard';
 import { UsersView } from './UsersView';
+import { FIRST_RUN_ORGANIZATION_KEY } from './OrganizationSetup';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
 import type { Organization } from '../types/database';
@@ -23,6 +24,8 @@ export type AppDashboardProps = {
   activeView: AppView;
   user: User;
   context: OrganizationContext;
+  contexts: OrganizationContext[];
+  onChangeOrganization: (organizationId: string) => void;
   onChangeView: (view: AppView) => void;
   onSignOut: () => Promise<void>;
 };
@@ -39,7 +42,15 @@ function getDisplayName(user: User): string {
   return user.email ?? 'Inloggad användare';
 }
 
-export function AppDashboard({ activeView, user, context, onChangeView, onSignOut }: AppDashboardProps) {
+export function AppDashboard({
+  activeView,
+  user,
+  context,
+  contexts,
+  onChangeOrganization,
+  onChangeView,
+  onSignOut,
+}: AppDashboardProps) {
   const canManage = canManageOrganization(context.membership.role);
   const [activeContext, setActiveContext] = useState(context);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
@@ -48,9 +59,17 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
   >(null);
   const [savedSummary, setSavedSummary] = useState<SavedControlSummary | null>(null);
   const [dashboardKey, setDashboardKey] = useState(0);
+  const [showFirstRunHelp, setShowFirstRunHelp] = useState(
+    () => window.localStorage.getItem(FIRST_RUN_ORGANIZATION_KEY) === context.organization.id,
+  );
 
   useEffect(() => {
     setActiveContext(context);
+    setActiveControlTypeId(null);
+    setSavedSummary(null);
+    setMenuSubview(null);
+    setDashboardKey((current) => current + 1);
+    setShowFirstRunHelp(window.localStorage.getItem(FIRST_RUN_ORGANIZATION_KEY) === context.organization.id);
   }, [context]);
 
   useEffect(() => {
@@ -67,6 +86,10 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
     setActiveControlTypeId(null);
     setSavedSummary(summary);
     setDashboardKey((current) => current + 1);
+    if (window.localStorage.getItem(FIRST_RUN_ORGANIZATION_KEY) === context.organization.id) {
+      window.localStorage.removeItem(FIRST_RUN_ORGANIZATION_KEY);
+      setShowFirstRunHelp(false);
+    }
     onChangeView('today');
   }
 
@@ -93,6 +116,12 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
           performedBy={getDisplayName(user)}
           onCancel={() => setActiveControlTypeId(null)}
           onSaved={handleControlSaved}
+          canManage={canManage}
+          onConfigureControlType={() => {
+            setActiveControlTypeId(null);
+            setMenuSubview('controlTypes');
+            onChangeView('menu');
+          }}
         />
       );
     }
@@ -203,6 +232,12 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
         organizationId={context.organization.id}
         userId={user.id}
         onStartControl={handleStartControl}
+        canManage={canManage}
+        showFirstRunHelp={showFirstRunHelp}
+        onOpenControlTypes={() => {
+          setMenuSubview('controlTypes');
+          onChangeView('menu');
+        }}
       />
     );
   }
@@ -217,6 +252,21 @@ export function AppDashboard({ activeView, user, context, onChangeView, onSignOu
             {user.email} · {roleLabels[context.membership.role]}
           </p>
         </div>
+        {contexts.length > 1 ? (
+          <label className="workspace-switcher">
+            <span>Verksamhet</span>
+            <select
+              value={context.organization.id}
+              onChange={(event) => onChangeOrganization(event.target.value)}
+            >
+              {contexts.map((item) => (
+                <option value={item.organization.id} key={item.organization.id}>
+                  {item.organization.name} - {roleLabels[item.membership.role]}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
       </div>
 
       {renderView()}

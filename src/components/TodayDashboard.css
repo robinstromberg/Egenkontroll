@@ -45,6 +45,28 @@
   gap: 12px;
 }
 
+.first-run-panel,
+.today-empty-state {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(91, 70, 225, 0.14);
+  border-radius: 18px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(62, 46, 135, 0.06);
+}
+
+.first-run-panel {
+  background: linear-gradient(135deg, #ffffff, #f2efff);
+}
+
+.first-run-panel h4,
+.today-empty-state h4 {
+  margin: 0;
+  color: #11172c;
+  font-size: 1rem;
+}
+
 .today-summary div {
   display: grid;
   gap: 6px;
@@ -279,11 +301,18 @@
   }
 
   .today-summary div,
-  .today-control-row {
+  .today-control-row,
+  .first-run-panel,
+  .today-empty-state {
     border: 1px solid rgba(159, 145, 255, 0.18);
     color: #f7f9ff;
     background: #121a2e;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .first-run-panel h4,
+  .today-empty-state h4 {
+    color: #f7f9ff;
   }
 
   .today-control-section + .today-control-section {

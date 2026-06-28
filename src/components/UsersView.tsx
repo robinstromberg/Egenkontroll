@@ -84,10 +84,18 @@ export function UsersView({ organizationId, canManage, onBack }: UsersViewProps)
         <h4>{canManage ? 'Rollhantering' : 'Din atkomst'}</h4>
         <p className="muted-copy">
           {canManage
-            ? 'Här ser du verksamhetens medlemmar, roller och status samlat på en egen menysida.'
+            ? 'Här ser du verksamhetens medlemmar, roller och status. Inbjudningar byggs som ett separat säkert flöde med egen datamodell och behörighetsregler.'
             : 'Administratören hanterar roller och nya användare.'}
         </p>
       </div>
+      {canManage ? (
+        <div className="menu-destination-panel">
+          <h4>Kommande inbjudningar</h4>
+          <p className="muted-copy">
+            Innan personal kan bjudas in behöver appen stöd för inbjudans status, acceptanslänk och RLS som säkerställer att rätt person hamnar i rätt verksamhet.
+          </p>
+        </div>
+      ) : null}
     </section>
   );
 }

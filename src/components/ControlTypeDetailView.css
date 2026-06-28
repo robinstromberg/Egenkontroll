@@ -129,6 +129,19 @@
   gap: 10px;
 }
 
+.control-detail-empty {
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 16px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.control-detail-empty strong {
+  color: #172033;
+}
+
 .control-field-card,
 .control-point-card {
   display: grid;
@@ -250,7 +263,8 @@
   .control-point-section,
   .control-point-form,
   .control-field-card,
-  .control-point-card {
+  .control-point-card,
+  .control-detail-empty {
     border-color: rgba(159, 145, 255, 0.18);
     background: #121a2e;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
@@ -276,7 +290,8 @@
   .control-point-edit-form label span,
   .control-point-card h4,
   .control-point-form h4,
-  .control-point-form label span {
+  .control-point-form label span,
+  .control-detail-empty strong {
     color: #f7f9ff;
   }
 

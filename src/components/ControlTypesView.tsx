@@ -232,8 +232,13 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
         </div>
       ) : (
         <div className="empty-view-card">
+          <p className="eyebrow">Tomt läge</p>
           <h3>Inga kontrolltyper ännu</h3>
-          <p className="muted-copy">Lägg till kontrolltyper för verksamheten.</p>
+          <p className="muted-copy">
+            {canManage
+              ? 'Lägg till minst en kontrolltyp för att personalen ska kunna utföra dagens arbete.'
+              : 'En administratör behöver lägga till kontrolltyper innan dagens arbete kan utföras.'}
+          </p>
         </div>
       )}
 

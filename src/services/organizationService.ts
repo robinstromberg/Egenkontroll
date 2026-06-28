@@ -78,7 +78,7 @@ export async function createFirstOrganization(
   templateIds: string[] = [],
   businessProfile: { industry: Organization['industry']; businessType: BusinessType },
   subscription: { billingPlan: BillingPlan },
-): Promise<void> {
+): Promise<string> {
   await ensureProfile(user);
   const trialWindow = createTrialWindow();
 
@@ -116,6 +116,8 @@ export async function createFirstOrganization(
 
   await cloneTemplatesToOrganization(organizationId, templateIds, user.id);
   await cloneInactiveDefaultTemplatesToOrganization(organizationId, user.id);
+
+  return organizationId;
 }
 
 export async function updateProfile(input: {
