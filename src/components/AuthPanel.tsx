@@ -10,13 +10,14 @@ const secretField = ['pass', 'word'].join('') as 'password';
 const enterMethod = ['signIn', 'With', 'Password'].join('') as 'signInWithPassword';
 
 function keepAuthFieldVisible(event: FocusEvent<HTMLInputElement>) {
+  const target = event.currentTarget;
   const narrowViewport = window.matchMedia('(max-width: 560px)').matches;
   const keyboardLikelyOpen = window.visualViewport ? window.visualViewport.height < window.innerHeight * 0.82 : false;
 
   if (!narrowViewport && !keyboardLikelyOpen) return;
 
   window.setTimeout(() => {
-    event.currentTarget.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }, 220);
 }
 
@@ -24,6 +25,9 @@ export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [secret, setSecret] = useState('');
+  const [confirmSecret, setConfirmSecret] = useState('');
+  const [showSecret, setShowSecret] = useState(false);
+  const [showConfirmSecret, setShowConfirmSecret] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
@@ -54,8 +58,15 @@ export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus('loading');
     setMessage('');
+
+    if (secret !== confirmSecret) {
+      setStatus('error');
+      setMessage('Lösenorden matchar inte.');
+      return;
+    }
+
+    setStatus('loading');
 
     try {
       const cleanEmail = email.trim();
@@ -101,6 +112,8 @@ export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
   }
 
   const loading = status === 'loading';
+  const secretInputType = showSecret ? 'text' : secretField;
+  const confirmSecretInputType = showConfirmSecret ? 'text' : secretField;
 
   return (
     <section className="auth-card" aria-labelledby="auth-title">
@@ -115,7 +128,24 @@ export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
       <form className="form-stack" onSubmit={mode === 'create' ? handleCreate : mode === 'link' ? handleLink : handleEnter}>
         <label className="field-label" htmlFor="email">E-postadress</label>
         <input id="email" className="text-input" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} onFocus={keepAuthFieldVisible} placeholder="namn@foretag.se" required />
-        {mode !== 'link' ? <><label className="field-label" htmlFor="secret">Lösenord</label><input id="secret" className="text-input" type={secretField} autoComplete={mode === 'create' ? 'new-password' : 'current-password'} value={secret} onChange={(event) => setSecret(event.target.value)} onFocus={keepAuthFieldVisible} minLength={6} required /></> : null}
+        {mode !== 'link' ? <>
+          <label className="field-label" htmlFor="secret">Lösenord</label>
+          <div className="password-field">
+            <input id="secret" className="text-input" type={secretInputType} autoComplete={mode === 'create' ? 'new-password' : 'current-password'} value={secret} onChange={(event) => setSecret(event.target.value)} onFocus={keepAuthFieldVisible} minLength={6} required />
+            <button className="password-toggle" type="button" onClick={() => setShowSecret((current) => !current)} aria-label={showSecret ? 'Dölj lösenord' : 'Visa lösenord'}>
+              {showSecret ? 'Dölj' : 'Visa'}
+            </button>
+          </div>
+        </> : null}
+        {mode === 'create' ? <>
+          <label className="field-label" htmlFor="confirm-secret">Bekräfta lösenord</label>
+          <div className="password-field">
+            <input id="confirm-secret" className="text-input" type={confirmSecretInputType} autoComplete="new-password" value={confirmSecret} onChange={(event) => setConfirmSecret(event.target.value)} onFocus={keepAuthFieldVisible} minLength={6} required />
+            <button className="password-toggle" type="button" onClick={() => setShowConfirmSecret((current) => !current)} aria-label={showConfirmSecret ? 'Dölj lösenord' : 'Visa lösenord'}>
+              {showConfirmSecret ? 'Dölj' : 'Visa'}
+            </button>
+          </div>
+        </> : null}
         <ActionButton type="submit" disabled={loading}>{loading ? 'Vänta...' : mode === 'create' ? 'Skapa konto' : mode === 'link' ? 'Skicka magic link' : 'Logga in'}</ActionButton>
       </form>
       {message ? <p className={status === 'error' ? 'form-message error-message' : 'form-message success-message'}>{message}</p> : null}

@@ -324,6 +324,35 @@ input.text-input[type="date"]::-webkit-calendar-picker-indicator {
   box-shadow: 0 0 0 4px rgba(91, 70, 225, 0.12);
 }
 
+.password-field {
+  position: relative;
+  display: grid;
+}
+
+.password-field .text-input {
+  padding-right: 84px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 12px;
+  color: #5b46e1;
+  background: #efedff;
+  font-size: 0.84rem;
+  font-weight: 900;
+  transform: translateY(-50%);
+}
+
+.password-toggle:focus-visible {
+  outline: 3px solid rgba(91, 70, 225, 0.24);
+  outline-offset: 2px;
+}
+
 .primary-button,
 .secondary-button {
   min-height: 52px;
@@ -486,6 +515,15 @@ section + section {
   .text-input:focus {
     border-color: #9f91ff;
     box-shadow: 0 0 0 4px rgba(159, 145, 255, 0.16);
+  }
+
+  .password-toggle {
+    color: #b9afff;
+    background: #211b45;
+  }
+
+  .password-toggle:focus-visible {
+    outline-color: rgba(185, 175, 255, 0.28);
   }
 
   .check-list li {
