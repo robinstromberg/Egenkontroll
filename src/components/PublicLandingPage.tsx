@@ -209,7 +209,10 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
 
       <footer className="public-footer">
         <span>© 2026 Min Egenkontroll</span>
-        <a href="/integritetspolicy">Integritetspolicy</a>
+        <div className="public-footer-links">
+          <a href="/integritetspolicy">Integritetspolicy</a>
+          <a href="/anvandarvillkor">Användarvillkor</a>
+        </div>
       </footer>
     </main>
   );
