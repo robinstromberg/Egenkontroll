@@ -8,6 +8,7 @@ import { InspectorView } from './components/InspectorView';
 import { InvitationAcceptPanel } from './components/InvitationAcceptPanel';
 import { OrganizationSetup } from './components/OrganizationSetup';
 import { PasswordSetupPanel } from './components/PasswordSetupPanel';
+import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { PublicLandingPage } from './components/PublicLandingPage';
 import { brandAssets } from './config/assets';
 import { getCurrentSession, signOut } from './services/authService';
@@ -16,7 +17,7 @@ import type { OrganizationContext } from './services/organizationService';
 import { supabase } from './lib/supabaseClient';
 
 const appViews: AppView[] = ['today', 'history', 'kpi', 'sharing', 'menu'];
-type PublicPath = 'home' | 'login' | 'signup';
+type PublicPath = 'home' | 'login' | 'signup' | 'privacy';
 const ACTIVE_ORGANIZATION_KEY = 'egenkontroll:active-organization-id';
 
 function isAppView(value: string | null): value is AppView {
@@ -72,6 +73,7 @@ function clearInvitationFromUrl() {
 function readPublicPath(): PublicPath {
   if (window.location.pathname === '/login') return 'login';
   if (window.location.pathname === '/signup') return 'signup';
+  if (window.location.pathname === '/integritetspolicy') return 'privacy';
   return 'home';
 }
 
@@ -203,7 +205,7 @@ function App() {
   }
 
   function navigatePublic(path: PublicPath) {
-    const pathname = path === 'home' ? '/' : `/${path}`;
+    const pathname = path === 'home' ? '/' : path === 'privacy' ? '/integritetspolicy' : `/${path}`;
     window.history.pushState(null, '', pathname);
     setPublicPath(path);
   }
@@ -224,6 +226,10 @@ function App() {
 
   if (inspectorKey) {
     return <InspectorView shareKey={inspectorKey} />;
+  }
+
+  if (publicPath === 'privacy') {
+    return <PrivacyPolicyPage />;
   }
 
   if (!loading && !session?.user && !passwordRecovery && !invitationId && publicPath === 'home') {
