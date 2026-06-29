@@ -1,5 +1,6 @@
 export type OrganizationRole = 'owner' | 'admin' | 'staff';
 export type MembershipStatus = 'active' | 'invited' | 'disabled';
+export type InvitationStatus = 'pending' | 'accepted' | 'revoked' | 'expired';
 export type ControlCategory = 'temperature' | 'checklist' | 'receiving' | 'traceability' | 'round' | 'custom';
 export type ControlFrequency = 'daily' | 'weekly' | 'per_delivery' | 'custom';
 export type ControlRunStatus = 'draft' | 'completed' | 'completed_with_deviation';
@@ -47,6 +48,20 @@ export type OrganizationMembership = {
   user_id: string;
   role: OrganizationRole;
   status: MembershipStatus;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrganizationInvitation = {
+  id: string;
+  organization_id: string;
+  email: string;
+  role: Exclude<OrganizationRole, 'owner'>;
+  status: InvitationStatus;
+  invited_by: string | null;
+  accepted_by: string | null;
+  accepted_at: string | null;
+  expires_at: string;
   created_at: string;
   updated_at: string;
 };
