@@ -26,7 +26,7 @@ export function PrivacyPolicyPage() {
             denna information att uppdateras.
           </p>
           <p>
-            Kontakt i integritetsfrågor: <a href="mailto:support@minegenkontroll.se">support@minegenkontroll.se</a>
+            Kontakt i integritetsfrågor: <a href="mailto:integritet@minegenkontroll.se">integritet@minegenkontroll.se</a>
           </p>
         </section>
 
@@ -153,7 +153,7 @@ export function PrivacyPolicyPage() {
             <li>återkalla samtycke där behandlingen bygger på samtycke</li>
           </ul>
           <p>
-            Kontakta oss på <a href="mailto:support@minegenkontroll.se">support@minegenkontroll.se</a> om du vill
+            Kontakta oss på <a href="mailto:integritet@minegenkontroll.se">integritet@minegenkontroll.se</a> om du vill
             använda någon av dina rättigheter.
           </p>
           <p>
@@ -162,7 +162,31 @@ export function PrivacyPolicyPage() {
         </section>
 
         <section>
-          <h2>11. Ändringar</h2>
+          <h2>11. Begära export eller radering av data</h2>
+          <p>
+            Vill du begära export eller radering av personuppgifter skickar du ett mejl till
+            {' '}<a href="mailto:integritet@minegenkontroll.se">integritet@minegenkontroll.se</a>.
+          </p>
+          <p>Mejlet bör innehålla:</p>
+          <ul>
+            <li>vilken e-postadress ditt konto använder</li>
+            <li>om begäran gäller export eller radering</li>
+            <li>vilken verksamhet eller organisation begäran gäller, om det är relevant</li>
+            <li>om begäran gäller ditt eget konto eller en verksamhet du administrerar</li>
+          </ul>
+          <p>
+            Vi kan behöva kontrollera din identitet och behörighet innan vi lämnar ut, raderar eller ändrar data.
+            Om begäran gäller en verksamhets egenkontrolldata behöver vi kontrollera att du har rätt att företräda
+            verksamheten eller är administratör för den i tjänsten.
+          </p>
+          <p>
+            Viss information kan behöva sparas även efter en raderingsbegäran, till exempel om det krävs enligt lag,
+            för bokföring, säkerhetsutredning eller för att hantera en rättslig tvist.
+          </p>
+        </section>
+
+        <section>
+          <h2>12. Ändringar</h2>
           <p>
             Vi kan uppdatera denna integritetspolicy vid behov. Den senaste versionen finns alltid tillgänglig på
             denna sida.
