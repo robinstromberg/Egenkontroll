@@ -32,7 +32,8 @@
 }
 
 .public-brand,
-.public-nav-actions {
+.public-nav-actions,
+.public-footer-links {
   display: inline-flex;
   align-items: center;
   gap: 12px;
@@ -435,6 +436,10 @@
   color: #aeb8d4;
   font-size: 0.92rem;
   font-weight: 800;
+}
+
+.public-footer-links {
+  flex-wrap: wrap;
 }
 
 .public-footer a,
