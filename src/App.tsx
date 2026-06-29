@@ -10,6 +10,7 @@ import { OrganizationSetup } from './components/OrganizationSetup';
 import { PasswordSetupPanel } from './components/PasswordSetupPanel';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { PublicLandingPage } from './components/PublicLandingPage';
+import { TermsPage } from './components/TermsPage';
 import { brandAssets } from './config/assets';
 import { getCurrentSession, signOut } from './services/authService';
 import { ensureProfile, listOrganizationContexts } from './services/organizationService';
@@ -17,7 +18,7 @@ import type { OrganizationContext } from './services/organizationService';
 import { supabase } from './lib/supabaseClient';
 
 const appViews: AppView[] = ['today', 'history', 'kpi', 'sharing', 'menu'];
-type PublicPath = 'home' | 'login' | 'signup' | 'privacy';
+type PublicPath = 'home' | 'login' | 'signup' | 'privacy' | 'terms';
 const ACTIVE_ORGANIZATION_KEY = 'egenkontroll:active-organization-id';
 
 function isAppView(value: string | null): value is AppView {
@@ -74,6 +75,7 @@ function readPublicPath(): PublicPath {
   if (window.location.pathname === '/login') return 'login';
   if (window.location.pathname === '/signup') return 'signup';
   if (window.location.pathname === '/integritetspolicy') return 'privacy';
+  if (window.location.pathname === '/anvandarvillkor') return 'terms';
   return 'home';
 }
 
@@ -205,7 +207,14 @@ function App() {
   }
 
   function navigatePublic(path: PublicPath) {
-    const pathname = path === 'home' ? '/' : path === 'privacy' ? '/integritetspolicy' : `/${path}`;
+    const pathname =
+      path === 'home'
+        ? '/'
+        : path === 'privacy'
+          ? '/integritetspolicy'
+          : path === 'terms'
+            ? '/anvandarvillkor'
+            : `/${path}`;
     window.history.pushState(null, '', pathname);
     setPublicPath(path);
   }
@@ -230,6 +239,10 @@ function App() {
 
   if (publicPath === 'privacy') {
     return <PrivacyPolicyPage />;
+  }
+
+  if (publicPath === 'terms') {
+    return <TermsPage />;
   }
 
   if (!loading && !session?.user && !passwordRecovery && !invitationId && publicPath === 'home') {
