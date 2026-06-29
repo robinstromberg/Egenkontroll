@@ -206,6 +206,11 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
         <h2>Gå med kostnadsfritt och hjälp oss forma ett enklare sätt att sköta egenkontrollen.</h2>
         <button className="public-primary" type="button" onClick={onStartTrial}>Gå med i förhandslanseringen</button>
       </section>
+
+      <footer className="public-footer">
+        <span>© 2026 Min Egenkontroll</span>
+        <a href="/integritetspolicy">Integritetspolicy</a>
+      </footer>
     </main>
   );
 }
