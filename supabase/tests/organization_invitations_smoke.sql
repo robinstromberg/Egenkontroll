@@ -253,6 +253,15 @@ begin
     raise exception 'Invitation failure: invitee did not become active staff member';
   end if;
 
+  raise notice 'Invitee accepted invitation and became active staff member.';
+end $$;
+
+select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', true);
+
+do $$
+declare
+  visible_count int;
+begin
   select count(*)
   into visible_count
   from public.organization_invitations
@@ -264,8 +273,6 @@ begin
   if visible_count <> 1 then
     raise exception 'Invitation failure: invitation was not marked accepted';
   end if;
-
-  raise notice 'Organization invitations smoke test passed. Rolling back test data.';
 end $$;
 
 select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee05', true);
@@ -284,6 +291,11 @@ begin
         raise exception 'Invitation failure: expired invitation returned unexpected error: %', sqlerrm;
       end if;
   end;
+end $$;
+
+do $$
+begin
+  raise notice 'Organization invitations smoke test passed. Rolling back test data.';
 end $$;
 
 rollback;
