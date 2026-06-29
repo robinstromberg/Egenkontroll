@@ -178,6 +178,7 @@ export function AppDashboard({
         return (
           <UsersView
             organizationId={context.organization.id}
+            userId={user.id}
             canManage={canManage}
             onBack={() => setMenuSubview(null)}
           />

@@ -3,7 +3,13 @@ import type { BillingPlan } from '../config/subscription';
 import { createTrialWindow } from '../config/subscription';
 import { supabase } from '../lib/supabaseClient';
 import { cloneInactiveDefaultTemplatesToOrganization, cloneTemplatesToOrganization } from './templateService';
-import type { OrganizationMembership, Organization, OrganizationRole } from '../types/database';
+import type {
+  InvitationStatus,
+  OrganizationInvitation,
+  OrganizationMembership,
+  Organization,
+  OrganizationRole,
+} from '../types/database';
 
 export type BusinessType = NonNullable<Organization['business_type']>;
 
@@ -21,6 +27,11 @@ export type OrganizationMemberSummary = {
   full_name: string;
   created_at: string;
 };
+
+export type OrganizationInvitationSummary = Pick<
+  OrganizationInvitation,
+  'id' | 'organization_id' | 'email' | 'role' | 'status' | 'invited_by' | 'accepted_by' | 'accepted_at' | 'expires_at' | 'created_at' | 'updated_at'
+>;
 
 type MembershipWithOrganization = OrganizationMembership & {
   organizations: Organization | null;
@@ -175,6 +186,66 @@ export async function listOrganizationMembers(organizationId: string): Promise<O
       created_at: membership.created_at,
     };
   });
+}
+
+export async function listOrganizationInvitations(organizationId: string): Promise<OrganizationInvitationSummary[]> {
+  const { data, error } = await supabase
+    .from('organization_invitations')
+    .select('id, organization_id, email, role, status, invited_by, accepted_by, accepted_at, expires_at, created_at, updated_at')
+    .eq('organization_id', organizationId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as OrganizationInvitationSummary[];
+}
+
+export async function createOrganizationInvitation(input: {
+  organizationId: string;
+  email: string;
+  role: Exclude<OrganizationRole, 'owner'>;
+  invitedBy: string;
+}): Promise<void> {
+  const email = input.email.trim().toLowerCase();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { error } = await supabase.from('organization_invitations').insert({
+    organization_id: input.organizationId,
+    email,
+    role: input.role,
+    status: 'pending' satisfies InvitationStatus,
+    invited_by: input.invitedBy,
+    expires_at: expiresAt,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function revokeOrganizationInvitation(invitationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('organization_invitations')
+    .update({ status: 'revoked' satisfies InvitationStatus })
+    .eq('id', invitationId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function renewOrganizationInvitation(invitationId: string): Promise<void> {
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const { error } = await supabase
+    .from('organization_invitations')
+    .update({ expires_at: expiresAt, status: 'pending' satisfies InvitationStatus })
+    .eq('id', invitationId);
+
+  if (error) {
+    throw error;
+  }
 }
 
 export async function updateOrganizationBranding(input: {

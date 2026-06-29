@@ -35,6 +35,40 @@
   padding: 11px 13px;
 }
 
+.invitation-form label {
+  display: grid;
+  gap: 6px;
+  color: #172033;
+  font-weight: 900;
+}
+
+.invitation-form label span {
+  color: #657089;
+  font-size: 0.8rem;
+}
+
+.invitation-row {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.invitation-actions {
+  display: flex;
+  grid-column: 2;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.invitation-actions button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 10px;
+  color: #5b46e1;
+  background: #efedff;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
 .menu-record-mark {
   display: grid;
   width: 38px;
@@ -83,5 +117,18 @@
 
   .menu-record-copy span {
     color: #aeb8d0;
+  }
+
+  .invitation-form label {
+    color: #f7f9ff;
+  }
+
+  .invitation-form label span {
+    color: #aeb8d0;
+  }
+
+  .invitation-actions button {
+    color: #b9afff;
+    background: #211b45;
   }
 }
