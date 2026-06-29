@@ -3,7 +3,7 @@ const fallbackSupabasePublishableKey = ['sb', 'publishable', 'YsqN7EM6XP7U750bZy
 
 const publicSupabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? fallbackSupabaseUrl;
 const publicSupabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? fallbackSupabasePublishableKey;
-const productionAppUrl = 'https://egenkontroll-indol.vercel.app';
+const productionAppUrl = 'https://minegenkontroll.se';
 const configuredAppUrl = import.meta.env.VITE_APP_URL ?? productionAppUrl;
 const publicAppUrl = configuredAppUrl.replace(/\/$/, '');
 
