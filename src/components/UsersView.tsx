@@ -36,6 +36,10 @@ function formatDate(value: string): string {
   return new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium' }).format(new Date(value));
 }
 
+function buildInvitationLink(invitationId: string): string {
+  return `${window.location.origin}/login?invitation=${invitationId}`;
+}
+
 export function UsersView({ organizationId, userId, canManage, onBack }: UsersViewProps) {
   const [members, setMembers] = useState<OrganizationMemberSummary[]>([]);
   const [invitations, setInvitations] = useState<OrganizationInvitationSummary[]>([]);
@@ -131,6 +135,16 @@ export function UsersView({ organizationId, userId, canManage, onBack }: UsersVi
     }
   }
 
+  async function handleCopyInvitationLink(invitationId: string) {
+    const invitationLink = buildInvitationLink(invitationId);
+    try {
+      await window.navigator.clipboard.writeText(invitationLink);
+      setSuccessMessage('Inbjudningslänken kopierades.');
+    } catch {
+      setSuccessMessage(invitationLink);
+    }
+  }
+
   return (
     <section className="menu-destination-view" aria-labelledby="users-title">
       <div className="view-topbar">
@@ -177,7 +191,7 @@ export function UsersView({ organizationId, userId, canManage, onBack }: UsersVi
           <form className="menu-destination-panel invitation-form" onSubmit={handleCreateInvitation}>
             <h4>Bjud in användare</h4>
             <p className="muted-copy">
-              Skapa inbjudan med rätt roll. Acceptanslänken byggs i nästa steg och kopplar personen till verksamheten efter inloggning.
+              Skapa inbjudan med rätt roll och kopiera sedan länken till personen som ska gå med.
             </p>
             <label>
               <span>E-postadress</span>
@@ -222,9 +236,15 @@ export function UsersView({ organizationId, userId, canManage, onBack }: UsersVi
                       <span>
                         {roleLabels[invitation.role]} - {invitationStatusLabels[invitation.status]} - gäller till {formatDate(invitation.expires_at)}
                       </span>
+                      {invitation.status === 'pending' ? (
+                        <code className="invitation-link-preview">{buildInvitationLink(invitation.id)}</code>
+                      ) : null}
                     </span>
                     {invitation.status === 'pending' ? (
                       <span className="invitation-actions">
+                        <button type="button" onClick={() => handleCopyInvitationLink(invitation.id)}>
+                          Kopiera länk
+                        </button>
                         <button type="button" onClick={() => handleRenewInvitation(invitation.id)}>
                           Förläng
                         </button>

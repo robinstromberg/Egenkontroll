@@ -248,6 +248,32 @@ export async function renewOrganizationInvitation(invitationId: string): Promise
   }
 }
 
+export async function getOrganizationInvitation(invitationId: string): Promise<OrganizationInvitationSummary | null> {
+  const { data, error } = await supabase
+    .from('organization_invitations')
+    .select('id, organization_id, email, role, status, invited_by, accepted_by, accepted_at, expires_at, created_at, updated_at')
+    .eq('id', invitationId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as OrganizationInvitationSummary | null;
+}
+
+export async function acceptOrganizationInvitation(invitationId: string): Promise<string> {
+  const { data, error } = await supabase.rpc('accept_organization_invitation', {
+    invitation_id: invitationId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data as string;
+}
+
 export async function updateOrganizationBranding(input: {
   organizationId: string;
   name: string;

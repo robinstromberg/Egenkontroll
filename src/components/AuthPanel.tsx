@@ -21,7 +21,13 @@ function keepAuthFieldVisible(event: FocusEvent<HTMLInputElement>) {
   }, 220);
 }
 
-export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
+export function AuthPanel({
+  initialMode = 'enter',
+  emailRedirectTo = environment.appUrl,
+}: {
+  initialMode?: Mode;
+  emailRedirectTo?: string;
+}) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [secret, setSecret] = useState('');
@@ -74,7 +80,7 @@ export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
         email: cleanEmail,
         [secretField]: secret,
         options: {
-          emailRedirectTo: environment.appUrl,
+          emailRedirectTo,
         },
       });
 
@@ -102,7 +108,7 @@ export function AuthPanel({ initialMode = 'enter' }: { initialMode?: Mode }) {
     setMessage('');
 
     try {
-      await sendEmailLink(email.trim());
+      await sendEmailLink(email.trim(), emailRedirectTo);
       setStatus('sent');
       setMessage('Kontrollera din inkorg och öppna länken för att logga in.');
     } catch (error) {

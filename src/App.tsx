@@ -5,6 +5,7 @@ import type { AppView } from './components/AppBottomNav';
 import { AppDashboard } from './components/AppDashboard';
 import { AuthPanel } from './components/AuthPanel';
 import { InspectorView } from './components/InspectorView';
+import { InvitationAcceptPanel } from './components/InvitationAcceptPanel';
 import { OrganizationSetup } from './components/OrganizationSetup';
 import { PasswordSetupPanel } from './components/PasswordSetupPanel';
 import { PublicLandingPage } from './components/PublicLandingPage';
@@ -32,6 +33,12 @@ function readInspectorKey(): string | null {
   return params.get('inspector');
 }
 
+function readInvitationId(): string | null {
+  const searchInvitation = new URLSearchParams(window.location.search).get('invitation');
+  if (searchInvitation) return searchInvitation;
+  return readHashParams().get('invitation');
+}
+
 function readActiveView(): AppView {
   const params = readHashParams();
   const view = params.get('view');
@@ -50,6 +57,18 @@ function writeActiveView(view: AppView) {
   window.history.replaceState(null, '', nextUrl);
 }
 
+function clearInvitationFromUrl() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('invitation');
+
+  const hash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash;
+  const params = new URLSearchParams(hash);
+  params.delete('invitation');
+  url.hash = params.toString() ? `#${params.toString()}` : '';
+
+  window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+}
+
 function readPublicPath(): PublicPath {
   if (window.location.pathname === '/login') return 'login';
   if (window.location.pathname === '/signup') return 'signup';
@@ -65,6 +84,7 @@ function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [activeView, setActiveView] = useState<AppView>(() => readActiveView());
   const [publicPath, setPublicPath] = useState<PublicPath>(() => readPublicPath());
+  const [invitationId, setInvitationId] = useState<string | null>(() => readInvitationId());
   const [organizationContexts, setOrganizationContexts] = useState<OrganizationContext[]>([]);
   const [activeOrganizationId, setActiveOrganizationId] = useState<string | null>(() => readStoredOrganizationId());
   const [passwordRecovery, setPasswordRecovery] = useState(
@@ -125,6 +145,7 @@ function App() {
 
     function handlePopState() {
       setPublicPath(readPublicPath());
+      setInvitationId(readInvitationId());
     }
 
     window.addEventListener('popstate', handlePopState);
@@ -138,6 +159,7 @@ function App() {
       const nextInspectorKey = readInspectorKey();
       if (nextInspectorKey) return;
       setActiveView(readActiveView());
+      setInvitationId(readInvitationId());
     }
 
     window.addEventListener('hashchange', handleHashChange);
@@ -145,9 +167,9 @@ function App() {
   }, [inspectorKey]);
 
   useEffect(() => {
-    if (inspectorKey || !session?.user || passwordRecovery) return;
+    if (inspectorKey || invitationId || !session?.user || passwordRecovery) return;
     writeActiveView(activeView);
-  }, [activeView, inspectorKey, passwordRecovery, session?.user]);
+  }, [activeView, inspectorKey, invitationId, passwordRecovery, session?.user]);
 
   async function handleSignOut() {
     await signOut();
@@ -164,6 +186,20 @@ function App() {
     setActiveOrganizationId(organizationId);
     window.localStorage.setItem(ACTIVE_ORGANIZATION_KEY, organizationId);
     setActiveView('today');
+  }
+
+  async function handleInvitationAccepted(organizationId: string) {
+    clearInvitationFromUrl();
+    setInvitationId(null);
+    setActiveOrganizationId(organizationId);
+    window.localStorage.setItem(ACTIVE_ORGANIZATION_KEY, organizationId);
+    await loadOrganizationContext();
+    setActiveView('today');
+  }
+
+  function handleSkipInvitation() {
+    clearInvitationFromUrl();
+    setInvitationId(null);
   }
 
   function navigatePublic(path: PublicPath) {
@@ -184,13 +220,13 @@ function App() {
     setActiveOrganizationId(nextOrganizationId);
     window.localStorage.setItem(ACTIVE_ORGANIZATION_KEY, nextOrganizationId);
   }, [activeContext, activeOrganizationId, organizationContexts, session?.user]);
-  const showNavigation = Boolean(session?.user);
+  const showNavigation = Boolean(session?.user && !passwordRecovery && !invitationId);
 
   if (inspectorKey) {
     return <InspectorView shareKey={inspectorKey} />;
   }
 
-  if (!loading && !session?.user && !passwordRecovery && publicPath === 'home') {
+  if (!loading && !session?.user && !passwordRecovery && !invitationId && publicPath === 'home') {
     return <PublicLandingPage onStartTrial={() => navigatePublic('signup')} onLogin={() => navigatePublic('login')} />;
   }
 
@@ -219,9 +255,20 @@ function App() {
             <h2>Kontrollerar session...</h2>
           </section>
         ) : !session?.user ? (
-          <AuthPanel key={publicPath} initialMode={publicPath === 'signup' ? 'create' : 'enter'} />
+          <AuthPanel
+            key={`${publicPath}-${invitationId ?? 'standard'}`}
+            initialMode={publicPath === 'signup' ? 'create' : 'enter'}
+            emailRedirectTo={invitationId ? window.location.href : undefined}
+          />
         ) : passwordRecovery ? (
           <PasswordSetupPanel onSaved={() => setPasswordRecovery(false)} onSkip={() => setPasswordRecovery(false)} />
+        ) : invitationId ? (
+          <InvitationAcceptPanel
+            invitationId={invitationId}
+            userEmail={session.user.email}
+            onAccepted={handleInvitationAccepted}
+            onSkip={handleSkipInvitation}
+          />
         ) : activeContext ? (
           <AppDashboard
             activeView={activeView}

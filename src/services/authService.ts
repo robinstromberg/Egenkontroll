@@ -12,12 +12,12 @@ export async function getCurrentSession(): Promise<Session | null> {
   return data.session;
 }
 
-export async function sendEmailLink(email: string): Promise<void> {
+export async function sendEmailLink(email: string, emailRedirectTo = environment.appUrl): Promise<void> {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: environment.appUrl,
+      emailRedirectTo,
     },
   });
 

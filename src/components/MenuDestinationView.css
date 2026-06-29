@@ -98,6 +98,18 @@
   line-height: 1.35;
 }
 
+.invitation-link-preview {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border-radius: 10px;
+  padding: 6px 8px;
+  color: #4b35dd;
+  background: #f6f3ff;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
 @media (prefers-color-scheme: dark) {
   .menu-destination-panel,
   .menu-record-row {
@@ -117,6 +129,11 @@
 
   .menu-record-copy span {
     color: #aeb8d0;
+  }
+
+  .invitation-link-preview {
+    color: #b9afff;
+    background: #171335;
   }
 
   .invitation-form label {
