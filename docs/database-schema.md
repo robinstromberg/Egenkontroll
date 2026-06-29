@@ -22,6 +22,9 @@ Kopplar användare till verksamheter med roll:
 - `admin`
 - `staff`
 
+### `organization_invitations` (planerad)
+Föreslagen framtida tabell för att bjuda in användare till en verksamhet innan ett aktivt medlemskap skapas. Design och RLS-plan finns i `docs/INVITATION_FLOW_ARCHITECTURE.md`.
+
 ### `control_templates`
 Globala startmallar, till exempel Kyltemperaturer, Städning, Varumottagning och Spårbarhet. Dessa är föreslagna mallar och kopieras/anpassas till verksamhetens egna `control_types`.
 

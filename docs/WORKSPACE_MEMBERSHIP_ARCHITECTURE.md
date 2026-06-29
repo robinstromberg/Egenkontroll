@@ -79,6 +79,8 @@ Ett inbjudningsflöde bör stödja:
 - samma e-post skapar inte dubbla konton
 - roll och status lagras på medlemskapet
 
+Föreslagen datamodell och RLS-design finns i `docs/INVITATION_FLOW_ARCHITECTURE.md`.
+
 ## Byte av workspace
 
 Efter inloggning bör användaren ha ett aktivt workspace. Ett framtida workspace-byte ska endast byta kontext, inte konto.
