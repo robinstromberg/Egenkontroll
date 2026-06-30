@@ -1,10 +1,10 @@
 import { FocusEvent, FormEvent, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
-import { sendEmailLink } from '../services/authService';
+import { sendEmailLink, sendPasswordResetEmail } from '../services/authService';
 import { environment } from '../config/environment';
 import { supabase } from '../lib/supabaseClient';
 
-type Mode = 'enter' | 'create' | 'link';
+type Mode = 'enter' | 'create' | 'link' | 'reset';
 
 const secretField = ['pass', 'word'].join('') as 'password';
 const enterMethod = ['signIn', 'With', 'Password'].join('') as 'signInWithPassword';
@@ -117,9 +117,34 @@ export function AuthPanel({
     }
   }
 
+  async function handleReset(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStatus('loading');
+    setMessage('');
+
+    try {
+      await sendPasswordResetEmail(email.trim(), emailRedirectTo);
+      setStatus('sent');
+      setMessage('Kontrollera din inkorg och öppna länken för att sätta ett nytt lösenord.');
+    } catch (error) {
+      setStatus('error');
+      setMessage(error instanceof Error ? error.message : 'Det gick inte att skicka återställningslänken.');
+    }
+  }
+
   const loading = status === 'loading';
   const secretInputType = showSecret ? 'text' : secretField;
   const confirmSecretInputType = showConfirmSecret ? 'text' : secretField;
+  const formSubmitHandler =
+    mode === 'create' ? handleCreate : mode === 'link' ? handleLink : mode === 'reset' ? handleReset : handleEnter;
+  const submitLabel =
+    mode === 'create'
+      ? 'Skapa konto'
+      : mode === 'link'
+        ? 'Skicka magic link'
+        : mode === 'reset'
+          ? 'Skicka återställningslänk'
+          : 'Logga in';
 
   return (
     <section className="auth-card" aria-labelledby="auth-title">
@@ -131,10 +156,10 @@ export function AuthPanel({
         <ActionButton type="button" variant={mode === 'create' ? 'primary' : 'secondary'} onClick={() => setMode('create')}>Skapa konto</ActionButton>
         <ActionButton type="button" variant={mode === 'link' ? 'primary' : 'secondary'} onClick={() => setMode('link')}>Magic link</ActionButton>
       </div>
-      <form className="form-stack" onSubmit={mode === 'create' ? handleCreate : mode === 'link' ? handleLink : handleEnter}>
+      <form className="form-stack" onSubmit={formSubmitHandler}>
         <label className="field-label" htmlFor="email">E-postadress</label>
         <input id="email" className="text-input" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} onFocus={keepAuthFieldVisible} placeholder="namn@foretag.se" required />
-        {mode !== 'link' ? <>
+        {mode !== 'link' && mode !== 'reset' ? <>
           <label className="field-label" htmlFor="secret">Lösenord</label>
           <div className="password-field">
             <input id="secret" className="text-input" type={secretInputType} autoComplete={mode === 'create' ? 'new-password' : 'current-password'} value={secret} onChange={(event) => setSecret(event.target.value)} onFocus={keepAuthFieldVisible} minLength={6} required />
@@ -152,7 +177,17 @@ export function AuthPanel({
             </button>
           </div>
         </> : null}
-        <ActionButton type="submit" disabled={loading}>{loading ? 'Vänta...' : mode === 'create' ? 'Skapa konto' : mode === 'link' ? 'Skicka magic link' : 'Logga in'}</ActionButton>
+        {mode === 'enter' ? (
+          <button className="link-button" type="button" onClick={() => setMode('reset')}>
+            Glömt lösenord?
+          </button>
+        ) : null}
+        {mode === 'reset' ? (
+          <button className="link-button" type="button" onClick={() => setMode('enter')}>
+            Tillbaka till inloggning
+          </button>
+        ) : null}
+        <ActionButton type="submit" disabled={loading}>{loading ? 'Vänta...' : submitLabel}</ActionButton>
       </form>
       {message ? <p className={status === 'error' ? 'form-message error-message' : 'form-message success-message'}>{message}</p> : null}
     </section>

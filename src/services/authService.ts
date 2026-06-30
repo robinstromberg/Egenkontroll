@@ -26,6 +26,16 @@ export async function sendEmailLink(email: string, emailRedirectTo = environment
   }
 }
 
+export async function sendPasswordResetEmail(email: string, redirectTo = environment.appUrl): Promise<void> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
 export async function signOut(): Promise<void> {
   const { error } = await supabase.auth.signOut();
 
