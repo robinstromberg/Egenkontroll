@@ -1,4 +1,4 @@
-import { FocusEvent, FormEvent, useState } from 'react';
+import { FocusEvent, FormEvent, useRef, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { sendEmailLink, sendPasswordResetEmail } from '../services/authService';
 import { environment } from '../config/environment';
@@ -36,11 +36,23 @@ export function AuthPanel({
   const [showConfirmSecret, setShowConfirmSecret] = useState(false);
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const submittingRef = useRef(false);
+
+  function beginSubmit() {
+    if (submittingRef.current) return false;
+    submittingRef.current = true;
+    setStatus('loading');
+    setMessage('');
+    return true;
+  }
+
+  function endSubmit() {
+    submittingRef.current = false;
+  }
 
   async function handleEnter(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus('loading');
-    setMessage('');
+    if (!beginSubmit()) return;
 
     try {
       const { error } = await supabase.auth[enterMethod]({
@@ -59,20 +71,21 @@ export function AuthPanel({
           ? 'Det gick inte att logga in. Kontrollera lösenordet eller använd Magic link som reserv.'
           : errorMessage,
       );
+    } finally {
+      endSubmit();
     }
   }
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage('');
+    if (!beginSubmit()) return;
 
     if (secret !== confirmSecret) {
       setStatus('error');
       setMessage('Lösenorden matchar inte.');
+      endSubmit();
       return;
     }
-
-    setStatus('loading');
 
     try {
       const cleanEmail = email.trim();
@@ -99,13 +112,14 @@ export function AuthPanel({
     } catch (error) {
       setStatus('error');
       setMessage(error instanceof Error ? error.message : 'Det gick inte att skapa kontot.');
+    } finally {
+      endSubmit();
     }
   }
 
   async function handleLink(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus('loading');
-    setMessage('');
+    if (!beginSubmit()) return;
 
     try {
       await sendEmailLink(email.trim(), emailRedirectTo);
@@ -114,13 +128,14 @@ export function AuthPanel({
     } catch (error) {
       setStatus('error');
       setMessage(error instanceof Error ? error.message : 'Det gick inte att skicka länken.');
+    } finally {
+      endSubmit();
     }
   }
 
   async function handleReset(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus('loading');
-    setMessage('');
+    if (!beginSubmit()) return;
 
     try {
       await sendPasswordResetEmail(email.trim(), emailRedirectTo);
@@ -129,6 +144,8 @@ export function AuthPanel({
     } catch (error) {
       setStatus('error');
       setMessage(error instanceof Error ? error.message : 'Det gick inte att skicka återställningslänken.');
+    } finally {
+      endSubmit();
     }
   }
 
