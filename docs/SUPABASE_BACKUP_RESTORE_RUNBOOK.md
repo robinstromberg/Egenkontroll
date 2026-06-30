@@ -98,3 +98,4 @@ Om produktionsprojektet faktiskt maste aterstallas:
 | Datum | Typ | Backup-kalla | Restore-mal | Resultat | Kommentar |
 | --- | --- | --- | --- | --- | --- |
 | 2026-06-30 | Rutin skapad | Ej restore | Ej restore | Dokumenterad | Projektet ar aktivt/friskt, migrationer kan listas via Supabase-connectorn. Backup-listan maste bekraftas i Dashboard eftersom connectorn saknar backup-listning. |
+| 2026-06-30 | Restore readiness check | Ej restore | Produktionsprojekt, read-only kontroll | Godkand readiness | Projektet ar `ACTIVE_HEALTHY`, Postgres 17 i `eu-west-3`. Supabase-connectorn listar aktuella migrationer. Centrala kunddatatabeller har RLS aktiverat. Buckets `control-attachments` och `organization-branding` finns, ar privata och har forvantade filtyps-/storleksgranser. Full restore ar inte kord eftersom connectorn saknar backup-listning och restore-mal maste valjas i Dashboard. |
