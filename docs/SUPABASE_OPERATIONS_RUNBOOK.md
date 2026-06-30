@@ -56,7 +56,9 @@ De ar avsiktligt korbara for `anon`/`authenticated` eftersom inspektorslankar sk
 
 Security Advisor visar ocksa en avsiktlig varning for `accept_organization_invitation`. Funktionen ar korbar for `authenticated` eftersom inloggade anvandare maste kunna acceptera en inbjudan. `public` och `anon` ar revokade, och funktionen validerar auth-user, profil-e-post, invitation-status, utgangstid och medlemskap innan den skriver.
 
-Security Advisor visar ocksa att leaked password protection ar avstangt i Supabase Auth. Det ska aktiveras fore publik beta:
+Status 2026-06-30: leaked password protection ar aktiverat i Supabase Auth och Security Advisor-varningen ar borta.
+
+Om installningen nagon gang stangs av igen ska den aktiveras fore publik beta:
 
 1. Oppna Supabase Dashboard > Authentication > Security.
 2. Aktivera leaked password protection.
