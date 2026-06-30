@@ -13,6 +13,7 @@ Status 2026-06-30:
 - Supabase Pro ar aktiverat.
 - Supabase-dokumentationen anger att Pro-projekt far dagliga databasbackups med 7 dagars tillgang.
 - Aktuella migrationer ar listade via Supabase-connectorn.
+- Dashboard visar dagliga scheduled physical backups for 2026-06-23 till 2026-06-30.
 
 Backup-sida att kontrollera manuellt:
 
@@ -99,3 +100,4 @@ Om produktionsprojektet faktiskt maste aterstallas:
 | --- | --- | --- | --- | --- | --- |
 | 2026-06-30 | Rutin skapad | Ej restore | Ej restore | Dokumenterad | Projektet ar aktivt/friskt, migrationer kan listas via Supabase-connectorn. Backup-listan maste bekraftas i Dashboard eftersom connectorn saknar backup-listning. |
 | 2026-06-30 | Restore readiness check | Ej restore | Produktionsprojekt, read-only kontroll | Godkand readiness | Projektet ar `ACTIVE_HEALTHY`, Postgres 17 i `eu-west-3`. Supabase-connectorn listar aktuella migrationer. Centrala kunddatatabeller har RLS aktiverat. Buckets `control-attachments` och `organization-branding` finns, ar privata och har forvantade filtyps-/storleksgranser. Full restore ar inte kord eftersom connectorn saknar backup-listning och restore-mal maste valjas i Dashboard. |
+| 2026-06-30 | Icke-destruktivt restore-test | Scheduled physical backup `2026-06-30 03:24:37 (+0000)` | `Egenkontroll restore test 2026-06-30` (`htpdkkursnmqgpirmhlx`) | Godkant | Restore-projektet ar `ACTIVE_HEALTHY`, Postgres 17 i `eu-west-3`, och senaste migrationen i Dashboard ar `harden_invitation_accept_rpc_grants`. Connector-verifiering visar 43 migrationer, 13 av 13 kontrollerade publika tabeller med RLS, 2 privata buckets, samt testdata i centrala tabeller: 2 organisationer, 30 kontrolltyper, 16 kontrollrundor och 25 delningslankar. Supabase restore-dialogen anger att storage-objekt/installningar, Edge Functions samt Auth/API keys maste aterkonfigureras manuellt vid restore till nytt projekt. |

@@ -217,5 +217,5 @@ Inför skarp drift bör det kontrolleras att relevanta dataskyddsvillkor och per
 - Ta fram enkelt personuppgiftsbiträdesavtal för B2B-kunder.
 - Bestäm faktisk lagringstid för supportärenden och tekniska loggar.
 - Säkerställ export/radering i app eller via dokumenterad manuell rutin.
-- Backup-/restore-rutin finns i `docs/SUPABASE_BACKUP_RESTORE_RUNBOOK.md`; första icke-destruktiva restore-testet ska loggas där före bredare publik beta.
+- Backup-/restore-rutin finns i `docs/SUPABASE_BACKUP_RESTORE_RUNBOOK.md`; första icke-destruktiva restore-testet loggades 2026-06-30.
 - Dokumentera betalningsdata när betalflöde är valt.
