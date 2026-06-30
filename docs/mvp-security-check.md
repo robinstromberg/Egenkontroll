@@ -2,7 +2,7 @@
 
 Date: 2026-06-19
 
-Latest advisor run: 2026-06-19
+Latest advisor run: 2026-06-30
 
 ## Verified
 
@@ -33,16 +33,21 @@ Latest advisor run: 2026-06-19
 
 Security advisor warnings from the latest run:
 
+- Advisor was re-run on 2026-06-30 after the project was upgraded to Supabase Pro.
 - `public.get_shared_control_runs(raw_token text, p_period_start date, p_period_end date, p_control_type_ids uuid[])` is an intentional public `SECURITY DEFINER` RPC for temporary inspector links. It remains executable by `anon` and `authenticated` because inspector links must work without app login. The function is constrained by token hash, active status, validity window, requested period and share scope.
 - `public.get_shared_control_type_options(raw_token text)` is an intentional public `SECURITY DEFINER` RPC for temporary inspector links. It returns only the control type options available to a valid active share token.
 - `public.log_shared_export(raw_token text, p_export_type text, p_filters jsonb)` is an intentional public `SECURITY DEFINER` RPC for export auditing. It accepts only valid active share tokens, only allows known export types and only inserts audit rows.
+- `public.accept_organization_invitation(invitation_id uuid)` is a privileged invitation accept RPC. It is executable by `authenticated` users only and validates invitation status, expiry, email ownership and organization membership before writing.
 - `public.is_org_member`, `public.is_org_admin` and `public.organization_has_members` are no longer executable by `anon`, `authenticated` or `public`. RLS policies now call private schema helpers instead.
 - Leaked password protection is disabled in Supabase Auth. Enable it before production.
 
 Performance advisor warnings from the latest run:
 
+- Missing foreign-key indexes for `organization_invitations.invited_by` and `organization_invitations.accepted_by` were fixed by migration `20260630152000_add_invitation_user_indexes.sql`.
 - Several indexes are reported as unused. This is expected in the current low-traffic test database and should not be removed until realistic usage exists.
 - Most overlapping permissive policy warnings were consolidated by splitting broad admin `ALL` policies into action-specific policies. One expected overlap remains on `organization_memberships` inserts because first-owner onboarding and existing-admin invitations are intentionally separate paths.
+
+Operational Supabase setup notes for SMTP, domain mail DNS, Security Advisor follow-up and backup/restore testing are tracked in `docs/SUPABASE_OPERATIONS_RUNBOOK.md`.
 
 ## Automated smoke checks
 
