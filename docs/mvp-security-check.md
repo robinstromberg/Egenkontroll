@@ -34,12 +34,14 @@ Latest advisor run: 2026-06-30
 Security advisor warnings from the latest run:
 
 - Advisor was re-run on 2026-06-30 after the project was upgraded to Supabase Pro.
+- Advisor was re-run again on 2026-06-30 after custom SMTP was enabled. The remaining security findings are unchanged: intentional `SECURITY DEFINER` RPC warnings plus leaked password protection disabled.
 - `public.get_shared_control_runs(raw_token text, p_period_start date, p_period_end date, p_control_type_ids uuid[])` is an intentional public `SECURITY DEFINER` RPC for temporary inspector links. It remains executable by `anon` and `authenticated` because inspector links must work without app login. The function is constrained by token hash, active status, validity window, requested period and share scope.
 - `public.get_shared_control_type_options(raw_token text)` is an intentional public `SECURITY DEFINER` RPC for temporary inspector links. It returns only the control type options available to a valid active share token.
 - `public.log_shared_export(raw_token text, p_export_type text, p_filters jsonb)` is an intentional public `SECURITY DEFINER` RPC for export auditing. It accepts only valid active share tokens, only allows known export types and only inserts audit rows.
 - `public.accept_organization_invitation(invitation_id uuid)` is a privileged invitation accept RPC. It is executable by `authenticated` users only and validates invitation status, expiry, email ownership and organization membership before writing.
 - `public.is_org_member`, `public.is_org_admin` and `public.organization_has_members` are no longer executable by `anon`, `authenticated` or `public`. RLS policies now call private schema helpers instead.
 - Leaked password protection is disabled in Supabase Auth. Enable it before production.
+- Custom SMTP for Auth mail was enabled and verified on 2026-06-30 with sender `Min Egenkontroll <no-reply@minegenkontroll.se>`.
 
 Performance advisor warnings from the latest run:
 

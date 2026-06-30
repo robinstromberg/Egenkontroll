@@ -8,6 +8,8 @@ Den har runbooken kompletterar Epic #172 och samlar de Supabase-steg som maste v
 
 Supabase standard-SMTP ar bara for test. For publik beta ska Auth-mail skickas via egen SMTP-provider.
 
+Status 2026-06-30: custom SMTP ar aktiverad i Supabase och testmail har kommit fran `Min Egenkontroll <no-reply@minegenkontroll.se>`. Appen har ocksa fatt en submit-sparr sa magic link och glomt losenord inte skickar dubbla requests vid snabb dubbel-submit.
+
 Rekommenderad avsandare:
 
 - `no-reply@minegenkontroll.se`
@@ -51,6 +53,8 @@ Security Advisor visar fortfarande avsiktliga varningar for tokenstyrda `SECURIT
 - `log_shared_export`
 
 De ar avsiktligt korbara for `anon`/`authenticated` eftersom inspektorslankar ska fungera utan app-inloggning. De begransas av hashad token, aktiv status, giltighetstid och delningsscope. Ta inte bort dessa grants utan att samtidigt bygga om inspektorsflodet.
+
+Security Advisor visar ocksa en avsiktlig varning for `accept_organization_invitation`. Funktionen ar korbar for `authenticated` eftersom inloggade anvandare maste kunna acceptera en inbjudan. `public` och `anon` ar revokade, och funktionen validerar auth-user, profil-e-post, invitation-status, utgangstid och medlemskap innan den skriver.
 
 Security Advisor visar ocksa att leaked password protection ar avstangt i Supabase Auth. Det ska aktiveras fore publik beta:
 
