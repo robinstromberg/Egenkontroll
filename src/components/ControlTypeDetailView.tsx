@@ -11,6 +11,12 @@ import {
   updateControlType,
   updateControlField,
 } from '../services/controlAdminService';
+import {
+  formatFrequencyLabel,
+  getFrequencyConfigWithWeekday,
+  readWeeklyWeekday,
+  weekdayOptions,
+} from '../services/scheduleService';
 import type {
   ControlCategory,
   ControlFieldDefinition,
@@ -18,6 +24,7 @@ import type {
   ControlObject,
   ControlType,
 } from '../types/database';
+import type { IsoWeekday } from '../services/scheduleService';
 import './ControlTypeDetailView.css';
 
 type ControlTypeDetailViewProps = {
@@ -118,6 +125,7 @@ export function ControlTypeDetailView({
   const [typeName, setTypeName] = useState(controlType.name);
   const [typeCategory, setTypeCategory] = useState<ControlCategory>(controlType.category);
   const [typeFrequency, setTypeFrequency] = useState<ControlFrequency>(controlType.frequency);
+  const [typeWeekday, setTypeWeekday] = useState<IsoWeekday>(() => readWeeklyWeekday(controlType.frequency_config));
   const [typeInstructions, setTypeInstructions] = useState(controlType.instructions ?? '');
   const [loading, setLoading] = useState(true);
   const [savingType, setSavingType] = useState(false);
@@ -166,8 +174,16 @@ export function ControlTypeDetailView({
     setTypeName(controlType.name);
     setTypeCategory(controlType.category);
     setTypeFrequency(controlType.frequency);
+    setTypeWeekday(readWeeklyWeekday(controlType.frequency_config));
     setTypeInstructions(controlType.instructions ?? '');
-  }, [controlType.category, controlType.frequency, controlType.id, controlType.instructions, controlType.name]);
+  }, [
+    controlType.category,
+    controlType.frequency,
+    controlType.frequency_config,
+    controlType.id,
+    controlType.instructions,
+    controlType.name,
+  ]);
 
   async function handleSaveControlType(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -181,6 +197,9 @@ export function ControlTypeDetailView({
         active: controlType.active,
         category: typeCategory,
         frequency: typeFrequency,
+        frequencyConfig: typeFrequency === 'weekly'
+          ? getFrequencyConfigWithWeekday(controlType.frequency_config, typeWeekday)
+          : controlType.frequency_config,
         instructions: typeInstructions,
       });
       await onChanged();
@@ -347,7 +366,7 @@ export function ControlTypeDetailView({
         </div>
         <div>
           <span>Frekvens</span>
-          <strong>{frequencyLabels[controlType.frequency]}</strong>
+          <strong>{formatFrequencyLabel(controlType)}</strong>
         </div>
         <div>
           <span>Status</span>
@@ -396,6 +415,20 @@ export function ControlTypeDetailView({
               ))}
             </select>
           </label>
+          {typeFrequency === 'weekly' ? (
+            <label>
+              <span>Veckodag</span>
+              <select
+                className="text-input"
+                value={typeWeekday}
+                onChange={(event) => setTypeWeekday(Number(event.target.value) as IsoWeekday)}
+              >
+                {weekdayOptions.map((option) => (
+                  <option value={option.value} key={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <label>
             <span>Rutin eller instruktion</span>
             <textarea

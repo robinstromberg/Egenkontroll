@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import type { ControlFrequency, ControlRunStatus, DeviationStatus } from '../types/database';
+import { readWeeklyWeekday, toIsoWeekday } from './scheduleService';
 
 const defaultPeriodDays = 30;
 const streakLookbackDays = 120;
@@ -9,6 +10,7 @@ type KpiControlType = {
   id: string;
   name: string;
   frequency: ControlFrequency;
+  frequency_config: Record<string, unknown>;
   active: boolean;
 };
 
@@ -156,13 +158,33 @@ function isPlannedFrequency(frequency: ControlFrequency): boolean {
   return frequency === 'daily' || frequency === 'weekly' || frequency === 'custom';
 }
 
-function countPlannedControls(controlTypes: KpiControlType[], periodDays: number): number {
+function countWeekdayOccurrences(start: Date, end: Date, weekday: number): number {
+  return getDateKeys(start, end).filter((dateKey) => (
+    toIsoWeekday(new Date(`${dateKey}T00:00:00`)) === weekday
+  )).length;
+}
+
+function countPlannedControls(controlTypes: KpiControlType[], periodStart: Date, periodEnd: Date): number {
+  const periodDays = getDateKeys(periodStart, periodEnd).length;
+
   return controlTypes.reduce((sum, controlType) => {
     if (controlType.frequency === 'daily') return sum + periodDays;
-    if (controlType.frequency === 'weekly') return sum + Math.ceil(periodDays / 7);
+    if (controlType.frequency === 'weekly') {
+      return sum + countWeekdayOccurrences(periodStart, periodEnd, readWeeklyWeekday(controlType.frequency_config));
+    }
     if (controlType.frequency === 'custom') return sum + periodDays;
     return sum;
   }, 0);
+}
+
+function isRunScheduledForControlType(run: KpiRunRow, controlTypeById: Map<string, KpiControlType>): boolean {
+  const controlType = controlTypeById.get(run.control_type_id);
+  if (!controlType) return false;
+  if (controlType.frequency === 'weekly') {
+    return readWeeklyWeekday(controlType.frequency_config) === toIsoWeekday(new Date(run.performed_at));
+  }
+
+  return isPlannedFrequency(controlType.frequency);
 }
 
 function readDocumentationCoverage(
@@ -336,7 +358,7 @@ export async function getKpiSummary(organizationId: string): Promise<KpiSummary>
       .single(),
     supabase
       .from('control_types')
-      .select('id, name, frequency, active')
+      .select('id, name, frequency, frequency_config, active')
       .eq('organization_id', organizationId)
       .eq('active', true),
     supabase
@@ -384,6 +406,7 @@ export async function getKpiSummary(organizationId: string): Promise<KpiSummary>
   const countedDays = Math.max(1, getDateKeys(countedPeriodStart, periodEnd).length);
   const activeControlTypes = (controlTypes ?? []) as KpiControlType[];
   const plannedControlTypes = activeControlTypes.filter((controlType) => isPlannedFrequency(controlType.frequency));
+  const plannedControlTypeById = new Map(plannedControlTypes.map((controlType) => [controlType.id, controlType]));
   const periodRunRows = ((periodRuns ?? []) as KpiRunRow[])
     .filter((run) => new Date(run.performed_at) >= countedPeriodStart);
   const lookbackRunRows = (lookbackRuns ?? []) as KpiRunRow[];
@@ -391,10 +414,12 @@ export async function getKpiSummary(organizationId: string): Promise<KpiSummary>
     .filter((deviation) => new Date(deviation.opened_at) >= countedPeriodStart);
   const openDeviationRows = (openDeviations ?? []) as KpiDeviationRow[];
   const resolvedDeviationRows = (resolvedDeviations ?? []) as KpiDeviationRow[];
-  const plannedControls = countPlannedControls(plannedControlTypes, countedDays);
+  const plannedControls = countPlannedControls(plannedControlTypes, countedPeriodStart, periodEnd);
+  const completedPlannedControls = periodRunRows
+    .filter((run) => isRunScheduledForControlType(run, plannedControlTypeById)).length;
   const completedControls = periodRunRows.length;
   const compliancePercent = plannedControls > 0
-    ? Math.min(100, Math.round((completedControls / plannedControls) * 100))
+    ? Math.min(100, Math.round((completedPlannedControls / plannedControls) * 100))
     : null;
   const totalDeviations = openDeviationRows.length + resolvedDeviationRows.length;
 

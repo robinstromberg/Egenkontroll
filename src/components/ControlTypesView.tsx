@@ -5,11 +5,12 @@ import { ActionButton } from './ui/ActionButton';
 import { AssetIcon } from './ui/AssetIcon';
 import { BackButton } from './ui/BackButton';
 import { readControlTypeIcon } from '../config/assets';
+import { formatFrequencyLabel } from '../services/scheduleService';
 import {
   listControlTypes,
   setControlTypeActive,
 } from '../services/controlAdminService';
-import type { ControlCategory, ControlFrequency, ControlType } from '../types/database';
+import type { ControlCategory, ControlType } from '../types/database';
 import './ControlTypesView.css';
 
 type ControlTypesViewProps = {
@@ -26,13 +27,6 @@ const categoryMeta: Record<ControlCategory, { icon: string; label: string; class
   traceability: { icon: 'SP', label: 'Spårbarhet', className: 'traceability' },
   round: { icon: 'R', label: 'Runda', className: 'round' },
   custom: { icon: '+', label: 'Egen', className: 'custom' },
-};
-
-const frequencyLabels: Record<ControlFrequency, string> = {
-  daily: 'Dagligen',
-  weekly: 'Veckovis',
-  per_delivery: 'Vid leverans',
-  custom: 'Anpassad',
 };
 
 type ControlTypeRowProps = {
@@ -62,7 +56,7 @@ function ControlTypeRow({
         <button className="control-type-open-button" type="button" aria-label={`Öppna ${controlType.name}`} onClick={onOpen}>
           <span>
             <strong>{controlType.name}</strong>
-            <span>{frequencyLabels[controlType.frequency] ?? meta.label}</span>
+            <span>{formatFrequencyLabel(controlType) ?? meta.label}</span>
           </span>
         </button>
         <span className={controlType.active ? 'control-type-status active' : 'control-type-status inactive'}>

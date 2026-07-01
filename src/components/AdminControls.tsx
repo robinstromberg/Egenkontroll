@@ -5,7 +5,9 @@ import {
   listControlTypes,
   setControlTypeActive,
 } from '../services/controlAdminService';
+import { formatFrequencyLabel, getFrequencyConfigWithWeekday, weekdayOptions } from '../services/scheduleService';
 import type { ControlCategory, ControlFrequency, ControlType } from '../types/database';
+import type { IsoWeekday } from '../services/scheduleService';
 import './AdminControls.css';
 
 export type AdminControlsProps = {
@@ -29,13 +31,6 @@ const frequencies: Array<{ value: ControlFrequency; label: string }> = [
   { value: 'custom', label: 'Anpassad' },
 ];
 
-const frequencyLabels: Record<ControlFrequency, string> = {
-  daily: 'Dagligen',
-  weekly: 'Veckovis',
-  per_delivery: 'Vid leverans',
-  custom: 'Anpassad',
-};
-
 const categoryLabels: Record<ControlCategory, string> = {
   temperature: 'Temperatur',
   checklist: 'Checklista',
@@ -50,6 +45,7 @@ export function AdminControls({ organizationId, userId }: AdminControlsProps) {
   const [typeName, setTypeName] = useState('');
   const [category, setCategory] = useState<ControlCategory>('custom');
   const [frequency, setFrequency] = useState<ControlFrequency>('daily');
+  const [weekday, setWeekday] = useState<IsoWeekday>(1);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -92,11 +88,13 @@ export function AdminControls({ organizationId, userId }: AdminControlsProps) {
         name: typeName.trim(),
         category,
         frequency,
+        frequencyConfig: frequency === 'weekly' ? getFrequencyConfigWithWeekday({}, weekday) : undefined,
         createdBy: userId,
       });
       setTypeName('');
       setCategory('custom');
       setFrequency('daily');
+      setWeekday(1);
       await refreshControlTypes();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa kontrolltyp.');
@@ -146,6 +144,14 @@ export function AdminControls({ organizationId, userId }: AdminControlsProps) {
               {frequencies.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </label>
+          {frequency === 'weekly' ? (
+            <label>
+              <span>Veckodag</span>
+              <select className="text-input" value={weekday} onChange={(event) => setWeekday(Number(event.target.value) as IsoWeekday)}>
+                {weekdayOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+          ) : null}
           <ActionButton type="submit">Lägg till kontrolltyp</ActionButton>
         </form>
 
@@ -159,7 +165,7 @@ export function AdminControls({ organizationId, userId }: AdminControlsProps) {
                   {controlType.active ? 'Inaktivera' : 'Aktivera'}
                 </button>
               </div>
-              <p>{frequencyLabels[controlType.frequency]} · {categoryLabels[controlType.category]}</p>
+              <p>{formatFrequencyLabel(controlType)} · {categoryLabels[controlType.category]}</p>
               <span className={controlType.active ? 'admin-status active' : 'admin-status inactive'}>
                 {controlType.active ? 'Aktiv' : 'Inaktiv'}
               </span>

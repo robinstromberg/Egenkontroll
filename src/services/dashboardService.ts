@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import type { ControlType, Deviation } from '../types/database';
+import { isControlScheduledForDate } from './scheduleService';
 
 export type TodayControl = {
   controlType: ControlType;
@@ -27,6 +28,7 @@ function getTodayRange() {
 
 export async function listTodayControls(organizationId: string): Promise<TodayControl[]> {
   const { startIso, endIso } = getTodayRange();
+  const today = new Date();
 
   const { data: controlTypes, error: controlTypesError } = await supabase
     .from('control_types')
@@ -58,7 +60,7 @@ export async function listTodayControls(organizationId: string): Promise<TodayCo
     throw runsError;
   }
 
-  return activeTypes.map((controlType) => {
+  return activeTypes.filter((controlType) => isControlScheduledForDate(controlType, today)).map((controlType) => {
     const latestRun = (runs ?? []).find((run) => run.control_type_id === controlType.id);
 
     return {

@@ -13,6 +13,7 @@ export type CreateControlTypeInput = {
   description?: string;
   category: ControlCategory;
   frequency: ControlFrequency;
+  frequencyConfig?: Record<string, unknown>;
   instructions?: string;
   createdBy: string;
 };
@@ -98,7 +99,22 @@ export async function createControlType(input: CreateControlTypeInput): Promise<
     throw error;
   }
 
-  return data as ControlType;
+  const controlType = data as ControlType;
+
+  if (input.frequencyConfig) {
+    const { data: updatedControlType, error: updateError } = await supabase
+      .from('control_types')
+      .update({ frequency_config: input.frequencyConfig })
+      .eq('id', controlType.id)
+      .eq('organization_id', input.organizationId)
+      .select('*')
+      .single();
+
+    if (updateError) throw updateError;
+    return updatedControlType as ControlType;
+  }
+
+  return controlType;
 }
 
 export async function listControlFields(
@@ -206,6 +222,7 @@ export async function updateControlType(
   updates: Pick<ControlType, 'name' | 'active'> & {
     category?: ControlCategory;
     frequency?: ControlFrequency;
+    frequencyConfig?: Record<string, unknown>;
     instructions?: string | null;
   },
 ): Promise<ControlType> {
@@ -219,6 +236,7 @@ export async function updateControlType(
     active: boolean;
     category?: ControlCategory;
     frequency?: ControlFrequency;
+    frequency_config?: Record<string, unknown>;
     instructions?: string | null;
   } = {
     name,
@@ -231,6 +249,10 @@ export async function updateControlType(
 
   if (updates.frequency) {
     updatePayload.frequency = updates.frequency;
+  }
+
+  if (updates.frequencyConfig) {
+    updatePayload.frequency_config = updates.frequencyConfig;
   }
 
   if ('instructions' in updates) {
