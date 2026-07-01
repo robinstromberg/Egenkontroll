@@ -18,7 +18,7 @@ export type ControlRunFormWithPhotosProps = {
   organizationId: string;
   controlTypeId: string;
   userId: string;
-  performedBy: string;
+  performedByName: string;
   onCancel: () => void;
   onSaved: (summary: SavedControlSummary) => Promise<void>;
   canManage: boolean;
@@ -334,7 +334,7 @@ export function ControlRunFormWithPhotos({
   organizationId,
   controlTypeId,
   userId,
-  performedBy,
+  performedByName,
   onCancel,
   onSaved,
   canManage,
@@ -443,7 +443,7 @@ export function ControlRunFormWithPhotos({
       await onSaved({
         controlName: definition.controlType.name,
         savedAt,
-        performedBy,
+        performedBy: performedByName,
       });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte spara kontrollen.');

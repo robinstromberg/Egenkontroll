@@ -133,7 +133,7 @@ export function AppDashboard({
           controlTypeId={activeControlTypeId}
           organizationId={context.organization.id}
           userId={user.id}
-          performedBy={displayName}
+          performedByName={displayName}
           onCancel={() => setActiveControlTypeId(null)}
           onSaved={handleControlSaved}
           canManage={canManage}

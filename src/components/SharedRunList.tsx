@@ -204,6 +204,10 @@ function readRunStatusLabel(run: SharedRun): string {
   return run.status;
 }
 
+function readRunPerformerName(run: SharedRun): string {
+  return run.performer_name?.trim() || 'Okänd användare';
+}
+
 function readReportCellLabel(item: SharedRunItem): string {
   const objectLabel = readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt');
   const fieldLabel = readFieldLabel(item.field_snapshot);
@@ -294,6 +298,7 @@ function buildPerformedControlTables(runs: SharedRun[]): string {
       return `
         <tr class="report-row report-row-${escapeHtml(categoryClass)} report-row-${escapeHtml(tone)}">
           <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
+          <td>${escapeHtml(readRunPerformerName(run))}</td>
           ${valueCells || '<td>Registrerad</td>'}
           ${hasOverflow ? `<td>${escapeHtml(overflowText)}</td>` : ''}
           <td>${escapeHtml(readRunStatusLabel(run))}</td>
@@ -311,6 +316,7 @@ function buildPerformedControlTables(runs: SharedRun[]): string {
           <thead>
             <tr>
               <th>Datum</th>
+              <th>Utförd av</th>
               ${columnHeaders || '<th>Registrering</th>'}
               ${hasOverflow ? '<th>Övrigt</th>' : ''}
               <th>Status</th>
@@ -365,6 +371,7 @@ function matchesSearch(run: SharedRun, query: string): boolean {
     run.control_type_instructions,
     run.status,
     run.notes,
+    readRunPerformerName(run),
     readRunRoutineSummary(run),
     ...run.items.map((item) => JSON.stringify([
       item.object_snapshot,
@@ -388,6 +395,7 @@ function formatCsvCell(value: string | number): string {
 function buildCsv(runs: SharedRun[]): string {
   const headers = [
     'Datum',
+    'Utförd av',
     'Kontroll',
     'Kategori',
     'Rutin/instruktion',
@@ -403,6 +411,7 @@ function buildCsv(runs: SharedRun[]): string {
     if (run.items.length === 0) {
       return [[
         formatDateTime(run.performed_at),
+        readRunPerformerName(run),
         run.control_type_name,
         run.control_type_category,
         readRunRoutineSummary(run),
@@ -418,6 +427,7 @@ function buildCsv(runs: SharedRun[]): string {
 
     return run.items.map((item) => [
       formatDateTime(run.performed_at),
+      readRunPerformerName(run),
       run.control_type_name,
       run.control_type_category,
       readRunRoutineSummary(run),
@@ -467,6 +477,7 @@ function buildPrintReportHtml(
   const deviationRows = runs.flatMap((run) => run.deviations.map((deviation) => `
     <tr>
       <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
+      <td>${escapeHtml(readRunPerformerName(run))}</td>
       <td>${escapeHtml(run.control_type_name)}</td>
       <td>${escapeHtml(deviation.status)}</td>
       <td>${escapeHtml(deviation.severity)}</td>
@@ -479,6 +490,7 @@ function buildPrintReportHtml(
   const attachmentRows = runs.flatMap((run) => run.attachments.map((attachment) => `
     <tr>
       <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
+      <td>${escapeHtml(readRunPerformerName(run))}</td>
       <td>${escapeHtml(run.control_type_name)}</td>
       <td>${escapeHtml(attachment.file_name ?? 'Bilaga')}</td>
       <td>${escapeHtml(attachmentImageReferenceById.get(attachment.id) ?? '')}</td>
@@ -565,6 +577,7 @@ function buildPrintReportHtml(
           <thead>
             <tr>
               <th>Datum</th>
+              <th>Utförd av</th>
               <th>Kontroll</th>
               <th>Status</th>
               <th>Allvar</th>
@@ -573,20 +586,21 @@ function buildPrintReportHtml(
               <th>Löst</th>
             </tr>
           </thead>
-          <tbody>${deviationRows || '<tr><td colspan="7">Inga avvikelser i urvalet.</td></tr>'}</tbody>
+          <tbody>${deviationRows || '<tr><td colspan="8">Inga avvikelser i urvalet.</td></tr>'}</tbody>
         </table>
         <h2>Bilagor</h2>
         <table>
           <thead>
             <tr>
               <th>Datum</th>
+              <th>Utförd av</th>
               <th>Kontroll</th>
               <th>Fil</th>
               <th>Referens</th>
               <th>Registrerad</th>
             </tr>
           </thead>
-          <tbody>${attachmentRows || '<tr><td colspan="5">Inga bilagor i urvalet.</td></tr>'}</tbody>
+          <tbody>${attachmentRows || '<tr><td colspan="6">Inga bilagor i urvalet.</td></tr>'}</tbody>
         </table>
         ${attachmentImages.length ? `
           <section class="attachment-appendix">
@@ -1032,6 +1046,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
               <thead>
                 <tr>
                   <th>Datum</th>
+                  <th>Utförd av</th>
                   <th>Kontrolltyp</th>
                   <th>Kontrollpunkt</th>
                   <th>Värde/svar</th>
@@ -1048,6 +1063,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                   return (
                   <tr className={`inspector-data-row inspector-data-row-${categoryClass} inspector-data-row-${deviationTone}`} key={id}>
                     <td data-label="Datum">{formatDateTime(run.performed_at)}</td>
+                    <td data-label="Utförd av">{readRunPerformerName(run)}</td>
                     <td data-label="Kontrolltyp">
                       <span className="inspector-type-cell">
                         <span
@@ -1089,6 +1105,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
               <thead>
                 <tr>
                   <th>Datum</th>
+                  <th>Utförd av</th>
                   <th>Kontroll</th>
                   <th>Status</th>
                   <th>Avvikelser</th>
@@ -1099,6 +1116,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                 {visibleRuns.map((run) => (
                   <tr className={`inspector-data-row inspector-data-row-${readCategoryMeta(run.control_type_category).className} inspector-data-row-${readDeviationTone(run)}`} key={run.run_id}>
                     <td data-label="Datum">{formatDateTime(run.performed_at)}</td>
+                    <td data-label="Utförd av">{readRunPerformerName(run)}</td>
                   <td data-label="Kontroll">
                     <span className="inspector-type-cell">
                       <span

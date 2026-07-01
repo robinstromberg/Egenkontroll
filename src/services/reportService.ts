@@ -17,6 +17,7 @@ type ReportAttachment = {
 type ReportRow = {
   id: string;
   performedAt: string;
+  performedBy: string;
   controlType: string;
   routine: string;
   status: string;
@@ -167,6 +168,7 @@ export async function collectReportRows(
     rows.push({
       id: run.id,
       performedAt: run.performed_at,
+      performedBy: detail.run.performed_by_name,
       controlType,
       routine,
       status: run.status,
@@ -189,12 +191,13 @@ export async function collectReportRows(
 }
 
 export function downloadCsvReport(rows: ReportRow[]) {
-  const headers = ['Tidpunkt', 'Kontrolltyp', 'Rutin/instruktion', 'Status', 'Värden', 'Avvikelse', 'Åtgärd'];
+  const headers = ['Tidpunkt', 'Utförd av', 'Kontrolltyp', 'Rutin/instruktion', 'Status', 'Värden', 'Avvikelse', 'Åtgärd'];
   const lines = [
     headers.map(escapeCsv).join(','),
     ...rows.map((row) =>
       [
         row.performedAt,
+        row.performedBy,
         row.controlType,
         row.routine,
         row.status,
@@ -216,6 +219,7 @@ export function openPrintReport(rows: ReportRow[], printWindow = createPrintRepo
     .map((row) => `
       <tr>
         <td>${escapeHtml(row.performedAt)}</td>
+        <td>${escapeHtml(row.performedBy)}</td>
         <td>${escapeHtml(row.controlType)}</td>
         <td>${escapeHtml(row.routine)}</td>
         <td>${escapeHtml(row.status)}</td>
@@ -283,6 +287,7 @@ export function openPrintReport(rows: ReportRow[], printWindow = createPrintRepo
           <thead>
             <tr>
               <th>Tidpunkt</th>
+              <th>Utförd av</th>
               <th>Kontrolltyp</th>
               <th>Rutin/instruktion</th>
               <th>Status</th>
@@ -291,7 +296,7 @@ export function openPrintReport(rows: ReportRow[], printWindow = createPrintRepo
               <th>Åtgärd</th>
             </tr>
           </thead>
-          <tbody>${htmlRows || '<tr><td colspan="7">Inga kontroller i urvalet.</td></tr>'}</tbody>
+          <tbody>${htmlRows || '<tr><td colspan="8">Inga kontroller i urvalet.</td></tr>'}</tbody>
         </table>
         <h2>Bilagor</h2>
         <table>

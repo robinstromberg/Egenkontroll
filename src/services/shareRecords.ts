@@ -19,6 +19,8 @@ export type SharedRun = {
   control_type_name: string;
   control_type_category: string;
   control_type_instructions: string | null;
+  performed_by: string | null;
+  performer_name: string;
   performed_at: string;
   status: string;
   notes: string | null;

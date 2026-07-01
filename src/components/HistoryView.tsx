@@ -206,7 +206,7 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
             <span className="history-copy">
               <strong>{run.control_type_name ?? 'Kontroll'}</strong>
               <span>
-                {formatDateTime(run.performed_at)} · {getRunStatusText(run.status)}
+                {formatDateTime(run.performed_at)} · {run.performed_by_name} · {getRunStatusText(run.status)}
                 {run.attachment_count ? ` · ${formatAttachmentCount(run.attachment_count)}` : ''}
               </span>
             </span>
@@ -226,7 +226,9 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
           <div className="history-row-header">
             <div>
               <h4>{detail.run.control_type_name ?? 'Kontroll'}</h4>
-              <p className="muted-copy">{formatDateTime(detail.run.performed_at)} · {getRunStatusText(detail.run.status)}</p>
+              <p className="muted-copy">
+                {formatDateTime(detail.run.performed_at)} · Utförd av {detail.run.performed_by_name} · {getRunStatusText(detail.run.status)}
+              </p>
             </div>
             <ActionButton type="button" variant="secondary" onClick={closeDetail}>
               Stäng

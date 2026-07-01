@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
-import type { ControlRun, ControlRunItem, Deviation } from '../types/database';
+import type { ControlRun, ControlRunItem, Deviation, Profile } from '../types/database';
 import { createSignedAttachmentUrls, isImageAttachment } from './attachmentService';
 
 export type HistoryFilters = {
@@ -24,6 +24,7 @@ export type HistoryAttachment = {
 export type ControlRunSummary = ControlRun & {
   control_type_name?: string;
   control_type_instructions?: string | null;
+  performed_by_name: string;
   attachment_count: number;
 };
 
@@ -33,6 +34,28 @@ export type ControlRunDetail = {
   deviations: Deviation[];
   attachments: HistoryAttachment[];
 };
+
+type ProfileSummary = Pick<Profile, 'id' | 'full_name' | 'email'>;
+
+function readPerformerName(performedBy: string | null, profileById: Map<string, ProfileSummary>): string {
+  if (!performedBy) return 'Okänd användare';
+  const profile = profileById.get(performedBy);
+  return profile?.full_name.trim() || profile?.email || 'Okänd användare';
+}
+
+async function loadProfilesForRuns(runs: ControlRun[]): Promise<Map<string, ProfileSummary>> {
+  const performerIds = [...new Set(runs.map((run) => run.performed_by).filter(Boolean) as string[])];
+  if (performerIds.length === 0) return new Map();
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, email')
+    .in('id', performerIds);
+
+  if (error) throw error;
+
+  return new Map(((data ?? []) as ProfileSummary[]).map((profile) => [profile.id, profile]));
+}
 
 export async function listHistoryRuns(
   organizationId: string,
@@ -63,15 +86,21 @@ export async function listHistoryRuns(
     throw error;
   }
 
-  const rows = (data ?? []).map((row) => ({
+  const baseRows = (data ?? []).map((row) => ({
     ...(row as ControlRun),
     control_type_name: row.control_types?.name,
     control_type_instructions: row.control_types?.instructions ?? null,
   }));
 
-  if (rows.length === 0) {
+  if (baseRows.length === 0) {
     return [];
   }
+
+  const profileById = await loadProfilesForRuns(baseRows);
+  const rows = baseRows.map((row) => ({
+    ...row,
+    performed_by_name: readPerformerName(row.performed_by, profileById),
+  }));
 
   const normalizedQuery = filters.query?.trim().toLowerCase() ?? '';
   const runIds = rows.map((row) => row.id);
@@ -127,6 +156,7 @@ export async function listHistoryRuns(
     filteredRows = rows.filter((row) => {
       const text = [
         row.control_type_name,
+        row.performed_by_name,
         row.status,
         row.notes,
         ...(searchableTextByRunId.get(row.id) ?? []),
@@ -182,13 +212,17 @@ export async function getControlRunDetail(
 
   const detailAttachments = (attachments ?? []) as HistoryAttachment[];
   const imageAttachments = detailAttachments.filter(isImageAttachment);
-  const signedImageUrls = await createSignedAttachmentUrls(imageAttachments);
+  const [profileById, signedImageUrls] = await Promise.all([
+    loadProfilesForRuns([run as ControlRun]),
+    createSignedAttachmentUrls(imageAttachments),
+  ]);
 
   return {
     run: {
       ...(run as ControlRun),
       control_type_name: run.control_types?.name,
       control_type_instructions: run.control_types?.instructions ?? null,
+      performed_by_name: readPerformerName((run as ControlRun).performed_by, profileById),
       attachment_count: detailAttachments.length,
     },
     items: (items ?? []) as ControlRunItem[],
