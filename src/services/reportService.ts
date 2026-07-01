@@ -110,6 +110,46 @@ function downloadTextFile(fileName: string, content: string, mimeType: string) {
   URL.revokeObjectURL(url);
 }
 
+export function createPrintReportWindow(): Window | null {
+  const printWindow = window.open('', '_blank');
+
+  if (!printWindow) return null;
+
+  printWindow.document.write(`
+    <!doctype html>
+    <html lang="sv">
+      <head>
+        <title>Förbereder utskriftsvy</title>
+        <style>
+          body {
+            display: grid;
+            min-height: 100vh;
+            place-items: center;
+            margin: 0;
+            color: #172033;
+            font-family: Arial, sans-serif;
+            background: #f7f8fd;
+          }
+          p {
+            border: 1px solid #e5e1ff;
+            border-radius: 16px;
+            padding: 18px 20px;
+            background: #ffffff;
+            box-shadow: 0 16px 44px rgba(62, 46, 135, 0.12);
+            font-weight: 700;
+          }
+        </style>
+      </head>
+      <body>
+        <p>Förbereder utskriftsvy...</p>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+
+  return printWindow;
+}
+
 export async function collectReportRows(
   organizationId: string,
   filters: ReportFilters,
@@ -168,7 +208,9 @@ export function downloadCsvReport(rows: ReportRow[]) {
   downloadTextFile('egenkontroll-historik.csv', lines.join('\n'), 'text/csv;charset=utf-8');
 }
 
-export function openPrintReport(rows: ReportRow[]) {
+export function openPrintReport(rows: ReportRow[], printWindow = createPrintReportWindow()) {
+  if (!printWindow) return false;
+
   const brandMarkUrl = absoluteAssetUrl(brandAssets.icon);
   const htmlRows = rows
     .map((row) => `
@@ -204,9 +246,7 @@ export function openPrintReport(rows: ReportRow[]) {
     `)
     .join('');
 
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) return;
-
+  printWindow.document.open();
   printWindow.document.write(`
     <!doctype html>
     <html lang="sv">
@@ -287,4 +327,6 @@ export function openPrintReport(rows: ReportRow[]) {
     </html>
   `);
   printWindow.document.close();
+
+  return true;
 }

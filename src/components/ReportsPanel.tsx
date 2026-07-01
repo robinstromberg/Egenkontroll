@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
-import { collectReportRows, downloadCsvReport, openPrintReport } from '../services/reportService';
+import { collectReportRows, createPrintReportWindow, downloadCsvReport, openPrintReport } from '../services/reportService';
 
 export type ReportsPanelProps = {
   organizationId: string;
@@ -24,12 +24,19 @@ export function ReportsPanel({ organizationId }: ReportsPanelProps) {
   }
 
   async function runPrint() {
+    const printWindow = createPrintReportWindow();
+    if (!printWindow) {
+      setMessage('Kunde inte öppna utskriftsvyn. Tillåt popup-fönster och försök igen.');
+      return;
+    }
+
     try {
       setLoading(true);
       setMessage('');
       const rows = await collectReportRows(organizationId, {});
-      openPrintReport(rows);
+      openPrintReport(rows, printWindow);
     } catch (error) {
+      printWindow.close();
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa underlag.');
     } finally {
       setLoading(false);

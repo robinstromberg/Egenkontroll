@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { AssetIcon } from './ui/AssetIcon';
 import { appUiIcons } from '../config/assets';
-import { collectReportRows, downloadCsvReport, openPrintReport } from '../services/reportService';
+import { collectReportRows, createPrintReportWindow, downloadCsvReport, openPrintReport } from '../services/reportService';
 import {
   getControlRunDetail,
   listHistoryRuns,
@@ -116,11 +116,18 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
   }
 
   async function handlePrint() {
+    const printWindow = createPrintReportWindow();
+    if (!printWindow) {
+      setMessage('Kunde inte öppna utskriftsvyn. Tillåt popup-fönster och försök igen.');
+      return;
+    }
+
     try {
       setMessage('');
       const rows = await collectReportRows(organizationId, filters);
-      openPrintReport(rows);
+      openPrintReport(rows, printWindow);
     } catch (error) {
+      printWindow.close();
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa utskriftsvy.');
     }
   }
