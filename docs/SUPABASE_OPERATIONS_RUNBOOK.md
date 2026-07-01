@@ -10,6 +10,8 @@ Supabase standard-SMTP ar bara for test. For publik beta ska Auth-mail skickas v
 
 Status 2026-06-30: custom SMTP ar aktiverad i Supabase och testmail har kommit fran `Min Egenkontroll <no-reply@minegenkontroll.se>`. Appen har ocksa fatt en submit-sparr sa magic link och glomt losenord inte skickar dubbla requests vid snabb dubbel-submit.
 
+Svenska Auth-mallar for signup, magic link, glomt losenord och inbjudan finns i `docs/SUPABASE_AUTH_EMAIL_TEMPLATES.md`. Mallarna maste laggas in i Supabase Dashboard under Authentication > Emails > Templates eller via Supabase Management API.
+
 Rekommenderad avsandare:
 
 - `no-reply@minegenkontroll.se`
