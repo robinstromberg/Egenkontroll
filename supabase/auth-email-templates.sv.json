@@ -1,0 +1,14 @@
+{
+  "mailer_subjects_confirmation": "Bekr\u00e4fta din e-postadress",
+  "mailer_templates_confirmation_content": "<h2>Bekr\u00e4fta din e-postadress</h2><p>V\u00e4lkommen till Min Egenkontroll.</p><p>F\u00f6lj l\u00e4nken nedan f\u00f6r att bekr\u00e4fta din e-postadress och slutf\u00f6ra ditt konto.</p><p><a href=\"{{ .ConfirmationURL }}\">Bekr\u00e4fta e-postadress</a></p><p>Om du inte skapade ett konto kan du ignorera det h\u00e4r meddelandet.</p>",
+  "mailer_subjects_magic_link": "Din inloggningsl\u00e4nk till Min Egenkontroll",
+  "mailer_templates_magic_link_content": "<h2>Logga in i Min Egenkontroll</h2><p>F\u00f6lj l\u00e4nken nedan f\u00f6r att logga in. L\u00e4nken g\u00e4ller en kort stund och kan bara anv\u00e4ndas en g\u00e5ng.</p><p><a href=\"{{ .ConfirmationURL }}\">Logga in</a></p><p>Om du inte f\u00f6rs\u00f6kte logga in kan du ignorera det h\u00e4r meddelandet.</p>",
+  "mailer_subjects_recovery": "\u00c5terst\u00e4ll ditt l\u00f6senord",
+  "mailer_templates_recovery_content": "<h2>\u00c5terst\u00e4ll ditt l\u00f6senord</h2><p>Vi har f\u00e5tt en beg\u00e4ran om att \u00e5terst\u00e4lla l\u00f6senordet f\u00f6r ditt konto i Min Egenkontroll.</p><p>F\u00f6lj l\u00e4nken nedan f\u00f6r att v\u00e4lja ett nytt l\u00f6senord.</p><p><a href=\"{{ .ConfirmationURL }}\">V\u00e4lj nytt l\u00f6senord</a></p><p>Om du inte beg\u00e4rde detta kan du ignorera det h\u00e4r meddelandet.</p>",
+  "mailer_subjects_invite": "Du har blivit inbjuden till Min Egenkontroll",
+  "mailer_templates_invite_content": "<h2>Du har blivit inbjuden</h2><p>Du har blivit inbjuden att anv\u00e4nda Min Egenkontroll.</p><p>F\u00f6lj l\u00e4nken nedan f\u00f6r att acceptera inbjudan.</p><p><a href=\"{{ .ConfirmationURL }}\">Acceptera inbjudan</a></p><p>Om du inte v\u00e4ntade dig en inbjudan kan du ignorera det h\u00e4r meddelandet.</p>",
+  "mailer_subjects_email_change": "Bekr\u00e4fta din nya e-postadress",
+  "mailer_templates_email_change_content": "<h2>Bekr\u00e4fta din nya e-postadress</h2><p>F\u00f6lj l\u00e4nken nedan f\u00f6r att bekr\u00e4fta att {{ .NewEmail }} ska vara din nya e-postadress i Min Egenkontroll.</p><p><a href=\"{{ .ConfirmationURL }}\">Bekr\u00e4fta ny e-postadress</a></p><p>Om du inte beg\u00e4rde detta kan du ignorera det h\u00e4r meddelandet.</p>",
+  "mailer_subjects_reauthentication": "{{ .Token }} \u00e4r din verifieringskod",
+  "mailer_templates_reauthentication_content": "<h2>Verifiera din identitet</h2><p>Anv\u00e4nd koden nedan f\u00f6r att verifiera din identitet. Koden g\u00e4ller en kort stund.</p><p><strong>{{ .Token }}</strong></p>"
+}

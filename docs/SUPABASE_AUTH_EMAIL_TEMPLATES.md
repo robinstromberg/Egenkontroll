@@ -8,6 +8,29 @@ Supabase dokumenterar att hosted projects kan redigera Auth-mallar i Dashboard u
 
 Kalla: https://supabase.com/docs/guides/auth/auth-email-templates
 
+## Management API
+
+Fardig payload finns i:
+
+```text
+supabase/auth-email-templates.sv.json
+```
+
+Fardigt script finns i:
+
+```text
+scripts/apply-supabase-auth-email-templates.ps1
+```
+
+Scriptet kraver en Supabase personal access token. Skapa den i Supabase Dashboard > Account > Access Tokens och satt den bara i den lokala terminalen:
+
+```powershell
+$env:SUPABASE_ACCESS_TOKEN = "din-token"
+.\scripts\apply-supabase-auth-email-templates.ps1
+```
+
+Scriptet uppdaterar projekt `eapjywbgxtudqjrlueep` och laser sedan tillbaka amnesraderna som verifiering.
+
 ## Dashboard-vag
 
 1. Oppna Supabase Dashboard.
