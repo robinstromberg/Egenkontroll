@@ -4,6 +4,7 @@ import { AssetIcon } from './ui/AssetIcon';
 import { readControlTypeIcon } from '../config/assets';
 import { listOpenDeviations, listTodayControls } from '../services/dashboardService';
 import { resolveDeviation } from '../services/deviationService';
+import { runPwaInstallPrompt, subscribePwaInstallPrompt } from '../services/pwaInstallPrompt';
 import type { OpenDeviationSummary, TodayControl } from '../services/dashboardService';
 import './TodayDashboard.css';
 
@@ -63,6 +64,16 @@ function getCategoryMeta(category: string) {
     return { className: 'round', label: 'R', name: 'Rond' };
   }
   return { className: 'custom', label: 'C', name: category };
+}
+
+function isRunningStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function isIosDevice() {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  const touchMac = userAgent.includes('macintosh') && window.navigator.maxTouchPoints > 1;
+  return /iphone|ipad|ipod/.test(userAgent) || touchMac;
 }
 
 function ControlSection({
@@ -131,6 +142,10 @@ export function TodayDashboard({
   const [followUps, setFollowUps] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installGuideDismissed, setInstallGuideDismissed] = useState(false);
+  const [isStandalone] = useState(() => isRunningStandalone());
+  const [isIos] = useState(() => isIosDevice());
   const today = new Date();
 
   const loadDashboard = useCallback(async (active = true) => {
@@ -158,6 +173,10 @@ export function TodayDashboard({
       active = false;
     };
   }, [loadDashboard]);
+
+  useEffect(() => {
+    return subscribePwaInstallPrompt(setInstallPrompt);
+  }, []);
 
   const dailyControls = useMemo(
     () => controls.filter((control) => control.controlType.frequency === 'daily'),
@@ -204,6 +223,12 @@ export function TodayDashboard({
     }
   }
 
+  async function handleInstallApp() {
+    if (!installPrompt) return;
+    await runPwaInstallPrompt();
+    setInstallGuideDismissed(true);
+  }
+
   return (
     <section className="today-dashboard" aria-labelledby="today-title">
       <div className="today-hero">
@@ -231,6 +256,38 @@ export function TodayDashboard({
             <ActionButton type="button" onClick={() => onStartControl(nextControl.controlType.id)}>
               Utför första kontrollen
             </ActionButton>
+          ) : null}
+          {!isStandalone && !installGuideDismissed ? (
+            <div className="home-screen-guide" aria-labelledby="home-screen-guide-title">
+              <div className="home-screen-guide-icon" aria-hidden="true">ME</div>
+              <div className="home-screen-guide-copy">
+                <p className="eyebrow">Snabbare nästa gång</p>
+                <h4 id="home-screen-guide-title">Lägg appen på hemskärmen</h4>
+                <p>
+                  Då går Min Egenkontroll snabbare att öppna och visas mer som en vanlig app när mobilen stöder det.
+                </p>
+
+                {installPrompt ? (
+                  <button className="home-screen-primary" type="button" onClick={handleInstallApp}>
+                    Installera appen
+                  </button>
+                ) : isIos ? (
+                  <ol className="home-screen-steps">
+                    <li>Öppna sidan i Safari.</li>
+                    <li>Tryck på dela-ikonen.</li>
+                    <li>Välj Lägg till på hemskärmen.</li>
+                  </ol>
+                ) : (
+                  <p className="home-screen-note">
+                    Om webbläsaren visar installera-knappen kan du använda den. Annars finns valet oftast i webbläsarens meny.
+                  </p>
+                )}
+
+                <button className="home-screen-skip" type="button" onClick={() => setInstallGuideDismissed(true)}>
+                  Jag gör det senare
+                </button>
+              </div>
+            </div>
           ) : null}
         </section>
       ) : null}
