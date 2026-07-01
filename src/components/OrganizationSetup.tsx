@@ -3,7 +3,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import type { BillingPlan } from '../config/subscription';
 import { billingPlans } from '../config/subscription';
-import { createFirstOrganization } from '../services/organizationService';
+import { createFirstOrganization, updateProfile } from '../services/organizationService';
 import type { BusinessType } from '../services/organizationService';
 import { listActiveControlTemplates } from '../services/templateService';
 import type { ControlTemplate } from '../types/database';
@@ -26,7 +26,13 @@ const businessTypes: { id: BusinessType; label: string; description: string }[] 
   { id: 'chilled_store', label: 'Butik med kylda varor', description: 'Startar med kylar, mottagning och märkning.' },
 ];
 
+function readInitialName(user: User): string {
+  const metadataName = user.user_metadata?.full_name || user.user_metadata?.name;
+  return typeof metadataName === 'string' ? metadataName : '';
+}
+
 export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
+  const [fullName, setFullName] = useState(readInitialName(user));
   const [organizationName, setOrganizationName] = useState('');
   const [businessType, setBusinessType] = useState<BusinessType>('restaurant');
   const [billingPlan, setBillingPlan] = useState<BillingPlan>('monthly');
@@ -83,6 +89,11 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
     setMessage('');
 
     try {
+      await updateProfile({
+        userId: user.id,
+        fullName,
+        email: user.email ?? null,
+      });
       const organizationId = await createFirstOrganization(user, organizationName.trim(), selectedTemplateIds, {
         industry: 'food',
         businessType,
@@ -107,11 +118,25 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
 
       <ol className="setup-steps" aria-label="Onboardingsteg">
         <li className="active">Konto</li>
+        <li className="active">Namn</li>
         <li className="active">Verksamhet</li>
         <li>Startmallar</li>
       </ol>
 
-      <form className="form-stack" onSubmit={handleSubmit}>
+      <form className="form-stack setup-form" onSubmit={handleSubmit}>
+        <label className="field-label" htmlFor="owner-name">
+          Ditt namn
+        </label>
+        <input
+          id="owner-name"
+          className="text-input"
+          value={fullName}
+          onChange={(event) => setFullName(event.target.value)}
+          placeholder="Exempel: Robin Strömberg"
+          autoComplete="name"
+          required
+        />
+
         <label className="field-label" htmlFor="organization-name">
           Verksamhetsnamn
         </label>
@@ -123,14 +148,6 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
           placeholder="Exempel: Café Solgläntan"
           required
         />
-
-        <div className="industry-panel" aria-label="Bransch">
-          <span className="industry-icon" aria-hidden="true">LV</span>
-          <span>
-            <strong>Bransch: Livsmedel</strong>
-            <small>Fler branscher kan läggas till senare utan att ändra onboardingflödet.</small>
-          </span>
-        </div>
 
         <fieldset className="business-type-picker">
           <legend>Verksamhetstyp</legend>
@@ -226,7 +243,7 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
           </div>
         </div>
 
-        <ActionButton type="submit" disabled={status === 'loading'}>
+        <ActionButton className="setup-submit-button" type="submit" disabled={status === 'loading'}>
           {status === 'loading' ? 'Skapar...' : 'Skapa verksamhet och mallar'}
         </ActionButton>
       </form>

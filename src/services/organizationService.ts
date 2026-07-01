@@ -8,6 +8,7 @@ import type {
   OrganizationInvitation,
   OrganizationMembership,
   Organization,
+  Profile,
   OrganizationRole,
 } from '../types/database';
 
@@ -16,6 +17,7 @@ export type BusinessType = NonNullable<Organization['business_type']>;
 export type OrganizationContext = {
   membership: OrganizationMembership;
   organization: Organization;
+  profile: Profile | null;
 };
 
 export type OrganizationMemberSummary = {
@@ -42,13 +44,22 @@ export function canManageOrganization(role: OrganizationRole): boolean {
 }
 
 export async function ensureProfile(user: User): Promise<void> {
-  const fullName =
-    typeof user.user_metadata.full_name === 'string' ? user.user_metadata.full_name : '';
+  const metadataFullName =
+    typeof user.user_metadata.full_name === 'string' ? user.user_metadata.full_name.trim() : '';
+  const { data: existingProfile, error: profileReadError } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profileReadError) {
+    throw profileReadError;
+  }
 
   const { error } = await supabase.from('profiles').upsert({
     id: user.id,
     email: user.email ?? null,
-    full_name: fullName,
+    full_name: metadataFullName || existingProfile?.full_name || '',
   });
 
   if (error) {
@@ -67,7 +78,7 @@ export async function listOrganizationContexts(): Promise<OrganizationContext[]>
     throw error;
   }
 
-  return ((data ?? []) as MembershipWithOrganization[])
+  const memberships = ((data ?? []) as MembershipWithOrganization[])
     .filter((row) => row.organizations)
     .map((row) => ({
       membership: {
@@ -81,6 +92,22 @@ export async function listOrganizationContexts(): Promise<OrganizationContext[]>
       },
       organization: row.organizations as Organization,
     }));
+
+  if (memberships.length === 0) {
+    return [];
+  }
+
+  const userId = memberships[0].membership.user_id;
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, full_name, email, created_at, updated_at')
+    .eq('id', userId)
+    .maybeSingle();
+
+  return memberships.map((context) => ({
+    ...context,
+    profile: (profile ?? null) as Profile | null,
+  }));
 }
 
 export async function createFirstOrganization(

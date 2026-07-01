@@ -7,16 +7,18 @@ import './MenuDestinationView.css';
 
 export type ProfileViewProps = {
   user: User;
+  initialFullName?: string;
   onBack: () => void;
 };
 
-function readInitialName(user: User): string {
+function readInitialName(user: User, initialFullName = ''): string {
+  if (initialFullName.trim()) return initialFullName.trim();
   const metadataName = user.user_metadata?.full_name || user.user_metadata?.name;
   return typeof metadataName === 'string' ? metadataName : '';
 }
 
-export function ProfileView({ user, onBack }: ProfileViewProps) {
-  const [fullName, setFullName] = useState(readInitialName(user));
+export function ProfileView({ user, initialFullName, onBack }: ProfileViewProps) {
+  const [fullName, setFullName] = useState(readInitialName(user, initialFullName));
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [message, setMessage] = useState('');
 

@@ -11,6 +11,7 @@ import './TodayDashboard.css';
 export type TodayDashboardProps = {
   organizationId: string;
   userId: string;
+  displayName?: string;
   onStartControl: (controlTypeId: string) => void;
   canManage: boolean;
   showFirstRunHelp: boolean;
@@ -30,6 +31,10 @@ function getGreeting(value: Date): string {
   if (hour < 10) return 'God morgon';
   if (hour < 17) return 'Hej';
   return 'God kväll';
+}
+
+function getFirstName(displayName?: string): string {
+  return displayName?.trim().split(/\s+/)[0] ?? '';
 }
 
 function getStatusText(control: TodayControl): string {
@@ -132,6 +137,7 @@ function ControlSection({
 export function TodayDashboard({
   organizationId,
   userId,
+  displayName,
   onStartControl,
   canManage,
   showFirstRunHelp,
@@ -147,6 +153,7 @@ export function TodayDashboard({
   const [isStandalone] = useState(() => isRunningStandalone());
   const [isIos] = useState(() => isIosDevice());
   const today = new Date();
+  const firstName = getFirstName(displayName);
 
   const loadDashboard = useCallback(async (active = true) => {
     try {
@@ -234,7 +241,7 @@ export function TodayDashboard({
       <div className="today-hero">
         <div>
           <p className="eyebrow">Idag</p>
-          <h3 id="today-title">{getGreeting(today)}</h3>
+          <h3 id="today-title">{firstName ? `${getGreeting(today)}, ${firstName}` : getGreeting(today)}</h3>
           <p className="today-date">{formatDate(today)}</p>
         </div>
         <span className="today-weather" aria-hidden="true">☀</span>

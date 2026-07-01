@@ -37,10 +37,15 @@ const roleLabels = {
   staff: 'Personal',
 };
 
-function getDisplayName(user: User): string {
+function getDisplayName(user: User, profileName?: string | null): string {
+  if (profileName?.trim()) return profileName.trim();
   const metadataName = user.user_metadata?.full_name || user.user_metadata?.name;
   if (typeof metadataName === 'string' && metadataName.trim()) return metadataName.trim();
   return user.email ?? 'Inloggad användare';
+}
+
+function getHeaderMeta(displayName: string, roleLabel: string, email?: string): string {
+  return displayName && displayName !== email ? `${displayName} · ${roleLabel}` : roleLabel;
 }
 
 export function AppDashboard({
@@ -53,6 +58,8 @@ export function AppDashboard({
   onSignOut,
 }: AppDashboardProps) {
   const canManage = canManageOrganization(context.membership.role);
+  const displayName = getDisplayName(user, context.profile?.full_name);
+  const headerMeta = getHeaderMeta(displayName, roleLabels[context.membership.role], user.email);
   const [activeContext, setActiveContext] = useState(context);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
   const [menuSubview, setMenuSubview] = useState<
@@ -114,7 +121,7 @@ export function AppDashboard({
           controlTypeId={activeControlTypeId}
           organizationId={context.organization.id}
           userId={user.id}
-          performedBy={getDisplayName(user)}
+          performedBy={displayName}
           onCancel={() => setActiveControlTypeId(null)}
           onSaved={handleControlSaved}
           canManage={canManage}
@@ -167,7 +174,7 @@ export function AppDashboard({
 
     if (activeView === 'menu') {
       if (menuSubview === 'profile') {
-        return <ProfileView user={user} onBack={() => setMenuSubview(null)} />;
+        return <ProfileView user={user} initialFullName={context.profile?.full_name ?? ''} onBack={() => setMenuSubview(null)} />;
       }
 
       if (menuSubview === 'organization') {
@@ -238,6 +245,7 @@ export function AppDashboard({
         key={dashboardKey}
         organizationId={context.organization.id}
         userId={user.id}
+        displayName={displayName}
         onStartControl={handleStartControl}
         canManage={canManage}
         showFirstRunHelp={showFirstRunHelp}
@@ -256,7 +264,7 @@ export function AppDashboard({
           <p className="eyebrow">Inloggad</p>
           <h2 id="dashboard-title">{activeContext.organization.name}</h2>
           <p className="muted-copy">
-            {user.email} · {roleLabels[context.membership.role]}
+            {headerMeta}
           </p>
         </div>
         {contexts.length > 1 ? (
