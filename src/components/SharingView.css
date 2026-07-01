@@ -6,6 +6,20 @@
   padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }
 
+.sharing-view-header {
+  display: grid;
+  gap: 12px;
+}
+
+.sharing-view-header h3,
+.sharing-view-header p {
+  margin-bottom: 0;
+}
+
+.sharing-view-header .nav-back-button {
+  width: fit-content;
+}
+
 .sharing-form,
 .quick-share-card,
 .share-list,
@@ -276,6 +290,11 @@
 }
 
 @media (min-width: 820px) {
+  .sharing-view-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
   .share-modal-backdrop {
     place-items: center;
   }

@@ -1,5 +1,6 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { BackButton } from './ui/BackButton';
 import { createAccessLink, listAccessLinks, listExportLogs } from '../services/shareRecords';
 import type { AccessRecord, ExportLogRecord } from '../services/shareRecords';
 import './SharingView.css';
@@ -7,6 +8,7 @@ import './SharingView.css';
 export type SharingViewProps = {
   organizationId: string;
   userId: string;
+  onBackToToday: () => void;
 };
 
 const validityOptions = [
@@ -66,7 +68,7 @@ function readFilterText(filters: Record<string, unknown>): string {
   return counts ? `${period} · ${counts}` : period;
 }
 
-export function SharingView({ organizationId, userId }: SharingViewProps) {
+export function SharingView({ organizationId, userId, onBackToToday }: SharingViewProps) {
   const [validityPreset, setValidityPreset] = useState('7');
   const [customValidUntil, setCustomValidUntil] = useState(dateAfter(7));
   const [links, setLinks] = useState<AccessRecord[]>([]);
@@ -170,10 +172,13 @@ export function SharingView({ organizationId, userId }: SharingViewProps) {
 
   return (
     <section className="sharing-view" aria-labelledby="sharing-title">
-      <div>
-        <p className="eyebrow">Delning</p>
-        <h3 id="sharing-title">Inspektörslänk</h3>
-        <p className="muted-copy">Skapa en tidsbegränsad läslänk. Inspektören väljer period i läsvyn.</p>
+      <div className="sharing-view-header">
+        <div>
+          <p className="eyebrow">Delning</p>
+          <h3 id="sharing-title">Inspektörslänk</h3>
+          <p className="muted-copy">Skapa en tidsbegränsad läslänk. Inspektören väljer period i läsvyn.</p>
+        </div>
+        <BackButton label="Till idag" onClick={onBackToToday} />
       </div>
 
       <section className="quick-share-card" aria-labelledby="quick-share-title">
