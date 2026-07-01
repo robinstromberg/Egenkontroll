@@ -2,7 +2,7 @@ import type { Session } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import { AppBottomNav } from './components/AppBottomNav';
 import type { AppView } from './components/AppBottomNav';
-import { AppDashboard } from './components/AppDashboard';
+import { AppDashboard, STAFF_ONBOARDING_ORGANIZATION_KEY } from './components/AppDashboard';
 import { AuthPanel } from './components/AuthPanel';
 import { InspectorView } from './components/InspectorView';
 import { InvitationAcceptPanel } from './components/InvitationAcceptPanel';
@@ -197,6 +197,7 @@ function App() {
     setInvitationId(null);
     setActiveOrganizationId(organizationId);
     window.localStorage.setItem(ACTIVE_ORGANIZATION_KEY, organizationId);
+    window.localStorage.setItem(STAFF_ONBOARDING_ORGANIZATION_KEY, organizationId);
     await loadOrganizationContext();
     setActiveView('today');
   }
@@ -284,7 +285,13 @@ function App() {
         ) : invitationId ? (
           <InvitationAcceptPanel
             invitationId={invitationId}
+            userId={session.user.id}
             userEmail={session.user.email}
+            initialFullName={
+              typeof session.user.user_metadata?.full_name === 'string'
+                ? session.user.user_metadata.full_name
+                : ''
+            }
             onAccepted={handleInvitationAccepted}
             onSkip={handleSkipInvitation}
           />

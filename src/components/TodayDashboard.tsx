@@ -5,6 +5,7 @@ import { readControlTypeIcon } from '../config/assets';
 import { listOpenDeviations, listTodayControls } from '../services/dashboardService';
 import { resolveDeviation } from '../services/deviationService';
 import { runPwaInstallPrompt, subscribePwaInstallPrompt } from '../services/pwaInstallPrompt';
+import type { FirstRunMode } from './AppDashboard';
 import type { OpenDeviationSummary, TodayControl } from '../services/dashboardService';
 import './TodayDashboard.css';
 
@@ -14,7 +15,7 @@ export type TodayDashboardProps = {
   displayName?: string;
   onStartControl: (controlTypeId: string) => void;
   canManage: boolean;
-  showFirstRunHelp: boolean;
+  firstRunMode: FirstRunMode | null;
   onOpenControlTypes: () => void;
 };
 
@@ -35,6 +36,24 @@ function getGreeting(value: Date): string {
 
 function getFirstName(displayName?: string): string {
   return displayName?.trim().split(/\s+/)[0] ?? '';
+}
+
+function getFirstRunCopy(firstRunMode: FirstRunMode) {
+  if (firstRunMode === 'staff') {
+    return {
+      eyebrow: 'Välkommen',
+      title: 'Du är inne i verksamheten',
+      copy: 'Här ser du dagens kontroller. Spara din första kontroll här, så hamnar dokumentationen i Historik.',
+      action: 'Utför första kontrollen',
+    };
+  }
+
+  return {
+    eyebrow: 'Kom igång',
+    title: 'Verksamheten är skapad',
+    copy: 'Startkontrollerna är redo. Spara din första kontroll här, så hamnar dokumentationen i Historik.',
+    action: 'Utför första kontrollen',
+  };
 }
 
 function getStatusText(control: TodayControl): string {
@@ -140,7 +159,7 @@ export function TodayDashboard({
   displayName,
   onStartControl,
   canManage,
-  showFirstRunHelp,
+  firstRunMode,
   onOpenControlTypes,
 }: TodayDashboardProps) {
   const [controls, setControls] = useState<TodayControl[]>([]);
@@ -250,18 +269,16 @@ export function TodayDashboard({
       {message ? <p className="form-message error-message">{message}</p> : null}
       {loading ? <p className="muted-copy">Laddar dagens arbete...</p> : null}
 
-      {showFirstRunHelp && !loading ? (
+      {firstRunMode && !loading ? (
         <section className="first-run-panel" aria-labelledby="first-run-title">
           <div>
-            <p className="eyebrow">Kom igång</p>
-            <h4 id="first-run-title">Verksamheten är skapad</h4>
-            <p className="muted-copy">
-              Startkontrollerna är redo. Spara din första kontroll här, så hamnar dokumentationen i Historik.
-            </p>
+            <p className="eyebrow">{getFirstRunCopy(firstRunMode).eyebrow}</p>
+            <h4 id="first-run-title">{getFirstRunCopy(firstRunMode).title}</h4>
+            <p className="muted-copy">{getFirstRunCopy(firstRunMode).copy}</p>
           </div>
           {nextControl ? (
             <ActionButton type="button" onClick={() => onStartControl(nextControl.controlType.id)}>
-              Utför första kontrollen
+              {getFirstRunCopy(firstRunMode).action}
             </ActionButton>
           ) : null}
           {!isStandalone && !installGuideDismissed ? (

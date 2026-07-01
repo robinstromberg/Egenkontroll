@@ -1,15 +1,18 @@
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import {
   acceptOrganizationInvitation,
   getOrganizationInvitation,
+  updateProfile,
 } from '../services/organizationService';
 import type { OrganizationInvitationSummary } from '../services/organizationService';
 import './MenuDestinationView.css';
 
 type InvitationAcceptPanelProps = {
   invitationId: string;
+  userId: string;
   userEmail: string | null | undefined;
+  initialFullName?: string;
   onAccepted: (organizationId: string) => Promise<void>;
   onSkip: () => void;
 };
@@ -25,11 +28,14 @@ function formatDate(value: string): string {
 
 export function InvitationAcceptPanel({
   invitationId,
+  userId,
   userEmail,
+  initialFullName = '',
   onAccepted,
   onSkip,
 }: InvitationAcceptPanelProps) {
   const [invitation, setInvitation] = useState<OrganizationInvitationSummary | null>(null);
+  const [fullName, setFullName] = useState(initialFullName);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
   const [message, setMessage] = useState('');
@@ -57,10 +63,17 @@ export function InvitationAcceptPanel({
     };
   }, [invitationId]);
 
-  async function handleAccept() {
+  async function handleAccept(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
     try {
       setAccepting(true);
       setMessage('');
+      await updateProfile({
+        userId,
+        fullName,
+        email: userEmail ?? null,
+      });
       const organizationId = await acceptOrganizationInvitation(invitationId);
       await onAccepted(organizationId);
     } catch (error) {
@@ -88,14 +101,28 @@ export function InvitationAcceptPanel({
               Du är inloggad som {userEmail ?? 'okänd e-post'}. Inbjudan ger rollen {roleLabels[invitation.role]} och gäller till {formatDate(invitation.expires_at)}.
             </p>
           </div>
-          <div className="form-actions">
-            <ActionButton type="button" onClick={handleAccept} disabled={accepting || invitation.status !== 'pending'}>
-              {accepting ? 'Accepterar...' : 'Acceptera inbjudan'}
-            </ActionButton>
-            <ActionButton type="button" variant="secondary" onClick={onSkip} disabled={accepting}>
-              Inte nu
-            </ActionButton>
-          </div>
+          <form className="form-stack" onSubmit={handleAccept}>
+            <label className="field-label" htmlFor="invitation-name">
+              Ditt namn
+            </label>
+            <input
+              id="invitation-name"
+              className="text-input"
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+              placeholder="Exempel: Robin Strömberg"
+              autoComplete="name"
+              required
+            />
+            <div className="form-actions">
+              <ActionButton type="submit" disabled={accepting || invitation.status !== 'pending'}>
+                {accepting ? 'Accepterar...' : 'Acceptera inbjudan'}
+              </ActionButton>
+              <ActionButton type="button" variant="secondary" onClick={onSkip} disabled={accepting}>
+                Inte nu
+              </ActionButton>
+            </div>
+          </form>
         </>
       ) : null}
       {message ? <p className="form-message error-message">{message}</p> : null}

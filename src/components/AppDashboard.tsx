@@ -31,6 +31,9 @@ export type AppDashboardProps = {
   onSignOut: () => Promise<void>;
 };
 
+export type FirstRunMode = 'owner' | 'staff';
+export const STAFF_ONBOARDING_ORGANIZATION_KEY = 'egenkontroll:staff-onboarding-organization-id';
+
 const roleLabels = {
   owner: 'Ägare',
   admin: 'Admin',
@@ -46,6 +49,12 @@ function getDisplayName(user: User, profileName?: string | null): string {
 
 function getHeaderMeta(displayName: string, roleLabel: string, email?: string): string {
   return displayName && displayName !== email ? `${displayName} · ${roleLabel}` : roleLabel;
+}
+
+function readFirstRunMode(organizationId: string): FirstRunMode | null {
+  if (window.localStorage.getItem(FIRST_RUN_ORGANIZATION_KEY) === organizationId) return 'owner';
+  if (window.localStorage.getItem(STAFF_ONBOARDING_ORGANIZATION_KEY) === organizationId) return 'staff';
+  return null;
 }
 
 export function AppDashboard({
@@ -67,8 +76,8 @@ export function AppDashboard({
   >(null);
   const [savedSummary, setSavedSummary] = useState<SavedControlSummary | null>(null);
   const [dashboardKey, setDashboardKey] = useState(0);
-  const [showFirstRunHelp, setShowFirstRunHelp] = useState(
-    () => window.localStorage.getItem(FIRST_RUN_ORGANIZATION_KEY) === context.organization.id,
+  const [firstRunMode, setFirstRunMode] = useState<FirstRunMode | null>(
+    () => readFirstRunMode(context.organization.id),
   );
 
   useEffect(() => {
@@ -77,7 +86,7 @@ export function AppDashboard({
     setSavedSummary(null);
     setMenuSubview(null);
     setDashboardKey((current) => current + 1);
-    setShowFirstRunHelp(window.localStorage.getItem(FIRST_RUN_ORGANIZATION_KEY) === context.organization.id);
+    setFirstRunMode(readFirstRunMode(context.organization.id));
   }, [context]);
 
   useEffect(() => {
@@ -96,8 +105,11 @@ export function AppDashboard({
     setDashboardKey((current) => current + 1);
     if (window.localStorage.getItem(FIRST_RUN_ORGANIZATION_KEY) === context.organization.id) {
       window.localStorage.removeItem(FIRST_RUN_ORGANIZATION_KEY);
-      setShowFirstRunHelp(false);
     }
+    if (window.localStorage.getItem(STAFF_ONBOARDING_ORGANIZATION_KEY) === context.organization.id) {
+      window.localStorage.removeItem(STAFF_ONBOARDING_ORGANIZATION_KEY);
+    }
+    setFirstRunMode(null);
     onChangeView('today');
   }
 
@@ -248,7 +260,7 @@ export function AppDashboard({
         displayName={displayName}
         onStartControl={handleStartControl}
         canManage={canManage}
-        showFirstRunHelp={showFirstRunHelp}
+        firstRunMode={firstRunMode}
         onOpenControlTypes={() => {
           setMenuSubview('controlTypes');
           onChangeView('menu');
