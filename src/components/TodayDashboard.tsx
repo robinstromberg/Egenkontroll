@@ -9,6 +9,9 @@ import type { FirstRunMode } from './AppDashboard';
 import type { OpenDeviationSummary, TodayControl } from '../services/dashboardService';
 import './TodayDashboard.css';
 
+const HOME_SCREEN_SNOOZE_KEY = 'min-egenkontroll-home-screen-snoozed-until';
+const HOME_SCREEN_SNOOZE_MS = 24 * 60 * 60 * 1000;
+
 export type TodayDashboardProps = {
   organizationId: string;
   userId: string;
@@ -100,6 +103,29 @@ function isIosDevice() {
   return /iphone|ipad|ipod/.test(userAgent) || touchMac;
 }
 
+function isAndroidDevice() {
+  return window.navigator.userAgent.toLowerCase().includes('android');
+}
+
+function readHomeScreenSnoozed() {
+  try {
+    const value = window.localStorage.getItem(HOME_SCREEN_SNOOZE_KEY);
+    if (!value) return false;
+    const snoozedUntil = Number(value);
+    return Number.isFinite(snoozedUntil) && snoozedUntil > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function snoozeHomeScreenGuide() {
+  try {
+    window.localStorage.setItem(HOME_SCREEN_SNOOZE_KEY, String(Date.now() + HOME_SCREEN_SNOOZE_MS));
+  } catch {
+    // localStorage can be unavailable in private browsing; component state still hides the card.
+  }
+}
+
 function ControlSection({
   title,
   summary,
@@ -168,9 +194,12 @@ export function TodayDashboard({
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installGuideDismissed, setInstallGuideDismissed] = useState(false);
+  const [installGuideSnoozed, setInstallGuideSnoozed] = useState(() => readHomeScreenSnoozed());
+  const [installGuideOpen, setInstallGuideOpen] = useState(false);
+  const [installGuideStep, setInstallGuideStep] = useState(0);
   const [isStandalone] = useState(() => isRunningStandalone());
   const [isIos] = useState(() => isIosDevice());
+  const [isAndroid] = useState(() => isAndroidDevice());
   const today = new Date();
   const firstName = getFirstName(displayName);
 
@@ -250,10 +279,49 @@ export function TodayDashboard({
   }
 
   async function handleInstallApp() {
-    if (!installPrompt) return;
-    await runPwaInstallPrompt();
-    setInstallGuideDismissed(true);
+    if (installPrompt) {
+      await runPwaInstallPrompt();
+      setInstallGuideSnoozed(true);
+      return;
+    }
+
+    setInstallGuideOpen(true);
+    setInstallGuideStep(0);
   }
+
+  function handleSnoozeInstallGuide() {
+    snoozeHomeScreenGuide();
+    setInstallGuideSnoozed(true);
+  }
+
+  const homeScreenGuideSteps = useMemo(() => {
+    if (isIos) {
+      return [
+        'Öppna Min Egenkontroll i Safari.',
+        'Tryck på dela-ikonen längst ned i Safari.',
+        'Välj Lägg till på hemskärmen.',
+        'Bekräfta med Lägg till.',
+      ];
+    }
+
+    if (isAndroid) {
+      return [
+        'Öppna Min Egenkontroll i Chrome.',
+        'Tryck på webbläsarens meny med tre punkter.',
+        'Välj Lägg till på hemskärmen.',
+        'Bekräfta när Chrome frågar.',
+      ];
+    }
+
+    return [
+      'Öppna Min Egenkontroll i mobilens webbläsare.',
+      'Öppna webbläsarens delnings- eller menyknapp.',
+      'Välj Lägg till på hemskärmen om alternativet finns.',
+      'Bekräfta och öppna appen från hemskärmen nästa gång.',
+    ];
+  }, [isAndroid, isIos]);
+
+  const showHomeScreenGuide = firstRunMode && !loading && !isStandalone && !installGuideSnoozed;
 
   return (
     <section className="today-dashboard" aria-labelledby="today-title">
@@ -276,42 +344,61 @@ export function TodayDashboard({
             <h4 id="first-run-title">{getFirstRunCopy(firstRunMode).title}</h4>
             <p className="muted-copy">{getFirstRunCopy(firstRunMode).copy}</p>
           </div>
-          {nextControl ? (
-            <ActionButton type="button" onClick={() => onStartControl(nextControl.controlType.id)}>
-              {getFirstRunCopy(firstRunMode).action}
-            </ActionButton>
-          ) : null}
-          {!isStandalone && !installGuideDismissed ? (
+          {showHomeScreenGuide ? (
             <div className="home-screen-guide" aria-labelledby="home-screen-guide-title">
               <div className="home-screen-guide-icon" aria-hidden="true">ME</div>
               <div className="home-screen-guide-copy">
                 <p className="eyebrow">Snabbare nästa gång</p>
-                <h4 id="home-screen-guide-title">Lägg appen på hemskärmen</h4>
+                <h4 id="home-screen-guide-title">Lägg till Min Egenkontroll på hemskärmen</h4>
                 <p>
-                  Då går Min Egenkontroll snabbare att öppna och visas mer som en vanlig app när mobilen stöder det.
+                  Öppna Min Egenkontroll direkt från hemskärmen. Det tar bara några sekunder och gör appen snabbare att använda varje dag.
                 </p>
 
-                {installPrompt ? (
+                <div className="home-screen-actions">
                   <button className="home-screen-primary" type="button" onClick={handleInstallApp}>
-                    Installera appen
+                    Lägg till på hemskärmen
                   </button>
-                ) : isIos ? (
-                  <ol className="home-screen-steps">
-                    <li>Öppna sidan i Safari.</li>
-                    <li>Tryck på dela-ikonen.</li>
-                    <li>Välj Lägg till på hemskärmen.</li>
-                  </ol>
-                ) : (
-                  <p className="home-screen-note">
-                    Om webbläsaren visar installera-knappen kan du använda den. Annars finns valet oftast i webbläsarens meny.
-                  </p>
-                )}
+                  <button className="home-screen-skip" type="button" onClick={handleSnoozeInstallGuide}>
+                    Påminn mig senare
+                  </button>
+                </div>
 
-                <button className="home-screen-skip" type="button" onClick={() => setInstallGuideDismissed(true)}>
-                  Jag gör det senare
-                </button>
+                {installGuideOpen ? (
+                  <div className="home-screen-step-card" aria-live="polite">
+                    <span>Steg {installGuideStep + 1} av {homeScreenGuideSteps.length}</span>
+                    <p>{homeScreenGuideSteps[installGuideStep]}</p>
+                    <div className="home-screen-step-actions">
+                      <button
+                        className="home-screen-skip"
+                        disabled={installGuideStep === 0}
+                        type="button"
+                        onClick={() => setInstallGuideStep((current) => Math.max(0, current - 1))}
+                      >
+                        Tillbaka
+                      </button>
+                      <button
+                        className="home-screen-primary"
+                        type="button"
+                        onClick={() => {
+                          if (installGuideStep === homeScreenGuideSteps.length - 1) {
+                            handleSnoozeInstallGuide();
+                            return;
+                          }
+                          setInstallGuideStep((current) => Math.min(homeScreenGuideSteps.length - 1, current + 1));
+                        }}
+                      >
+                        {installGuideStep === homeScreenGuideSteps.length - 1 ? 'Klart' : 'Nästa'}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
+          ) : null}
+          {nextControl ? (
+            <ActionButton type="button" onClick={() => onStartControl(nextControl.controlType.id)}>
+              {getFirstRunCopy(firstRunMode).action}
+            </ActionButton>
           ) : null}
         </section>
       ) : null}

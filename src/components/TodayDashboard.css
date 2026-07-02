@@ -100,9 +100,7 @@
   margin: 0;
 }
 
-.home-screen-guide-copy p,
-.home-screen-note,
-.home-screen-steps {
+.home-screen-guide-copy p {
   color: #3f4962;
   line-height: 1.45;
   font-weight: 650;
@@ -114,6 +112,13 @@
   border-radius: 14px;
   padding: 0 14px;
   font-weight: 900;
+}
+
+.home-screen-actions,
+.home-screen-step-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .home-screen-primary {
@@ -129,11 +134,23 @@
   background: rgba(255, 255, 255, 0.72);
 }
 
-.home-screen-steps {
+.home-screen-skip:disabled {
+  opacity: 0.5;
+}
+
+.home-screen-step-card {
   display: grid;
-  gap: 6px;
-  margin: 0;
-  padding-left: 20px;
+  gap: 10px;
+  border: 1px solid rgba(91, 70, 225, 0.16);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.home-screen-step-card > span {
+  color: #5b46e1;
+  font-size: 0.74rem;
+  font-weight: 900;
 }
 
 .today-summary div {
@@ -389,15 +406,22 @@
     background: linear-gradient(135deg, #211b45 0%, #13243a 100%);
   }
 
-  .home-screen-guide-copy p,
-  .home-screen-note,
-  .home-screen-steps {
+  .home-screen-guide-copy p {
     color: #d6dced;
   }
 
   .home-screen-skip {
     color: #d8d2ff;
     background: rgba(255, 255, 255, 0.08);
+  }
+
+  .home-screen-step-card {
+    border-color: rgba(159, 145, 255, 0.22);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .home-screen-step-card > span {
+    color: #b9afff;
   }
 
   .today-control-section + .today-control-section {
