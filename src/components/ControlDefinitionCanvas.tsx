@@ -13,6 +13,19 @@ type SelectOption = {
   value: string;
 };
 
+const fieldTypeLabels: Record<ControlFieldDefinition['field_type'], string> = {
+  text: 'Text',
+  textarea: 'Kommentar',
+  number: 'Nummer',
+  temperature: 'Temperatur',
+  boolean: 'Ja/Nej',
+  ok_not_ok: 'OK/Ej OK',
+  date: 'Datum',
+  datetime: 'Datum och tid',
+  photo: 'Foto',
+  select: 'Val',
+};
+
 export type ControlDefinitionCanvasProps = {
   controlType: ControlType;
   objects: ControlObject[];
@@ -454,7 +467,7 @@ export function ControlDefinitionCanvas({
                 >
                   {isEditMode ? (
                     <div className="canvas-field-toolbar">
-                      <span>{field.required ? 'Obligatoriskt' : 'Frivilligt'}</span>
+                      <span>{fieldTypeLabels[field.field_type]} · {field.required ? 'Obligatoriskt' : 'Frivilligt'}</span>
                       <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>
                         Redigera fält
                       </button>

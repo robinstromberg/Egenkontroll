@@ -65,6 +65,28 @@ const fieldTypeLabels: Record<ControlFieldDefinition['field_type'], string> = {
   select: 'Val',
 };
 
+const fieldTypeIconPaths: Record<ControlFieldDefinition['field_type'], string> = {
+  text: '/ui-icons/dokument.png',
+  textarea: '/ui-icons/dokument.png',
+  number: '/ui-icons/dokument.png',
+  temperature: '/ui-icons/kyltemperatur.png',
+  boolean: '/ui-icons/verifiering.png',
+  ok_not_ok: '/ui-icons/verifiering.png',
+  date: '/ui-icons/datum.png',
+  datetime: '/ui-icons/datum.png',
+  photo: '/ui-icons/foto.png',
+  select: '/ui-icons/installningar.png',
+};
+
+const categoryIconPaths: Record<ControlCategory, string> = {
+  temperature: '/ui-icons/kyltemperatur.png',
+  checklist: '/ui-icons/stadning.png',
+  receiving: '/ui-icons/varumottagning.png',
+  traceability: '/ui-icons/sparbarhet.png',
+  round: '/ui-icons/Egenkontrollrunda.png',
+  custom: '/ui-icons/kontroll.svg',
+};
+
 const fieldTypeOptions: Array<{
   fieldType: ControlFieldDefinition['field_type'];
   label: string;
@@ -516,7 +538,7 @@ export function ControlTypeDetailView({
           {fields.map((field) => (
             <article className={field.active ? 'control-field-card' : 'control-field-card inactive'} key={field.id}>
               <div className="control-field-icon" aria-hidden="true">
-                {field.field_type === 'photo' ? 'F' : field.field_type === 'date' ? 'D' : field.field_type === 'temperature' ? '°C' : 'OK'}
+                <img src={fieldTypeIconPaths[field.field_type]} alt="" />
               </div>
 
               {editingFieldId === field.id ? (
@@ -636,7 +658,7 @@ export function ControlTypeDetailView({
           {objects.map((controlObject) => (
             <article className={controlObject.active ? 'control-point-card' : 'control-point-card inactive'} key={controlObject.id}>
               <div className="control-point-icon" aria-hidden="true">
-                {controlType.category === 'temperature' ? '°C' : '✓'}
+                <img src={categoryIconPaths[controlType.category]} alt="" />
               </div>
               {editingObjectId === controlObject.id ? (
                 <form className="control-point-edit-form" onSubmit={handleSaveObject}>
