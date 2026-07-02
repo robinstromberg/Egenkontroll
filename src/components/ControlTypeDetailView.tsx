@@ -364,6 +364,46 @@ export function ControlTypeDetailView({
     }
   }
 
+  function renderInlineFieldEditor(field: ControlFieldDefinition) {
+    if (editingFieldId !== field.id) return null;
+
+    return (
+      <form className="control-field-edit-form canvas-inline-edit-form" onSubmit={handleSaveField}>
+        <label>
+          <span>FrÃ¥ga eller fÃ¤lt</span>
+          <input
+            className="text-input"
+            value={editFieldLabel}
+            onChange={(event) => setEditFieldLabel(event.target.value)}
+            required
+          />
+        </label>
+        <label className="control-field-checkbox">
+          <input
+            checked={editFieldRequired}
+            onChange={(event) => setEditFieldRequired(event.target.checked)}
+            type="checkbox"
+          />
+          Obligatoriskt
+        </label>
+        <label className="control-field-checkbox">
+          <input
+            checked={editFieldActive}
+            onChange={(event) => setEditFieldActive(event.target.checked)}
+            type="checkbox"
+          />
+          Aktivt
+        </label>
+        <div className="control-field-actions">
+          <button className="control-point-action" type="submit">Spara</button>
+          <button className="control-point-action" type="button" onClick={() => setEditingFieldId(null)}>
+            Avbryt
+          </button>
+        </div>
+      </form>
+    );
+  }
+
   const pointLabel = getControlPointLabel(controlType.category);
   const activeFields = fields.filter((field) => field.active);
   const activeObjects = objects.filter((item) => item.active);
@@ -425,6 +465,7 @@ export function ControlTypeDetailView({
             selectedObjectId={editingObjectId}
             onEditField={handleStartEditField}
             onEditObject={handleStartEditObject}
+            renderFieldEditor={renderInlineFieldEditor}
           />
         ) : null}
       </section>

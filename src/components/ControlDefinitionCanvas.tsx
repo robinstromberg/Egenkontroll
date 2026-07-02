@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { SegmentedChoice } from './ui/SegmentedChoice';
 import type { ControlFieldDefinition, ControlObject, ControlType, Supplier } from '../types/database';
 import './ControlRunForm.css';
@@ -42,6 +42,7 @@ export type ControlDefinitionCanvasProps = {
   onFileChange?: (key: string, file: File | null) => void;
   onEditField?: (field: ControlFieldDefinition) => void;
   onEditObject?: (object: ControlObject) => void;
+  renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
 };
 
 function responseKey(objectId: string | null, fieldId: string): string {
@@ -228,6 +229,7 @@ function ChecklistMatrix({
   onChange,
   onActionChange,
   onEditField,
+  renderFieldEditor,
 }: {
   field: ControlFieldDefinition;
   objects: ControlObject[];
@@ -238,13 +240,15 @@ function ChecklistMatrix({
   onChange?: (key: string, value: string) => void;
   onActionChange?: (key: string, value: string) => void;
   onEditField?: (field: ControlFieldDefinition) => void;
+  renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
 }) {
   const disabled = mode !== 'use';
   const isEditMode = mode === 'edit';
+  const selected = selectedFieldId === field.id;
 
   return (
     <section
-      className={selectedFieldId === field.id ? 'check-matrix canvas-edit-selected' : 'check-matrix'}
+      className={selected ? 'check-matrix canvas-edit-selected' : 'check-matrix'}
       aria-labelledby={`matrix-${field.id}`}
     >
       <div className="check-matrix-header">
@@ -258,6 +262,9 @@ function ChecklistMatrix({
             Redigera fält
           </button>
         </div>
+      ) : null}
+      {selected && renderFieldEditor ? (
+        <div className="canvas-inline-editor">{renderFieldEditor(field)}</div>
       ) : null}
 
       {objects.map((object) => {
@@ -408,6 +415,7 @@ export function ControlDefinitionCanvas({
   onFileChange,
   onEditField,
   onEditObject,
+  renderFieldEditor,
 }: ControlDefinitionCanvasProps) {
   const disabled = mode !== 'use';
   const isEditMode = mode === 'edit';
@@ -428,6 +436,7 @@ export function ControlDefinitionCanvas({
           onChange={onResponseChange}
           onActionChange={onActionChange}
           onEditField={onEditField}
+          renderFieldEditor={renderFieldEditor}
         />
       ) : null}
 
@@ -459,10 +468,11 @@ export function ControlDefinitionCanvas({
               const key = responseKey(object?.id ?? null, field.id);
               const value = responses[key] ?? (disabled ? getDefaultValue(field) : '');
               const reason = getDeviationReason(field, object, value);
+              const selected = field.id === selectedFieldId;
 
               return (
                 <div
-                  className={field.id === selectedFieldId ? 'control-field canvas-field-editable selected' : isEditMode ? 'control-field canvas-field-editable' : 'control-field'}
+                  className={selected ? 'control-field canvas-field-editable selected' : isEditMode ? 'control-field canvas-field-editable' : 'control-field'}
                   key={key}
                 >
                   {isEditMode ? (
@@ -594,6 +604,10 @@ export function ControlDefinitionCanvas({
                         required={!disabled}
                       />
                     </div>
+                  ) : null}
+
+                  {selected && renderFieldEditor ? (
+                    <div className="canvas-inline-editor">{renderFieldEditor(field)}</div>
                   ) : null}
                 </div>
               );
