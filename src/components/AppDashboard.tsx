@@ -33,6 +33,8 @@ export type AppDashboardProps = {
 
 export type FirstRunMode = 'owner' | 'staff';
 export const STAFF_ONBOARDING_ORGANIZATION_KEY = 'egenkontroll:staff-onboarding-organization-id';
+type MenuSubview = 'profile' | 'organization' | 'users' | 'controlTypes' | 'suppliers' | 'help' | null;
+const menuSubviews: Exclude<MenuSubview, null>[] = ['profile', 'organization', 'users', 'controlTypes', 'suppliers', 'help'];
 
 const roleLabels = {
   owner: 'Ägare',
@@ -57,6 +59,34 @@ function readFirstRunMode(organizationId: string): FirstRunMode | null {
   return null;
 }
 
+function readHashParams(): URLSearchParams {
+  const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+  return new URLSearchParams(hash);
+}
+
+function readMenuSubviewFromHash(): MenuSubview {
+  const params = readHashParams();
+  const menu = params.get('menu');
+  if (menuSubviews.includes(menu as Exclude<MenuSubview, null>)) return menu as Exclude<MenuSubview, null>;
+  if (params.get('controlTypeId')) return 'controlTypes';
+  return null;
+}
+
+function writeMenuSubviewToHash(subview: MenuSubview) {
+  const params = readHashParams();
+  params.set('view', 'menu');
+
+  if (subview) {
+    params.set('menu', subview);
+  } else {
+    params.delete('menu');
+    params.delete('controlTypeId');
+  }
+
+  const nextUrl = `${window.location.pathname}${window.location.search}#${params.toString()}`;
+  window.history.replaceState(null, '', nextUrl);
+}
+
 export function AppDashboard({
   activeView,
   user,
@@ -71,9 +101,7 @@ export function AppDashboard({
   const headerMeta = getHeaderMeta(displayName, roleLabels[context.membership.role], user.email);
   const [activeContext, setActiveContext] = useState(context);
   const [activeControlTypeId, setActiveControlTypeId] = useState<string | null>(null);
-  const [menuSubview, setMenuSubview] = useState<
-    'profile' | 'organization' | 'users' | 'controlTypes' | 'suppliers' | 'help' | null
-  >(null);
+  const [menuSubview, setMenuSubview] = useState<MenuSubview>(() => readMenuSubviewFromHash());
   const [savedSummary, setSavedSummary] = useState<SavedControlSummary | null>(null);
   const [dashboardKey, setDashboardKey] = useState(0);
   const [firstRunMode, setFirstRunMode] = useState<FirstRunMode | null>(
@@ -84,10 +112,10 @@ export function AppDashboard({
     setActiveContext(context);
     setActiveControlTypeId(null);
     setSavedSummary(null);
-    setMenuSubview(null);
+    setMenuSubview(activeView === 'menu' ? readMenuSubviewFromHash() : null);
     setDashboardKey((current) => current + 1);
     setFirstRunMode(readFirstRunMode(context.organization.id));
-  }, [context]);
+  }, [activeView, context]);
 
   useEffect(() => {
     if (activeView !== 'today') {
@@ -96,8 +124,20 @@ export function AppDashboard({
     }
     if (activeView !== 'menu') {
       setMenuSubview(null);
+    } else {
+      setMenuSubview(readMenuSubviewFromHash());
     }
   }, [activeView]);
+
+  function openMenuSubview(subview: Exclude<MenuSubview, null>) {
+    setMenuSubview(subview);
+    writeMenuSubviewToHash(subview);
+  }
+
+  function closeMenuSubview() {
+    setMenuSubview(null);
+    writeMenuSubviewToHash(null);
+  }
 
   async function handleControlSaved(summary: SavedControlSummary) {
     setActiveControlTypeId(null);
@@ -139,7 +179,7 @@ export function AppDashboard({
           canManage={canManage}
           onConfigureControlType={() => {
             setActiveControlTypeId(null);
-            setMenuSubview('controlTypes');
+            openMenuSubview('controlTypes');
             onChangeView('menu');
           }}
         />
@@ -186,14 +226,14 @@ export function AppDashboard({
 
     if (activeView === 'menu') {
       if (menuSubview === 'profile') {
-        return <ProfileView user={user} initialFullName={context.profile?.full_name ?? ''} onBack={() => setMenuSubview(null)} />;
+        return <ProfileView user={user} initialFullName={context.profile?.full_name ?? ''} onBack={closeMenuSubview} />;
       }
 
       if (menuSubview === 'organization') {
         return (
           <OrganizationBrandingView
             organization={activeContext.organization}
-            onBack={() => setMenuSubview(null)}
+            onBack={closeMenuSubview}
             onSaved={handleOrganizationSaved}
           />
         );
@@ -205,7 +245,7 @@ export function AppDashboard({
             organizationId={context.organization.id}
             userId={user.id}
             canManage={canManage}
-            onBack={() => setMenuSubview(null)}
+            onBack={closeMenuSubview}
           />
         );
       }
@@ -216,7 +256,7 @@ export function AppDashboard({
             organizationId={context.organization.id}
             userId={user.id}
             canManage={canManage}
-            onBack={() => setMenuSubview(null)}
+            onBack={closeMenuSubview}
           />
         );
       }
@@ -226,13 +266,13 @@ export function AppDashboard({
           <SuppliersView
             organizationId={context.organization.id}
             userId={user.id}
-            onBack={() => setMenuSubview(null)}
+            onBack={closeMenuSubview}
           />
         );
       }
 
       if (menuSubview === 'help') {
-        return <HelpView onBack={() => setMenuSubview(null)} />;
+        return <HelpView onBack={closeMenuSubview} />;
       }
 
       return (
@@ -241,12 +281,12 @@ export function AppDashboard({
           userEmail={user.email}
           roleLabel={roleLabels[context.membership.role]}
           canManage={canManage}
-          onOpenProfile={() => setMenuSubview('profile')}
-          onOpenOrganization={() => setMenuSubview('organization')}
-          onOpenUsers={() => setMenuSubview('users')}
-          onOpenControlTypes={() => setMenuSubview('controlTypes')}
-          onOpenSuppliers={() => setMenuSubview('suppliers')}
-          onOpenHelp={() => setMenuSubview('help')}
+          onOpenProfile={() => openMenuSubview('profile')}
+          onOpenOrganization={() => openMenuSubview('organization')}
+          onOpenUsers={() => openMenuSubview('users')}
+          onOpenControlTypes={() => openMenuSubview('controlTypes')}
+          onOpenSuppliers={() => openMenuSubview('suppliers')}
+          onOpenHelp={() => openMenuSubview('help')}
           onSignOut={onSignOut}
         />
       );
@@ -262,7 +302,7 @@ export function AppDashboard({
         canManage={canManage}
         firstRunMode={firstRunMode}
         onOpenControlTypes={() => {
-          setMenuSubview('controlTypes');
+          openMenuSubview('controlTypes');
           onChangeView('menu');
         }}
       />

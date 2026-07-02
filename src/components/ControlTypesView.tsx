@@ -87,6 +87,7 @@ function writeControlTypeIdToHash(controlTypeId: string | null) {
   const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
   const params = new URLSearchParams(hash);
   params.set('view', 'menu');
+  params.set('menu', 'controlTypes');
 
   if (controlTypeId) {
     params.set('controlTypeId', controlTypeId);

@@ -48,10 +48,17 @@ function readActiveView(): AppView {
 }
 
 function writeActiveView(view: AppView) {
-  const params = new URLSearchParams();
+  const params = readHashParams();
 
   if (view !== 'today') {
     params.set('view', view);
+  } else {
+    params.delete('view');
+  }
+
+  if (view !== 'menu') {
+    params.delete('menu');
+    params.delete('controlTypeId');
   }
 
   const nextHash = params.toString() ? `#${params.toString()}` : '';
