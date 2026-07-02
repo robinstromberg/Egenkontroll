@@ -176,6 +176,20 @@
   justify-content: space-between;
 }
 
+.control-canvas-heading-actions {
+  display: grid;
+  flex: 0 1 auto;
+  justify-items: end;
+  gap: 8px;
+}
+
+.control-canvas-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .control-point-heading h4,
 .control-field-card h4,
 .control-field-form h4,
@@ -483,6 +497,20 @@
 
   .control-type-detail-card {
     grid-template-columns: 1fr;
+  }
+
+  .control-point-heading {
+    display: grid;
+  }
+
+  .control-canvas-heading-actions,
+  .control-canvas-shortcuts {
+    justify-items: stretch;
+    justify-content: stretch;
+  }
+
+  .control-canvas-shortcuts .control-point-action {
+    flex: 1 1 140px;
   }
 
   .field-type-grid {

@@ -153,6 +153,8 @@ export function ControlTypeDetailView({
   const [loading, setLoading] = useState(true);
   const [savingType, setSavingType] = useState(false);
   const [message, setMessage] = useState('');
+  const [fieldToolsOpen, setFieldToolsOpen] = useState(false);
+  const [pointToolsOpen, setPointToolsOpen] = useState(false);
 
   async function refreshObjects() {
     const nextObjects = await listControlObjects(organizationId, controlType.id);
@@ -472,6 +474,12 @@ export function ControlTypeDetailView({
   const activeFieldCount = activeFields.length;
   const selectedFieldTypeOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
 
+  useEffect(() => {
+    if (!loading && canManage && fields.length === 0) {
+      setFieldToolsOpen(true);
+    }
+  }, [canManage, fields.length, loading]);
+
   return (
     <section className="control-type-detail" aria-labelledby="control-type-detail-title">
       <div className="control-type-detail-topbar">
@@ -508,7 +516,19 @@ export function ControlTypeDetailView({
             <p className="eyebrow">Kontrollen</p>
             <h4 id="control-type-preview-title">Bygg direkt i det personalen ska fylla i</h4>
           </div>
-          <span className="control-point-count">{activeFieldCount} saker att fylla i</span>
+          <div className="control-canvas-heading-actions">
+            <span className="control-point-count">{activeFieldCount} saker att fylla i</span>
+            {canManage ? (
+              <div className="control-canvas-shortcuts" aria-label="Snabbval för kontrollen">
+                <button type="button" className="control-point-action" onClick={() => setFieldToolsOpen(true)}>
+                  Lägg till uppgift
+                </button>
+                <button type="button" className="control-point-action" onClick={() => setPointToolsOpen(true)}>
+                  Lägg till plats/punkt
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {loading ? <p className="muted-copy">Laddar kontrollen...</p> : null}
@@ -626,7 +646,11 @@ export function ControlTypeDetailView({
         </ActionButton>
       ) : null}
 
-      <details className="control-field-section control-admin-panel">
+      <details
+        className="control-field-section control-admin-panel"
+        open={fieldToolsOpen}
+        onToggle={(event) => setFieldToolsOpen(event.currentTarget.open)}
+      >
         <summary>
           <span>
             <strong>Lägg till eller hantera det som ska fyllas i</strong>
@@ -765,7 +789,11 @@ export function ControlTypeDetailView({
         ) : null}
       </details>
 
-      <details className="control-point-section control-admin-panel">
+      <details
+        className="control-point-section control-admin-panel"
+        open={pointToolsOpen}
+        onToggle={(event) => setPointToolsOpen(event.currentTarget.open)}
+      >
         <summary>
           <span>
             <strong>Lägg till eller hantera platser och punkter</strong>
