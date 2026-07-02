@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { ControlDefinitionCanvas } from './ControlDefinitionCanvas';
 import {
@@ -155,6 +155,9 @@ export function ControlTypeDetailView({
   const [message, setMessage] = useState('');
   const [fieldToolsOpen, setFieldToolsOpen] = useState(false);
   const [pointToolsOpen, setPointToolsOpen] = useState(false);
+  const [pendingToolFocus, setPendingToolFocus] = useState<'field' | 'point' | null>(null);
+  const fieldToolsRef = useRef<HTMLDetailsElement | null>(null);
+  const pointToolsRef = useRef<HTMLDetailsElement | null>(null);
 
   async function refreshObjects() {
     const nextObjects = await listControlObjects(organizationId, controlType.id);
@@ -480,6 +483,33 @@ export function ControlTypeDetailView({
     }
   }, [canManage, fields.length, loading]);
 
+  useEffect(() => {
+    if (!pendingToolFocus) return undefined;
+    if (pendingToolFocus === 'field' && !fieldToolsOpen) return undefined;
+    if (pendingToolFocus === 'point' && !pointToolsOpen) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      const target = pendingToolFocus === 'field' ? fieldToolsRef.current : pointToolsRef.current;
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target
+        ?.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input.text-input, textarea.text-input, select.text-input')
+        ?.focus({ preventScroll: true });
+      setPendingToolFocus(null);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [fieldToolsOpen, pendingToolFocus, pointToolsOpen]);
+
+  function openFieldTools() {
+    setFieldToolsOpen(true);
+    setPendingToolFocus('field');
+  }
+
+  function openPointTools() {
+    setPointToolsOpen(true);
+    setPendingToolFocus('point');
+  }
+
   return (
     <section className="control-type-detail" aria-labelledby="control-type-detail-title">
       <div className="control-type-detail-topbar">
@@ -520,10 +550,10 @@ export function ControlTypeDetailView({
             <span className="control-point-count">{activeFieldCount} saker att fylla i</span>
             {canManage ? (
               <div className="control-canvas-shortcuts" aria-label="Snabbval för kontrollen">
-                <button type="button" className="control-point-action" onClick={() => setFieldToolsOpen(true)}>
+                <button type="button" className="control-point-action" onClick={openFieldTools}>
                   Lägg till uppgift
                 </button>
-                <button type="button" className="control-point-action" onClick={() => setPointToolsOpen(true)}>
+                <button type="button" className="control-point-action" onClick={openPointTools}>
                   Lägg till plats/punkt
                 </button>
               </div>
@@ -649,6 +679,7 @@ export function ControlTypeDetailView({
       <details
         className="control-field-section control-admin-panel"
         open={fieldToolsOpen}
+        ref={fieldToolsRef}
         onToggle={(event) => setFieldToolsOpen(event.currentTarget.open)}
       >
         <summary>
@@ -792,6 +823,7 @@ export function ControlTypeDetailView({
       <details
         className="control-point-section control-admin-panel"
         open={pointToolsOpen}
+        ref={pointToolsRef}
         onToggle={(event) => setPointToolsOpen(event.currentTarget.open)}
       >
         <summary>
