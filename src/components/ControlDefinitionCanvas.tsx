@@ -43,6 +43,7 @@ export type ControlDefinitionCanvasProps = {
   onEditField?: (field: ControlFieldDefinition) => void;
   onEditObject?: (object: ControlObject) => void;
   renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
+  renderObjectEditor?: (object: ControlObject) => ReactNode;
 };
 
 function responseKey(objectId: string | null, fieldId: string): string {
@@ -416,6 +417,7 @@ export function ControlDefinitionCanvas({
   onEditField,
   onEditObject,
   renderFieldEditor,
+  renderObjectEditor,
 }: ControlDefinitionCanvasProps) {
   const disabled = mode !== 'use';
   const isEditMode = mode === 'edit';
@@ -463,6 +465,10 @@ export function ControlDefinitionCanvas({
                 </button>
               ) : null}
             </div>
+
+            {object?.id === selectedObjectId && renderObjectEditor ? (
+              <div className="canvas-inline-editor">{renderObjectEditor(object)}</div>
+            ) : null}
 
             {visibleFields.map((field) => {
               const key = responseKey(object?.id ?? null, field.id);

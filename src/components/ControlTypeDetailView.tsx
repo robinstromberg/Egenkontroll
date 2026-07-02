@@ -300,6 +300,7 @@ export function ControlTypeDetailView({
   }
 
   function handleStartEditObject(controlObject: ControlObject) {
+    setEditingFieldId(null);
     setEditingObjectId(controlObject.id);
     setEditObjectName(controlObject.name);
     setEditObjectLocation(controlObject.location ?? '');
@@ -338,6 +339,7 @@ export function ControlTypeDetailView({
   }
 
   function handleStartEditField(field: ControlFieldDefinition) {
+    setEditingObjectId(null);
     setEditingFieldId(field.id);
     setEditFieldLabel(field.label);
     setEditFieldRequired(field.required);
@@ -397,6 +399,66 @@ export function ControlTypeDetailView({
         <div className="control-field-actions">
           <button className="control-point-action" type="submit">Spara</button>
           <button className="control-point-action" type="button" onClick={() => setEditingFieldId(null)}>
+            Avbryt
+          </button>
+        </div>
+      </form>
+    );
+  }
+
+  function renderInlineObjectEditor(controlObject: ControlObject) {
+    if (editingObjectId !== controlObject.id) return null;
+
+    return (
+      <form className="control-point-edit-form canvas-inline-edit-form" onSubmit={handleSaveObject}>
+        <label>
+          <span>Namn</span>
+          <input
+            className="text-input"
+            value={editObjectName}
+            onChange={(event) => setEditObjectName(event.target.value)}
+            required
+          />
+        </label>
+        <label>
+          <span>Plats</span>
+          <input
+            className="text-input"
+            value={editObjectLocation}
+            onChange={(event) => setEditObjectLocation(event.target.value)}
+          />
+        </label>
+        {controlType.category === 'temperature' ? (
+          <label>
+            <span>Maxgräns</span>
+            <input
+              className="text-input"
+              value={editObjectLimitMax}
+              onChange={(event) => setEditObjectLimitMax(event.target.value)}
+              type="number"
+            />
+          </label>
+        ) : null}
+        <label>
+          <span>Instruktion</span>
+          <textarea
+            className="text-input control-type-instructions-input"
+            value={editObjectInstructions}
+            onChange={(event) => setEditObjectInstructions(event.target.value)}
+            rows={4}
+          />
+        </label>
+        <label className="control-field-checkbox">
+          <input
+            checked={editObjectActive}
+            onChange={(event) => setEditObjectActive(event.target.checked)}
+            type="checkbox"
+          />
+          Aktiv
+        </label>
+        <div className="control-field-actions">
+          <button className="control-point-action" type="submit">Spara</button>
+          <button className="control-point-action" type="button" onClick={() => setEditingObjectId(null)}>
             Avbryt
           </button>
         </div>
@@ -467,6 +529,7 @@ export function ControlTypeDetailView({
             onEditField={handleStartEditField}
             onEditObject={handleStartEditObject}
             renderFieldEditor={renderInlineFieldEditor}
+            renderObjectEditor={renderInlineObjectEditor}
           />
         ) : null}
       </section>
