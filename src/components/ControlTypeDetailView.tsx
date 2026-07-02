@@ -425,7 +425,7 @@ export function ControlTypeDetailView({
 
       {message ? <p className="form-message error-message">{message}</p> : null}
 
-      <div className="control-type-detail-card">
+      <div className="control-type-detail-card control-type-context-card">
         <div>
           <span>Kategori</span>
           <strong>{categoryLabels[controlType.category]}</strong>
@@ -443,17 +443,17 @@ export function ControlTypeDetailView({
       <section className="control-type-preview-section" aria-labelledby="control-type-preview-title">
         <div className="control-point-heading">
           <div>
-            <p className="eyebrow">Förhandsvisning</p>
-            <h4 id="control-type-preview-title">Så visas kontrollen för personalen</h4>
+            <p className="eyebrow">Kontrollen</p>
+            <h4 id="control-type-preview-title">Bygg direkt i det personalen ska fylla i</h4>
           </div>
-          <span className="control-point-count">{activeFieldCount} aktiva fält</span>
+          <span className="control-point-count">{activeFieldCount} saker att fylla i</span>
         </div>
 
-        {loading ? <p className="muted-copy">Laddar förhandsvisning...</p> : null}
+        {loading ? <p className="muted-copy">Laddar kontrollen...</p> : null}
         {!loading && activeFields.length === 0 ? (
           <div className="control-detail-empty">
-            <strong>Förhandsvisning saknas</strong>
-            <p className="muted-copy">Lägg till minst ett aktivt formulärfält för att visa hur kontrollen ser ut.</p>
+            <strong>Kontrollen saknar innehåll</strong>
+            <p className="muted-copy">Lägg till minst en fråga, temperatur, datum eller annan uppgift som personalen ska fylla i.</p>
           </div>
         ) : null}
         {!loading && activeFields.length > 0 ? (
@@ -472,7 +472,14 @@ export function ControlTypeDetailView({
       </section>
 
       {canManage ? (
-        <form className="control-type-settings-form" onSubmit={handleSaveControlType}>
+        <details className="control-admin-panel">
+          <summary>
+            <span>
+              <strong>Namn, rutin och schema</strong>
+              <small>Inställningar som styr när kontrollen visas.</small>
+            </span>
+          </summary>
+          <form className="control-type-settings-form" onSubmit={handleSaveControlType}>
           <div className="control-point-heading">
             <div>
               <p className="eyebrow">Grunduppgifter</p>
@@ -539,7 +546,8 @@ export function ControlTypeDetailView({
           <ActionButton type="submit" disabled={savingType || !typeName.trim()}>
             {savingType ? 'Sparar...' : 'Spara kontrolltyp'}
           </ActionButton>
-        </form>
+          </form>
+        </details>
       ) : controlType.instructions ? (
         <div className="control-type-settings-form">
           <div>
@@ -555,19 +563,25 @@ export function ControlTypeDetailView({
         </ActionButton>
       ) : null}
 
-      <div className="control-field-section">
+      <details className="control-field-section control-admin-panel">
+        <summary>
+          <span>
+            <strong>Lägg till eller hantera det som ska fyllas i</strong>
+            <small>Frågor, datum, temperaturer, foton och andra uppgifter.</small>
+          </span>
+        </summary>
         <div className="control-point-heading">
           <div>
-            <p className="eyebrow">Formulärfält</p>
+            <p className="eyebrow">Vad ska dokumenteras?</p>
             <h4>Vad ska fyllas i?</h4>
           </div>
           <span className="control-point-count">{activeFieldCount} aktiva</span>
         </div>
 
-        {loading ? <p className="muted-copy">Laddar formulärfält...</p> : null}
+        {loading ? <p className="muted-copy">Laddar uppgifter...</p> : null}
         {!loading && fields.length === 0 ? (
           <div className="control-detail-empty">
-            <strong>Inga formulärfält finns ännu</strong>
+            <strong>Inga uppgifter finns ännu</strong>
             <p className="muted-copy">
               {canManage
                 ? 'Lägg till minst ett fält, till exempel OK/Ej OK eller temperatur. Annars kan kontrollen inte sparas.'
@@ -686,9 +700,15 @@ export function ControlTypeDetailView({
             ) : null}
           </form>
         ) : null}
-      </div>
+      </details>
 
-      <div className="control-point-section">
+      <details className="control-point-section control-admin-panel">
+        <summary>
+          <span>
+            <strong>Lägg till eller hantera platser och punkter</strong>
+            <small>Kylar, områden, produkter eller andra saker kontrollen gäller.</small>
+          </span>
+        </summary>
         <div className="control-point-heading">
           <div>
             <p className="eyebrow">{pointLabel}</p>
@@ -843,7 +863,7 @@ export function ControlTypeDetailView({
             <ActionButton type="submit">Lägg till kontrollpunkt</ActionButton>
           </form>
         ) : null}
-      </div>
+      </details>
     </section>
   );
 }

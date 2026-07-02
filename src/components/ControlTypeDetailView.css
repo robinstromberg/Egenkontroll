@@ -44,6 +44,11 @@
   gap: 10px;
 }
 
+.control-type-context-card {
+  padding: 10px 12px;
+  box-shadow: none;
+}
+
 .control-type-settings-form {
   display: grid;
   gap: 12px;
@@ -51,8 +56,11 @@
 
 .control-type-preview-section {
   display: grid;
-  gap: 12px;
-  background: #fbfaff;
+  gap: 14px;
+  border-color: rgba(91, 70, 225, 0.2);
+  padding: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaff 100%);
+  box-shadow: 0 14px 34px rgba(62, 46, 135, 0.1);
 }
 
 .control-type-preview-section .control-definition-canvas-preview {
@@ -105,6 +113,60 @@
   display: grid;
   gap: 12px;
   background: #fbfaff;
+}
+
+.control-admin-panel {
+  overflow: hidden;
+}
+
+.control-admin-panel > summary {
+  display: flex;
+  min-height: 58px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  list-style: none;
+  color: #172033;
+  font-weight: 900;
+}
+
+.control-admin-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.control-admin-panel > summary::after {
+  content: "+";
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 12px;
+  color: #5b46e1;
+  background: #efedff;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.control-admin-panel[open] > summary {
+  margin-bottom: 12px;
+}
+
+.control-admin-panel[open] > summary::after {
+  content: "−";
+}
+
+.control-admin-panel > summary span {
+  display: grid;
+  gap: 3px;
+}
+
+.control-admin-panel > summary small {
+  color: #657089;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.3;
 }
 
 .control-point-heading {
@@ -332,7 +394,13 @@
     background: #111a2f;
   }
 
+  .control-type-preview-section {
+    border-color: rgba(159, 145, 255, 0.28);
+    background: linear-gradient(180deg, #121a2e 0%, #111a2f 100%);
+  }
+
   .control-type-detail-card strong,
+  .control-admin-panel > summary,
   .control-type-settings-form label span,
   .control-point-heading h4,
   .control-field-card h4,
@@ -348,6 +416,7 @@
   }
 
   .control-type-detail-card span,
+  .control-admin-panel > summary small,
   .control-type-instructions-copy,
   .control-field-card p,
   .control-point-card p {
