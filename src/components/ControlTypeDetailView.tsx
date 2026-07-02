@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
+import { ControlDefinitionCanvas } from './ControlDefinitionCanvas';
 import {
   createControlField,
   createControlObject,
@@ -342,7 +343,9 @@ export function ControlTypeDetailView({
   }
 
   const pointLabel = getControlPointLabel(controlType.category);
-  const activeFieldCount = fields.filter((field) => field.active).length;
+  const activeFields = fields.filter((field) => field.active);
+  const activeObjects = objects.filter((item) => item.active);
+  const activeFieldCount = activeFields.length;
 
   return (
     <section className="control-type-detail" aria-labelledby="control-type-detail-title">
@@ -373,6 +376,32 @@ export function ControlTypeDetailView({
           <strong>{controlType.active ? 'Aktiv' : 'Inaktiv'}</strong>
         </div>
       </div>
+
+      <section className="control-type-preview-section" aria-labelledby="control-type-preview-title">
+        <div className="control-point-heading">
+          <div>
+            <p className="eyebrow">Förhandsvisning</p>
+            <h4 id="control-type-preview-title">Så visas kontrollen för personalen</h4>
+          </div>
+          <span className="control-point-count">{activeFieldCount} aktiva fält</span>
+        </div>
+
+        {loading ? <p className="muted-copy">Laddar förhandsvisning...</p> : null}
+        {!loading && activeFields.length === 0 ? (
+          <div className="control-detail-empty">
+            <strong>Förhandsvisning saknas</strong>
+            <p className="muted-copy">Lägg till minst ett aktivt formulärfält för att visa hur kontrollen ser ut.</p>
+          </div>
+        ) : null}
+        {!loading && activeFields.length > 0 ? (
+          <ControlDefinitionCanvas
+            controlType={controlType}
+            objects={activeObjects}
+            fields={activeFields}
+            mode="preview"
+          />
+        ) : null}
+      </section>
 
       {canManage ? (
         <form className="control-type-settings-form" onSubmit={handleSaveControlType}>

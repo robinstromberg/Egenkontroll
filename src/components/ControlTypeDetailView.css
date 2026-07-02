@@ -23,6 +23,7 @@
 }
 
 .control-type-detail-card,
+.control-type-preview-section,
 .control-type-settings-form,
 .control-field-section,
 .control-field-form,
@@ -46,6 +47,16 @@
 .control-type-settings-form {
   display: grid;
   gap: 12px;
+}
+
+.control-type-preview-section {
+  display: grid;
+  gap: 12px;
+  background: #fbfaff;
+}
+
+.control-type-preview-section .control-definition-canvas-preview {
+  opacity: 0.94;
 }
 
 .control-type-detail-card div,
@@ -257,6 +268,7 @@
 @media (prefers-color-scheme: dark) {
   .control-type-detail-card,
   .control-type-detail-topbar,
+  .control-type-preview-section,
   .control-type-settings-form,
   .control-field-section,
   .control-field-form,
@@ -276,6 +288,7 @@
   }
 
   .control-field-section,
+  .control-type-preview-section,
   .control-point-section {
     background: #111a2f;
   }

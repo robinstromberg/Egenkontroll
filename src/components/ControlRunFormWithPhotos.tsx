@@ -1,6 +1,15 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
-import { SegmentedChoice } from './ui/SegmentedChoice';
+import {
+  ControlDefinitionCanvas,
+} from './ControlDefinitionCanvas';
+import {
+  getDefaultValue,
+  getDeviationReason,
+  isSupplierField,
+  responseKey,
+} from './ControlDefinitionCanvasLogic';
+import type { DeviationState, FileState, ResponseState } from './ControlDefinitionCanvasLogic';
 import {
   getControlRunDefinition,
   saveControlRun,
@@ -11,7 +20,7 @@ import type {
   ControlRunDefinition,
 } from '../services/controlRunWithAttachmentsService';
 import type { SavedControlSummary } from './SavedControlView';
-import type { ControlFieldDefinition, ControlObject, Supplier } from '../types/database';
+import type { Supplier } from '../types/database';
 import './ControlRunForm.css';
 
 export type ControlRunFormWithPhotosProps = {
@@ -24,311 +33,6 @@ export type ControlRunFormWithPhotosProps = {
   canManage: boolean;
   onConfigureControlType: () => void;
 };
-
-type ResponseState = Record<string, string>;
-type DeviationState = Record<string, string>;
-type FileState = Record<string, File | null>;
-type SelectOption = {
-  label: string;
-  value: string;
-};
-
-type PhotoCaptureFieldProps = {
-  id: string;
-  label: string;
-  file: File | null;
-  required: boolean;
-  onChange: (file: File | null) => void;
-};
-
-type TemperatureFieldProps = {
-  id: string;
-  label: string;
-  object: ControlObject | null;
-  value: string;
-  required: boolean;
-  reason: string | null;
-  onChange: (value: string) => void;
-};
-
-type ChecklistMatrixProps = {
-  field: ControlFieldDefinition;
-  objects: ControlObject[];
-  responses: ResponseState;
-  actions: DeviationState;
-  onChange: (key: string, value: string) => void;
-  onActionChange: (key: string, value: string) => void;
-};
-
-type SupplierSelectFieldProps = {
-  id: string;
-  label: string;
-  value: string;
-  required: boolean;
-  suppliers: Supplier[];
-  onChange: (value: string) => void;
-};
-
-type DateFieldProps = {
-  id: string;
-  label: string;
-  value: string;
-  required: boolean;
-  onChange: (value: string) => void;
-};
-
-function responseKey(objectId: string | null, fieldId: string): string {
-  return `${objectId ?? 'global'}:${fieldId}`;
-}
-
-function getFieldInputType(field: ControlFieldDefinition): string {
-  if (field.field_type === 'temperature' || field.field_type === 'number') return 'number';
-  if (field.field_type === 'date') return 'date';
-  if (field.field_type === 'datetime') return 'datetime-local';
-  return 'text';
-}
-
-function readSelectOptions(field: ControlFieldDefinition): SelectOption[] {
-  return field.options
-    .map((option) => {
-      if (typeof option === 'string') return { label: option, value: option };
-      if (option && typeof option === 'object' && 'label' in option && 'value' in option) {
-        const item = option as { label?: unknown; value?: unknown };
-        if (typeof item.label === 'string' && typeof item.value === 'string') {
-          return { label: item.label, value: item.value };
-        }
-      }
-      return null;
-    })
-    .filter((option): option is SelectOption => Boolean(option));
-}
-
-function getDeviationReason(field: ControlFieldDefinition, object: ControlObject | null, value: string): string | null {
-  if (field.field_type === 'ok_not_ok' && value === 'not_ok') return `${field.label} är ej OK.`;
-  if (field.field_type === 'boolean' && value === 'false') return `${field.label} är inte uppfyllt.`;
-
-  if (field.field_type === 'temperature') {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return null;
-    if (object?.limit_max !== null && object?.limit_max !== undefined && parsed > object.limit_max) {
-      return `${field.label} är över maxgräns ${object.limit_max}${object.unit ?? ''}.`;
-    }
-    if (object?.limit_min !== null && object?.limit_min !== undefined && parsed < object.limit_min) {
-      return `${field.label} är under mingräns ${object.limit_min}${object.unit ?? ''}.`;
-    }
-  }
-
-  return null;
-}
-
-function getDefaultValue(field: ControlFieldDefinition): string {
-  if (field.field_type === 'ok_not_ok') return 'ok';
-  if (field.field_type === 'boolean') return 'true';
-  return '';
-}
-
-function isSupplierField(field: ControlFieldDefinition): boolean {
-  return field.field_key === 'supplier' || field.label.trim().toLowerCase() === 'leverantör';
-}
-
-function getLimitText(object: ControlObject | null): string | null {
-  if (!object) return null;
-  const unit = object.unit ?? '°C';
-  if (object.limit_min !== null && object.limit_min !== undefined && object.limit_max !== null && object.limit_max !== undefined) {
-    return `${object.limit_min}${unit}–${object.limit_max}${unit}`;
-  }
-  if (object.limit_max !== null && object.limit_max !== undefined) return `Max ${object.limit_max}${unit}`;
-  if (object.limit_min !== null && object.limit_min !== undefined) return `Min ${object.limit_min}${unit}`;
-  return null;
-}
-
-function PhotoCaptureField({ id, label, file, required, onChange }: PhotoCaptureFieldProps) {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!file) {
-      setPreviewUrl(null);
-      return undefined;
-    }
-
-    const nextUrl = URL.createObjectURL(file);
-    setPreviewUrl(nextUrl);
-    return () => URL.revokeObjectURL(nextUrl);
-  }, [file]);
-
-  return (
-    <div className="photo-capture-field">
-      <label htmlFor={id}>{label}</label>
-      <div className="photo-capture-row">
-        <div className="photo-thumbnail-strip" aria-live="polite">
-          {previewUrl ? (
-            <img className="photo-thumbnail" src={previewUrl} alt="Vald bild" />
-          ) : (
-            <span className="photo-empty-slot">Ingen bild vald</span>
-          )}
-        </div>
-
-        <label className="photo-camera-button" htmlFor={id} aria-label="Ta eller välj bild">
-          <span aria-hidden="true">▣</span>
-        </label>
-      </div>
-
-      <input
-        accept="image/*"
-        capture="environment"
-        className="photo-file-input"
-        id={id}
-        onChange={(event) => onChange(event.target.files?.[0] ?? null)}
-        type="file"
-        required={required}
-      />
-
-      {file ? <p className="photo-file-name">{file.name}</p> : null}
-    </div>
-  );
-}
-
-function TemperatureField({ id, label, object, value, required, reason, onChange }: TemperatureFieldProps) {
-  const limitText = getLimitText(object);
-  const hasValue = value.trim().length > 0;
-  const statusClass = reason ? 'temperature-status bad' : 'temperature-status good';
-  const statusText = reason ? 'Utanför gränsvärde' : 'Inom gränsvärde';
-
-  return (
-    <div className={reason ? 'temperature-field deviation' : 'temperature-field'}>
-      <label htmlFor={id}>{label}</label>
-      <div className="temperature-input-row">
-        <input
-          className="text-input temperature-input"
-          id={id}
-          type="number"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          required={required}
-        />
-        <span className="temperature-unit">{object?.unit ?? '°C'}</span>
-      </div>
-      <div className="temperature-meta-row">
-        {limitText ? <span>{limitText}</span> : <span>Gränsvärde saknas</span>}
-        {hasValue ? <span className={statusClass}>{statusText}</span> : null}
-      </div>
-    </div>
-  );
-}
-
-function ChecklistMatrix({ field, objects, responses, actions, onChange, onActionChange }: ChecklistMatrixProps) {
-  return (
-    <section className="check-matrix" aria-labelledby={`matrix-${field.id}`}>
-      <div className="check-matrix-header">
-        <strong id={`matrix-${field.id}`}>{field.label}</strong>
-        <span>OK</span>
-        <span>Ej OK</span>
-      </div>
-
-      {objects.map((object) => {
-        const key = responseKey(object.id, field.id);
-        const actionId = `${key}:action`;
-        const value = responses[key] ?? 'ok';
-        const showAction = value === 'not_ok';
-
-        return (
-          <div className={showAction ? 'check-matrix-item has-action' : 'check-matrix-item'} key={object.id}>
-            <div className="check-matrix-row">
-              <span className="check-matrix-name">{object.name}</span>
-              <button
-                type="button"
-                className={value === 'ok' ? 'matrix-choice ok selected' : 'matrix-choice ok'}
-                aria-pressed={value === 'ok'}
-                onClick={() => {
-                  onChange(key, 'ok');
-                  onActionChange(key, '');
-                }}
-              >
-                ✓
-              </button>
-              <button
-                type="button"
-                className={value === 'not_ok' ? 'matrix-choice not-ok selected' : 'matrix-choice not-ok'}
-                aria-pressed={value === 'not_ok'}
-                onClick={() => onChange(key, 'not_ok')}
-              >
-                ×
-              </button>
-            </div>
-
-            {showAction ? (
-              <div className="matrix-action-box">
-                <strong>Avvikelse: {field.label} är ej OK.</strong>
-                <label className="action-label" htmlFor={actionId}>Vad är fel / åtgärd?</label>
-                <textarea
-                  className="text-input"
-                  id={actionId}
-                  value={actions[key] ?? ''}
-                  onChange={(event) => onActionChange(key, event.target.value)}
-                  required
-                />
-              </div>
-            ) : null}
-          </div>
-        );
-      })}
-    </section>
-  );
-}
-
-function SupplierSelectField({
-  id,
-  label,
-  value,
-  required,
-  suppliers,
-  onChange,
-}: SupplierSelectFieldProps) {
-  return (
-    <>
-      <label htmlFor={id}>{label}</label>
-      <select
-        className="text-input supplier-select"
-        id={id}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        required={required}
-        disabled={suppliers.length === 0}
-      >
-        <option value="">{suppliers.length ? 'Välj leverantör' : 'Inga aktiva leverantörer'}</option>
-        {suppliers.map((supplier) => (
-          <option value={supplier.name} key={supplier.id}>
-            {supplier.name}
-          </option>
-        ))}
-      </select>
-      {suppliers.length === 0 ? (
-        <p className="field-hint">Lägg till leverantörer under Meny innan fältet används.</p>
-      ) : null}
-    </>
-  );
-}
-
-function DateField({ id, label, value, required, onChange }: DateFieldProps) {
-  return (
-    <>
-      <label htmlFor={id}>{label}</label>
-      <div className="date-input-shell">
-        <span className="date-input-calendar" aria-hidden="true">
-          <span />
-        </span>
-        <input
-          className="text-input date-input"
-          id={id}
-          type="date"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          required={required}
-        />
-      </div>
-    </>
-  );
-}
 
 export function ControlRunFormWithPhotos({
   organizationId,
@@ -455,9 +159,6 @@ export function ControlRunFormWithPhotos({
   if (loading) return <p className="muted-copy">Laddar kontroll...</p>;
   if (!definition) return <p className="form-message error-message">Kontrollen kunde inte visas.</p>;
 
-  const objects = definition.objects.length ? definition.objects : [null];
-  const matrixObjects = definition.objects;
-  const matrixField = matrixObjects.length > 1 ? definition.fields.find((field) => field.field_type === 'ok_not_ok') : undefined;
   const canRunControl = definition.fields.length > 0;
 
   return (
@@ -500,151 +201,20 @@ export function ControlRunFormWithPhotos({
         </section>
       ) : null}
 
-      {matrixField ? (
-        <ChecklistMatrix
-          field={matrixField}
-          objects={matrixObjects}
+      {canRunControl ? (
+        <ControlDefinitionCanvas
+          controlType={definition.controlType}
+          objects={definition.objects}
+          fields={definition.fields}
           responses={responses}
           actions={actions}
-          onChange={updateResponse}
+          files={files}
+          suppliers={suppliers}
+          onResponseChange={updateResponse}
           onActionChange={updateAction}
+          onFileChange={updateFile}
         />
       ) : null}
-
-      {objects.map((object) => {
-        const visibleFields = matrixField
-          ? definition.fields.filter((field) => field.id !== matrixField.id && field.field_type !== 'textarea')
-          : definition.fields;
-        if (visibleFields.length === 0) return null;
-
-        return (
-          <section className="control-group" key={object?.id ?? 'global'}>
-            <div>
-              <h4>{object?.name ?? definition.controlType.name}</h4>
-              {object?.location ? <p className="muted-copy">{object.location}</p> : null}
-              {object?.instructions ? <p className="muted-copy">{object.instructions}</p> : null}
-            </div>
-
-            {visibleFields.map((field) => {
-              const key = responseKey(object?.id ?? null, field.id);
-              const value = responses[key] ?? '';
-              const reason = getDeviationReason(field, object, value);
-
-              return (
-                <div className="control-field" key={key}>
-                  {field.field_type === 'photo' ? (
-                    <PhotoCaptureField
-                      id={key}
-                      label={field.label}
-                      file={files[key] ?? null}
-                      required={field.required}
-                      onChange={(nextFile) => updateFile(key, nextFile)}
-                    />
-                  ) : field.field_type === 'temperature' ? (
-                    <TemperatureField
-                      id={key}
-                      label={field.label}
-                      object={object}
-                      value={value}
-                      required={field.required}
-                      reason={reason}
-                      onChange={(nextValue) => updateResponse(key, nextValue)}
-                    />
-                  ) : field.field_type === 'ok_not_ok' ? (
-                    <SegmentedChoice
-                      id={key}
-                      label={field.label}
-                      value={value}
-                      onChange={(nextValue) => updateResponse(key, nextValue)}
-                      options={[
-                        { label: 'OK', tone: 'good', value: 'ok' },
-                        { label: 'Ej OK', tone: 'bad', value: 'not_ok' },
-                      ]}
-                    />
-                  ) : field.field_type === 'boolean' ? (
-                    <SegmentedChoice
-                      id={key}
-                      label={field.label}
-                      value={value}
-                      onChange={(nextValue) => updateResponse(key, nextValue)}
-                      options={[
-                        { label: 'Ja', tone: 'good', value: 'true' },
-                        { label: 'Nej', tone: 'bad', value: 'false' },
-                      ]}
-                    />
-                  ) : isSupplierField(field) ? (
-                    <SupplierSelectField
-                      id={key}
-                      label={field.label}
-                      value={value}
-                      required={field.required}
-                      suppliers={suppliers}
-                      onChange={(nextValue) => updateResponse(key, nextValue)}
-                    />
-                  ) : field.field_type === 'select' && readSelectOptions(field).length > 0 ? (
-                    <>
-                      <label htmlFor={key}>{field.label}</label>
-                      <select
-                        className="text-input"
-                        id={key}
-                        value={value}
-                        onChange={(event) => updateResponse(key, event.target.value)}
-                        required={field.required}
-                      >
-                        <option value="">Välj</option>
-                        {readSelectOptions(field).map((option) => (
-                          <option value={option.value} key={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </>
-                  ) : field.field_type === 'date' ? (
-                    <DateField
-                      id={key}
-                      label={field.label}
-                      value={value}
-                      required={field.required}
-                      onChange={(nextValue) => updateResponse(key, nextValue)}
-                    />
-                  ) : field.field_type === 'textarea' ? (
-                    <>
-                      <label htmlFor={key}>{field.label}</label>
-                      <textarea className="text-input" id={key} value={value} onChange={(event) => updateResponse(key, event.target.value)} />
-                    </>
-                  ) : (
-                    <>
-                      <label htmlFor={key}>{field.label}</label>
-                      <input
-                        className="text-input"
-                        id={key}
-                        type={getFieldInputType(field)}
-                        value={value}
-                        onChange={(event) => updateResponse(key, event.target.value)}
-                        required={field.required}
-                      />
-                    </>
-                  )}
-
-                  {reason ? (
-                    <div className="deviation-box">
-                      <strong>Avvikelse: {reason}</strong>
-                      <label className="action-label" htmlFor={`${key}:action`}>Åtgärd</label>
-                      <textarea
-                        className="text-input"
-                        id={`${key}:action`}
-                        value={actions[key] ?? ''}
-                        onChange={(event) => updateAction(key, event.target.value)}
-                        required
-                      />
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </section>
-        );
-      })}
 
       {missingAction ? (
         <p className="form-message error-message">Alla avvikelser måste ha en åtgärdstext innan kontrollen kan sparas.</p>

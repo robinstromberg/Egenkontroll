@@ -10,9 +10,10 @@ export type SegmentedChoiceProps = {
   options: SegmentedChoiceOption[];
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 };
 
-export function SegmentedChoice({ id, label, options, value, onChange }: SegmentedChoiceProps) {
+export function SegmentedChoice({ id, label, options, value, onChange, disabled = false }: SegmentedChoiceProps) {
   return (
     <div className="segmented-choice" role="radiogroup" aria-labelledby={`${id}-label`}>
       <span className="field-label" id={`${id}-label`}>{label}</span>
@@ -24,6 +25,7 @@ export function SegmentedChoice({ id, label, options, value, onChange }: Segment
               type="button"
               className={`choice-button ${option.tone}${selected ? ' selected' : ''}`}
               aria-checked={selected}
+              disabled={disabled}
               key={option.value}
               onClick={() => onChange(option.value)}
               role="radio"

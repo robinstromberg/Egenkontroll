@@ -3,6 +3,11 @@
   gap: 12px;
 }
 
+.control-definition-canvas {
+  display: grid;
+  gap: 12px;
+}
+
 .control-form-topbar {
   position: sticky;
   top: 8px;
