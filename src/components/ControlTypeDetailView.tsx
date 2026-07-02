@@ -474,6 +474,8 @@ export function ControlTypeDetailView({
   const pointLabel = getControlPointLabel(controlType.category);
   const activeFields = fields.filter((field) => field.active);
   const activeObjects = objects.filter((item) => item.active);
+  const inactiveFields = fields.filter((field) => !field.active);
+  const inactiveObjects = objects.filter((item) => !item.active);
   const activeFieldCount = activeFields.length;
   const selectedFieldTypeOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
 
@@ -708,9 +710,10 @@ export function ControlTypeDetailView({
           </div>
         ) : null}
 
+        {inactiveFields.length > 0 ? (
         <div className="control-field-list">
-          {fields.map((field) => (
-            <article className={field.active ? 'control-field-card' : 'control-field-card inactive'} key={field.id}>
+          {inactiveFields.map((field) => (
+            <article className="control-field-card inactive" key={field.id}>
               <div className="control-field-icon" aria-hidden="true">
                 <img src={fieldTypeIconPaths[field.field_type]} alt="" />
               </div>
@@ -768,6 +771,7 @@ export function ControlTypeDetailView({
             </article>
           ))}
         </div>
+        ) : null}
 
         {canManage ? (
           <form className="control-field-form" onSubmit={handleCreateField}>
@@ -837,7 +841,7 @@ export function ControlTypeDetailView({
             <p className="eyebrow">{pointLabel}</p>
             <h4>Kontrollpunkter för {controlType.name}</h4>
           </div>
-          <span className="control-point-count">{objects.filter((item) => item.active).length} aktiva</span>
+          <span className="control-point-count">{activeObjects.length} aktiva</span>
         </div>
 
         {loading ? <p className="muted-copy">Laddar kontrollpunkter...</p> : null}
@@ -852,9 +856,10 @@ export function ControlTypeDetailView({
           </div>
         ) : null}
 
+        {inactiveObjects.length > 0 ? (
         <div className="control-point-list">
-          {objects.map((controlObject) => (
-            <article className={controlObject.active ? 'control-point-card' : 'control-point-card inactive'} key={controlObject.id}>
+          {inactiveObjects.map((controlObject) => (
+            <article className="control-point-card inactive" key={controlObject.id}>
               <div className="control-point-icon" aria-hidden="true">
                 <img src={categoryIconPaths[controlType.category]} alt="" />
               </div>
@@ -938,6 +943,7 @@ export function ControlTypeDetailView({
             </article>
           ))}
         </div>
+        ) : null}
 
         {canManage ? (
           <form className="control-point-form" onSubmit={handleCreateObject}>
