@@ -408,6 +408,7 @@ export function ControlTypeDetailView({
   const activeFields = fields.filter((field) => field.active);
   const activeObjects = objects.filter((item) => item.active);
   const activeFieldCount = activeFields.length;
+  const selectedFieldTypeOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
 
   return (
     <section className="control-type-detail" aria-labelledby="control-type-detail-title">
@@ -652,24 +653,37 @@ export function ControlTypeDetailView({
                 </button>
               ))}
             </div>
-            <label>
-              <span>Fråga eller fält</span>
-              <input
-                className="text-input"
-                value={fieldLabel}
-                onChange={(event) => setFieldLabel(event.target.value)}
-                required
-              />
-            </label>
-            <label className="control-field-checkbox">
-              <input
-                checked={fieldRequired}
-                onChange={(event) => setFieldRequired(event.target.checked)}
-                type="checkbox"
-              />
-              Obligatoriskt
-            </label>
-            <ActionButton type="submit">Lägg till fält</ActionButton>
+            {selectedFieldTypeOption ? (
+              <div className="field-create-panel">
+                <div className="field-create-summary">
+                  <div className="control-field-icon" aria-hidden="true">
+                    <img src={fieldTypeIconPaths[selectedFieldTypeOption.fieldType]} alt="" />
+                  </div>
+                  <div>
+                    <h5>Skapa {selectedFieldTypeOption.label}</h5>
+                    <p>{selectedFieldTypeOption.description}</p>
+                  </div>
+                </div>
+                <label>
+                  <span>Fråga eller fält</span>
+                  <input
+                    className="text-input"
+                    value={fieldLabel}
+                    onChange={(event) => setFieldLabel(event.target.value)}
+                    required
+                  />
+                </label>
+                <label className="control-field-checkbox">
+                  <input
+                    checked={fieldRequired}
+                    onChange={(event) => setFieldRequired(event.target.checked)}
+                    type="checkbox"
+                  />
+                  Obligatoriskt
+                </label>
+                <ActionButton type="submit">Lägg till fält</ActionButton>
+              </div>
+            ) : null}
           </form>
         ) : null}
       </div>

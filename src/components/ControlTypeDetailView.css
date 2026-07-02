@@ -267,6 +267,38 @@
   line-height: 1.25;
 }
 
+.field-create-panel {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(91, 70, 225, 0.14);
+  border-radius: 16px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.field-create-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.field-create-summary h5,
+.field-create-summary p {
+  margin: 0;
+}
+
+.field-create-summary h5 {
+  color: #172033;
+  font-size: 0.95rem;
+}
+
+.field-create-summary p {
+  color: #566078;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .control-point-instructions {
   margin-top: 6px;
   white-space: pre-wrap;
@@ -354,6 +386,19 @@
   }
 
   .field-type-option span {
+    color: #aeb8d0;
+  }
+
+  .field-create-panel {
+    border-color: rgba(159, 145, 255, 0.18);
+    background: #121a2e;
+  }
+
+  .field-create-summary h5 {
+    color: #f7f9ff;
+  }
+
+  .field-create-summary p {
     color: #aeb8d0;
   }
 }
