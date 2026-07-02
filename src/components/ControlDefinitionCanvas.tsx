@@ -6,7 +6,7 @@ import './ControlRunForm.css';
 export type ResponseState = Record<string, string>;
 export type DeviationState = Record<string, string>;
 export type FileState = Record<string, File | null>;
-export type ControlDefinitionCanvasMode = 'use' | 'preview';
+export type ControlDefinitionCanvasMode = 'use' | 'preview' | 'edit';
 
 type SelectOption = {
   label: string;
@@ -22,9 +22,13 @@ export type ControlDefinitionCanvasProps = {
   actions?: DeviationState;
   files?: FileState;
   suppliers?: Supplier[];
+  selectedFieldId?: string | null;
+  selectedObjectId?: string | null;
   onResponseChange?: (key: string, value: string) => void;
   onActionChange?: (key: string, value: string) => void;
   onFileChange?: (key: string, file: File | null) => void;
+  onEditField?: (field: ControlFieldDefinition) => void;
+  onEditObject?: (object: ControlObject) => void;
 };
 
 function responseKey(objectId: string | null, fieldId: string): string {
@@ -207,26 +211,41 @@ function ChecklistMatrix({
   responses,
   actions,
   mode,
+  selectedFieldId,
   onChange,
   onActionChange,
+  onEditField,
 }: {
   field: ControlFieldDefinition;
   objects: ControlObject[];
   responses: ResponseState;
   actions: DeviationState;
   mode: ControlDefinitionCanvasMode;
+  selectedFieldId?: string | null;
   onChange?: (key: string, value: string) => void;
   onActionChange?: (key: string, value: string) => void;
+  onEditField?: (field: ControlFieldDefinition) => void;
 }) {
-  const disabled = mode === 'preview';
+  const disabled = mode !== 'use';
+  const isEditMode = mode === 'edit';
 
   return (
-    <section className="check-matrix" aria-labelledby={`matrix-${field.id}`}>
+    <section
+      className={selectedFieldId === field.id ? 'check-matrix canvas-edit-selected' : 'check-matrix'}
+      aria-labelledby={`matrix-${field.id}`}
+    >
       <div className="check-matrix-header">
         <strong id={`matrix-${field.id}`}>{field.label}</strong>
         <span>OK</span>
         <span>Ej OK</span>
       </div>
+      {isEditMode ? (
+        <div className="canvas-edit-toolbar">
+          <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>
+            Redigera fält
+          </button>
+        </div>
+      ) : null}
 
       {objects.map((object) => {
         const key = responseKey(object.id, field.id);
@@ -369,11 +388,16 @@ export function ControlDefinitionCanvas({
   actions = {},
   files = {},
   suppliers = [],
+  selectedFieldId = null,
+  selectedObjectId = null,
   onResponseChange,
   onActionChange,
   onFileChange,
+  onEditField,
+  onEditObject,
 }: ControlDefinitionCanvasProps) {
-  const disabled = mode === 'preview';
+  const disabled = mode !== 'use';
+  const isEditMode = mode === 'edit';
   const renderObjects = objects.length ? objects : [null];
   const matrixObjects = objects;
   const matrixField = matrixObjects.length > 1 ? fields.find((field) => field.field_type === 'ok_not_ok') : undefined;
@@ -387,8 +411,10 @@ export function ControlDefinitionCanvas({
           responses={responses}
           actions={actions}
           mode={mode}
+          selectedFieldId={selectedFieldId}
           onChange={onResponseChange}
           onActionChange={onActionChange}
+          onEditField={onEditField}
         />
       ) : null}
 
@@ -399,11 +425,21 @@ export function ControlDefinitionCanvas({
         if (visibleFields.length === 0) return null;
 
         return (
-          <section className="control-group" key={object?.id ?? 'global'}>
-            <div>
-              <h4>{object?.name ?? controlType.name}</h4>
-              {object?.location ? <p className="muted-copy">{object.location}</p> : null}
-              {object?.instructions ? <p className="muted-copy">{object.instructions}</p> : null}
+          <section
+            className={object?.id === selectedObjectId ? 'control-group canvas-edit-selected' : 'control-group'}
+            key={object?.id ?? 'global'}
+          >
+            <div className="canvas-object-heading">
+              <div>
+                <h4>{object?.name ?? controlType.name}</h4>
+                {object?.location ? <p className="muted-copy">{object.location}</p> : null}
+                {object?.instructions ? <p className="muted-copy">{object.instructions}</p> : null}
+              </div>
+              {isEditMode && object ? (
+                <button className="canvas-edit-action" type="button" onClick={() => onEditObject?.(object)}>
+                  Redigera punkt
+                </button>
+              ) : null}
             </div>
 
             {visibleFields.map((field) => {
@@ -412,7 +448,18 @@ export function ControlDefinitionCanvas({
               const reason = getDeviationReason(field, object, value);
 
               return (
-                <div className="control-field" key={key}>
+                <div
+                  className={field.id === selectedFieldId ? 'control-field canvas-field-editable selected' : isEditMode ? 'control-field canvas-field-editable' : 'control-field'}
+                  key={key}
+                >
+                  {isEditMode ? (
+                    <div className="canvas-field-toolbar">
+                      <span>{field.required ? 'Obligatoriskt' : 'Frivilligt'}</span>
+                      <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>
+                        Redigera fält
+                      </button>
+                    </div>
+                  ) : null}
                   {field.field_type === 'photo' ? (
                     <PhotoCaptureField
                       id={key}

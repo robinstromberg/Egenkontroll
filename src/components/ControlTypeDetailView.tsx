@@ -398,7 +398,11 @@ export function ControlTypeDetailView({
             controlType={controlType}
             objects={activeObjects}
             fields={activeFields}
-            mode="preview"
+            mode={canManage ? 'edit' : 'preview'}
+            selectedFieldId={editingFieldId}
+            selectedObjectId={editingObjectId}
+            onEditField={handleStartEditField}
+            onEditObject={handleStartEditObject}
           />
         ) : null}
       </section>

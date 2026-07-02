@@ -43,6 +43,54 @@
   box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
 }
 
+.canvas-object-heading,
+.canvas-field-toolbar,
+.canvas-edit-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.canvas-field-toolbar {
+  align-items: center;
+  border-radius: 12px;
+  padding: 6px 8px;
+  color: #5b46e1;
+  background: #f5f3ff;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.canvas-edit-toolbar {
+  padding: 8px 12px 0;
+}
+
+.canvas-edit-action {
+  min-height: 30px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 10px;
+  color: #5b46e1;
+  background: #efedff;
+  font-size: 0.74rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.canvas-field-editable {
+  border: 1px dashed rgba(91, 70, 225, 0.18);
+  border-radius: 14px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.canvas-edit-selected,
+.canvas-field-editable.selected {
+  border-color: rgba(91, 70, 225, 0.5);
+  box-shadow: 0 0 0 3px rgba(91, 70, 225, 0.1);
+}
+
 .control-empty-state {
   display: grid;
   gap: 12px;
@@ -501,6 +549,23 @@
     color: #f7f9ff;
   }
 
+  .canvas-field-toolbar,
+  .canvas-edit-action {
+    color: #b9afff;
+    background: #211b45;
+  }
+
+  .canvas-field-editable {
+    border-color: rgba(159, 145, 255, 0.24);
+    background: rgba(17, 26, 47, 0.62);
+  }
+
+  .canvas-edit-selected,
+  .canvas-field-editable.selected {
+    border-color: rgba(185, 175, 255, 0.58);
+    box-shadow: 0 0 0 3px rgba(185, 175, 255, 0.12);
+  }
+
   .check-matrix-header {
     color: #aeb8d0;
     background: #111a2f;
@@ -646,5 +711,14 @@
 
   .control-form-temperature .control-group {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .canvas-object-heading,
+  .canvas-field-toolbar {
+    display: grid;
+  }
+
+  .canvas-edit-action {
+    justify-self: start;
   }
 }
