@@ -1,20 +1,16 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { ControlDefinitionCanvas } from './ControlDefinitionCanvas';
 import {
   createControlField,
   createControlObject,
-  duplicateControlField,
-  duplicateControlObject,
   listControlFields,
   listControlObjects,
   setControlObjectActive,
   setControlTypeActive,
-  updateControlField,
-  updateControlFieldOrder,
   updateControlObject,
-  updateControlObjectOrder,
   updateControlType,
+  updateControlField,
 } from '../services/controlAdminService';
 import {
   formatFrequencyLabel,
@@ -39,8 +35,6 @@ type ControlTypeDetailViewProps = {
   onBack: () => void;
   onChanged: () => Promise<void>;
 };
-
-type MoveDirection = 'up' | 'down';
 
 const frequencyLabels: Record<ControlFrequency, string> = {
   daily: 'Dagligen',
@@ -99,67 +93,30 @@ const fieldTypeOptions: Array<{
   description: string;
   defaultLabel: string;
 }> = [
-  { fieldType: 'text', label: 'Text', description: 'Kort text, till exempel batchnummer.', defaultLabel: 'Text' },
-  { fieldType: 'date', label: 'Datum', description: 'Datum, till exempel bäst före.', defaultLabel: 'Datum' },
-  { fieldType: 'datetime', label: 'Datum & tid', description: 'Tidpunkt eller tidssteg.', defaultLabel: 'Tidpunkt' },
-  { fieldType: 'select', label: 'Val', description: 'Ett fördefinierat val.', defaultLabel: 'Val' },
-  { fieldType: 'boolean', label: 'Ja / Nej', description: 'En enkel bekräftelse.', defaultLabel: 'Bekräftelse' },
-  { fieldType: 'ok_not_ok', label: 'OK / Ej OK', description: 'Status som kan skapa avvikelse.', defaultLabel: 'Status' },
-  { fieldType: 'number', label: 'Nummer', description: 'Ett numeriskt värde.', defaultLabel: 'Värde' },
-  { fieldType: 'temperature', label: 'Temperatur', description: 'Temperatur mot gränsvärde.', defaultLabel: 'Temperatur' },
-  { fieldType: 'photo', label: 'Foto', description: 'Bild eller etikett.', defaultLabel: 'Foto' },
-  { fieldType: 'textarea', label: 'Kommentar', description: 'Längre fri text.', defaultLabel: 'Kommentar' },
+  { fieldType: 'ok_not_ok', label: 'OK/Ej OK', description: 'För ja/nej-kontroller och avvikelser.', defaultLabel: 'Status' },
+  { fieldType: 'textarea', label: 'Kommentar', description: 'Fri text när personalen behöver beskriva något.', defaultLabel: 'Kommentar' },
+  { fieldType: 'temperature', label: 'Temperatur', description: 'Temperaturvärde som kan jämföras mot gränsvärden.', defaultLabel: 'Temperatur' },
+  { fieldType: 'text', label: 'Text', description: 'Kort text, till exempel batchnummer eller märkning.', defaultLabel: 'Text' },
+  { fieldType: 'date', label: 'Datum', description: 'Datumfält, till exempel bäst före.', defaultLabel: 'Datum' },
+  { fieldType: 'datetime', label: 'Datum och tid', description: 'Tidpunkt eller tidssteg, till exempel start/slut.', defaultLabel: 'Tidpunkt' },
+  { fieldType: 'select', label: 'Val', description: 'Fördefinierat val när alternativen kommer från mall.', defaultLabel: 'Val' },
+  { fieldType: 'photo', label: 'Foto', description: 'Bild eller dokumentation från mobilen.', defaultLabel: 'Foto' },
 ];
 
 function getControlPointLabel(category: ControlCategory): string {
-  if (category === 'temperature') return 'Objekt och enheter';
-  if (category === 'checklist') return 'Områden och punkter';
+  if (category === 'temperature') return 'Enheter';
+  if (category === 'checklist') return 'Områden eller punkter';
   if (category === 'receiving') return 'Mottagningspunkter';
   if (category === 'traceability') return 'Spårbarhetspunkter';
   return 'Kontrollpunkter';
 }
 
 function getPlaceholder(category: ControlCategory): string {
-  if (category === 'temperature') return 'Exempel: Kyl 3 - Beredning';
+  if (category === 'temperature') return 'Exempel: Kyl 3 – Beredning';
   if (category === 'checklist') return 'Exempel: Kök';
   if (category === 'receiving') return 'Exempel: Kylvaror';
   if (category === 'traceability') return 'Exempel: Etikettkontroll';
   return 'Exempel: Kontrollpunkt';
-}
-
-function isRequiredByDefault(fieldType: ControlFieldDefinition['field_type']): boolean {
-  return fieldType === 'ok_not_ok' || fieldType === 'temperature';
-}
-
-function moveItem<T extends { id: string }>(items: T[], itemId: string, direction: MoveDirection): T[] {
-  const index = items.findIndex((item) => item.id === itemId);
-  if (index < 0) return items;
-
-  const nextIndex = direction === 'up' ? index - 1 : index + 1;
-  if (nextIndex < 0 || nextIndex >= items.length) return items;
-
-  const nextItems = [...items];
-  const currentItem = nextItems[index];
-  nextItems[index] = nextItems[nextIndex];
-  nextItems[nextIndex] = currentItem;
-  return nextItems;
-}
-
-function getObjectMeta(controlObject: ControlObject, category: ControlCategory): string {
-  const parts: string[] = [];
-  if (controlObject.location) parts.push(controlObject.location);
-  if (category === 'temperature') {
-    const unit = controlObject.unit ?? '°C';
-    if (controlObject.limit_min !== null && controlObject.limit_max !== null) {
-      parts.push(`Min: ${controlObject.limit_min}${unit} Max: ${controlObject.limit_max}${unit}`);
-    } else if (controlObject.limit_max !== null) {
-      parts.push(`Max: ${controlObject.limit_max}${unit}`);
-    } else if (controlObject.limit_min !== null) {
-      parts.push(`Min: ${controlObject.limit_min}${unit}`);
-    }
-  }
-
-  return parts.length ? parts.join(' · ') : 'Ingen extra information';
 }
 
 export function ControlTypeDetailView({
@@ -175,10 +132,11 @@ export function ControlTypeDetailView({
   const [objectLocation, setObjectLocation] = useState('');
   const [objectInstructions, setObjectInstructions] = useState('');
   const [limitMax, setLimitMax] = useState('');
-  const [showObjectCreator, setShowObjectCreator] = useState(false);
+  const [fieldLabel, setFieldLabel] = useState('Status');
+  const [fieldType, setFieldType] = useState<ControlFieldDefinition['field_type']>('ok_not_ok');
+  const [fieldRequired, setFieldRequired] = useState(true);
   const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
   const [editFieldLabel, setEditFieldLabel] = useState('');
-  const [editFieldType, setEditFieldType] = useState<ControlFieldDefinition['field_type']>('ok_not_ok');
   const [editFieldRequired, setEditFieldRequired] = useState(false);
   const [editFieldActive, setEditFieldActive] = useState(true);
   const [editingObjectId, setEditingObjectId] = useState<string | null>(null);
@@ -194,19 +152,21 @@ export function ControlTypeDetailView({
   const [typeInstructions, setTypeInstructions] = useState(controlType.instructions ?? '');
   const [loading, setLoading] = useState(true);
   const [savingType, setSavingType] = useState(false);
-  const [savingStructure, setSavingStructure] = useState(false);
   const [message, setMessage] = useState('');
+  const [fieldToolsOpen, setFieldToolsOpen] = useState(false);
+  const [pointToolsOpen, setPointToolsOpen] = useState(false);
+  const [pendingToolFocus, setPendingToolFocus] = useState<'field' | 'point' | null>(null);
+  const fieldToolsRef = useRef<HTMLDetailsElement | null>(null);
+  const pointToolsRef = useRef<HTMLDetailsElement | null>(null);
 
   async function refreshObjects() {
     const nextObjects = await listControlObjects(organizationId, controlType.id);
     setObjects(nextObjects);
-    return nextObjects;
   }
 
   async function refreshFields() {
     const nextFields = await listControlFields(organizationId, controlType.id);
     setFields(nextFields);
-    return nextFields;
   }
 
   useEffect(() => {
@@ -279,136 +239,12 @@ export function ControlTypeDetailView({
     }
   }
 
-  function handleStartEditField(field: ControlFieldDefinition) {
-    setEditingObjectId(null);
-    setEditingFieldId(field.id);
-    setEditFieldLabel(field.label);
-    setEditFieldType(field.field_type);
-    setEditFieldRequired(field.required);
-    setEditFieldActive(field.active);
-  }
-
-  function handleStartEditObject(controlObject: ControlObject) {
-    setEditingFieldId(null);
-    setEditingObjectId(controlObject.id);
-    setEditObjectName(controlObject.name);
-    setEditObjectLocation(controlObject.location ?? '');
-    setEditObjectInstructions(controlObject.instructions ?? '');
-    setEditObjectLimitMax(controlObject.limit_max === null ? '' : String(controlObject.limit_max));
-    setEditObjectActive(controlObject.active);
-  }
-
-  async function handleCreateField(fieldType: ControlFieldDefinition['field_type']) {
-    const option = fieldTypeOptions.find((item) => item.fieldType === fieldType);
-    if (!option) return;
-
-    try {
-      setSavingStructure(true);
-      setMessage('');
-      const createdField = await createControlField({
-        organizationId,
-        controlTypeId: controlType.id,
-        label: option.defaultLabel,
-        fieldType,
-        required: isRequiredByDefault(fieldType),
-      });
-      await refreshFields();
-      handleStartEditField(createdField);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa fältet.');
-    } finally {
-      setSavingStructure(false);
-    }
-  }
-
-  async function handleSaveField(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!editingFieldId) return;
-    setMessage('');
-
-    try {
-      setSavingStructure(true);
-      await updateControlField({
-        fieldDefinitionId: editingFieldId,
-        organizationId,
-        label: editFieldLabel.trim(),
-        fieldType: editFieldType,
-        required: editFieldRequired,
-        active: editFieldActive,
-      });
-      setEditingFieldId(null);
-      await refreshFields();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte uppdatera fältet.');
-    } finally {
-      setSavingStructure(false);
-    }
-  }
-
-  async function handleToggleField(field: ControlFieldDefinition) {
-    try {
-      setSavingStructure(true);
-      setMessage('');
-      await updateControlField({
-        fieldDefinitionId: field.id,
-        organizationId,
-        label: field.label,
-        fieldType: field.field_type,
-        required: field.required,
-        active: !field.active,
-      });
-      if (editingFieldId === field.id && field.active) setEditingFieldId(null);
-      await refreshFields();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte ändra fältet.');
-    } finally {
-      setSavingStructure(false);
-    }
-  }
-
-  async function handleDuplicateField(field: ControlFieldDefinition) {
-    try {
-      setSavingStructure(true);
-      setMessage('');
-      const duplicatedField = await duplicateControlField({
-        fieldDefinitionId: field.id,
-        organizationId,
-      });
-      await refreshFields();
-      handleStartEditField(duplicatedField);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte duplicera fältet.');
-    } finally {
-      setSavingStructure(false);
-    }
-  }
-
-  async function handleMoveField(field: ControlFieldDefinition, direction: MoveDirection) {
-    const activeFields = fields.filter((item) => item.active);
-    const inactiveFields = fields.filter((item) => !item.active);
-    const movedFields = moveItem(activeFields, field.id, direction);
-    const nextOrder = [...movedFields, ...inactiveFields].map((item) => item.id);
-
-    try {
-      setSavingStructure(true);
-      setMessage('');
-      await updateControlFieldOrder({ organizationId, orderedIds: nextOrder });
-      setFields([...movedFields, ...inactiveFields].map((item, index) => ({ ...item, sort_order: index })));
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte flytta fältet.');
-      await refreshFields();
-    } finally {
-      setSavingStructure(false);
-    }
-  }
-
   async function handleCreateObject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage('');
 
     try {
-      setSavingStructure(true);
-      const createdObject = await createControlObject({
+      await createControlObject({
         organizationId,
         controlTypeId: controlType.id,
         name: objectName.trim(),
@@ -421,88 +257,30 @@ export function ControlTypeDetailView({
       setObjectLocation('');
       setObjectInstructions('');
       setLimitMax('');
-      setShowObjectCreator(false);
       await refreshObjects();
-      handleStartEditObject(createdObject);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa kontrollpunkten.');
-    } finally {
-      setSavingStructure(false);
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa kontrollpunkt.');
     }
   }
 
-  async function handleSaveObject(event: FormEvent<HTMLFormElement>) {
+  async function handleCreateField(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editingObjectId) return;
     setMessage('');
 
     try {
-      setSavingStructure(true);
-      await updateControlObject({
-        controlObjectId: editingObjectId,
+      await createControlField({
         organizationId,
-        name: editObjectName,
-        location: editObjectLocation,
-        instructions: editObjectInstructions,
-        limitMax: controlType.category === 'temperature' && editObjectLimitMax ? Number(editObjectLimitMax) : null,
-        active: editObjectActive,
+        controlTypeId: controlType.id,
+        label: fieldLabel.trim(),
+        fieldType,
+        required: fieldRequired,
       });
-      setEditingObjectId(null);
-      await refreshObjects();
+      const selectedOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
+      setFieldLabel(selectedOption?.defaultLabel ?? '');
+      setFieldRequired(fieldType === 'ok_not_ok' || fieldType === 'temperature');
+      await refreshFields();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte uppdatera kontrollpunkten.');
-    } finally {
-      setSavingStructure(false);
-    }
-  }
-
-  async function handleToggleObject(controlObject: ControlObject) {
-    try {
-      setSavingStructure(true);
-      setMessage('');
-      await setControlObjectActive(controlObject.id, organizationId, !controlObject.active);
-      if (editingObjectId === controlObject.id && controlObject.active) setEditingObjectId(null);
-      await refreshObjects();
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte ändra kontrollpunkten.');
-    } finally {
-      setSavingStructure(false);
-    }
-  }
-
-  async function handleDuplicateObject(controlObject: ControlObject) {
-    try {
-      setSavingStructure(true);
-      setMessage('');
-      const duplicatedObject = await duplicateControlObject({
-        controlObjectId: controlObject.id,
-        organizationId,
-      });
-      await refreshObjects();
-      handleStartEditObject(duplicatedObject);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte duplicera kontrollpunkten.');
-    } finally {
-      setSavingStructure(false);
-    }
-  }
-
-  async function handleMoveObject(controlObject: ControlObject, direction: MoveDirection) {
-    const activeObjects = objects.filter((item) => item.active);
-    const inactiveObjects = objects.filter((item) => !item.active);
-    const movedObjects = moveItem(activeObjects, controlObject.id, direction);
-    const nextOrder = [...movedObjects, ...inactiveObjects].map((item) => item.id);
-
-    try {
-      setSavingStructure(true);
-      setMessage('');
-      await updateControlObjectOrder({ organizationId, orderedIds: nextOrder });
-      setObjects([...movedObjects, ...inactiveObjects].map((item, index) => ({ ...item, sort_order: index })));
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte flytta kontrollpunkten.');
-      await refreshObjects();
-    } finally {
-      setSavingStructure(false);
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa formulärfält.');
     }
   }
 
@@ -516,31 +294,96 @@ export function ControlTypeDetailView({
     }
   }
 
-  function renderFieldEditor(field: ControlFieldDefinition) {
+  async function handleToggleObject(controlObject: ControlObject) {
+    setMessage('');
+    try {
+      await setControlObjectActive(controlObject.id, organizationId, !controlObject.active);
+      await refreshObjects();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte ändra kontrollpunkten.');
+    }
+  }
+
+  function handleStartEditObject(controlObject: ControlObject) {
+    setEditingFieldId(null);
+    setEditingObjectId(controlObject.id);
+    setEditObjectName(controlObject.name);
+    setEditObjectLocation(controlObject.location ?? '');
+    setEditObjectInstructions(controlObject.instructions ?? '');
+    setEditObjectLimitMax(controlObject.limit_max === null ? '' : String(controlObject.limit_max));
+    setEditObjectActive(controlObject.active);
+  }
+
+  async function handleSaveObject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editingObjectId) return;
+    setMessage('');
+
+    try {
+      await updateControlObject({
+        controlObjectId: editingObjectId,
+        organizationId,
+        name: editObjectName,
+        location: editObjectLocation,
+        instructions: editObjectInstructions,
+        limitMax: controlType.category === 'temperature' && editObjectLimitMax ? Number(editObjectLimitMax) : null,
+        active: editObjectActive,
+      });
+      setEditingObjectId(null);
+      await refreshObjects();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte uppdatera kontrollpunkten.');
+    }
+  }
+
+  function handleSelectFieldType(nextFieldType: ControlFieldDefinition['field_type']) {
+    const selectedOption = fieldTypeOptions.find((option) => option.fieldType === nextFieldType);
+    setFieldType(nextFieldType);
+    setFieldLabel(selectedOption?.defaultLabel ?? '');
+    setFieldRequired(nextFieldType === 'ok_not_ok' || nextFieldType === 'temperature');
+  }
+
+  function handleStartEditField(field: ControlFieldDefinition) {
+    setEditingObjectId(null);
+    setEditingFieldId(field.id);
+    setEditFieldLabel(field.label);
+    setEditFieldRequired(field.required);
+    setEditFieldActive(field.active);
+  }
+
+  async function handleSaveField(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editingFieldId) return;
+    setMessage('');
+
+    try {
+      await updateControlField({
+        fieldDefinitionId: editingFieldId,
+        organizationId,
+        label: editFieldLabel.trim(),
+        required: editFieldRequired,
+        active: editFieldActive,
+      });
+      setEditingFieldId(null);
+      await refreshFields();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte uppdatera formulärfältet.');
+    }
+  }
+
+  function renderInlineFieldEditor(field: ControlFieldDefinition) {
     if (editingFieldId !== field.id) return null;
 
     return (
-      <form className="builder-inline-form" onSubmit={handleSaveField}>
+      <form className="control-field-edit-form canvas-inline-edit-form" onSubmit={handleSaveField}>
         <label>
-          <span>Fältnamn</span>
+          <span>FrÃ¥ga eller fÃ¤lt</span>
           <input
             className="text-input"
             value={editFieldLabel}
             onChange={(event) => setEditFieldLabel(event.target.value)}
             required
           />
-        </label>
-        <label>
-          <span>Typ</span>
-          <select
-            className="text-input"
-            value={editFieldType}
-            onChange={(event) => setEditFieldType(event.target.value as ControlFieldDefinition['field_type'])}
-          >
-            {fieldTypeOptions.map((option) => (
-              <option value={option.fieldType} key={option.fieldType}>{option.label}</option>
-            ))}
-          </select>
         </label>
         <label className="control-field-checkbox">
           <input
@@ -559,7 +402,7 @@ export function ControlTypeDetailView({
           Aktivt
         </label>
         <div className="control-field-actions">
-          <button className="control-point-action" type="submit" disabled={savingStructure}>Spara</button>
+          <button className="control-point-action" type="submit">Spara</button>
           <button className="control-point-action" type="button" onClick={() => setEditingFieldId(null)}>
             Avbryt
           </button>
@@ -568,11 +411,11 @@ export function ControlTypeDetailView({
     );
   }
 
-  function renderObjectEditor(controlObject: ControlObject) {
+  function renderInlineObjectEditor(controlObject: ControlObject) {
     if (editingObjectId !== controlObject.id) return null;
 
     return (
-      <form className="builder-inline-form" onSubmit={handleSaveObject}>
+      <form className="control-point-edit-form canvas-inline-edit-form" onSubmit={handleSaveObject}>
         <label>
           <span>Namn</span>
           <input
@@ -619,7 +462,7 @@ export function ControlTypeDetailView({
           Aktiv
         </label>
         <div className="control-field-actions">
-          <button className="control-point-action" type="submit" disabled={savingStructure}>Spara</button>
+          <button className="control-point-action" type="submit">Spara</button>
           <button className="control-point-action" type="button" onClick={() => setEditingObjectId(null)}>
             Avbryt
           </button>
@@ -628,11 +471,46 @@ export function ControlTypeDetailView({
     );
   }
 
+  const pointLabel = getControlPointLabel(controlType.category);
   const activeFields = fields.filter((field) => field.active);
   const activeObjects = objects.filter((item) => item.active);
   const inactiveFields = fields.filter((field) => !field.active);
   const inactiveObjects = objects.filter((item) => !item.active);
-  const pointLabel = getControlPointLabel(controlType.category);
+  const activeFieldCount = activeFields.length;
+  const selectedFieldTypeOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
+
+  useEffect(() => {
+    if (!loading && canManage && fields.length === 0) {
+      setFieldToolsOpen(true);
+    }
+  }, [canManage, fields.length, loading]);
+
+  useEffect(() => {
+    if (!pendingToolFocus) return undefined;
+    if (pendingToolFocus === 'field' && !fieldToolsOpen) return undefined;
+    if (pendingToolFocus === 'point' && !pointToolsOpen) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      const target = pendingToolFocus === 'field' ? fieldToolsRef.current : pointToolsRef.current;
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target
+        ?.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input.text-input, textarea.text-input, select.text-input')
+        ?.focus({ preventScroll: true });
+      setPendingToolFocus(null);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [fieldToolsOpen, pendingToolFocus, pointToolsOpen]);
+
+  function openFieldTools() {
+    setFieldToolsOpen(true);
+    setPendingToolFocus('field');
+  }
+
+  function openPointTools() {
+    setPointToolsOpen(true);
+    setPendingToolFocus('point');
+  }
 
   return (
     <section className="control-type-detail" aria-labelledby="control-type-detail-title">
@@ -644,7 +522,6 @@ export function ControlTypeDetailView({
         <div>
           <p className="eyebrow">Redigera kontrolltyp</p>
           <h3 id="control-type-detail-title">{controlType.name}</h3>
-          <p className="muted-copy">Bygg kontrollen i samma logik som personalen fyller i den.</p>
         </div>
       </div>
 
@@ -665,239 +542,25 @@ export function ControlTypeDetailView({
         </div>
       </div>
 
-      {canManage ? (
-        <section className="control-builder-section" aria-labelledby="control-builder-title">
-          <div className="control-point-heading">
-            <div>
-              <p className="eyebrow">Bygg / redigera</p>
-              <h4 id="control-builder-title">{controlType.name}</h4>
-            </div>
-            <span className="control-point-count">{activeFields.length} fält · {activeObjects.length} punkter</span>
-          </div>
-
-          {loading ? <p className="muted-copy">Laddar byggvyn...</p> : null}
-
-          <div className="control-builder-layout">
-            <section className="builder-panel" aria-labelledby="builder-fields-title">
-              <div className="builder-panel-heading">
-                <div>
-                  <p className="eyebrow">Vad ska fyllas i?</p>
-                  <h4 id="builder-fields-title">Fält</h4>
-                </div>
-                <span>{activeFields.length} aktiva</span>
-              </div>
-
-              <div className="field-type-grid builder-field-palette" role="group" aria-label="Lägg till fält">
-                {fieldTypeOptions.map((option) => (
-                  <button
-                    className="field-type-option builder-field-option"
-                    key={option.fieldType}
-                    onClick={() => handleCreateField(option.fieldType)}
-                    type="button"
-                    disabled={savingStructure}
-                  >
-                    <span className="control-field-icon" aria-hidden="true">
-                      <img src={fieldTypeIconPaths[option.fieldType]} alt="" />
-                    </span>
-                    <strong>{option.label}</strong>
-                    <span>{option.description}</span>
-                  </button>
-                ))}
-              </div>
-
-              {activeFields.length === 0 ? (
-                <div className="control-detail-empty">
-                  <strong>Inga fält ännu</strong>
-                  <p className="muted-copy">Lägg till minst ett fält för att kontrollen ska gå att spara.</p>
-                </div>
-              ) : (
-                <div className="builder-card-list">
-                  {activeFields.map((field, index) => (
-                    <article
-                      className={editingFieldId === field.id ? 'builder-card selected' : 'builder-card'}
-                      key={field.id}
-                    >
-                      <span className="builder-drag-handle" aria-hidden="true">::</span>
-                      <span className="control-field-icon" aria-hidden="true">
-                        <img src={fieldTypeIconPaths[field.field_type]} alt="" />
-                      </span>
-                      <button className="builder-card-main" type="button" onClick={() => handleStartEditField(field)}>
-                        <strong>{field.label}</strong>
-                        <span>{fieldTypeLabels[field.field_type]} · {field.required ? 'Obligatoriskt' : 'Frivilligt'}</span>
-                      </button>
-                      <details className="builder-card-menu">
-                        <summary aria-label={`Åtgärder för ${field.label}`}>...</summary>
-                        <div className="builder-card-menu-panel">
-                          <button type="button" onClick={() => handleStartEditField(field)}>Redigera</button>
-                          <button type="button" onClick={() => handleDuplicateField(field)}>Duplicera</button>
-                          <button type="button" onClick={() => handleMoveField(field, 'up')} disabled={index === 0}>Flytta upp</button>
-                          <button type="button" onClick={() => handleMoveField(field, 'down')} disabled={index === activeFields.length - 1}>Flytta ner</button>
-                          <button type="button" onClick={() => handleToggleField(field)}>Arkivera</button>
-                        </div>
-                      </details>
-                      {renderFieldEditor(field)}
-                    </article>
-                  ))}
-                </div>
-              )}
-
-              {inactiveFields.length > 0 ? (
-                <details className="builder-archive-panel">
-                  <summary>Arkiverade fält ({inactiveFields.length})</summary>
-                  <div className="builder-card-list">
-                    {inactiveFields.map((field) => (
-                      <article className="builder-card inactive" key={field.id}>
-                        <span className="control-field-icon" aria-hidden="true">
-                          <img src={fieldTypeIconPaths[field.field_type]} alt="" />
-                        </span>
-                        <button className="builder-card-main" type="button" onClick={() => handleStartEditField(field)}>
-                          <strong>{field.label}</strong>
-                          <span>{fieldTypeLabels[field.field_type]} · Arkiverat</span>
-                        </button>
-                        <button className="control-point-action" type="button" onClick={() => handleToggleField(field)}>
-                          Återaktivera
-                        </button>
-                        {renderFieldEditor(field)}
-                      </article>
-                    ))}
-                  </div>
-                </details>
-              ) : null}
-            </section>
-
-            <section className="builder-panel" aria-labelledby="builder-objects-title">
-              <div className="builder-panel-heading">
-                <div>
-                  <p className="eyebrow">{pointLabel}</p>
-                  <h4 id="builder-objects-title">Objekt</h4>
-                </div>
-                <button className="control-point-action" type="button" onClick={() => setShowObjectCreator((current) => !current)}>
-                  + Lägg till
-                </button>
-              </div>
-
-              {showObjectCreator ? (
-                <form className="builder-inline-form" onSubmit={handleCreateObject}>
-                  <label>
-                    <span>Namn</span>
-                    <input
-                      className="text-input"
-                      value={objectName}
-                      onChange={(event) => setObjectName(event.target.value)}
-                      placeholder={getPlaceholder(controlType.category)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    <span>Plats</span>
-                    <input
-                      className="text-input"
-                      value={objectLocation}
-                      onChange={(event) => setObjectLocation(event.target.value)}
-                      placeholder="Plats, frivilligt"
-                    />
-                  </label>
-                  {controlType.category === 'temperature' ? (
-                    <label>
-                      <span>Maxgräns</span>
-                      <input
-                        className="text-input"
-                        value={limitMax}
-                        onChange={(event) => setLimitMax(event.target.value)}
-                        placeholder="Exempel: 8"
-                        type="number"
-                      />
-                    </label>
-                  ) : null}
-                  <label>
-                    <span>Instruktion</span>
-                    <textarea
-                      className="text-input control-type-instructions-input"
-                      value={objectInstructions}
-                      onChange={(event) => setObjectInstructions(event.target.value)}
-                      placeholder="Instruktion för just den här kontrollpunkten, frivilligt"
-                      rows={4}
-                    />
-                  </label>
-                  <div className="control-field-actions">
-                    <button className="control-point-action" type="submit" disabled={savingStructure}>Spara</button>
-                    <button className="control-point-action" type="button" onClick={() => setShowObjectCreator(false)}>
-                      Avbryt
-                    </button>
-                  </div>
-                </form>
-              ) : null}
-
-              {activeObjects.length === 0 ? (
-                <div className="control-detail-empty">
-                  <strong>Inga objekt ännu</strong>
-                  <p className="muted-copy">Kontrollen kan vara utan objekt, men objekt gör exempelvis kylar, områden och produkter tydliga.</p>
-                </div>
-              ) : (
-                <div className="builder-card-list">
-                  {activeObjects.map((controlObject, index) => (
-                    <article
-                      className={editingObjectId === controlObject.id ? 'builder-card selected' : 'builder-card'}
-                      key={controlObject.id}
-                    >
-                      <span className="builder-drag-handle" aria-hidden="true">::</span>
-                      <span className="control-point-icon" aria-hidden="true">
-                        <img src={categoryIconPaths[controlType.category]} alt="" />
-                      </span>
-                      <button className="builder-card-main" type="button" onClick={() => handleStartEditObject(controlObject)}>
-                        <strong>{controlObject.name}</strong>
-                        <span>{getObjectMeta(controlObject, controlType.category)}</span>
-                      </button>
-                      <details className="builder-card-menu">
-                        <summary aria-label={`Åtgärder för ${controlObject.name}`}>...</summary>
-                        <div className="builder-card-menu-panel">
-                          <button type="button" onClick={() => handleStartEditObject(controlObject)}>Redigera</button>
-                          <button type="button" onClick={() => handleDuplicateObject(controlObject)}>Duplicera</button>
-                          <button type="button" onClick={() => handleMoveObject(controlObject, 'up')} disabled={index === 0}>Flytta upp</button>
-                          <button type="button" onClick={() => handleMoveObject(controlObject, 'down')} disabled={index === activeObjects.length - 1}>Flytta ner</button>
-                          <button type="button" onClick={() => handleToggleObject(controlObject)}>Arkivera</button>
-                        </div>
-                      </details>
-                      {renderObjectEditor(controlObject)}
-                    </article>
-                  ))}
-                </div>
-              )}
-
-              {inactiveObjects.length > 0 ? (
-                <details className="builder-archive-panel">
-                  <summary>Arkiverade objekt ({inactiveObjects.length})</summary>
-                  <div className="builder-card-list">
-                    {inactiveObjects.map((controlObject) => (
-                      <article className="builder-card inactive" key={controlObject.id}>
-                        <span className="control-point-icon" aria-hidden="true">
-                          <img src={categoryIconPaths[controlType.category]} alt="" />
-                        </span>
-                        <button className="builder-card-main" type="button" onClick={() => handleStartEditObject(controlObject)}>
-                          <strong>{controlObject.name}</strong>
-                          <span>Arkiverat · {getObjectMeta(controlObject, controlType.category)}</span>
-                        </button>
-                        <button className="control-point-action" type="button" onClick={() => handleToggleObject(controlObject)}>
-                          Återaktivera
-                        </button>
-                        {renderObjectEditor(controlObject)}
-                      </article>
-                    ))}
-                  </div>
-                </details>
-              ) : null}
-            </section>
-          </div>
-        </section>
-      ) : null}
-
       <section className="control-type-preview-section" aria-labelledby="control-type-preview-title">
         <div className="control-point-heading">
           <div>
-            <p className="eyebrow">Förhandsvisning</p>
-            <h4 id="control-type-preview-title">Så här ser kontrollen ut för personalen</h4>
+            <p className="eyebrow">Kontrollen</p>
+            <h4 id="control-type-preview-title">Bygg direkt i det personalen ska fylla i</h4>
           </div>
-          <span className="control-point-count">{activeFields.length} saker att fylla i</span>
+          <div className="control-canvas-heading-actions">
+            <span className="control-point-count">{activeFieldCount} saker att fylla i</span>
+            {canManage ? (
+              <div className="control-canvas-shortcuts" aria-label="Snabbval för kontrollen">
+                <button type="button" className="control-point-action" onClick={openFieldTools}>
+                  Lägg till uppgift
+                </button>
+                <button type="button" className="control-point-action" onClick={openPointTools}>
+                  Lägg till plats/punkt
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {loading ? <p className="muted-copy">Laddar kontrollen...</p> : null}
@@ -912,7 +575,13 @@ export function ControlTypeDetailView({
             controlType={controlType}
             objects={activeObjects}
             fields={activeFields}
-            mode="preview"
+            mode={canManage ? 'edit' : 'preview'}
+            selectedFieldId={editingFieldId}
+            selectedObjectId={editingObjectId}
+            onEditField={handleStartEditField}
+            onEditObject={handleStartEditObject}
+            renderFieldEditor={renderInlineFieldEditor}
+            renderObjectEditor={renderInlineObjectEditor}
           />
         ) : null}
       </section>
@@ -921,77 +590,77 @@ export function ControlTypeDetailView({
         <details className="control-admin-panel">
           <summary>
             <span>
-              <strong>Inställningar</strong>
-              <small>Namn, rutin och schema som styr när kontrollen visas.</small>
+              <strong>Namn, rutin och schema</strong>
+              <small>Inställningar som styr när kontrollen visas.</small>
             </span>
           </summary>
           <form className="control-type-settings-form" onSubmit={handleSaveControlType}>
-            <div className="control-point-heading">
-              <div>
-                <p className="eyebrow">Grunduppgifter</p>
-                <h4>Namn och rutin</h4>
-              </div>
+          <div className="control-point-heading">
+            <div>
+              <p className="eyebrow">Grunduppgifter</p>
+              <h4>Namn och rutin</h4>
             </div>
+          </div>
+          <label>
+            <span>Namn</span>
+            <input
+              className="text-input"
+              value={typeName}
+              onChange={(event) => setTypeName(event.target.value)}
+              required
+            />
+          </label>
+          <label>
+            <span>Kategori</span>
+            <select
+              className="text-input"
+              value={typeCategory}
+              onChange={(event) => setTypeCategory(event.target.value as ControlCategory)}
+            >
+              {Object.entries(categoryLabels).map(([value, label]) => (
+                <option value={value} key={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Frekvens</span>
+            <select
+              className="text-input"
+              value={typeFrequency}
+              onChange={(event) => setTypeFrequency(event.target.value as ControlFrequency)}
+            >
+              {Object.entries(frequencyLabels).map(([value, label]) => (
+                <option value={value} key={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          {typeFrequency === 'weekly' ? (
             <label>
-              <span>Namn</span>
-              <input
-                className="text-input"
-                value={typeName}
-                onChange={(event) => setTypeName(event.target.value)}
-                required
-              />
-            </label>
-            <label>
-              <span>Kategori</span>
+              <span>Veckodag</span>
               <select
                 className="text-input"
-                value={typeCategory}
-                onChange={(event) => setTypeCategory(event.target.value as ControlCategory)}
+                value={typeWeekday}
+                onChange={(event) => setTypeWeekday(Number(event.target.value) as IsoWeekday)}
               >
-                {Object.entries(categoryLabels).map(([value, label]) => (
-                  <option value={value} key={value}>{label}</option>
+                {weekdayOptions.map((option) => (
+                  <option value={option.value} key={option.value}>{option.label}</option>
                 ))}
               </select>
             </label>
-            <label>
-              <span>Frekvens</span>
-              <select
-                className="text-input"
-                value={typeFrequency}
-                onChange={(event) => setTypeFrequency(event.target.value as ControlFrequency)}
-              >
-                {Object.entries(frequencyLabels).map(([value, label]) => (
-                  <option value={value} key={value}>{label}</option>
-                ))}
-              </select>
-            </label>
-            {typeFrequency === 'weekly' ? (
-              <label>
-                <span>Veckodag</span>
-                <select
-                  className="text-input"
-                  value={typeWeekday}
-                  onChange={(event) => setTypeWeekday(Number(event.target.value) as IsoWeekday)}
-                >
-                  {weekdayOptions.map((option) => (
-                    <option value={option.value} key={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </label>
-            ) : null}
-            <label>
-              <span>Rutin eller instruktion</span>
-              <textarea
-                className="text-input control-type-instructions-input"
-                value={typeInstructions}
-                onChange={(event) => setTypeInstructions(event.target.value)}
-                placeholder="Beskriv hur kontrollen ska göras, när den ska göras och vad personalen ska göra vid avvikelse."
-                rows={5}
-              />
-            </label>
-            <ActionButton type="submit" disabled={savingType || !typeName.trim()}>
-              {savingType ? 'Sparar...' : 'Spara inställningar'}
-            </ActionButton>
+          ) : null}
+          <label>
+            <span>Rutin eller instruktion</span>
+            <textarea
+              className="text-input control-type-instructions-input"
+              value={typeInstructions}
+              onChange={(event) => setTypeInstructions(event.target.value)}
+              placeholder="Beskriv hur kontrollen ska göras, när den ska göras och vad personalen ska göra vid avvikelse."
+              rows={5}
+            />
+          </label>
+          <ActionButton type="submit" disabled={savingType || !typeName.trim()}>
+            {savingType ? 'Sparar...' : 'Spara kontrolltyp'}
+          </ActionButton>
           </form>
         </details>
       ) : controlType.instructions ? (
@@ -1008,6 +677,322 @@ export function ControlTypeDetailView({
           {controlType.active ? 'Arkivera kontrolltyp' : 'Återaktivera kontrolltyp'}
         </ActionButton>
       ) : null}
+
+      <details
+        className="control-field-section control-admin-panel"
+        open={fieldToolsOpen}
+        ref={fieldToolsRef}
+        onToggle={(event) => setFieldToolsOpen(event.currentTarget.open)}
+      >
+        <summary>
+          <span>
+            <strong>Lägg till eller hantera det som ska fyllas i</strong>
+            <small>Frågor, datum, temperaturer, foton och andra uppgifter.</small>
+          </span>
+        </summary>
+        <div className="control-point-heading">
+          <div>
+            <p className="eyebrow">Vad ska dokumenteras?</p>
+            <h4>Vad ska fyllas i?</h4>
+          </div>
+          <span className="control-point-count">{activeFieldCount} aktiva</span>
+        </div>
+
+        {loading ? <p className="muted-copy">Laddar uppgifter...</p> : null}
+        {!loading && fields.length === 0 ? (
+          <div className="control-detail-empty">
+            <strong>Inga uppgifter finns ännu</strong>
+            <p className="muted-copy">
+              {canManage
+                ? 'Lägg till minst ett fält, till exempel OK/Ej OK eller temperatur. Annars kan kontrollen inte sparas.'
+                : 'En administratör behöver lägga till fält innan kontrollen kan utföras.'}
+            </p>
+          </div>
+        ) : null}
+
+        {inactiveFields.length > 0 ? (
+        <div className="control-field-list">
+          {inactiveFields.map((field) => (
+            <article className="control-field-card inactive" key={field.id}>
+              <div className="control-field-icon" aria-hidden="true">
+                <img src={fieldTypeIconPaths[field.field_type]} alt="" />
+              </div>
+
+              {editingFieldId === field.id ? (
+                <form className="control-field-edit-form" onSubmit={handleSaveField}>
+                  <label>
+                    <span>Fråga eller fält</span>
+                    <input
+                      className="text-input"
+                      value={editFieldLabel}
+                      onChange={(event) => setEditFieldLabel(event.target.value)}
+                      required
+                    />
+                  </label>
+                  <label className="control-field-checkbox">
+                    <input
+                      checked={editFieldRequired}
+                      onChange={(event) => setEditFieldRequired(event.target.checked)}
+                      type="checkbox"
+                    />
+                    Obligatoriskt
+                  </label>
+                  <label className="control-field-checkbox">
+                    <input
+                      checked={editFieldActive}
+                      onChange={(event) => setEditFieldActive(event.target.checked)}
+                      type="checkbox"
+                    />
+                    Aktivt
+                  </label>
+                  <div className="control-field-actions">
+                    <button className="control-point-action" type="submit">Spara</button>
+                    <button className="control-point-action" type="button" onClick={() => setEditingFieldId(null)}>
+                      Avbryt
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div>
+                    <h4>{field.label}</h4>
+                    <p>
+                      {fieldTypeLabels[field.field_type]} · {field.required ? 'Obligatoriskt' : 'Frivilligt'} ·{' '}
+                      {field.active ? 'Aktivt' : 'Inaktivt'}
+                    </p>
+                  </div>
+                  {canManage ? (
+                    <button className="control-point-action" type="button" onClick={() => handleStartEditField(field)}>
+                      Redigera
+                    </button>
+                  ) : null}
+                </>
+              )}
+            </article>
+          ))}
+        </div>
+        ) : null}
+
+        {canManage ? (
+          <form className="control-field-form" onSubmit={handleCreateField}>
+            <h4>Lägg till fråga eller fält</h4>
+            <div className="field-type-grid" role="group" aria-label="Fälttyp">
+              {fieldTypeOptions.map((option) => (
+                <button
+                  className={fieldType === option.fieldType ? 'field-type-option selected' : 'field-type-option'}
+                  key={option.fieldType}
+                  onClick={() => handleSelectFieldType(option.fieldType)}
+                  type="button"
+                >
+                  <strong>{option.label}</strong>
+                  <span>{option.description}</span>
+                </button>
+              ))}
+            </div>
+            {selectedFieldTypeOption ? (
+              <div className="field-create-panel">
+                <div className="field-create-summary">
+                  <div className="control-field-icon" aria-hidden="true">
+                    <img src={fieldTypeIconPaths[selectedFieldTypeOption.fieldType]} alt="" />
+                  </div>
+                  <div>
+                    <h5>Skapa {selectedFieldTypeOption.label}</h5>
+                    <p>{selectedFieldTypeOption.description}</p>
+                  </div>
+                </div>
+                <label>
+                  <span>Fråga eller fält</span>
+                  <input
+                    className="text-input"
+                    value={fieldLabel}
+                    onChange={(event) => setFieldLabel(event.target.value)}
+                    required
+                  />
+                </label>
+                <label className="control-field-checkbox">
+                  <input
+                    checked={fieldRequired}
+                    onChange={(event) => setFieldRequired(event.target.checked)}
+                    type="checkbox"
+                  />
+                  Obligatoriskt
+                </label>
+                <ActionButton type="submit">Lägg till fält</ActionButton>
+              </div>
+            ) : null}
+          </form>
+        ) : null}
+      </details>
+
+      <details
+        className="control-point-section control-admin-panel"
+        open={pointToolsOpen}
+        ref={pointToolsRef}
+        onToggle={(event) => setPointToolsOpen(event.currentTarget.open)}
+      >
+        <summary>
+          <span>
+            <strong>Lägg till eller hantera platser och punkter</strong>
+            <small>Kylar, områden, produkter eller andra saker kontrollen gäller.</small>
+          </span>
+        </summary>
+        <div className="control-point-heading">
+          <div>
+            <p className="eyebrow">{pointLabel}</p>
+            <h4>Kontrollpunkter för {controlType.name}</h4>
+          </div>
+          <span className="control-point-count">{activeObjects.length} aktiva</span>
+        </div>
+
+        {loading ? <p className="muted-copy">Laddar kontrollpunkter...</p> : null}
+        {!loading && objects.length === 0 ? (
+          <div className="control-detail-empty">
+            <strong>Inga kontrollpunkter finns ännu</strong>
+            <p className="muted-copy">
+              {canManage
+                ? 'Lägg till kontrollpunkter som personalen ska gå igenom, till exempel kylar, områden eller produkter.'
+                : 'En administratör behöver lägga till kontrollpunkter om kontrollen ska utföras per plats eller produkt.'}
+            </p>
+          </div>
+        ) : null}
+
+        {inactiveObjects.length > 0 ? (
+        <div className="control-point-list">
+          {inactiveObjects.map((controlObject) => (
+            <article className="control-point-card inactive" key={controlObject.id}>
+              <div className="control-point-icon" aria-hidden="true">
+                <img src={categoryIconPaths[controlType.category]} alt="" />
+              </div>
+              {editingObjectId === controlObject.id ? (
+                <form className="control-point-edit-form" onSubmit={handleSaveObject}>
+                  <label>
+                    <span>Namn</span>
+                    <input
+                      className="text-input"
+                      value={editObjectName}
+                      onChange={(event) => setEditObjectName(event.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    <span>Plats</span>
+                    <input
+                      className="text-input"
+                      value={editObjectLocation}
+                      onChange={(event) => setEditObjectLocation(event.target.value)}
+                    />
+                  </label>
+                  {controlType.category === 'temperature' ? (
+                    <label>
+                      <span>Maxgräns</span>
+                      <input
+                        className="text-input"
+                        value={editObjectLimitMax}
+                        onChange={(event) => setEditObjectLimitMax(event.target.value)}
+                        type="number"
+                      />
+                    </label>
+                  ) : null}
+                  <label>
+                    <span>Instruktion</span>
+                    <textarea
+                      className="text-input control-type-instructions-input"
+                      value={editObjectInstructions}
+                      onChange={(event) => setEditObjectInstructions(event.target.value)}
+                      rows={4}
+                    />
+                  </label>
+                  <label className="control-field-checkbox">
+                    <input
+                      checked={editObjectActive}
+                      onChange={(event) => setEditObjectActive(event.target.checked)}
+                      type="checkbox"
+                    />
+                    Aktiv
+                  </label>
+                  <div className="control-field-actions">
+                    <button className="control-point-action" type="submit">Spara</button>
+                    <button className="control-point-action" type="button" onClick={() => setEditingObjectId(null)}>
+                      Avbryt
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div>
+                    <h4>{controlObject.name}</h4>
+                    <p>
+                      {controlObject.location ?? 'Ingen plats'} · {controlObject.limit_max ?? 'Ingen gräns'} {controlObject.unit ?? ''}
+                    </p>
+                    {controlObject.instructions ? (
+                      <p className="control-point-instructions">{controlObject.instructions}</p>
+                    ) : null}
+                  </div>
+                  {canManage ? (
+                    <div className="control-field-actions">
+                      <button className="control-point-action" type="button" onClick={() => handleStartEditObject(controlObject)}>
+                        Redigera
+                      </button>
+                      <button className="control-point-action" type="button" onClick={() => handleToggleObject(controlObject)}>
+                        {controlObject.active ? 'Arkivera' : 'Återaktivera'}
+                      </button>
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </article>
+          ))}
+        </div>
+        ) : null}
+
+        {canManage ? (
+          <form className="control-point-form" onSubmit={handleCreateObject}>
+            <h4>Lägg till kontrollpunkt</h4>
+            <label>
+              <span>Namn</span>
+              <input
+                className="text-input"
+                value={objectName}
+                onChange={(event) => setObjectName(event.target.value)}
+                placeholder={getPlaceholder(controlType.category)}
+                required
+              />
+            </label>
+            <label>
+              <span>Plats</span>
+              <input
+                className="text-input"
+                value={objectLocation}
+                onChange={(event) => setObjectLocation(event.target.value)}
+                placeholder="Plats, frivilligt"
+              />
+            </label>
+            {controlType.category === 'temperature' ? (
+              <label>
+                <span>Maxgräns</span>
+                <input
+                  className="text-input"
+                  value={limitMax}
+                  onChange={(event) => setLimitMax(event.target.value)}
+                  placeholder="Exempel: 8"
+                  type="number"
+                />
+              </label>
+            ) : null}
+            <label>
+              <span>Instruktion</span>
+              <textarea
+                className="text-input control-type-instructions-input"
+                value={objectInstructions}
+                onChange={(event) => setObjectInstructions(event.target.value)}
+                placeholder="Instruktion för just den här kontrollpunkten, frivilligt"
+                rows={4}
+              />
+            </label>
+            <ActionButton type="submit">Lägg till kontrollpunkt</ActionButton>
+          </form>
+        ) : null}
+      </details>
     </section>
   );
 }
