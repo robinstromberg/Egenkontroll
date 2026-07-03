@@ -1,5 +1,8 @@
 # Kontrolltypseditor: WYSIWYG-plan
 
+> Historisk analys: detta dokument beskriver den tidigare WYSIWYG-riktningen.
+> For implementation galler `docs/CONTROL_TYPE_EDITOR_IMPLEMENTATION_BRIEF.md`.
+
 ## Syfte
 
 Nuvarande kontrolltypseditor fungerar tekniskt, men den visar inte tydligt hur kontrollen kommer kannas for personalen. Nasta steg bor vara en WYSIWYG-editor dar admin bygger i samma visuella struktur som personalen senare anvander.
