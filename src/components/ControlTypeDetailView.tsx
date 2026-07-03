@@ -233,17 +233,17 @@ function getBuilderCopy(controlType: ControlType): BuilderCopy {
       fieldFormTitle: 'Lägg till mottagningsdel',
       fieldNameLabel: 'Namn på del',
       pointSummaryTitle: 'Lägg till eller hantera mottagningspunkter',
-      pointSummaryDescription: 'Används om varumottagningen behöver delas upp per varugrupp, plats eller leveransdel.',
+      pointSummaryDescription: 'Valfritt: används om varumottagningen behöver delas upp per varugrupp, plats eller temperaturgräns.',
       pointEyebrow: 'Mottagningspunkter',
       pointHeading: (controlTypeName) => `Mottagningspunkter för ${controlTypeName}`,
-      pointEmptyManage: 'Lägg till mottagningspunkter om personalen ska gå igenom separata varugrupper eller platser.',
+      pointEmptyManage: 'Lägg till mottagningspunkter om personalen ska gå igenom separata varugrupper, till exempel Kylvaror med max 8°C.',
       pointEmptyReadOnly: 'En administratör behöver lägga till mottagningspunkter om kontrollen ska delas upp.',
       pointFormTitle: 'Lägg till mottagningspunkt',
       pointNameLabel: 'Namn på mottagningspunkt',
       pointLocationLabel: 'Plats',
-      pointLocationPlaceholder: 'Plats eller varugrupp, frivilligt',
-      pointLimitLabel: 'Maxgräns',
-      pointInstructionPlaceholder: 'Instruktion för mottagningspunkten, frivilligt',
+      pointLocationPlaceholder: 'Varugrupp eller plats, frivilligt',
+      pointLimitLabel: 'Maxgräns i °C',
+      pointInstructionPlaceholder: 'Instruktion för mottagningspunkten, till exempel kontrollera varan direkt vid ankomst',
       pointPlaceholder: 'Exempel: Kylvaror',
     };
   }
@@ -317,6 +317,8 @@ const fieldTypeOptions: Array<{
 
 const traceabilityFieldTypes = new Set<ControlFieldDefinition['field_type']>(['text', 'date', 'photo', 'select']);
 const traceabilityFieldTypeOptions = fieldTypeOptions.filter((option) => traceabilityFieldTypes.has(option.fieldType));
+const receivingFieldTypes = new Set<ControlFieldDefinition['field_type']>(['text', 'temperature', 'ok_not_ok', 'date', 'photo', 'select']);
+const receivingFieldTypeOptions = fieldTypeOptions.filter((option) => receivingFieldTypes.has(option.fieldType));
 
 type FieldPreset = {
   fieldType: ControlFieldDefinition['field_type'];
@@ -358,8 +360,37 @@ const traceabilityFieldPresets: FieldPreset[] = [
   },
 ];
 
+const receivingFieldPresets: FieldPreset[] = [
+  {
+    fieldType: 'text',
+    label: 'Leverantör',
+    description: 'Vem leveransen kommer från.',
+    required: true,
+  },
+  {
+    fieldType: 'temperature',
+    label: 'Temperatur',
+    description: 'Temperatur vid mottagning. Använd mottagningspunkt för maxgräns i °C.',
+    required: true,
+  },
+  {
+    fieldType: 'ok_not_ok',
+    label: 'Korrekt märkning',
+    description: 'OK / Ej OK för märkning, etikett eller förpackning.',
+    required: true,
+  },
+  {
+    fieldType: 'photo',
+    label: 'Följesedel / foto',
+    description: 'Bild på följesedel, etikett eller leverans.',
+    required: false,
+  },
+];
+
 function getFieldTypeOptionsForCategory(category: ControlCategory) {
-  return category === 'traceability' ? traceabilityFieldTypeOptions : fieldTypeOptions;
+  if (category === 'traceability') return traceabilityFieldTypeOptions;
+  if (category === 'receiving') return receivingFieldTypeOptions;
+  return fieldTypeOptions;
 }
 
 function getEffectiveFieldType(category: ControlCategory, fieldType: ControlFieldDefinition['field_type']) {
@@ -386,6 +417,14 @@ function formatControlPointMeta(controlObject: ControlObject, category: ControlC
 
   if (category === 'checklist' || category === 'round') {
     return controlObject.location?.trim() || 'OK / Ej OK';
+  }
+
+  if (category === 'receiving') {
+    const location = controlObject.location?.trim() || 'Mottagningspunkt';
+    const unit = controlObject.unit ?? '°C';
+    return controlObject.limit_max !== null && controlObject.limit_max !== undefined
+      ? `${location} · Max ${controlObject.limit_max}${unit}`
+      : location;
   }
 
   return `${controlObject.location ?? 'Ingen plats'} · ${controlObject.limit_max ?? 'Ingen gräns'} ${controlObject.unit ?? ''}`;
@@ -523,7 +562,7 @@ export function ControlTypeDetailView({
         location: objectLocation.trim() || undefined,
         instructions: objectInstructions,
         limitMax: limitMax ? Number(limitMax) : null,
-        unit: controlType.category === 'temperature' ? '°C' : undefined,
+        unit: controlType.category === 'temperature' || controlType.category === 'receiving' ? '°C' : undefined,
       });
       setObjectName('');
       setObjectLocation('');
@@ -655,7 +694,10 @@ export function ControlTypeDetailView({
         name: editObjectName,
         location: editObjectLocation,
         instructions: editObjectInstructions,
-        limitMax: controlType.category === 'temperature' && editObjectLimitMax ? Number(editObjectLimitMax) : null,
+        limitMax:
+          (controlType.category === 'temperature' || controlType.category === 'receiving') && editObjectLimitMax
+            ? Number(editObjectLimitMax)
+            : null,
         active: editObjectActive,
       });
       setEditingObjectId(null);
@@ -811,10 +853,16 @@ export function ControlTypeDetailView({
   const builderCopy = getBuilderCopy(controlType);
   const isTemperatureControl = controlType.category === 'temperature';
   const isTraceabilityControl = controlType.category === 'traceability';
+  const isReceivingControl = controlType.category === 'receiving';
   const isPointChecklistControl = controlType.category === 'checklist' || controlType.category === 'round';
   const isFixedPointControl = isTemperatureControl || isPointChecklistControl;
   const availableFieldTypeOptions = getFieldTypeOptionsForCategory(controlType.category);
   const effectiveFieldType = getEffectiveFieldType(controlType.category, fieldType);
+  const fieldPresets = isTraceabilityControl
+    ? traceabilityFieldPresets
+    : isReceivingControl
+      ? receivingFieldPresets
+      : [];
   const activeTemperatureFields = activeFields.filter((field) => field.field_type === 'temperature');
   const activeStatusFields = activeFields.filter((field) => field.field_type === 'ok_not_ok');
   const previewFields = isTemperatureControl
@@ -1186,22 +1234,33 @@ export function ControlTypeDetailView({
 
         {canManage && !isFixedPointControl ? (
           <form className="control-field-form" onSubmit={handleCreateField}>
-            {isTraceabilityControl ? (
+            {fieldPresets.length > 0 ? (
               <div className="field-create-panel">
                 <div className="field-create-summary">
                   <div className="control-field-icon" aria-hidden="true">
-                    <img src={categoryIconPaths.traceability} alt="" />
+                    <img src={categoryIconPaths[controlType.category]} alt="" />
                   </div>
                   <div>
-                    <h5>Vanliga spårbarhetsfält</h5>
-                    <p>
-                      Lägg till informationsfält som personalen fyller i. Datum, tid och användare sparas automatiskt
-                      när dokumentationen görs.
-                    </p>
+                    <h5>{isTraceabilityControl ? 'Vanliga spårbarhetsfält' : 'Vanliga mottagningsdelar'}</h5>
+                    {isTraceabilityControl ? (
+                      <p>
+                        Lägg till informationsfält som personalen fyller i. Datum, tid och användare sparas automatiskt
+                        när dokumentationen görs.
+                      </p>
+                    ) : (
+                      <p>
+                        Lägg till delarna som personalen kontrollerar vid mottagning. Åtgärd och kommentar visas först
+                        vid avvikelse eller Ej OK.
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div className="field-type-grid" role="group" aria-label="Vanliga spårbarhetsfält">
-                  {traceabilityFieldPresets.map((preset) => (
+                <div
+                  className="field-type-grid"
+                  role="group"
+                  aria-label={isTraceabilityControl ? 'Vanliga spårbarhetsfält' : 'Vanliga mottagningsdelar'}
+                >
+                  {fieldPresets.map((preset) => (
                     <button
                       className="field-type-option"
                       key={`${preset.fieldType}-${preset.label}`}
@@ -1215,7 +1274,13 @@ export function ControlTypeDetailView({
                 </div>
               </div>
             ) : null}
-            <h4>{isTraceabilityControl ? 'Lägg till anpassat informationsfält' : builderCopy.fieldFormTitle}</h4>
+            <h4>
+              {isTraceabilityControl
+                ? 'Lägg till anpassat informationsfält'
+                : isReceivingControl
+                  ? 'Lägg till anpassad mottagningsdel'
+                  : builderCopy.fieldFormTitle}
+            </h4>
             <div className="field-type-grid" role="group" aria-label="Fälttyp">
               {availableFieldTypeOptions.map((option) => (
                 <button
@@ -1327,7 +1392,7 @@ export function ControlTypeDetailView({
                       onChange={(event) => setEditObjectLocation(event.target.value)}
                     />
                   </label>
-                  {controlType.category === 'temperature' ? (
+                  {isTemperatureControl || isReceivingControl ? (
                     <label>
                       <span>{builderCopy.pointLimitLabel}</span>
                       <input
@@ -1413,7 +1478,7 @@ export function ControlTypeDetailView({
                 placeholder={builderCopy.pointLocationPlaceholder}
               />
             </label>
-            {controlType.category === 'temperature' ? (
+            {isTemperatureControl || isReceivingControl ? (
               <label>
                 <span>{builderCopy.pointLimitLabel}</span>
                 <input
