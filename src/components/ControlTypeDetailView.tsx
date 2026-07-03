@@ -87,6 +87,210 @@ const categoryIconPaths: Record<ControlCategory, string> = {
   custom: '/ui-icons/kontroll.svg',
 };
 
+type BuilderMode = 'point' | 'field' | 'mixed';
+
+type BuilderCopy = {
+  mode: BuilderMode;
+  topbarEyebrow: string;
+  previewEyebrow: string;
+  previewTitle: string;
+  previewCount: (activeFields: number, activeObjects: number) => string;
+  fieldShortcutLabel: string;
+  pointShortcutLabel: string;
+  emptyTitle: string;
+  emptyDescription: string;
+  fieldSummaryTitle: string;
+  fieldSummaryDescription: string;
+  fieldEyebrow: string;
+  fieldHeading: string;
+  fieldEmptyManage: string;
+  fieldEmptyReadOnly: string;
+  fieldFormTitle: string;
+  fieldNameLabel: string;
+  pointSummaryTitle: string;
+  pointSummaryDescription: string;
+  pointEyebrow: string;
+  pointHeading: (controlTypeName: string) => string;
+  pointEmptyManage: string;
+  pointEmptyReadOnly: string;
+  pointFormTitle: string;
+  pointNameLabel: string;
+  pointLocationLabel: string;
+  pointLocationPlaceholder: string;
+  pointLimitLabel: string;
+  pointInstructionPlaceholder: string;
+  pointPlaceholder: string;
+};
+
+const pointBasedBuilderCopy: BuilderCopy = {
+  mode: 'point',
+  topbarEyebrow: 'Bygg punktbaserad kontroll',
+  previewEyebrow: 'Förhandsvisning',
+  previewTitle: 'Så här möter personalen kontrollpunkterna',
+  previewCount: (_activeFields, activeObjects) => `${activeObjects} kontrollpunkter`,
+  fieldShortcutLabel: 'Hantera mätning',
+  pointShortcutLabel: 'Lägg till kontrollpunkt',
+  emptyTitle: 'Kontrollen saknar mätning',
+  emptyDescription: 'Lägg till den fasta mätning eller status som varje kontrollpunkt ska dokumenteras med.',
+  fieldSummaryTitle: 'Mätning och status',
+  fieldSummaryDescription: 'Detta styr vad som registreras på varje kontrollpunkt, till exempel temperatur eller OK/Ej OK.',
+  fieldEyebrow: 'Vad registreras?',
+  fieldHeading: 'Mätning som används i kontrollen',
+  fieldEmptyManage: 'Lägg till en mätning eller status. Själva kylarna, områdena eller punkterna läggs till som kontrollpunkter.',
+  fieldEmptyReadOnly: 'En administratör behöver lägga till vad som ska registreras innan kontrollen kan utföras.',
+  fieldFormTitle: 'Lägg till mätning eller status',
+  fieldNameLabel: 'Namn på mätning',
+  pointSummaryTitle: 'Lägg till eller hantera kontrollpunkter',
+  pointSummaryDescription: 'Kylar, områden, produkter eller andra saker som ska kontrolleras.',
+  pointEyebrow: 'Kontrollpunkter',
+  pointHeading: (controlTypeName) => `Kontrollpunkter för ${controlTypeName}`,
+  pointEmptyManage: 'Lägg till kontrollpunkter som personalen ska gå igenom, till exempel kylar, områden eller produkter.',
+  pointEmptyReadOnly: 'En administratör behöver lägga till kontrollpunkter om kontrollen ska utföras per plats eller produkt.',
+  pointFormTitle: 'Lägg till kontrollpunkt',
+  pointNameLabel: 'Namn på kontrollpunkt',
+  pointLocationLabel: 'Plats',
+  pointLocationPlaceholder: 'Plats, frivilligt',
+  pointLimitLabel: 'Maxgräns',
+  pointInstructionPlaceholder: 'Instruktion för just den här kontrollpunkten, frivilligt',
+  pointPlaceholder: 'Exempel: Kontrollpunkt',
+};
+
+function getBuilderCopy(controlType: ControlType): BuilderCopy {
+  if (controlType.category === 'temperature') {
+    return {
+      ...pointBasedBuilderCopy,
+      previewTitle: 'Så här fyller personalen i temperatur per kontrollpunkt',
+      fieldSummaryTitle: 'Fast mätning: temperatur',
+      fieldSummaryDescription: 'Temperatur är själva mätningen. Lägg till kylar och frysar som kontrollpunkter.',
+      fieldHeading: 'Temperaturmätning',
+      fieldEmptyManage: 'Lägg till temperaturmätningen här. Lägg sedan till kylar och frysar som kontrollpunkter.',
+      fieldFormTitle: 'Lägg till mätning',
+      pointSummaryDescription: 'Kylar och frysar som ska kontrolleras, med gränsvärde i °C.',
+      pointEyebrow: 'Kylar och frysar',
+      pointEmptyManage: 'Lägg till kylar eller frysar som personalen ska mäta, till exempel Kyl 1 - Kök.',
+      pointEmptyReadOnly: 'En administratör behöver lägga till kylar eller frysar innan kontrollen kan utföras.',
+      pointFormTitle: 'Lägg till kyl eller frys',
+      pointNameLabel: 'Namn på kyl/frys',
+      pointLocationPlaceholder: 'Plats, till exempel Kök',
+      pointLimitLabel: 'Maxgräns i °C',
+      pointInstructionPlaceholder: 'Instruktion för mätpunkten, till exempel mät i mitten av kylen',
+      pointPlaceholder: 'Exempel: Kyl 3 - Beredning',
+    };
+  }
+
+  if (controlType.category === 'traceability') {
+    return {
+      mode: 'field',
+      topbarEyebrow: 'Bygg fältbaserad kontroll',
+      previewEyebrow: 'Förhandsvisning',
+      previewTitle: 'Så här fyller personalen i spårbarhetsinformationen',
+      previewCount: (activeFields) => `${activeFields} informationsfält`,
+      fieldShortcutLabel: 'Lägg till fält',
+      pointShortcutLabel: 'Hantera punkter',
+      emptyTitle: 'Kontrollen saknar informationsfält',
+      emptyDescription: 'Lägg till fält som Produkt, Batchnummer, Bäst före, Leverantör eller Foto/etikett.',
+      fieldSummaryTitle: 'Lägg till eller hantera informationsfält',
+      fieldSummaryDescription: 'Produkt, batchnummer, bäst före, leverantör, foto och annan spårbarhetsdata.',
+      fieldEyebrow: 'Informationsfält',
+      fieldHeading: 'Fält som personalen fyller i',
+      fieldEmptyManage: 'Lägg till minst ett informationsfält, till exempel Produkt eller Batchnummer.',
+      fieldEmptyReadOnly: 'En administratör behöver lägga till informationsfält innan kontrollen kan utföras.',
+      fieldFormTitle: 'Lägg till informationsfält',
+      fieldNameLabel: 'Fältnamn',
+      pointSummaryTitle: 'Avancerat: kontrollpunkter',
+      pointSummaryDescription: 'Spårbarhet är i första hand fältbaserad. Använd punkter bara om kontrollen verkligen behöver delas upp per plats eller produkt.',
+      pointEyebrow: 'Avancerade punkter',
+      pointHeading: (controlTypeName) => `Eventuella punkter för ${controlTypeName}`,
+      pointEmptyManage: 'Spårbarhet behöver oftast inga kontrollpunkter. Lägg bara till punkter om formuläret ska upprepas per plats eller produkt.',
+      pointEmptyReadOnly: 'Den här spårbarhetskontrollen använder inga extra punkter.',
+      pointFormTitle: 'Lägg till punkt',
+      pointNameLabel: 'Namn på punkt',
+      pointLocationLabel: 'Plats',
+      pointLocationPlaceholder: 'Plats, frivilligt',
+      pointLimitLabel: 'Maxgräns',
+      pointInstructionPlaceholder: 'Instruktion för punkten, frivilligt',
+      pointPlaceholder: 'Exempel: Produktgrupp',
+    };
+  }
+
+  if (controlType.category === 'receiving') {
+    return {
+      mode: 'mixed',
+      topbarEyebrow: 'Bygg blandad kontroll',
+      previewEyebrow: 'Förhandsvisning',
+      previewTitle: 'Så här fyller personalen i varumottagningen',
+      previewCount: (activeFields, activeObjects) => `${activeFields} delar · ${activeObjects} punkter`,
+      fieldShortcutLabel: 'Lägg till del',
+      pointShortcutLabel: 'Lägg till mottagningspunkt',
+      emptyTitle: 'Varumottagningen saknar delar',
+      emptyDescription: 'Lägg till delar som leverantör, temperatur, korrekt märkning eller följesedel.',
+      fieldSummaryTitle: 'Lägg till eller hantera mottagningsdelar',
+      fieldSummaryDescription: 'Leverantör, temperatur, märkning, följesedel, foto och andra delar i mottagningsflödet.',
+      fieldEyebrow: 'Mottagningsdelar',
+      fieldHeading: 'Delar som ska kontrolleras',
+      fieldEmptyManage: 'Lägg till minst en del, till exempel Temperatur, Korrekt märkning eller Följesedel.',
+      fieldEmptyReadOnly: 'En administratör behöver lägga till mottagningsdelar innan kontrollen kan utföras.',
+      fieldFormTitle: 'Lägg till mottagningsdel',
+      fieldNameLabel: 'Namn på del',
+      pointSummaryTitle: 'Lägg till eller hantera mottagningspunkter',
+      pointSummaryDescription: 'Används om varumottagningen behöver delas upp per varugrupp, plats eller leveransdel.',
+      pointEyebrow: 'Mottagningspunkter',
+      pointHeading: (controlTypeName) => `Mottagningspunkter för ${controlTypeName}`,
+      pointEmptyManage: 'Lägg till mottagningspunkter om personalen ska gå igenom separata varugrupper eller platser.',
+      pointEmptyReadOnly: 'En administratör behöver lägga till mottagningspunkter om kontrollen ska delas upp.',
+      pointFormTitle: 'Lägg till mottagningspunkt',
+      pointNameLabel: 'Namn på mottagningspunkt',
+      pointLocationLabel: 'Plats',
+      pointLocationPlaceholder: 'Plats eller varugrupp, frivilligt',
+      pointLimitLabel: 'Maxgräns',
+      pointInstructionPlaceholder: 'Instruktion för mottagningspunkten, frivilligt',
+      pointPlaceholder: 'Exempel: Kylvaror',
+    };
+  }
+
+  if (controlType.category === 'checklist') {
+    return {
+      ...pointBasedBuilderCopy,
+      previewTitle: 'Så här går personalen igenom checklistans punkter',
+      fieldSummaryTitle: 'Fast status: OK / Ej OK',
+      fieldSummaryDescription: 'Checklistor bygger på punkter som kontrolleras med OK eller Ej OK.',
+      fieldHeading: 'Status som används i checklistan',
+      fieldEmptyManage: 'Lägg till OK/Ej OK som status. Områden och saker som ska kontrolleras läggs till som kontrollpunkter.',
+      fieldFormTitle: 'Lägg till status',
+      pointSummaryDescription: 'Områden, produkter eller saker som ska kontrolleras med OK/Ej OK.',
+      pointEyebrow: 'Punkter och områden',
+      pointEmptyManage: 'Lägg till områden eller punkter som personalen ska gå igenom, till exempel Kök eller Servering.',
+      pointFormTitle: 'Lägg till punkt eller område',
+      pointNameLabel: 'Namn på punkt/område',
+      pointPlaceholder: 'Exempel: Kök',
+    };
+  }
+
+  if (controlType.category === 'round') {
+    return {
+      ...pointBasedBuilderCopy,
+      previewTitle: 'Så här går personalen igenom egenkontrollrundan',
+      fieldSummaryTitle: 'Fast status: OK / Ej OK',
+      fieldSummaryDescription: 'Rundan bygger på områden som kontrolleras med OK eller Ej OK.',
+      fieldHeading: 'Status som används i rundan',
+      fieldEmptyManage: 'Lägg till OK/Ej OK som status. Områdena i rundan läggs till som kontrollpunkter.',
+      fieldFormTitle: 'Lägg till status',
+      pointSummaryDescription: 'Områden som ska ingå i egenkontrollrundan.',
+      pointEyebrow: 'Rundans områden',
+      pointEmptyManage: 'Lägg till områden som personalen ska gå igenom i rundan.',
+      pointFormTitle: 'Lägg till område',
+      pointNameLabel: 'Namn på område',
+      pointPlaceholder: 'Exempel: Hygien och rengöring',
+    };
+  }
+
+  return {
+    ...pointBasedBuilderCopy,
+    topbarEyebrow: 'Bygg kontroll',
+    previewTitle: 'Så här fyller personalen i kontrollen',
+  };
+}
+
 const fieldTypeOptions: Array<{
   fieldType: ControlFieldDefinition['field_type'];
   label: string;
@@ -102,22 +306,6 @@ const fieldTypeOptions: Array<{
   { fieldType: 'select', label: 'Val', description: 'Fördefinierat val när alternativen kommer från mall.', defaultLabel: 'Val' },
   { fieldType: 'photo', label: 'Foto', description: 'Bild eller dokumentation från mobilen.', defaultLabel: 'Foto' },
 ];
-
-function getControlPointLabel(category: ControlCategory): string {
-  if (category === 'temperature') return 'Enheter';
-  if (category === 'checklist') return 'Områden eller punkter';
-  if (category === 'receiving') return 'Mottagningspunkter';
-  if (category === 'traceability') return 'Spårbarhetspunkter';
-  return 'Kontrollpunkter';
-}
-
-function getPlaceholder(category: ControlCategory): string {
-  if (category === 'temperature') return 'Exempel: Kyl 3 – Beredning';
-  if (category === 'checklist') return 'Exempel: Kök';
-  if (category === 'receiving') return 'Exempel: Kylvaror';
-  if (category === 'traceability') return 'Exempel: Etikettkontroll';
-  return 'Exempel: Kontrollpunkt';
-}
 
 export function ControlTypeDetailView({
   organizationId,
@@ -377,7 +565,7 @@ export function ControlTypeDetailView({
     return (
       <form className="control-field-edit-form canvas-inline-edit-form" onSubmit={handleSaveField}>
         <label>
-          <span>FrÃ¥ga eller fÃ¤lt</span>
+          <span>{builderCopy.fieldNameLabel}</span>
           <input
             className="text-input"
             value={editFieldLabel}
@@ -417,7 +605,7 @@ export function ControlTypeDetailView({
     return (
       <form className="control-point-edit-form canvas-inline-edit-form" onSubmit={handleSaveObject}>
         <label>
-          <span>Namn</span>
+          <span>{builderCopy.pointNameLabel}</span>
           <input
             className="text-input"
             value={editObjectName}
@@ -426,7 +614,7 @@ export function ControlTypeDetailView({
           />
         </label>
         <label>
-          <span>Plats</span>
+          <span>{builderCopy.pointLocationLabel}</span>
           <input
             className="text-input"
             value={editObjectLocation}
@@ -435,7 +623,7 @@ export function ControlTypeDetailView({
         </label>
         {controlType.category === 'temperature' ? (
           <label>
-            <span>Maxgräns</span>
+            <span>{builderCopy.pointLimitLabel}</span>
             <input
               className="text-input"
               value={editObjectLimitMax}
@@ -471,13 +659,13 @@ export function ControlTypeDetailView({
     );
   }
 
-  const pointLabel = getControlPointLabel(controlType.category);
   const activeFields = fields.filter((field) => field.active);
   const activeObjects = objects.filter((item) => item.active);
   const inactiveFields = fields.filter((field) => !field.active);
   const inactiveObjects = objects.filter((item) => !item.active);
   const activeFieldCount = activeFields.length;
   const selectedFieldTypeOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
+  const builderCopy = getBuilderCopy(controlType);
 
   useEffect(() => {
     if (!loading && canManage && fields.length === 0) {
@@ -520,7 +708,7 @@ export function ControlTypeDetailView({
           Tillbaka
         </ActionButton>
         <div>
-          <p className="eyebrow">Redigera kontrolltyp</p>
+          <p className="eyebrow">{builderCopy.topbarEyebrow}</p>
           <h3 id="control-type-detail-title">{controlType.name}</h3>
         </div>
       </div>
@@ -545,18 +733,18 @@ export function ControlTypeDetailView({
       <section className="control-type-preview-section" aria-labelledby="control-type-preview-title">
         <div className="control-point-heading">
           <div>
-            <p className="eyebrow">Kontrollen</p>
-            <h4 id="control-type-preview-title">Bygg direkt i det personalen ska fylla i</h4>
+            <p className="eyebrow">{builderCopy.previewEyebrow}</p>
+            <h4 id="control-type-preview-title">{builderCopy.previewTitle}</h4>
           </div>
           <div className="control-canvas-heading-actions">
-            <span className="control-point-count">{activeFieldCount} saker att fylla i</span>
+            <span className="control-point-count">{builderCopy.previewCount(activeFieldCount, activeObjects.length)}</span>
             {canManage ? (
               <div className="control-canvas-shortcuts" aria-label="Snabbval för kontrollen">
                 <button type="button" className="control-point-action" onClick={openFieldTools}>
-                  Lägg till uppgift
+                  {builderCopy.fieldShortcutLabel}
                 </button>
                 <button type="button" className="control-point-action" onClick={openPointTools}>
-                  Lägg till plats/punkt
+                  {builderCopy.pointShortcutLabel}
                 </button>
               </div>
             ) : null}
@@ -566,8 +754,8 @@ export function ControlTypeDetailView({
         {loading ? <p className="muted-copy">Laddar kontrollen...</p> : null}
         {!loading && activeFields.length === 0 ? (
           <div className="control-detail-empty">
-            <strong>Kontrollen saknar innehåll</strong>
-            <p className="muted-copy">Lägg till minst en fråga, temperatur, datum eller annan uppgift som personalen ska fylla i.</p>
+            <strong>{builderCopy.emptyTitle}</strong>
+            <p className="muted-copy">{builderCopy.emptyDescription}</p>
           </div>
         ) : null}
         {!loading && activeFields.length > 0 ? (
@@ -686,14 +874,14 @@ export function ControlTypeDetailView({
       >
         <summary>
           <span>
-            <strong>Lägg till eller hantera det som ska fyllas i</strong>
-            <small>Frågor, datum, temperaturer, foton och andra uppgifter.</small>
+            <strong>{builderCopy.fieldSummaryTitle}</strong>
+            <small>{builderCopy.fieldSummaryDescription}</small>
           </span>
         </summary>
         <div className="control-point-heading">
           <div>
-            <p className="eyebrow">Vad ska dokumenteras?</p>
-            <h4>Vad ska fyllas i?</h4>
+            <p className="eyebrow">{builderCopy.fieldEyebrow}</p>
+            <h4>{builderCopy.fieldHeading}</h4>
           </div>
           <span className="control-point-count">{activeFieldCount} aktiva</span>
         </div>
@@ -704,8 +892,8 @@ export function ControlTypeDetailView({
             <strong>Inga uppgifter finns ännu</strong>
             <p className="muted-copy">
               {canManage
-                ? 'Lägg till minst ett fält, till exempel OK/Ej OK eller temperatur. Annars kan kontrollen inte sparas.'
-                : 'En administratör behöver lägga till fält innan kontrollen kan utföras.'}
+                ? builderCopy.fieldEmptyManage
+                : builderCopy.fieldEmptyReadOnly}
             </p>
           </div>
         ) : null}
@@ -721,7 +909,7 @@ export function ControlTypeDetailView({
               {editingFieldId === field.id ? (
                 <form className="control-field-edit-form" onSubmit={handleSaveField}>
                   <label>
-                    <span>Fråga eller fält</span>
+                    <span>{builderCopy.fieldNameLabel}</span>
                     <input
                       className="text-input"
                       value={editFieldLabel}
@@ -775,7 +963,7 @@ export function ControlTypeDetailView({
 
         {canManage ? (
           <form className="control-field-form" onSubmit={handleCreateField}>
-            <h4>Lägg till fråga eller fält</h4>
+            <h4>{builderCopy.fieldFormTitle}</h4>
             <div className="field-type-grid" role="group" aria-label="Fälttyp">
               {fieldTypeOptions.map((option) => (
                 <button
@@ -801,7 +989,7 @@ export function ControlTypeDetailView({
                   </div>
                 </div>
                 <label>
-                  <span>Fråga eller fält</span>
+                  <span>{builderCopy.fieldNameLabel}</span>
                   <input
                     className="text-input"
                     value={fieldLabel}
@@ -817,7 +1005,7 @@ export function ControlTypeDetailView({
                   />
                   Obligatoriskt
                 </label>
-                <ActionButton type="submit">Lägg till fält</ActionButton>
+                <ActionButton type="submit">{builderCopy.fieldFormTitle}</ActionButton>
               </div>
             ) : null}
           </form>
@@ -832,14 +1020,14 @@ export function ControlTypeDetailView({
       >
         <summary>
           <span>
-            <strong>Lägg till eller hantera platser och punkter</strong>
-            <small>Kylar, områden, produkter eller andra saker kontrollen gäller.</small>
+            <strong>{builderCopy.pointSummaryTitle}</strong>
+            <small>{builderCopy.pointSummaryDescription}</small>
           </span>
         </summary>
         <div className="control-point-heading">
           <div>
-            <p className="eyebrow">{pointLabel}</p>
-            <h4>Kontrollpunkter för {controlType.name}</h4>
+            <p className="eyebrow">{builderCopy.pointEyebrow}</p>
+            <h4>{builderCopy.pointHeading(controlType.name)}</h4>
           </div>
           <span className="control-point-count">{activeObjects.length} aktiva</span>
         </div>
@@ -850,8 +1038,8 @@ export function ControlTypeDetailView({
             <strong>Inga kontrollpunkter finns ännu</strong>
             <p className="muted-copy">
               {canManage
-                ? 'Lägg till kontrollpunkter som personalen ska gå igenom, till exempel kylar, områden eller produkter.'
-                : 'En administratör behöver lägga till kontrollpunkter om kontrollen ska utföras per plats eller produkt.'}
+                ? builderCopy.pointEmptyManage
+                : builderCopy.pointEmptyReadOnly}
             </p>
           </div>
         ) : null}
@@ -866,7 +1054,7 @@ export function ControlTypeDetailView({
               {editingObjectId === controlObject.id ? (
                 <form className="control-point-edit-form" onSubmit={handleSaveObject}>
                   <label>
-                    <span>Namn</span>
+                    <span>{builderCopy.pointNameLabel}</span>
                     <input
                       className="text-input"
                       value={editObjectName}
@@ -875,7 +1063,7 @@ export function ControlTypeDetailView({
                     />
                   </label>
                   <label>
-                    <span>Plats</span>
+                    <span>{builderCopy.pointLocationLabel}</span>
                     <input
                       className="text-input"
                       value={editObjectLocation}
@@ -884,7 +1072,7 @@ export function ControlTypeDetailView({
                   </label>
                   {controlType.category === 'temperature' ? (
                     <label>
-                      <span>Maxgräns</span>
+                      <span>{builderCopy.pointLimitLabel}</span>
                       <input
                         className="text-input"
                         value={editObjectLimitMax}
@@ -947,29 +1135,29 @@ export function ControlTypeDetailView({
 
         {canManage ? (
           <form className="control-point-form" onSubmit={handleCreateObject}>
-            <h4>Lägg till kontrollpunkt</h4>
+            <h4>{builderCopy.pointFormTitle}</h4>
             <label>
-              <span>Namn</span>
+              <span>{builderCopy.pointNameLabel}</span>
               <input
                 className="text-input"
                 value={objectName}
                 onChange={(event) => setObjectName(event.target.value)}
-                placeholder={getPlaceholder(controlType.category)}
+                placeholder={builderCopy.pointPlaceholder}
                 required
               />
             </label>
             <label>
-              <span>Plats</span>
+              <span>{builderCopy.pointLocationLabel}</span>
               <input
                 className="text-input"
                 value={objectLocation}
                 onChange={(event) => setObjectLocation(event.target.value)}
-                placeholder="Plats, frivilligt"
+                placeholder={builderCopy.pointLocationPlaceholder}
               />
             </label>
             {controlType.category === 'temperature' ? (
               <label>
-                <span>Maxgräns</span>
+                <span>{builderCopy.pointLimitLabel}</span>
                 <input
                   className="text-input"
                   value={limitMax}
@@ -985,11 +1173,11 @@ export function ControlTypeDetailView({
                 className="text-input control-type-instructions-input"
                 value={objectInstructions}
                 onChange={(event) => setObjectInstructions(event.target.value)}
-                placeholder="Instruktion för just den här kontrollpunkten, frivilligt"
+                placeholder={builderCopy.pointInstructionPlaceholder}
                 rows={4}
               />
             </label>
-            <ActionButton type="submit">Lägg till kontrollpunkt</ActionButton>
+            <ActionButton type="submit">{builderCopy.pointFormTitle}</ActionButton>
           </form>
         ) : null}
       </details>
