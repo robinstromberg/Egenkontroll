@@ -13,6 +13,7 @@ import './AdminControls.css';
 export type AdminControlsProps = {
   organizationId: string;
   userId: string;
+  onCreated?: (controlType: ControlType) => void;
 };
 
 const categories: Array<{ value: ControlCategory; label: string }> = [
@@ -40,7 +41,7 @@ const categoryLabels: Record<ControlCategory, string> = {
   custom: 'Anpassad',
 };
 
-export function AdminControls({ organizationId, userId }: AdminControlsProps) {
+export function AdminControls({ organizationId, userId, onCreated }: AdminControlsProps) {
   const [controlTypes, setControlTypes] = useState<ControlType[]>([]);
   const [typeName, setTypeName] = useState('');
   const [category, setCategory] = useState<ControlCategory>('custom');
@@ -83,7 +84,7 @@ export function AdminControls({ organizationId, userId }: AdminControlsProps) {
     setMessage('');
 
     try {
-      await createControlType({
+      const controlType = await createControlType({
         organizationId,
         name: typeName.trim(),
         category,
@@ -96,6 +97,7 @@ export function AdminControls({ organizationId, userId }: AdminControlsProps) {
       setFrequency('daily');
       setWeekday(1);
       await refreshControlTypes();
+      onCreated?.(controlType);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa kontrolltyp.');
     }

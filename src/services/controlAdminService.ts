@@ -42,6 +42,7 @@ export type UpdateControlFieldInput = {
   fieldDefinitionId: string;
   organizationId: string;
   label: string;
+  fieldType: ControlFieldDefinition['field_type'];
   required: boolean;
   active: boolean;
 };
@@ -54,6 +55,21 @@ export type UpdateControlObjectInput = {
   instructions?: string | null;
   limitMax?: number | null;
   active: boolean;
+};
+
+export type DuplicateControlFieldInput = {
+  fieldDefinitionId: string;
+  organizationId: string;
+};
+
+export type DuplicateControlObjectInput = {
+  controlObjectId: string;
+  organizationId: string;
+};
+
+export type UpdateControlOrderInput = {
+  organizationId: string;
+  orderedIds: string[];
 };
 
 function createFieldKey(label: string, fieldType: ControlFieldDefinition['field_type']): string {
@@ -189,6 +205,7 @@ export async function updateControlField(input: UpdateControlFieldInput): Promis
     .from('control_field_definitions')
     .update({
       label,
+      field_type: input.fieldType,
       required: input.required,
       active: input.active,
     })
@@ -198,6 +215,73 @@ export async function updateControlField(input: UpdateControlFieldInput): Promis
   if (error) {
     throw error;
   }
+}
+
+export async function duplicateControlField(input: DuplicateControlFieldInput): Promise<ControlFieldDefinition> {
+  const { data: source, error: sourceError } = await supabase
+    .from('control_field_definitions')
+    .select('*')
+    .eq('id', input.fieldDefinitionId)
+    .eq('organization_id', input.organizationId)
+    .single();
+
+  if (sourceError) {
+    throw sourceError;
+  }
+
+  const field = source as ControlFieldDefinition;
+  const existingFields = await listControlFields(input.organizationId, field.control_type_id);
+  const label = `${field.label} kopia`;
+  const baseKey = createFieldKey(label, field.field_type);
+  const existingKeys = new Set(existingFields.map((item) => item.field_key));
+  let fieldKey = baseKey;
+  let suffix = 2;
+
+  while (existingKeys.has(fieldKey)) {
+    fieldKey = `${baseKey}_${suffix}`;
+    suffix += 1;
+  }
+
+  const maxSortOrder = existingFields.reduce((max, item) => Math.max(max, item.sort_order), -1);
+
+  const { data, error } = await supabase
+    .from('control_field_definitions')
+    .insert({
+      organization_id: field.organization_id,
+      control_type_id: field.control_type_id,
+      field_key: fieldKey,
+      label,
+      field_type: field.field_type,
+      required: field.required,
+      deviation_rule: field.deviation_rule,
+      options: field.options,
+      sort_order: maxSortOrder + 1,
+      active: true,
+    })
+    .select('*')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as ControlFieldDefinition;
+}
+
+export async function updateControlFieldOrder(input: UpdateControlOrderInput): Promise<void> {
+  await Promise.all(
+    input.orderedIds.map(async (fieldDefinitionId, sortOrder) => {
+      const { error } = await supabase
+        .from('control_field_definitions')
+        .update({ sort_order: sortOrder })
+        .eq('id', fieldDefinitionId)
+        .eq('organization_id', input.organizationId);
+
+      if (error) {
+        throw error;
+      }
+    }),
+  );
 }
 
 export async function setControlTypeActive(
@@ -310,6 +394,9 @@ export async function listControlObjects(
 }
 
 export async function createControlObject(input: CreateControlObjectInput): Promise<ControlObject> {
+  const existingObjects = await listControlObjects(input.organizationId, input.controlTypeId);
+  const maxSortOrder = existingObjects.reduce((max, object) => Math.max(max, object.sort_order), -1);
+
   const { data, error } = await supabase
     .from('control_objects')
     .insert({
@@ -322,6 +409,7 @@ export async function createControlObject(input: CreateControlObjectInput): Prom
       limit_min: input.limitMin ?? null,
       limit_max: input.limitMax ?? null,
       unit: input.unit ?? null,
+      sort_order: maxSortOrder + 1,
       active: true,
     })
     .select('*')
@@ -355,6 +443,64 @@ export async function updateControlObject(input: UpdateControlObjectInput): Prom
   if (error) {
     throw error;
   }
+}
+
+export async function duplicateControlObject(input: DuplicateControlObjectInput): Promise<ControlObject> {
+  const { data: source, error: sourceError } = await supabase
+    .from('control_objects')
+    .select('*')
+    .eq('id', input.controlObjectId)
+    .eq('organization_id', input.organizationId)
+    .single();
+
+  if (sourceError) {
+    throw sourceError;
+  }
+
+  const object = source as ControlObject;
+  const existingObjects = await listControlObjects(input.organizationId, object.control_type_id);
+  const maxSortOrder = existingObjects.reduce((max, item) => Math.max(max, item.sort_order), -1);
+
+  const { data, error } = await supabase
+    .from('control_objects')
+    .insert({
+      organization_id: object.organization_id,
+      control_type_id: object.control_type_id,
+      name: `${object.name} kopia`,
+      location: object.location,
+      object_type: object.object_type,
+      instructions: object.instructions,
+      limit_min: object.limit_min,
+      limit_max: object.limit_max,
+      unit: object.unit,
+      metadata: object.metadata,
+      sort_order: maxSortOrder + 1,
+      active: true,
+    })
+    .select('*')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as ControlObject;
+}
+
+export async function updateControlObjectOrder(input: UpdateControlOrderInput): Promise<void> {
+  await Promise.all(
+    input.orderedIds.map(async (controlObjectId, sortOrder) => {
+      const { error } = await supabase
+        .from('control_objects')
+        .update({ sort_order: sortOrder })
+        .eq('id', controlObjectId)
+        .eq('organization_id', input.organizationId);
+
+      if (error) {
+        throw error;
+      }
+    }),
+  );
 }
 
 export async function setControlObjectActive(

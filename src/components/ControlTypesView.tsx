@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AdminControls } from './AdminControls';
 import { ControlTypeDetailView } from './ControlTypeDetailView';
-import { ActionButton } from './ui/ActionButton';
 import { AssetIcon } from './ui/AssetIcon';
 import { BackButton } from './ui/BackButton';
 import { readControlTypeIcon } from '../config/assets';
 import { formatFrequencyLabel } from '../services/scheduleService';
 import {
+  listControlFields,
+  listControlObjects,
   listControlTypes,
   setControlTypeActive,
 } from '../services/controlAdminService';
@@ -31,14 +32,21 @@ const categoryMeta: Record<ControlCategory, { icon: string; label: string; class
 
 type ControlTypeRowProps = {
   controlType: ControlType;
+  counts?: ControlTypeCounts;
   canManage: boolean;
   saving: boolean;
   onOpen: () => void;
   onToggleActive: () => void;
 };
 
+type ControlTypeCounts = {
+  fields: number;
+  objects: number;
+};
+
 function ControlTypeRow({
   controlType,
+  counts,
   canManage,
   saving,
   onOpen,
@@ -59,20 +67,27 @@ function ControlTypeRow({
             <span>{formatFrequencyLabel(controlType) ?? meta.label}</span>
           </span>
         </button>
+        <div className="control-type-meta-row" aria-label={`Innehåll i ${controlType.name}`}>
+          <span>{counts?.fields ?? 0} fält</span>
+          <span>{counts?.objects ?? 0} kontrollpunkter</span>
+        </div>
         <span className={controlType.active ? 'control-type-status active' : 'control-type-status inactive'}>
           {controlType.active ? 'Aktiv' : 'Inaktiv'}
         </span>
       </div>
 
       {canManage ? (
-        <div className="control-type-actions" aria-label={`Åtgärder för ${controlType.name}`}>
-          <ActionButton type="button" variant="secondary" onClick={onOpen} disabled={saving}>
-            Redigera
-          </ActionButton>
-          <ActionButton type="button" variant="secondary" onClick={onToggleActive} disabled={saving}>
-            {controlType.active ? 'Arkivera' : 'Återaktivera'}
-          </ActionButton>
-        </div>
+        <details className="control-type-menu">
+          <summary aria-label={`Åtgärder för ${controlType.name}`}>...</summary>
+          <div className="control-type-menu-panel">
+            <button type="button" onClick={onOpen} disabled={saving}>
+              Redigera
+            </button>
+            <button type="button" onClick={onToggleActive} disabled={saving}>
+              {controlType.active ? 'Arkivera' : 'Återaktivera'}
+            </button>
+          </div>
+        </details>
       ) : null}
     </article>
   );
@@ -101,15 +116,38 @@ function writeControlTypeIdToHash(controlTypeId: string | null) {
 
 export function ControlTypesView({ organizationId, userId, canManage, onBack }: ControlTypesViewProps) {
   const [controlTypes, setControlTypes] = useState<ControlType[]>([]);
+  const [controlTypeCounts, setControlTypeCounts] = useState<Record<string, ControlTypeCounts>>({});
   const [selectedControlTypeId, setSelectedControlTypeId] = useState<string | null>(() => readControlTypeIdFromHash());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [showAdminControls, setShowAdminControls] = useState(false);
 
+  const refreshControlTypeCounts = useCallback(async (nextTypes: ControlType[]) => {
+    const entries = await Promise.all(
+      nextTypes.map(async (controlType) => {
+        const [fields, objects] = await Promise.all([
+          listControlFields(organizationId, controlType.id),
+          listControlObjects(organizationId, controlType.id),
+        ]);
+
+        return [
+          controlType.id,
+          {
+            fields: fields.filter((field) => field.active).length,
+            objects: objects.filter((object) => object.active).length,
+          },
+        ] as const;
+      }),
+    );
+
+    setControlTypeCounts(Object.fromEntries(entries));
+  }, [organizationId]);
+
   async function refreshControlTypes() {
     const nextTypes = await listControlTypes(organizationId);
     setControlTypes(nextTypes);
+    await refreshControlTypeCounts(nextTypes);
   }
 
   useEffect(() => {
@@ -120,7 +158,9 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
         setLoading(true);
         setMessage('');
         const nextTypes = await listControlTypes(organizationId);
-        if (active) setControlTypes(nextTypes);
+        if (!active) return;
+        setControlTypes(nextTypes);
+        await refreshControlTypeCounts(nextTypes);
       } catch (error) {
         if (active) setMessage(error instanceof Error ? error.message : 'Kunde inte läsa kontrolltyper.');
       } finally {
@@ -133,7 +173,7 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
     return () => {
       active = false;
     };
-  }, [organizationId, showAdminControls]);
+  }, [organizationId, refreshControlTypeCounts, showAdminControls]);
 
   const selectedControlType = selectedControlTypeId
     ? controlTypes.find((controlType) => controlType.id === selectedControlTypeId) ?? null
@@ -193,7 +233,15 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
           <BackButton onClick={() => setShowAdminControls(false)} />
           <h3 id="control-types-title">Lägg till kontrolltyp</h3>
         </div>
-        <AdminControls organizationId={organizationId} userId={userId} />
+        <AdminControls
+          organizationId={organizationId}
+          userId={userId}
+          onCreated={(controlType) => {
+            setShowAdminControls(false);
+            setControlTypes((current) => [...current, controlType]);
+            openControlType(controlType.id);
+          }}
+        />
       </section>
     );
   }
@@ -218,6 +266,7 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
             <ControlTypeRow
               canManage={canManage}
               controlType={controlType}
+              counts={controlTypeCounts[controlType.id]}
               key={controlType.id}
               saving={saving}
               onOpen={() => openControlType(controlType.id)}
@@ -240,7 +289,7 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
       {canManage ? (
         <button className="add-control-type-button" type="button" onClick={() => setShowAdminControls(true)}>
           <span aria-hidden="true">+</span>
-          Lägg till kontrolltyp
+          Skapa ny kontrolltyp
         </button>
       ) : (
         <p className="muted-copy">Endast admin kan lägga till eller ändra kontrolltyper.</p>
