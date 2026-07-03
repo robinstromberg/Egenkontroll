@@ -42,6 +42,7 @@ export type ControlDefinitionCanvasProps = {
   onFileChange?: (key: string, file: File | null) => void;
   onEditField?: (field: ControlFieldDefinition) => void;
   onEditObject?: (object: ControlObject) => void;
+  hideFieldEditControls?: boolean;
   renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
   renderObjectEditor?: (object: ControlObject) => ReactNode;
 };
@@ -416,6 +417,7 @@ export function ControlDefinitionCanvas({
   onFileChange,
   onEditField,
   onEditObject,
+  hideFieldEditControls = false,
   renderFieldEditor,
   renderObjectEditor,
 }: ControlDefinitionCanvasProps) {
@@ -481,7 +483,7 @@ export function ControlDefinitionCanvas({
                   className={selected ? 'control-field canvas-field-editable selected' : isEditMode ? 'control-field canvas-field-editable' : 'control-field'}
                   key={key}
                 >
-                  {isEditMode ? (
+                  {isEditMode && !hideFieldEditControls ? (
                     <div className="canvas-field-toolbar">
                       <span>{fieldTypeLabels[field.field_type]} · {field.required ? 'Obligatoriskt' : 'Frivilligt'}</span>
                       <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>

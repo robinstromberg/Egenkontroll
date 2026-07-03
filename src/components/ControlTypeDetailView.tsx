@@ -307,6 +307,16 @@ const fieldTypeOptions: Array<{
   { fieldType: 'photo', label: 'Foto', description: 'Bild eller dokumentation från mobilen.', defaultLabel: 'Foto' },
 ];
 
+function formatTemperaturePointMeta(controlObject: ControlObject): string {
+  const location = controlObject.location?.trim();
+  const unit = controlObject.unit ?? '°C';
+  const limitText = controlObject.limit_max !== null && controlObject.limit_max !== undefined
+    ? `Max ${controlObject.limit_max}${unit}`
+    : 'Maxgräns saknas';
+
+  return location ? `${location} · ${limitText}` : limitText;
+}
+
 export function ControlTypeDetailView({
   organizationId,
   controlType,
@@ -472,6 +482,23 @@ export function ControlTypeDetailView({
     }
   }
 
+  async function handleCreateTemperatureMeasurement() {
+    setMessage('');
+
+    try {
+      await createControlField({
+        organizationId,
+        controlTypeId: controlType.id,
+        label: 'Temperatur',
+        fieldType: 'temperature',
+        required: true,
+      });
+      await refreshFields();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa temperaturmätning.');
+    }
+  }
+
   async function handleToggleType() {
     setMessage('');
     try {
@@ -628,6 +655,7 @@ export function ControlTypeDetailView({
               className="text-input"
               value={editObjectLimitMax}
               onChange={(event) => setEditObjectLimitMax(event.target.value)}
+              required={isTemperatureControl}
               type="number"
             />
           </label>
@@ -664,14 +692,30 @@ export function ControlTypeDetailView({
   const inactiveFields = fields.filter((field) => !field.active);
   const inactiveObjects = objects.filter((item) => !item.active);
   const activeFieldCount = activeFields.length;
-  const selectedFieldTypeOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
   const builderCopy = getBuilderCopy(controlType);
+  const isTemperatureControl = controlType.category === 'temperature';
+  const activeTemperatureFields = activeFields.filter((field) => field.field_type === 'temperature');
+  const previewFields = isTemperatureControl ? activeTemperatureFields : activeFields;
+  const hasTemperatureMeasurement = activeTemperatureFields.length > 0;
+  const canRenderPreviewCanvas = previewFields.length > 0 && (!isTemperatureControl || activeObjects.length > 0);
+  const previewEmptyTitle = isTemperatureControl && hasTemperatureMeasurement && activeObjects.length === 0
+    ? 'Lägg till kylar eller frysar'
+    : builderCopy.emptyTitle;
+  const previewEmptyDescription = isTemperatureControl && hasTemperatureMeasurement && activeObjects.length === 0
+    ? 'Temperaturmätningen finns. Lägg till minst en kyl eller frys som kontrollpunkt för att se previewn.'
+    : builderCopy.emptyDescription;
+  const selectedFieldTypeOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
 
   useEffect(() => {
+    if (!loading && canManage && isTemperatureControl && objects.length === 0) {
+      setPointToolsOpen(true);
+      return;
+    }
+
     if (!loading && canManage && fields.length === 0) {
       setFieldToolsOpen(true);
     }
-  }, [canManage, fields.length, loading]);
+  }, [canManage, fields.length, isTemperatureControl, loading, objects.length]);
 
   useEffect(() => {
     if (!pendingToolFocus) return undefined;
@@ -752,22 +796,23 @@ export function ControlTypeDetailView({
         </div>
 
         {loading ? <p className="muted-copy">Laddar kontrollen...</p> : null}
-        {!loading && activeFields.length === 0 ? (
+        {!loading && !canRenderPreviewCanvas ? (
           <div className="control-detail-empty">
-            <strong>{builderCopy.emptyTitle}</strong>
-            <p className="muted-copy">{builderCopy.emptyDescription}</p>
+            <strong>{previewEmptyTitle}</strong>
+            <p className="muted-copy">{previewEmptyDescription}</p>
           </div>
         ) : null}
-        {!loading && activeFields.length > 0 ? (
+        {!loading && canRenderPreviewCanvas ? (
           <ControlDefinitionCanvas
             controlType={controlType}
             objects={activeObjects}
-            fields={activeFields}
+            fields={previewFields}
             mode={canManage ? 'edit' : 'preview'}
             selectedFieldId={editingFieldId}
             selectedObjectId={editingObjectId}
             onEditField={handleStartEditField}
             onEditObject={handleStartEditObject}
+            hideFieldEditControls={isTemperatureControl}
             renderFieldEditor={renderInlineFieldEditor}
             renderObjectEditor={renderInlineObjectEditor}
           />
@@ -887,7 +932,7 @@ export function ControlTypeDetailView({
         </div>
 
         {loading ? <p className="muted-copy">Laddar uppgifter...</p> : null}
-        {!loading && fields.length === 0 ? (
+        {!loading && !isTemperatureControl && fields.length === 0 ? (
           <div className="control-detail-empty">
             <strong>Inga uppgifter finns ännu</strong>
             <p className="muted-copy">
@@ -898,7 +943,29 @@ export function ControlTypeDetailView({
           </div>
         ) : null}
 
-        {inactiveFields.length > 0 ? (
+        {isTemperatureControl ? (
+          <div className="field-create-panel">
+            <div className="field-create-summary">
+              <div className="control-field-icon" aria-hidden="true">
+                <img src={fieldTypeIconPaths.temperature} alt="" />
+              </div>
+              <div>
+                <h5>{hasTemperatureMeasurement ? 'Temperaturmätning finns' : 'Temperaturmätning saknas'}</h5>
+                <p>
+                  Temperatur är den fasta mätningen för den här kontrolltypen. Lägg till kylar och frysar som
+                  kontrollpunkter med maxgräns i °C. Datum, tid och användare sparas automatiskt.
+                </p>
+              </div>
+            </div>
+            {!hasTemperatureMeasurement && canManage ? (
+              <ActionButton type="button" onClick={handleCreateTemperatureMeasurement}>
+                Skapa temperaturmätning
+              </ActionButton>
+            ) : null}
+          </div>
+        ) : null}
+
+        {!isTemperatureControl && inactiveFields.length > 0 ? (
         <div className="control-field-list">
           {inactiveFields.map((field) => (
             <article className="control-field-card inactive" key={field.id}>
@@ -961,7 +1028,7 @@ export function ControlTypeDetailView({
         </div>
         ) : null}
 
-        {canManage ? (
+        {canManage && !isTemperatureControl ? (
           <form className="control-field-form" onSubmit={handleCreateField}>
             <h4>{builderCopy.fieldFormTitle}</h4>
             <div className="field-type-grid" role="group" aria-label="Fälttyp">
@@ -1077,6 +1144,7 @@ export function ControlTypeDetailView({
                         className="text-input"
                         value={editObjectLimitMax}
                         onChange={(event) => setEditObjectLimitMax(event.target.value)}
+                        required={isTemperatureControl}
                         type="number"
                       />
                     </label>
@@ -1110,7 +1178,9 @@ export function ControlTypeDetailView({
                   <div>
                     <h4>{controlObject.name}</h4>
                     <p>
-                      {controlObject.location ?? 'Ingen plats'} · {controlObject.limit_max ?? 'Ingen gräns'} {controlObject.unit ?? ''}
+                      {isTemperatureControl
+                        ? formatTemperaturePointMeta(controlObject)
+                        : `${controlObject.location ?? 'Ingen plats'} · ${controlObject.limit_max ?? 'Ingen gräns'} ${controlObject.unit ?? ''}`}
                     </p>
                     {controlObject.instructions ? (
                       <p className="control-point-instructions">{controlObject.instructions}</p>
@@ -1163,6 +1233,7 @@ export function ControlTypeDetailView({
                   value={limitMax}
                   onChange={(event) => setLimitMax(event.target.value)}
                   placeholder="Exempel: 8"
+                  required={isTemperatureControl}
                   type="number"
                 />
               </label>
