@@ -315,6 +315,60 @@ const fieldTypeOptions: Array<{
   { fieldType: 'photo', label: 'Foto', description: 'Bild eller dokumentation från mobilen.', defaultLabel: 'Foto' },
 ];
 
+const traceabilityFieldTypes = new Set<ControlFieldDefinition['field_type']>(['text', 'date', 'photo', 'select']);
+const traceabilityFieldTypeOptions = fieldTypeOptions.filter((option) => traceabilityFieldTypes.has(option.fieldType));
+
+type FieldPreset = {
+  fieldType: ControlFieldDefinition['field_type'];
+  label: string;
+  description: string;
+  required: boolean;
+};
+
+const traceabilityFieldPresets: FieldPreset[] = [
+  {
+    fieldType: 'text',
+    label: 'Produkt',
+    description: 'Vad varan eller råvaran heter.',
+    required: true,
+  },
+  {
+    fieldType: 'text',
+    label: 'Batchnummer',
+    description: 'Batch, lot eller annan spårbar kod.',
+    required: true,
+  },
+  {
+    fieldType: 'date',
+    label: 'Bäst före',
+    description: 'Produktens bäst före-datum.',
+    required: false,
+  },
+  {
+    fieldType: 'text',
+    label: 'Leverantör',
+    description: 'Vem produkten kommer från.',
+    required: true,
+  },
+  {
+    fieldType: 'photo',
+    label: 'Foto / etikett',
+    description: 'Bild på etikett, följesedel eller produkt.',
+    required: false,
+  },
+];
+
+function getFieldTypeOptionsForCategory(category: ControlCategory) {
+  return category === 'traceability' ? traceabilityFieldTypeOptions : fieldTypeOptions;
+}
+
+function getEffectiveFieldType(category: ControlCategory, fieldType: ControlFieldDefinition['field_type']) {
+  const availableOptions = getFieldTypeOptionsForCategory(category);
+  return availableOptions.some((option) => option.fieldType === fieldType)
+    ? fieldType
+    : availableOptions[0]?.fieldType ?? fieldType;
+}
+
 function formatTemperaturePointMeta(controlObject: ControlObject): string {
   const location = controlObject.location?.trim();
   const unit = controlObject.unit ?? '°C';
@@ -486,19 +540,42 @@ export function ControlTypeDetailView({
     setMessage('');
 
     try {
+      const safeFieldType = getEffectiveFieldType(controlType.category, fieldType);
+      const selectedOption = getFieldTypeOptionsForCategory(controlType.category)
+        .find((option) => option.fieldType === safeFieldType);
+      const label = fieldType === safeFieldType ? fieldLabel : selectedOption?.defaultLabel ?? fieldLabel;
       await createControlField({
         organizationId,
         controlTypeId: controlType.id,
-        label: fieldLabel.trim(),
-        fieldType,
+        label: label.trim(),
+        fieldType: safeFieldType,
         required: fieldRequired,
       });
-      const selectedOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
       setFieldLabel(selectedOption?.defaultLabel ?? '');
-      setFieldRequired(fieldType === 'ok_not_ok' || fieldType === 'temperature');
+      setFieldRequired(safeFieldType === 'ok_not_ok' || safeFieldType === 'temperature');
       await refreshFields();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa formulärfält.');
+    }
+  }
+
+  async function handleCreateFieldPreset(preset: FieldPreset) {
+    setMessage('');
+
+    try {
+      await createControlField({
+        organizationId,
+        controlTypeId: controlType.id,
+        label: preset.label,
+        fieldType: preset.fieldType,
+        required: preset.required,
+      });
+      setFieldType(preset.fieldType);
+      setFieldLabel(preset.label);
+      setFieldRequired(preset.required);
+      await refreshFields();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa informationsfält.');
     }
   }
 
@@ -589,10 +666,12 @@ export function ControlTypeDetailView({
   }
 
   function handleSelectFieldType(nextFieldType: ControlFieldDefinition['field_type']) {
-    const selectedOption = fieldTypeOptions.find((option) => option.fieldType === nextFieldType);
-    setFieldType(nextFieldType);
+    const safeFieldType = getEffectiveFieldType(controlType.category, nextFieldType);
+    const selectedOption = getFieldTypeOptionsForCategory(controlType.category)
+      .find((option) => option.fieldType === safeFieldType);
+    setFieldType(safeFieldType);
     setFieldLabel(selectedOption?.defaultLabel ?? '');
-    setFieldRequired(nextFieldType === 'ok_not_ok' || nextFieldType === 'temperature');
+    setFieldRequired(safeFieldType === 'ok_not_ok' || safeFieldType === 'temperature');
   }
 
   function handleStartEditField(field: ControlFieldDefinition) {
@@ -731,8 +810,11 @@ export function ControlTypeDetailView({
   const activeFieldCount = activeFields.length;
   const builderCopy = getBuilderCopy(controlType);
   const isTemperatureControl = controlType.category === 'temperature';
+  const isTraceabilityControl = controlType.category === 'traceability';
   const isPointChecklistControl = controlType.category === 'checklist' || controlType.category === 'round';
   const isFixedPointControl = isTemperatureControl || isPointChecklistControl;
+  const availableFieldTypeOptions = getFieldTypeOptionsForCategory(controlType.category);
+  const effectiveFieldType = getEffectiveFieldType(controlType.category, fieldType);
   const activeTemperatureFields = activeFields.filter((field) => field.field_type === 'temperature');
   const activeStatusFields = activeFields.filter((field) => field.field_type === 'ok_not_ok');
   const previewFields = isTemperatureControl
@@ -759,7 +841,8 @@ export function ControlTypeDetailView({
       ? 'Temperaturmätningen finns. Lägg till minst en kyl eller frys som kontrollpunkt för att se previewn.'
       : 'OK/Ej OK-status finns. Lägg till minst en punkt eller ett område för att se checklistans preview.'
     : builderCopy.emptyDescription;
-  const selectedFieldTypeOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
+  const selectedFieldTypeOption = availableFieldTypeOptions.find((option) => option.fieldType === effectiveFieldType);
+  const showPointShortcut = !isTraceabilityControl || activeObjects.length > 0;
 
   useEffect(() => {
     if (!loading && canManage && isFixedPointControl && objects.length === 0) {
@@ -842,9 +925,11 @@ export function ControlTypeDetailView({
                 <button type="button" className="control-point-action" onClick={openFieldTools}>
                   {builderCopy.fieldShortcutLabel}
                 </button>
-                <button type="button" className="control-point-action" onClick={openPointTools}>
-                  {builderCopy.pointShortcutLabel}
-                </button>
+                {showPointShortcut ? (
+                  <button type="button" className="control-point-action" onClick={openPointTools}>
+                    {builderCopy.pointShortcutLabel}
+                  </button>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -1101,11 +1186,40 @@ export function ControlTypeDetailView({
 
         {canManage && !isFixedPointControl ? (
           <form className="control-field-form" onSubmit={handleCreateField}>
-            <h4>{builderCopy.fieldFormTitle}</h4>
+            {isTraceabilityControl ? (
+              <div className="field-create-panel">
+                <div className="field-create-summary">
+                  <div className="control-field-icon" aria-hidden="true">
+                    <img src={categoryIconPaths.traceability} alt="" />
+                  </div>
+                  <div>
+                    <h5>Vanliga spårbarhetsfält</h5>
+                    <p>
+                      Lägg till informationsfält som personalen fyller i. Datum, tid och användare sparas automatiskt
+                      när dokumentationen görs.
+                    </p>
+                  </div>
+                </div>
+                <div className="field-type-grid" role="group" aria-label="Vanliga spårbarhetsfält">
+                  {traceabilityFieldPresets.map((preset) => (
+                    <button
+                      className="field-type-option"
+                      key={`${preset.fieldType}-${preset.label}`}
+                      onClick={() => void handleCreateFieldPreset(preset)}
+                      type="button"
+                    >
+                      <strong>{preset.label}</strong>
+                      <span>{preset.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            <h4>{isTraceabilityControl ? 'Lägg till anpassat informationsfält' : builderCopy.fieldFormTitle}</h4>
             <div className="field-type-grid" role="group" aria-label="Fälttyp">
-              {fieldTypeOptions.map((option) => (
+              {availableFieldTypeOptions.map((option) => (
                 <button
-                  className={fieldType === option.fieldType ? 'field-type-option selected' : 'field-type-option'}
+                  className={effectiveFieldType === option.fieldType ? 'field-type-option selected' : 'field-type-option'}
                   key={option.fieldType}
                   onClick={() => handleSelectFieldType(option.fieldType)}
                   type="button"
@@ -1130,8 +1244,13 @@ export function ControlTypeDetailView({
                   <span>{builderCopy.fieldNameLabel}</span>
                   <input
                     className="text-input"
-                    value={fieldLabel}
-                    onChange={(event) => setFieldLabel(event.target.value)}
+                    value={fieldType === effectiveFieldType ? fieldLabel : selectedFieldTypeOption.defaultLabel}
+                    onChange={(event) => {
+                      if (fieldType !== effectiveFieldType) {
+                        setFieldType(effectiveFieldType);
+                      }
+                      setFieldLabel(event.target.value);
+                    }}
                     required
                   />
                 </label>
