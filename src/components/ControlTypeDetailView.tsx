@@ -252,6 +252,10 @@ function getBuilderCopy(controlType: ControlType): BuilderCopy {
     return {
       ...pointBasedBuilderCopy,
       previewTitle: 'Så här går personalen igenom checklistans punkter',
+      fieldShortcutLabel: 'Hantera OK/Ej OK',
+      pointShortcutLabel: 'Lägg till punkt',
+      emptyTitle: 'Checklistan saknar OK/Ej OK-status',
+      emptyDescription: 'Lägg till den fasta OK/Ej OK-statusen och skapa sedan punkter eller områden som ska kontrolleras.',
       fieldSummaryTitle: 'Fast status: OK / Ej OK',
       fieldSummaryDescription: 'Checklistor bygger på punkter som kontrolleras med OK eller Ej OK.',
       fieldHeading: 'Status som används i checklistan',
@@ -270,6 +274,10 @@ function getBuilderCopy(controlType: ControlType): BuilderCopy {
     return {
       ...pointBasedBuilderCopy,
       previewTitle: 'Så här går personalen igenom egenkontrollrundan',
+      fieldShortcutLabel: 'Hantera OK/Ej OK',
+      pointShortcutLabel: 'Lägg till område',
+      emptyTitle: 'Rundan saknar OK/Ej OK-status',
+      emptyDescription: 'Lägg till den fasta OK/Ej OK-statusen och skapa sedan områden som ska kontrolleras.',
       fieldSummaryTitle: 'Fast status: OK / Ej OK',
       fieldSummaryDescription: 'Rundan bygger på områden som kontrolleras med OK eller Ej OK.',
       fieldHeading: 'Status som används i rundan',
@@ -315,6 +323,18 @@ function formatTemperaturePointMeta(controlObject: ControlObject): string {
     : 'Maxgräns saknas';
 
   return location ? `${location} · ${limitText}` : limitText;
+}
+
+function formatControlPointMeta(controlObject: ControlObject, category: ControlCategory): string {
+  if (category === 'temperature') {
+    return formatTemperaturePointMeta(controlObject);
+  }
+
+  if (category === 'checklist' || category === 'round') {
+    return controlObject.location?.trim() || 'OK / Ej OK';
+  }
+
+  return `${controlObject.location ?? 'Ingen plats'} · ${controlObject.limit_max ?? 'Ingen gräns'} ${controlObject.unit ?? ''}`;
 }
 
 export function ControlTypeDetailView({
@@ -496,6 +516,23 @@ export function ControlTypeDetailView({
       await refreshFields();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa temperaturmätning.');
+    }
+  }
+
+  async function handleCreateChecklistStatus() {
+    setMessage('');
+
+    try {
+      await createControlField({
+        organizationId,
+        controlTypeId: controlType.id,
+        label: 'Status',
+        fieldType: 'ok_not_ok',
+        required: true,
+      });
+      await refreshFields();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa OK/Ej OK-status.');
     }
   }
 
@@ -694,20 +731,38 @@ export function ControlTypeDetailView({
   const activeFieldCount = activeFields.length;
   const builderCopy = getBuilderCopy(controlType);
   const isTemperatureControl = controlType.category === 'temperature';
+  const isPointChecklistControl = controlType.category === 'checklist' || controlType.category === 'round';
+  const isFixedPointControl = isTemperatureControl || isPointChecklistControl;
   const activeTemperatureFields = activeFields.filter((field) => field.field_type === 'temperature');
-  const previewFields = isTemperatureControl ? activeTemperatureFields : activeFields;
+  const activeStatusFields = activeFields.filter((field) => field.field_type === 'ok_not_ok');
+  const previewFields = isTemperatureControl
+    ? activeTemperatureFields
+    : isPointChecklistControl
+      ? activeStatusFields
+      : activeFields;
   const hasTemperatureMeasurement = activeTemperatureFields.length > 0;
-  const canRenderPreviewCanvas = previewFields.length > 0 && (!isTemperatureControl || activeObjects.length > 0);
-  const previewEmptyTitle = isTemperatureControl && hasTemperatureMeasurement && activeObjects.length === 0
-    ? 'Lägg till kylar eller frysar'
+  const hasChecklistStatus = activeStatusFields.length > 0;
+  const visibleFieldCount = isTemperatureControl
+    ? activeTemperatureFields.length
+    : isPointChecklistControl
+      ? activeStatusFields.length
+      : activeFieldCount;
+  const canRenderPreviewCanvas = previewFields.length > 0 && (!isFixedPointControl || activeObjects.length > 0);
+  const fixedPointMissingObjects = isFixedPointControl && previewFields.length > 0 && activeObjects.length === 0;
+  const previewEmptyTitle = fixedPointMissingObjects
+    ? isTemperatureControl
+      ? 'Lägg till kylar eller frysar'
+      : 'Lägg till punkter eller områden'
     : builderCopy.emptyTitle;
-  const previewEmptyDescription = isTemperatureControl && hasTemperatureMeasurement && activeObjects.length === 0
-    ? 'Temperaturmätningen finns. Lägg till minst en kyl eller frys som kontrollpunkt för att se previewn.'
+  const previewEmptyDescription = fixedPointMissingObjects
+    ? isTemperatureControl
+      ? 'Temperaturmätningen finns. Lägg till minst en kyl eller frys som kontrollpunkt för att se previewn.'
+      : 'OK/Ej OK-status finns. Lägg till minst en punkt eller ett område för att se checklistans preview.'
     : builderCopy.emptyDescription;
   const selectedFieldTypeOption = fieldTypeOptions.find((option) => option.fieldType === fieldType);
 
   useEffect(() => {
-    if (!loading && canManage && isTemperatureControl && objects.length === 0) {
+    if (!loading && canManage && isFixedPointControl && objects.length === 0) {
       setPointToolsOpen(true);
       return;
     }
@@ -715,7 +770,7 @@ export function ControlTypeDetailView({
     if (!loading && canManage && fields.length === 0) {
       setFieldToolsOpen(true);
     }
-  }, [canManage, fields.length, isTemperatureControl, loading, objects.length]);
+  }, [canManage, fields.length, isFixedPointControl, loading, objects.length]);
 
   useEffect(() => {
     if (!pendingToolFocus) return undefined;
@@ -812,7 +867,7 @@ export function ControlTypeDetailView({
             selectedObjectId={editingObjectId}
             onEditField={handleStartEditField}
             onEditObject={handleStartEditObject}
-            hideFieldEditControls={isTemperatureControl}
+            hideFieldEditControls={isFixedPointControl}
             renderFieldEditor={renderInlineFieldEditor}
             renderObjectEditor={renderInlineObjectEditor}
           />
@@ -928,11 +983,11 @@ export function ControlTypeDetailView({
             <p className="eyebrow">{builderCopy.fieldEyebrow}</p>
             <h4>{builderCopy.fieldHeading}</h4>
           </div>
-          <span className="control-point-count">{activeFieldCount} aktiva</span>
+          <span className="control-point-count">{visibleFieldCount} aktiva</span>
         </div>
 
         {loading ? <p className="muted-copy">Laddar uppgifter...</p> : null}
-        {!loading && !isTemperatureControl && fields.length === 0 ? (
+        {!loading && !isFixedPointControl && fields.length === 0 ? (
           <div className="control-detail-empty">
             <strong>Inga uppgifter finns ännu</strong>
             <p className="muted-copy">
@@ -943,29 +998,45 @@ export function ControlTypeDetailView({
           </div>
         ) : null}
 
-        {isTemperatureControl ? (
+        {isFixedPointControl ? (
           <div className="field-create-panel">
             <div className="field-create-summary">
               <div className="control-field-icon" aria-hidden="true">
-                <img src={fieldTypeIconPaths.temperature} alt="" />
+                <img src={isTemperatureControl ? fieldTypeIconPaths.temperature : fieldTypeIconPaths.ok_not_ok} alt="" />
               </div>
               <div>
-                <h5>{hasTemperatureMeasurement ? 'Temperaturmätning finns' : 'Temperaturmätning saknas'}</h5>
-                <p>
-                  Temperatur är den fasta mätningen för den här kontrolltypen. Lägg till kylar och frysar som
-                  kontrollpunkter med maxgräns i °C. Datum, tid och användare sparas automatiskt.
-                </p>
+                <h5>
+                  {isTemperatureControl
+                    ? hasTemperatureMeasurement ? 'Temperaturmätning finns' : 'Temperaturmätning saknas'
+                    : hasChecklistStatus ? 'OK/Ej OK-status finns' : 'OK/Ej OK-status saknas'}
+                </h5>
+                {isTemperatureControl ? (
+                  <p>
+                    Temperatur är den fasta mätningen för den här kontrolltypen. Lägg till kylar och frysar som
+                    kontrollpunkter med maxgräns i °C. Datum, tid och användare sparas automatiskt.
+                  </p>
+                ) : (
+                  <p>
+                    OK/Ej OK är den fasta svarstypen för den här kontrolltypen. Lägg till områden, produkter eller
+                    ronderingspunkter som kontrollpunkter. Kommentar och åtgärd visas först vid Ej OK.
+                  </p>
+                )}
               </div>
             </div>
-            {!hasTemperatureMeasurement && canManage ? (
+            {isTemperatureControl && !hasTemperatureMeasurement && canManage ? (
               <ActionButton type="button" onClick={handleCreateTemperatureMeasurement}>
                 Skapa temperaturmätning
+              </ActionButton>
+            ) : null}
+            {isPointChecklistControl && !hasChecklistStatus && canManage ? (
+              <ActionButton type="button" onClick={handleCreateChecklistStatus}>
+                Skapa OK/Ej OK-status
               </ActionButton>
             ) : null}
           </div>
         ) : null}
 
-        {!isTemperatureControl && inactiveFields.length > 0 ? (
+        {!isFixedPointControl && inactiveFields.length > 0 ? (
         <div className="control-field-list">
           {inactiveFields.map((field) => (
             <article className="control-field-card inactive" key={field.id}>
@@ -1028,7 +1099,7 @@ export function ControlTypeDetailView({
         </div>
         ) : null}
 
-        {canManage && !isTemperatureControl ? (
+        {canManage && !isFixedPointControl ? (
           <form className="control-field-form" onSubmit={handleCreateField}>
             <h4>{builderCopy.fieldFormTitle}</h4>
             <div className="field-type-grid" role="group" aria-label="Fälttyp">
@@ -1178,9 +1249,7 @@ export function ControlTypeDetailView({
                   <div>
                     <h4>{controlObject.name}</h4>
                     <p>
-                      {isTemperatureControl
-                        ? formatTemperaturePointMeta(controlObject)
-                        : `${controlObject.location ?? 'Ingen plats'} · ${controlObject.limit_max ?? 'Ingen gräns'} ${controlObject.unit ?? ''}`}
+                      {formatControlPointMeta(controlObject, controlType.category)}
                     </p>
                     {controlObject.instructions ? (
                       <p className="control-point-instructions">{controlObject.instructions}</p>
