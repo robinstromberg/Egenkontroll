@@ -14,6 +14,8 @@ Styrande Figma-ytor:
 
 Den aldre `docs/CONTROL_TYPE_EDITOR_WYSIWYG_PLAN.md` ar historisk analys. Vid konflikt galler denna brief.
 
+Visuell verifiering ska folja `docs/CONTROL_TYPE_EDITOR_VISUAL_VERIFICATION.md` innan en implementation-slice anses klar.
+
 ## Begrepp
 
 - **Kontrolltyp**: rutinen som ska utforas, till exempel `Kyltemperaturer`, `Stadning` eller `Sparbarhet`.
@@ -108,6 +110,7 @@ Minimikrav per slice:
 - `npm run typecheck`
 - `npm run lint`
 - `npm run build`
+- Folj `docs/CONTROL_TYPE_EDITOR_VISUAL_VERIFICATION.md`.
 - Mobil bredd ska kontrolleras visuellt.
 - Ingen text far tryckas ihop, hamna utanfor eller bli svar att tolka.
 - Preview ska jamforas mot styrande Figma-yta.
