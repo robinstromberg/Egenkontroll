@@ -103,10 +103,6 @@ function isIosDevice() {
   return /iphone|ipad|ipod/.test(userAgent) || touchMac;
 }
 
-function isAndroidDevice() {
-  return window.navigator.userAgent.toLowerCase().includes('android');
-}
-
 function readHomeScreenSnoozed() {
   try {
     const value = window.localStorage.getItem(HOME_SCREEN_SNOOZE_KEY);
@@ -124,6 +120,148 @@ function snoozeHomeScreenGuide() {
   } catch {
     // localStorage can be unavailable in private browsing; component state still hides the card.
   }
+}
+
+type HomeScreenGuideStep = {
+  title: string;
+  body: string;
+  hint: string;
+  visual: 'safari' | 'share-sheet' | 'add-dialog' | 'home-screen';
+};
+
+const iosHomeScreenGuideSteps: HomeScreenGuideStep[] = [
+  {
+    title: 'Tryck på dela-ikonen',
+    body: 'Tryck på dela-ikonen längst ned i Safari.',
+    hint: 'Om du inte ser knapparna längst ned, tryck på sidan eller scrolla lite så visas de igen.',
+    visual: 'safari',
+  },
+  {
+    title: 'Välj Lägg till på hemskärmen',
+    body: 'Bläddra ned i delningsmenyn och välj Lägg till på hemskärmen.',
+    hint: 'Raden ligger ofta längre ned bland alternativen.',
+    visual: 'share-sheet',
+  },
+  {
+    title: 'Bekräfta med Lägg till',
+    body: 'Kontrollera att namnet är Min Egenkontroll och tryck på Lägg till uppe till höger.',
+    hint: 'Namnet ska vara Min Egenkontroll.',
+    visual: 'add-dialog',
+  },
+  {
+    title: 'Klart',
+    body: 'Nästa gång öppnar du Min Egenkontroll direkt från hemskärmen.',
+    hint: 'Appen fungerar som en vanlig app när du öppnar den från hemskärmen.',
+    visual: 'home-screen',
+  },
+];
+
+const fallbackHomeScreenGuideSteps: HomeScreenGuideStep[] = [
+  {
+    title: 'Öppna webbläsarens meny',
+    body: 'Öppna webbläsarens delnings- eller menyknapp.',
+    hint: 'Knappen kan se olika ut beroende på webbläsare.',
+    visual: 'safari',
+  },
+  {
+    title: 'Välj Lägg till på hemskärmen',
+    body: 'Välj Lägg till på hemskärmen om alternativet finns.',
+    hint: 'I Chrome kan det även stå Installera app.',
+    visual: 'share-sheet',
+  },
+  {
+    title: 'Bekräfta',
+    body: 'Bekräfta när webbläsaren frågar.',
+    hint: 'Behåll namnet Min Egenkontroll om du får välja.',
+    visual: 'add-dialog',
+  },
+  {
+    title: 'Klart',
+    body: 'Öppna Min Egenkontroll från hemskärmen nästa gång.',
+    hint: 'Då slipper du leta upp webbadressen igen.',
+    visual: 'home-screen',
+  },
+];
+
+function HomeScreenGuideVisual({ step }: { step: HomeScreenGuideStep }) {
+  return (
+    <div className={`home-screen-visual ${step.visual}`} aria-hidden="true">
+      {step.visual === 'safari' ? (
+        <div className="pwa-phone-mockup">
+          <div className="pwa-phone-bar">
+            <span>minegenkontroll.se</span>
+          </div>
+          <div className="pwa-phone-page">
+            <strong>Min Egenkontroll</strong>
+            <span>Utför kontroller och rapportera</span>
+            <span>Få överblick och historik</span>
+            <span>Redo vid myndighetsbesök</span>
+          </div>
+          <div className="pwa-safari-toolbar">
+            <span />
+            <span />
+            <span className="pwa-share-icon highlighted">
+              <span />
+            </span>
+            <span />
+            <span />
+          </div>
+          <span className="pwa-pointer">Tryck här</span>
+        </div>
+      ) : null}
+
+      {step.visual === 'share-sheet' ? (
+        <div className="pwa-share-sheet-mockup">
+          <div className="pwa-share-header">
+            <span className="pwa-share-thumbnail" />
+            <div>
+              <strong>Min Egenkontroll</strong>
+              <span>minegenkontroll.se</span>
+            </div>
+          </div>
+          <div className="pwa-share-apps" />
+          <div className="pwa-share-row">Kopiera</div>
+          <div className="pwa-share-row">Lägg till bokmärke</div>
+          <div className="pwa-share-row highlighted">Lägg till på hemskärmen</div>
+          <span className="pwa-pointer">Välj den här raden</span>
+        </div>
+      ) : null}
+
+      {step.visual === 'add-dialog' ? (
+        <div className="pwa-add-dialog-mockup">
+          <div className="pwa-add-topbar">
+            <span>Avbryt</span>
+            <strong>Lägg till på hemskärmen</strong>
+            <span className="highlighted">Lägg till</span>
+          </div>
+          <div className="pwa-add-content">
+            <span className="pwa-app-icon">ME</span>
+            <div>
+              <strong>Min Egenkontroll</strong>
+              <span>https://minegenkontroll.se/</span>
+            </div>
+          </div>
+          <p>En symbol läggs till på hemskärmen så att du snabbt kan öppna webbplatsen.</p>
+          <span className="pwa-pointer">Tryck på Lägg till</span>
+        </div>
+      ) : null}
+
+      {step.visual === 'home-screen' ? (
+        <div className="pwa-home-screen-mockup">
+          <div className="pwa-home-grid">
+            {Array.from({ length: 15 }, (_, index) => (
+              <span key={index} />
+            ))}
+            <span className="pwa-home-app highlighted">
+              <span className="pwa-app-icon">ME</span>
+              <small>Min Egenkontroll</small>
+            </span>
+          </div>
+          <span className="pwa-pointer">Klart</span>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function ControlSection({
@@ -199,7 +337,6 @@ export function TodayDashboard({
   const [installGuideStep, setInstallGuideStep] = useState(0);
   const [isStandalone] = useState(() => isRunningStandalone());
   const [isIos] = useState(() => isIosDevice());
-  const [isAndroid] = useState(() => isAndroidDevice());
   const today = new Date();
   const firstName = getFirstName(displayName);
 
@@ -295,31 +432,10 @@ export function TodayDashboard({
   }
 
   const homeScreenGuideSteps = useMemo(() => {
-    if (isIos) {
-      return [
-        'Öppna Min Egenkontroll i Safari.',
-        'Tryck på dela-ikonen längst ned i Safari.',
-        'Välj Lägg till på hemskärmen.',
-        'Bekräfta med Lägg till.',
-      ];
-    }
+    return isIos ? iosHomeScreenGuideSteps : fallbackHomeScreenGuideSteps;
+  }, [isIos]);
 
-    if (isAndroid) {
-      return [
-        'Öppna Min Egenkontroll i Chrome.',
-        'Tryck på webbläsarens meny med tre punkter.',
-        'Välj Lägg till på hemskärmen.',
-        'Bekräfta när Chrome frågar.',
-      ];
-    }
-
-    return [
-      'Öppna Min Egenkontroll i mobilens webbläsare.',
-      'Öppna webbläsarens delnings- eller menyknapp.',
-      'Välj Lägg till på hemskärmen om alternativet finns.',
-      'Bekräfta och öppna appen från hemskärmen nästa gång.',
-    ];
-  }, [isAndroid, isIos]);
+  const currentInstallGuideStep = homeScreenGuideSteps[installGuideStep] ?? homeScreenGuideSteps[0];
 
   const showHomeScreenGuide = firstRunMode && !loading && !isStandalone && !installGuideSnoozed;
 
@@ -356,42 +472,12 @@ export function TodayDashboard({
 
                 <div className="home-screen-actions">
                   <button className="home-screen-primary" type="button" onClick={handleInstallApp}>
-                    Lägg till på hemskärmen
+                    {installPrompt ? 'Installera appen' : 'Visa guide'}
                   </button>
                   <button className="home-screen-skip" type="button" onClick={handleSnoozeInstallGuide}>
                     Påminn mig senare
                   </button>
                 </div>
-
-                {installGuideOpen ? (
-                  <div className="home-screen-step-card" aria-live="polite">
-                    <span>Steg {installGuideStep + 1} av {homeScreenGuideSteps.length}</span>
-                    <p>{homeScreenGuideSteps[installGuideStep]}</p>
-                    <div className="home-screen-step-actions">
-                      <button
-                        className="home-screen-skip"
-                        disabled={installGuideStep === 0}
-                        type="button"
-                        onClick={() => setInstallGuideStep((current) => Math.max(0, current - 1))}
-                      >
-                        Tillbaka
-                      </button>
-                      <button
-                        className="home-screen-primary"
-                        type="button"
-                        onClick={() => {
-                          if (installGuideStep === homeScreenGuideSteps.length - 1) {
-                            handleSnoozeInstallGuide();
-                            return;
-                          }
-                          setInstallGuideStep((current) => Math.min(homeScreenGuideSteps.length - 1, current + 1));
-                        }}
-                      >
-                        {installGuideStep === homeScreenGuideSteps.length - 1 ? 'Klart' : 'Nästa'}
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
               </div>
             </div>
           ) : null}
@@ -401,6 +487,92 @@ export function TodayDashboard({
             </ActionButton>
           ) : null}
         </section>
+      ) : null}
+
+      {showHomeScreenGuide && installGuideOpen ? (
+        <div className="home-screen-guide-overlay" role="presentation">
+          <section
+            aria-labelledby="home-screen-dialog-title"
+            aria-modal="true"
+            className="home-screen-guide-dialog"
+            role="dialog"
+          >
+            <div className="home-screen-dialog-heading">
+              <div>
+                <p className="eyebrow">Lägg till på hemskärmen</p>
+                <h3 id="home-screen-dialog-title">
+                  Lägg till <span>Min Egenkontroll</span> på hemskärmen
+                </h3>
+                <p>Öppna appen direkt från hemskärmen. Det tar bara några sekunder.</p>
+              </div>
+              <button
+                aria-label="Stäng guiden"
+                className="home-screen-dialog-close"
+                type="button"
+                onClick={() => setInstallGuideOpen(false)}
+              >
+                Stäng
+              </button>
+            </div>
+
+            <div className="home-screen-progress" aria-label={`Steg ${installGuideStep + 1} av ${homeScreenGuideSteps.length}`}>
+              {homeScreenGuideSteps.map((step, index) => (
+                <button
+                  aria-current={index === installGuideStep ? 'step' : undefined}
+                  aria-label={`Gå till steg ${index + 1}: ${step.title}`}
+                  className={index === installGuideStep ? 'active' : ''}
+                  key={step.title}
+                  type="button"
+                  onClick={() => setInstallGuideStep(index)}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+
+            <div className="home-screen-dialog-body">
+              <HomeScreenGuideVisual step={currentInstallGuideStep} />
+              <div className="home-screen-dialog-copy" aria-live="polite">
+                <span>Steg {installGuideStep + 1} av {homeScreenGuideSteps.length}</span>
+                <h4>{currentInstallGuideStep.title}</h4>
+                <p>{currentInstallGuideStep.body}</p>
+                <div className="home-screen-tip">
+                  <strong>Tips</strong>
+                  <p>{currentInstallGuideStep.hint}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="home-screen-dialog-actions">
+              <button className="home-screen-skip" type="button" onClick={handleSnoozeInstallGuide}>
+                Påminn mig senare
+              </button>
+              <div>
+                <button
+                  className="home-screen-skip"
+                  disabled={installGuideStep === 0}
+                  type="button"
+                  onClick={() => setInstallGuideStep((current) => Math.max(0, current - 1))}
+                >
+                  Tillbaka
+                </button>
+                <button
+                  className="home-screen-primary"
+                  type="button"
+                  onClick={() => {
+                    if (installGuideStep === homeScreenGuideSteps.length - 1) {
+                      handleSnoozeInstallGuide();
+                      return;
+                    }
+                    setInstallGuideStep((current) => Math.min(homeScreenGuideSteps.length - 1, current + 1));
+                  }}
+                >
+                  {installGuideStep === homeScreenGuideSteps.length - 1 ? 'Klart' : 'Nästa'}
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
       ) : null}
 
       <div className="today-summary">
