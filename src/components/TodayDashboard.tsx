@@ -103,9 +103,13 @@ function isIosDevice() {
   return /iphone|ipad|ipod/.test(userAgent) || touchMac;
 }
 
-function readHomeScreenSnoozed() {
+function getHomeScreenSnoozeKey(organizationId: string, userId: string) {
+  return `${HOME_SCREEN_SNOOZE_KEY}:${organizationId}:${userId}`;
+}
+
+function readHomeScreenSnoozed(storageKey: string) {
   try {
-    const value = window.localStorage.getItem(HOME_SCREEN_SNOOZE_KEY);
+    const value = window.localStorage.getItem(storageKey);
     if (!value) return false;
     const snoozedUntil = Number(value);
     return Number.isFinite(snoozedUntil) && snoozedUntil > Date.now();
@@ -114,9 +118,9 @@ function readHomeScreenSnoozed() {
   }
 }
 
-function snoozeHomeScreenGuide() {
+function snoozeHomeScreenGuide(storageKey: string) {
   try {
-    window.localStorage.setItem(HOME_SCREEN_SNOOZE_KEY, String(Date.now() + HOME_SCREEN_SNOOZE_MS));
+    window.localStorage.setItem(storageKey, String(Date.now() + HOME_SCREEN_SNOOZE_MS));
   } catch {
     // localStorage can be unavailable in private browsing; component state still hides the card.
   }
@@ -332,7 +336,8 @@ export function TodayDashboard({
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installGuideSnoozed, setInstallGuideSnoozed] = useState(() => readHomeScreenSnoozed());
+  const homeScreenSnoozeKey = getHomeScreenSnoozeKey(organizationId, userId);
+  const [installGuideSnoozed, setInstallGuideSnoozed] = useState(() => readHomeScreenSnoozed(homeScreenSnoozeKey));
   const [installGuideOpen, setInstallGuideOpen] = useState(false);
   const [installGuideStep, setInstallGuideStep] = useState(0);
   const [isStandalone] = useState(() => isRunningStandalone());
@@ -369,6 +374,12 @@ export function TodayDashboard({
   useEffect(() => {
     return subscribePwaInstallPrompt(setInstallPrompt);
   }, []);
+
+  useEffect(() => {
+    setInstallGuideSnoozed(readHomeScreenSnoozed(homeScreenSnoozeKey));
+    setInstallGuideOpen(false);
+    setInstallGuideStep(0);
+  }, [homeScreenSnoozeKey]);
 
   const dailyControls = useMemo(
     () => controls.filter((control) => control.controlType.frequency === 'daily'),
@@ -417,8 +428,11 @@ export function TodayDashboard({
 
   async function handleInstallApp() {
     if (installPrompt) {
-      await runPwaInstallPrompt();
-      setInstallGuideSnoozed(true);
+      const outcome = await runPwaInstallPrompt();
+      if (outcome === 'accepted') {
+        snoozeHomeScreenGuide(homeScreenSnoozeKey);
+        setInstallGuideSnoozed(true);
+      }
       return;
     }
 
@@ -427,7 +441,7 @@ export function TodayDashboard({
   }
 
   function handleSnoozeInstallGuide() {
-    snoozeHomeScreenGuide();
+    snoozeHomeScreenGuide(homeScreenSnoozeKey);
     setInstallGuideSnoozed(true);
   }
 
@@ -437,7 +451,7 @@ export function TodayDashboard({
 
   const currentInstallGuideStep = homeScreenGuideSteps[installGuideStep] ?? homeScreenGuideSteps[0];
 
-  const showHomeScreenGuide = firstRunMode && !loading && !isStandalone && !installGuideSnoozed;
+  const showHomeScreenGuide = !loading && !isStandalone && !installGuideSnoozed;
 
   return (
     <section className="today-dashboard" aria-labelledby="today-title">
@@ -460,32 +474,33 @@ export function TodayDashboard({
             <h4 id="first-run-title">{getFirstRunCopy(firstRunMode).title}</h4>
             <p className="muted-copy">{getFirstRunCopy(firstRunMode).copy}</p>
           </div>
-          {showHomeScreenGuide ? (
-            <div className="home-screen-guide" aria-labelledby="home-screen-guide-title">
-              <div className="home-screen-guide-icon" aria-hidden="true">ME</div>
-              <div className="home-screen-guide-copy">
-                <p className="eyebrow">Snabbare nästa gång</p>
-                <h4 id="home-screen-guide-title">Lägg till Min Egenkontroll på hemskärmen</h4>
-                <p>
-                  Öppna Min Egenkontroll direkt från hemskärmen. Det tar bara några sekunder och gör appen snabbare att använda varje dag.
-                </p>
-
-                <div className="home-screen-actions">
-                  <button className="home-screen-primary" type="button" onClick={handleInstallApp}>
-                    {installPrompt ? 'Installera appen' : 'Visa guide'}
-                  </button>
-                  <button className="home-screen-skip" type="button" onClick={handleSnoozeInstallGuide}>
-                    Påminn mig senare
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : null}
           {nextControl ? (
             <ActionButton type="button" onClick={() => onStartControl(nextControl.controlType.id)}>
               {getFirstRunCopy(firstRunMode).action}
             </ActionButton>
           ) : null}
+        </section>
+      ) : null}
+
+      {showHomeScreenGuide ? (
+        <section className="home-screen-guide persistent-home-screen-guide" aria-labelledby="home-screen-guide-title">
+          <div className="home-screen-guide-icon" aria-hidden="true">ME</div>
+          <div className="home-screen-guide-copy">
+            <p className="eyebrow">Snabbare varje dag</p>
+            <h4 id="home-screen-guide-title">Lägg till Min Egenkontroll på hemskärmen</h4>
+            <p>
+              Öppna appen direkt från hemskärmen. Vi fortsätter påminna tills du öppnar den som hemskärmsapp.
+            </p>
+
+            <div className="home-screen-actions">
+              <button className="home-screen-primary" type="button" onClick={handleInstallApp}>
+                {installPrompt ? 'Installera appen' : 'Visa guide'}
+              </button>
+              <button className="home-screen-skip" type="button" onClick={handleSnoozeInstallGuide}>
+                Påminn mig senare
+              </button>
+            </div>
+          </div>
         </section>
       ) : null}
 
@@ -561,7 +576,7 @@ export function TodayDashboard({
                   type="button"
                   onClick={() => {
                     if (installGuideStep === homeScreenGuideSteps.length - 1) {
-                      handleSnoozeInstallGuide();
+                      setInstallGuideOpen(false);
                       return;
                     }
                     setInstallGuideStep((current) => Math.min(homeScreenGuideSteps.length - 1, current + 1));
