@@ -133,6 +133,13 @@ type HomeScreenGuideStep = {
   visual: 'safari' | 'share-sheet' | 'add-dialog' | 'home-screen';
 };
 
+const homeScreenGuideVisuals: Record<HomeScreenGuideStep['visual'], string> = {
+  safari: '/pwa-onboarding/step-1.png',
+  'share-sheet': '/pwa-onboarding/step-2.png',
+  'add-dialog': '/pwa-onboarding/step-3.png',
+  'home-screen': '/pwa-onboarding/step-4.png',
+};
+
 const iosHomeScreenGuideSteps: HomeScreenGuideStep[] = [
   {
     title: 'Tryck på dela-ikonen',
@@ -189,82 +196,9 @@ const fallbackHomeScreenGuideSteps: HomeScreenGuideStep[] = [
 
 function HomeScreenGuideVisual({ step }: { step: HomeScreenGuideStep }) {
   return (
-    <div className={`home-screen-visual ${step.visual}`} aria-hidden="true">
-      {step.visual === 'safari' ? (
-        <div className="pwa-phone-mockup">
-          <div className="pwa-phone-bar">
-            <span>minegenkontroll.se</span>
-          </div>
-          <div className="pwa-phone-page">
-            <strong>Min Egenkontroll</strong>
-            <span>Utför kontroller och rapportera</span>
-            <span>Få överblick och historik</span>
-            <span>Redo vid myndighetsbesök</span>
-          </div>
-          <div className="pwa-safari-toolbar">
-            <span />
-            <span />
-            <span className="pwa-share-icon highlighted">
-              <span />
-            </span>
-            <span />
-            <span />
-          </div>
-          <span className="pwa-pointer">Tryck här</span>
-        </div>
-      ) : null}
-
-      {step.visual === 'share-sheet' ? (
-        <div className="pwa-share-sheet-mockup">
-          <div className="pwa-share-header">
-            <span className="pwa-share-thumbnail" />
-            <div>
-              <strong>Min Egenkontroll</strong>
-              <span>minegenkontroll.se</span>
-            </div>
-          </div>
-          <div className="pwa-share-apps" />
-          <div className="pwa-share-row">Kopiera</div>
-          <div className="pwa-share-row">Lägg till bokmärke</div>
-          <div className="pwa-share-row highlighted">Lägg till på hemskärmen</div>
-          <span className="pwa-pointer">Välj den här raden</span>
-        </div>
-      ) : null}
-
-      {step.visual === 'add-dialog' ? (
-        <div className="pwa-add-dialog-mockup">
-          <div className="pwa-add-topbar">
-            <span>Avbryt</span>
-            <strong>Lägg till på hemskärmen</strong>
-            <span className="highlighted">Lägg till</span>
-          </div>
-          <div className="pwa-add-content">
-            <span className="pwa-app-icon">ME</span>
-            <div>
-              <strong>Min Egenkontroll</strong>
-              <span>https://minegenkontroll.se/</span>
-            </div>
-          </div>
-          <p>En symbol läggs till på hemskärmen så att du snabbt kan öppna webbplatsen.</p>
-          <span className="pwa-pointer">Tryck på Lägg till</span>
-        </div>
-      ) : null}
-
-      {step.visual === 'home-screen' ? (
-        <div className="pwa-home-screen-mockup">
-          <div className="pwa-home-grid">
-            {Array.from({ length: 15 }, (_, index) => (
-              <span key={index} />
-            ))}
-            <span className="pwa-home-app highlighted">
-              <span className="pwa-app-icon">ME</span>
-              <small>Min Egenkontroll</small>
-            </span>
-          </div>
-          <span className="pwa-pointer">Klart</span>
-        </div>
-      ) : null}
-    </div>
+    <figure className={`home-screen-visual ${step.visual}`} aria-hidden="true">
+      <img src={homeScreenGuideVisuals[step.visual]} alt="" />
+    </figure>
   );
 }
 
