@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Adminlista</title>
+  <link rel="stylesheet" href="/api/leads/styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="page-header">
+      <div><p class="eyebrow">Privat admin</p><h1>Aktuell lista</h1></div>
+      <a class="back-link" href="/">Till appen</a>
+    </header>
+    <section id="auth-state"></section>
+    <div id="dashboard">
+      <section id="sync-summary" class="sync-grid"></section>
+      <nav class="filter-bar"></nav>
+      <form class="search-form"></form>
+      <div><strong id="result-count">0 nya</strong><span id="result-range"></span></div>
+      <p id="message"></p>
+      <section id="business-list"></section>
+      <nav id="pagination"></nav>
+    </div>
+  </main>
+  <script type="module" src="/api/leads/app.js"></script>
+</body>
+</html>
