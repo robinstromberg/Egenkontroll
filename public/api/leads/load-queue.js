@@ -1,8 +1,8 @@
-import { fetchQueue } from './queue-data.js';
+import { loadRows } from './source.js';
 import { drawQueue } from './render-read.js';
 
 export async function loadQueue() {
-  const rows = await fetchQueue();
+  const rows = await loadRows();
   drawQueue(document.querySelector('#business-list'), rows);
-  document.querySelector('#result-count').textContent = `${rows.length.toLocaleString('sv-SE')} nya`;
+  document.querySelector('#result-count').textContent = `${rows.length.toLocaleString('sv-SE')} aktuella`;
 }
