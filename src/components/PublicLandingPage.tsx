@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import './PublicLandingPage.css';
 import { AssetIcon } from './ui/AssetIcon';
+import { SeoLandingPage, getSeoPageSlugFromPath } from './SeoLandingPage';
 import { brandAssets, readControlTypeIcon } from '../config/assets';
 import { billingPlans } from '../config/subscription';
 
@@ -43,6 +45,36 @@ const faqItems = [
   },
 ];
 
+function setMeta(name: string, content: string) {
+  let element = document.head.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);
+  if (!element) {
+    element = document.createElement('meta');
+    element.name = name;
+    document.head.appendChild(element);
+  }
+  element.content = content;
+}
+
+function setOpenGraphMeta(property: string, content: string) {
+  let element = document.head.querySelector<HTMLMetaElement>(`meta[property="${property}"]`);
+  if (!element) {
+    element = document.createElement('meta');
+    element.setAttribute('property', property);
+    document.head.appendChild(element);
+  }
+  element.content = content;
+}
+
+function setCanonical(url: string) {
+  let element = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (!element) {
+    element = document.createElement('link');
+    element.rel = 'canonical';
+    document.head.appendChild(element);
+  }
+  element.href = url;
+}
+
 function MiniAppScreen() {
   return (
     <div className="landing-phone" aria-label="Förhandsvisning av appens dagens kontroller">
@@ -74,7 +106,21 @@ function MiniAppScreen() {
   );
 }
 
-export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
+function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
+  useEffect(() => {
+    const title = 'Min Egenkontroll - digital egenkontroll för restaurang och café';
+    const description = 'Digital egenkontroll för restaurang, café och livsmedelsverksamhet. Dokumentera kontroller, avvikelser och historik från mobilen under förhandslanseringen.';
+    const canonicalUrl = 'https://minegenkontroll.se/';
+
+    document.title = title;
+    setMeta('description', description);
+    setMeta('robots', 'index, follow');
+    setCanonical(canonicalUrl);
+    setOpenGraphMeta('og:title', 'Min Egenkontroll - digital egenkontroll för livsmedelsverksamheter');
+    setOpenGraphMeta('og:description', description);
+    setOpenGraphMeta('og:url', canonicalUrl);
+  }, []);
+
   return (
     <main className="public-site">
       <nav className="public-nav" aria-label="Publik navigation">
@@ -90,7 +136,7 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
       <section className="public-hero">
         <div className="public-hero-copy">
           <p className="public-eyebrow">Förhandslansering · kostnadsfritt under utvecklingen</p>
-          <h1>Det nya, enkla sättet att sköta egenkontrollen.</h1>
+          <h1>Digital egenkontroll för restaurang, café och livsmedelsverksamhet.</h1>
           <p>
             Inget mer letande! Visa precis den dokumentation kontrollanten vill se – med ett knapptryck.
           </p>
@@ -136,6 +182,27 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
         </div>
         <div className="control-chip-grid">
           {controlTypes.map((name) => <span key={name}>{name}</span>)}
+        </div>
+      </section>
+
+      <section className="public-band">
+        <div className="public-section-heading">
+          <p className="public-eyebrow">För din verksamhet</p>
+          <h2>Läs mer om den egenkontroll du faktiskt behöver.</h2>
+        </div>
+        <div className="faq-list">
+          <a className="public-card" href="/digital-egenkontroll-livsmedel">
+            <h3>Digital egenkontroll för livsmedel</h3>
+            <p>Samla återkommande kontroller, avvikelser och historik digitalt.</p>
+          </a>
+          <a className="public-card" href="/egenkontroll-restaurang">
+            <h3>Egenkontroll för restaurang</h3>
+            <p>Gör temperaturer, städning och andra dagliga kontroller enklare att få gjorda.</p>
+          </a>
+          <a className="public-card" href="/egenkontroll-cafe">
+            <h3>Egenkontroll för café och bageri</h3>
+            <p>Samla återkommande kontroller i mobilen utan att skapa mer administration.</p>
+          </a>
         </div>
       </section>
 
@@ -216,4 +283,14 @@ export function PublicLandingPage({ onStartTrial, onLogin }: PublicLandingPagePr
       </footer>
     </main>
   );
+}
+
+export function PublicLandingPage(props: PublicLandingPageProps) {
+  const seoPage = getSeoPageSlugFromPath(window.location.pathname);
+
+  if (seoPage) {
+    return <SeoLandingPage page={seoPage} />;
+  }
+
+  return <HomeLandingPage {...props} />;
 }
