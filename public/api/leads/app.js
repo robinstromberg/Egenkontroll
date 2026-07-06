@@ -1,7 +1,7 @@
 import { ADMIN_EMAIL, db, PAGE_SIZE } from './config.js';
 import { fetchLatestRun } from './data.js';
 import { drawRun } from './run-view.js';
-import { loadRows, setLeadStatus } from './source.js';
+import { loadRows, sendLeadEmail, setLeadStatus } from './source.js';
 
 const authBox = document.querySelector('#auth-state');
 const dashboard = document.querySelector('#dashboard');
@@ -66,6 +66,14 @@ function normalize(value) {
 function formatDate(value) {
   if (!value) return 'Okänt';
   return new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium' }).format(new Date(value));
+}
+
+function formatDateTime(value) {
+  if (!value) return 'Okänt';
+  return new Intl.DateTimeFormat('sv-SE', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value));
 }
 
 function websiteUrl(value) {
@@ -149,6 +157,38 @@ function makeStatusButton(row, status, label, className = '') {
   return button;
 }
 
+function makeSendButton(row) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'action-send';
+
+  if (!row.contact_email) {
+    button.textContent = 'Maila';
+    button.disabled = true;
+    button.title = 'E-postadress saknas';
+    return button;
+  }
+
+  if (row.last_emailed_at) {
+    button.textContent = 'Skickat';
+    button.disabled = true;
+    button.title = `Skickat ${formatDateTime(row.last_emailed_at)}`;
+    return button;
+  }
+
+  if (row.lead_status === 'contacted') {
+    button.textContent = 'Mailat manuellt';
+    button.disabled = true;
+    button.title = 'Återställ status först om du vill skicka via systemet.';
+    return button;
+  }
+
+  button.textContent = 'Maila';
+  button.disabled = state.busyLeadId === row.id;
+  button.addEventListener('click', () => void sendEmail(row));
+  return button;
+}
+
 function makeCard(row) {
   const card = document.createElement('article');
   card.className = 'business-card';
@@ -193,10 +233,17 @@ function makeCard(row) {
   seen.textContent = `Upptäckt ${formatDate(row.first_seen_at)}`;
   meta.append(priority, seen);
 
+  if (row.last_emailed_at) {
+    const emailed = document.createElement('span');
+    emailed.textContent = `Skickat ${formatDateTime(row.last_emailed_at)}`;
+    meta.append(emailed);
+  }
+
   const actions = document.createElement('div');
   actions.className = 'business-actions';
   actions.append(
-    makeStatusButton(row, 'contacted', 'Mailat', 'action-mailed'),
+    makeSendButton(row),
+    makeStatusButton(row, 'contacted', 'Markera mailat', 'action-mailed'),
     makeStatusButton(row, 'customer', 'Kund', 'action-customer'),
     makeStatusButton(row, 'ignored', 'Ignorera', 'action-ignore'),
   );
@@ -238,6 +285,32 @@ function render() {
   pageLabel.textContent = `Sida ${state.page + 1} av ${maxPage + 1}`;
 }
 
+async function sendEmail(row) {
+  const confirmed = window.confirm(
+    `Skicka det förberedda mejlet till ${row.name}?\n\n`+
+    `Till: ${row.contact_email}\n`+
+    'Från: Robin på Min Egenkontroll <robin@minegenkontroll.se>',
+  );
+  if (!confirmed) return;
+
+  try {
+    state.busyLeadId = row.id;
+    showMessage(`Skickar mejl till ${row.name}…`);
+    render();
+
+    const updated = await sendLeadEmail(row.id);
+    row.lead_status = updated.lead_status;
+    row.last_emailed_at = updated.last_emailed_at;
+    row.email_send_count = updated.email_send_count;
+    showMessage(`Mejlet skickades till ${row.contact_email}.`, 'success');
+  } catch (error) {
+    showMessage(error instanceof Error ? error.message : 'Kunde inte skicka mejlet.', 'error');
+  } finally {
+    state.busyLeadId = null;
+    render();
+  }
+}
+
 async function changeStatus(leadId, status) {
   try {
     state.busyLeadId = leadId;
@@ -246,7 +319,7 @@ async function changeStatus(leadId, status) {
     const updated = await setLeadStatus(leadId, status);
     const row = state.rows.find((item) => item.id === leadId);
     if (row) row.lead_status = updated.lead_status;
-    showMessage(status === 'contacted' ? 'Markerad som mailad.' : 'Status sparad.', 'success');
+    showMessage(status === 'contacted' ? 'Markerad som mailad manuellt.' : 'Status sparad.', 'success');
   } catch (error) {
     showMessage(error instanceof Error ? error.message : 'Kunde inte spara status.', 'error');
   } finally {

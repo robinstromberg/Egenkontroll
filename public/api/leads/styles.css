@@ -73,6 +73,7 @@ button:disabled { cursor: default; opacity: .48; }
 
 .business-actions { display: flex; flex-wrap: wrap; gap: 7px; }
 .business-actions button { min-height: 40px; border: 0; border-radius: 11px; padding: 0 13px; font-size: .8rem; font-weight: 900; }
+.action-send { color: #fff; background: #5b46e1; box-shadow: 0 6px 14px rgba(91, 70, 225, .18); }
 .action-mailed { color: #5b46e1; background: #efedff; }
 .action-customer { color: #176b3b; background: #e5f8ec; }
 .action-ignore { color: #676e7d; background: #edf0f4; }
