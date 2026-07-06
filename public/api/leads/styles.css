@@ -82,6 +82,8 @@ button:disabled { cursor: default; opacity: .48; }
 .empty-state h2 { margin-top: 0; color: #172033; }
 .pagination { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-top: 16px; }
 .pagination span { color: #657089; font-size: .84rem; font-weight: 900; text-align: center; }
+.data-attribution { margin-top: 24px; padding-top: 14px; border-top: 1px solid rgba(91, 70, 225, .12); color: #7a8398; font-size: .72rem; line-height: 1.5; }
+.data-attribution a { color: inherit; }
 
 @media (max-width: 700px) {
   .page-header { align-items: flex-start; }
@@ -102,6 +104,6 @@ button:disabled { cursor: default; opacity: .48; }
   .search-form input, .sort-control select { color: #f7f9ff; background: #121a2e; }
   .contact-box { background: #171335; }
   .contact-line a { color: #b9afff; }
-  .no-contact { color: #aeb8d0; }
+  .no-contact, .data-attribution { color: #aeb8d0; }
   .empty-state { color: #aeb8d0; background: rgba(18, 26, 46, .72); }
 }
