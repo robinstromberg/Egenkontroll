@@ -1,3 +1,5 @@
+/* global console */
+import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const MAX_LINES_PER_PAGE = 38;
@@ -9,6 +11,64 @@ function jsonResponse(response, statusCode, body) {
   response.statusCode = statusCode;
   response.setHeader('content-type', 'application/json; charset=utf-8');
   response.end(JSON.stringify(body));
+}
+
+function readHeader(request, name) {
+  const value = request.headers?.[name];
+  if (Array.isArray(value)) return value[0];
+  return typeof value === 'string' ? value : '';
+}
+
+function createRequestId(request) {
+  return readHeader(request, 'x-vercel-id') || readHeader(request, 'x-request-id') || randomUUID();
+}
+
+function sanitizeLogMessage(value) {
+  return String(value || '')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]')
+    .replace(/(raw[_-]?token|token|key|secret)=([^&\s]+)/gi, '$1=[redacted]')
+    .slice(0, 500);
+}
+
+function logApiEvent(level, event) {
+  const writer = level === 'error' ? console.error : console.log;
+  writer(JSON.stringify({
+    level,
+    timestamp: new Date().toISOString(),
+    ...event,
+  }));
+}
+
+function attachRequestLogging(request, response, route, requestId, startedAt) {
+  response.setHeader('x-request-id', requestId);
+  logApiEvent('info', {
+    msg: 'start',
+    route,
+    requestId,
+    method: request.method,
+  });
+  response.once('finish', () => {
+    logApiEvent('info', {
+      msg: 'done',
+      route,
+      requestId,
+      method: request.method,
+      statusCode: response.statusCode,
+      durationMs: Date.now() - startedAt,
+    });
+  });
+}
+
+function logApiError(route, request, requestId, startedAt, error) {
+  logApiEvent('error', {
+    msg: 'failed',
+    route,
+    requestId,
+    method: request.method,
+    durationMs: Date.now() - startedAt,
+    errorName: error instanceof Error ? error.name : 'UnknownError',
+    errorMessage: sanitizeLogMessage(error instanceof Error ? error.message : error),
+  });
 }
 
 function readEnv(name, fallbackName) {
@@ -473,6 +533,11 @@ async function sendWithResend(input) {
 }
 
 export default async function handler(request, response) {
+  const route = '/api/send-inspector-report';
+  const startedAt = Date.now();
+  const requestId = createRequestId(request);
+  attachRequestLogging(request, response, route, requestId, startedAt);
+
   if (request.method !== 'POST') {
     response.setHeader('allow', 'POST');
     return jsonResponse(response, 405, { error: 'Method not allowed.' });
@@ -548,8 +613,10 @@ export default async function handler(request, response) {
     return jsonResponse(response, 200, { id: sendResult.id || sendResult.data?.id || null });
   } catch (error) {
     const statusCode = error.statusCode || 500;
+    logApiError(route, request, requestId, startedAt, error);
     return jsonResponse(response, statusCode, {
       error: error instanceof Error ? error.message : 'Kunde inte skicka rapporten.',
+      requestId,
     });
   }
 }

@@ -17,6 +17,15 @@ export type SignedAttachmentUrl = {
   signed_url_expires_at: string | null;
 };
 
+export type UploadedControlAttachment = {
+  controlRunItemId: string;
+  storageBucket: string;
+  storagePath: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+};
+
 function safeName(name: string): string {
   return name.split(' ').join('-');
 }
@@ -82,9 +91,8 @@ export async function uploadControlAttachment(input: {
   organizationId: string;
   controlRunId: string;
   controlRunItemId: string;
-  uploadedBy: string;
   file: File;
-}): Promise<void> {
+}): Promise<UploadedControlAttachment> {
   const uploadFile = await compressImage(input.file);
   const storagePath = `${input.organizationId}/${input.controlRunId}/${input.controlRunItemId}/${Date.now()}-${safeName(uploadFile.name)}`;
 
@@ -96,21 +104,14 @@ export async function uploadControlAttachment(input: {
     throw storageError;
   }
 
-  const { error: metadataError } = await supabase.from('attachments').insert({
-    organization_id: input.organizationId,
-    control_run_id: input.controlRunId,
-    control_run_item_id: input.controlRunItemId,
-    storage_bucket: bucketName,
-    storage_path: storagePath,
-    file_name: uploadFile.name,
-    content_type: uploadFile.type,
-    size_bytes: uploadFile.size,
-    uploaded_by: input.uploadedBy,
-  });
-
-  if (metadataError) {
-    throw metadataError;
-  }
+  return {
+    controlRunItemId: input.controlRunItemId,
+    storageBucket: bucketName,
+    storagePath,
+    fileName: uploadFile.name,
+    contentType: uploadFile.type,
+    sizeBytes: uploadFile.size,
+  };
 }
 
 export function isImageAttachment(attachment: { content_type?: string | null; file_name?: string | null }): boolean {

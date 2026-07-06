@@ -22,6 +22,7 @@ Before opening the product for paying customers, run the live smoke tests agains
 - Private attachment images are opened through short-lived signed URLs created by `api/shared-attachment-url.js`.
 - The signed attachment URL endpoint validates share token hash, active status, validity window, organization, reporting period and included control type scope before creating a signed URL.
 - RLS helper execution has been hardened in earlier migrations, and policy helpers are routed through the private schema.
+- Child-row RLS has a dedicated hardening migration for organization and parent integrity on control runs, control run items, deviations and attachment metadata.
 - User-generated values included in browser print/export HTML are passed through escaping helpers in the checked report rendering paths.
 - No `dangerouslySetInnerHTML` usage was found in the frontend.
 
@@ -59,6 +60,7 @@ No blocker was found in the local audit.
 ## Should fix before paying customers
 
 - Run the rollback SQL smoke tests in `supabase/tests/` against a controlled deployed test dataset.
+- Include `supabase/tests/rls_parent_integrity_smoke.sql` when validating RLS before broader public use.
 - Manually test two real accounts in different organizations and confirm cross-organization data remains invisible.
 - Manually test staff versus admin permissions for control type editing, share links and organization settings.
 - Confirm expired inspector links cannot read data or open attachment images.

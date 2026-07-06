@@ -1,9 +1,11 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { BackButton } from './ui/BackButton';
 import { createAccessLink, listAccessLinks, listExportLogs } from '../services/shareRecords';
 import type { AccessRecord, ExportLogRecord } from '../services/shareRecords';
 import './SharingView.css';
+
+const LocalQrCode = lazy(() => import('./LocalQrCode'));
 
 export type SharingViewProps = {
   organizationId: string;
@@ -82,11 +84,6 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
   const selectedValidUntil = validityPreset === 'custom'
     ? customValidUntil
     : dateAfter(Number(validityPreset));
-
-  const qrUrl = useMemo(() => {
-    if (!latestUrl) return '';
-    return `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(latestUrl)}`;
-  }, [latestUrl]);
 
   const refresh = useCallback(async () => {
     const [nextLinks, nextExportLogs] = await Promise.all([
@@ -242,7 +239,9 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
               <h3 id="share-modal-title">Inspektörslänk</h3>
               <p className="muted-copy">Giltig till {latestValidUntil || selectedValidUntil}.</p>
             </div>
-            {qrUrl ? <img className="qr-image large" src={qrUrl} alt="QR-kod för inspektörslänk" /> : null}
+            <Suspense fallback={<div className="qr-image large qr-loading" role="status">Skapar QR-kod...</div>}>
+              <LocalQrCode className="qr-image large" value={latestUrl} />
+            </Suspense>
             <p className="share-link-box">{latestUrl}</p>
             <div className="form-actions">
               <ActionButton type="button" onClick={handleCopy}>

@@ -187,12 +187,24 @@
   width: 160px;
   height: 160px;
   border-radius: 16px;
+  box-sizing: border-box;
+  padding: 10px;
+  color: #111827;
+  background: #ffffff;
 }
 
 .qr-image.large {
   width: min(64vw, 260px);
   height: min(64vw, 260px);
   justify-self: center;
+}
+
+.qr-loading {
+  display: grid;
+  place-items: center;
+  color: #4f5b73;
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 
 .share-modal-backdrop {

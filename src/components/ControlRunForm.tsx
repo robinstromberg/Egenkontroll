@@ -5,6 +5,7 @@ import {
   getControlRunDefinition,
   saveControlRun,
 } from '../services/controlRunService';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import type {
   ControlResponse,
   ControlRunDefinition,
@@ -90,6 +91,7 @@ export function ControlRunForm({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const isOnline = useOnlineStatus();
 
   useEffect(() => {
     let active = true;
@@ -161,6 +163,10 @@ export function ControlRunForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!definition || missingAction) return;
+    if (!isOnline) {
+      setMessage('Internet saknas. Vänta tills anslutningen är tillbaka innan du sparar kontrollen.');
+      return;
+    }
 
     try {
       setSaving(true);
@@ -297,8 +303,12 @@ export function ControlRunForm({
         <p className="form-message error-message">Alla avvikelser måste ha en åtgärdstext innan kontrollen kan sparas.</p>
       ) : null}
 
+      {!isOnline ? (
+        <p className="form-message error-message">Internet saknas. Du kan fortsätta fylla i, men kontrollen kan sparas först när anslutningen är tillbaka.</p>
+      ) : null}
+
       <div className="form-actions">
-        <ActionButton type="submit" disabled={saving || definition.fields.length === 0 || missingAction}>
+        <ActionButton type="submit" disabled={saving || definition.fields.length === 0 || missingAction || !isOnline}>
           {saving ? 'Sparar...' : 'Spara kontroll'}
         </ActionButton>
         <ActionButton type="button" variant="secondary" onClick={onCancel}>

@@ -162,7 +162,7 @@ const iosHomeScreenGuideSteps: HomeScreenGuideStep[] = [
   {
     title: 'Klart',
     body: 'Nästa gång öppnar du Min Egenkontroll direkt från hemskärmen.',
-    hint: 'Appen fungerar som en vanlig app när du öppnar den från hemskärmen.',
+    hint: 'Appen öppnas som en vanlig app, men internet krävs för att spara kontroller.',
     visual: 'home-screen',
   },
 ];
@@ -189,7 +189,7 @@ const fallbackHomeScreenGuideSteps: HomeScreenGuideStep[] = [
   {
     title: 'Klart',
     body: 'Öppna Min Egenkontroll från hemskärmen nästa gång.',
-    hint: 'Då slipper du leta upp webbadressen igen.',
+    hint: 'Du slipper leta upp webbadressen igen, men internet krävs för att spara kontroller.',
     visual: 'home-screen',
   },
 ];
@@ -423,7 +423,8 @@ export function TodayDashboard({
             <p className="eyebrow">Snabbare varje dag</p>
             <h4 id="home-screen-guide-title">Lägg till Min Egenkontroll på hemskärmen</h4>
             <p>
-              Öppna appen direkt från hemskärmen. Vi fortsätter påminna tills du öppnar den som hemskärmsapp.
+              Öppna appen direkt från hemskärmen. Internet krävs fortfarande för att spara kontroller.
+              Vi fortsätter påminna tills du öppnar den som hemskärmsapp.
             </p>
 
             <div className="home-screen-actions">
@@ -452,7 +453,7 @@ export function TodayDashboard({
                 <h3 id="home-screen-dialog-title">
                   Lägg till <span>Min Egenkontroll</span> på hemskärmen
                 </h3>
-                <p>Öppna appen direkt från hemskärmen. Det tar bara några sekunder.</p>
+                <p>Öppna appen direkt från hemskärmen. Det tar bara några sekunder. Internet krävs för att spara kontroller.</p>
               </div>
               <button
                 aria-label="Stäng guiden"
