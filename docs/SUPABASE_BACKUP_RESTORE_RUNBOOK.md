@@ -1,6 +1,6 @@
 # Supabase backup and restore runbook
 
-Senast uppdaterad: 2026-06-30
+Senast uppdaterad: 2026-07-06
 
 Den har rutinen galler produktionsprojektet `Egenkontroll` i Supabase.
 
@@ -35,6 +35,7 @@ Backupen ska anvandas for:
 Viktiga begransningar enligt Supabase:
 
 - Storage-objekt, till exempel faktiska uppladdade filer/bilder, aterstalls inte som filer bara for att en databasbackup aterstalls.
+- Storage-objekt backas upp separat enligt `docs/SUPABASE_STORAGE_BACKUP_RUNBOOK.md`.
 - Losenord for egna Postgres-roller sparas inte i dagliga backupfiler.
 - En restore mot produktionsprojektet gor projektet otillgangligt under restore-tiden.
 - Raderar man ett Supabase-projekt permanent forsvinner aven backups.
@@ -72,8 +73,9 @@ Rekommenderat test for pre-customer/beta:
    - en kontroll kan skapas
    - historik kan visas
    - dokumentation kan exporteras
-5. Dokumentera resultatet i testloggen.
-6. Ta bort temporart restore-projekt nar testet ar klart, om det inte behovs vidare.
+5. Kor Storage-backup och verify enligt `docs/SUPABASE_STORAGE_BACKUP_RUNBOOK.md`, eller verifiera att senaste Storage-backup fortfarande ar lasbar.
+6. Dokumentera resultatet i testloggen.
+7. Ta bort temporart restore-projekt nar testet ar klart, om det inte behovs vidare.
 
 Gor inte ett destruktivt restore-test mot produktionsprojektet nar riktiga kunddata finns.
 
@@ -92,6 +94,7 @@ Om produktionsprojektet faktiskt maste aterstallas:
    - kontrollera att organisationer och kontrollhistorik finns
    - kontrollera att dokumentation/export fungerar
    - kontrollera storage-bilagor manuellt eftersom databasrestore inte aterstaller raderade storage-objekt
+   - aterstall saknade Storage-objekt fran separat Storage-backup om det behovs
 7. Dokumentera resultat och eventuell dataforlust.
 
 ## Testlogg

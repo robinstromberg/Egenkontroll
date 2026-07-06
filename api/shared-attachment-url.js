@@ -1,5 +1,5 @@
 /* global console */
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const SIGNED_URL_MAX_EXPIRES_IN_SECONDS = 60 * 10;
@@ -9,6 +9,64 @@ function jsonResponse(response, statusCode, body) {
   response.statusCode = statusCode;
   response.setHeader('content-type', 'application/json; charset=utf-8');
   response.end(JSON.stringify(body));
+}
+
+function readHeader(request, name) {
+  const value = request.headers?.[name];
+  if (Array.isArray(value)) return value[0];
+  return typeof value === 'string' ? value : '';
+}
+
+function createRequestId(request) {
+  return readHeader(request, 'x-vercel-id') || readHeader(request, 'x-request-id') || randomUUID();
+}
+
+function sanitizeLogMessage(value) {
+  return String(value || '')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]')
+    .replace(/(raw[_-]?token|token|key|secret)=([^&\s]+)/gi, '$1=[redacted]')
+    .slice(0, 500);
+}
+
+function logApiEvent(level, event) {
+  const writer = level === 'error' ? console.error : console.log;
+  writer(JSON.stringify({
+    level,
+    timestamp: new Date().toISOString(),
+    ...event,
+  }));
+}
+
+function attachRequestLogging(request, response, route, requestId, startedAt) {
+  response.setHeader('x-request-id', requestId);
+  logApiEvent('info', {
+    msg: 'start',
+    route,
+    requestId,
+    method: request.method,
+  });
+  response.once('finish', () => {
+    logApiEvent('info', {
+      msg: 'done',
+      route,
+      requestId,
+      method: request.method,
+      statusCode: response.statusCode,
+      durationMs: Date.now() - startedAt,
+    });
+  });
+}
+
+function logApiError(route, request, requestId, startedAt, error) {
+  logApiEvent('error', {
+    msg: 'failed',
+    route,
+    requestId,
+    method: request.method,
+    durationMs: Date.now() - startedAt,
+    errorName: error instanceof Error ? error.name : 'UnknownError',
+    errorMessage: sanitizeLogMessage(error instanceof Error ? error.message : error),
+  });
 }
 
 function readEnv(name, fallbackName) {
@@ -66,6 +124,11 @@ function isRunWithinSharedPeriod(shareLink, run) {
 }
 
 export default async function handler(request, response) {
+  const route = '/api/shared-attachment-url';
+  const startedAt = Date.now();
+  const requestId = createRequestId(request);
+  attachRequestLogging(request, response, route, requestId, startedAt);
+
   if (request.method !== 'POST') {
     response.setHeader('allow', 'POST');
     return jsonResponse(response, 405, { error: 'Method not allowed.' });
@@ -82,7 +145,12 @@ export default async function handler(request, response) {
 
     const serviceClient = createServiceClient();
     if (!serviceClient) {
-      console.error('shared-attachment-url missing Supabase server configuration', readServerConfigDiagnostics());
+      logApiEvent('error', {
+        msg: 'server_configuration_missing',
+        route,
+        requestId,
+        diagnostics: readServerConfigDiagnostics(),
+      });
       return jsonResponse(response, 503, {
         error: 'Bilden kan inte öppnas just nu.',
         code: 'SERVER_CONFIGURATION_MISSING',
@@ -145,8 +213,10 @@ export default async function handler(request, response) {
       expiresAt: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
     });
   } catch (error) {
+    logApiError(route, request, requestId, startedAt, error);
     return jsonResponse(response, 500, {
       error: error instanceof Error ? error.message : 'Kunde inte skapa bildlänk.',
+      requestId,
     });
   }
 }

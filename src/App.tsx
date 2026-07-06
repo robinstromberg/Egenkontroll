@@ -7,6 +7,7 @@ import { AuthPanel } from './components/AuthPanel';
 import { InspectorView } from './components/InspectorView';
 import { InvitationAcceptPanel } from './components/InvitationAcceptPanel';
 import { OrganizationSetup } from './components/OrganizationSetup';
+import { OnlineOnlyBanner } from './components/OnlineOnlyBanner';
 import { PasswordSetupPanel } from './components/PasswordSetupPanel';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { PublicLandingPage } from './components/PublicLandingPage';
@@ -259,6 +260,7 @@ function App() {
 
   return (
     <>
+      <OnlineOnlyBanner />
       <main className={showNavigation ? 'app-shell with-bottom-bar' : 'app-shell'}>
         {!showNavigation ? <section className="hero-card auth-hero-card" aria-labelledby="page-title">
           <div className="app-icon" aria-hidden="true">

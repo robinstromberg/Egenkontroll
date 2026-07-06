@@ -85,6 +85,8 @@ Status 2026-06-30: backup- och restore-rutinen ar dokumenterad i `docs/SUPABASE_
 
 Supabase Pro ger dagliga backups. Enligt Supabase har Pro-projekt tillgang till de senaste 7 dagarna av dagliga backups. PITR ar ett separat add-on och ska bara aktiveras om verksamheten behover kortare aterstallningspunkt an daglig backup.
 
+Storage-objekt, till exempel faktiska bilder och PDF-bilagor, ingar inte i databasbackupen. De backas upp separat enligt `docs/SUPABASE_STORAGE_BACKUP_RUNBOOK.md`.
+
 Supabase-dokumentation: https://supabase.com/docs/guides/platform/backups
 
 Kort rutin fore publik beta:
@@ -93,10 +95,12 @@ Kort rutin fore publik beta:
 2. Dokumentera vilken backup-niva som anvands:
    - Daily backups, 7 dagar, eller
    - PITR med vald retention om add-on aktiveras senare.
-3. Gor restore-test enligt `docs/SUPABASE_BACKUP_RESTORE_RUNBOOK.md` fore bredare publik beta och darefter minst efter storre schema-/driftandringar.
-4. Efter restore-test:
+3. Kor Storage-backup och verify enligt `docs/SUPABASE_STORAGE_BACKUP_RUNBOOK.md`.
+4. Gor restore-test enligt `docs/SUPABASE_BACKUP_RESTORE_RUNBOOK.md` fore bredare publik beta och darefter minst efter storre schema-/driftandringar.
+5. Efter restore-test:
    - verifiera att migrationer finns
    - verifiera att tabeller, RLS och storage metadata finns
+   - verifiera att separat Storage-backup ar lasbar
    - logga in med testkonto
    - skapa en kontroll
    - exportera dokumentation

@@ -16,16 +16,22 @@ export type ControlResponse = {
   actionText: string | null;
 };
 
-function toNumber(value: string): number | null {
-  if (value.trim() === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
+type TransactionalControlResponse = {
+  controlRunItemId: string;
+  controlObjectId: string | null;
+  fieldDefinitionId: string;
+  value: string;
+  deviationDetected: boolean;
+  deviationReason: string | null;
+  actionText: string | null;
+};
 
-function toBoolean(value: string): boolean | null {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return null;
+function createUuid(): string {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  throw new Error('Kunde inte skapa id for kontrollen.');
 }
 
 export async function getControlRunDefinition(
@@ -75,78 +81,41 @@ export async function saveControlRun(
   definition: ControlRunDefinition,
   responses: ControlResponse[],
 ): Promise<ControlRun> {
-  const hasDeviation = responses.some((response) => response.deviationDetected);
+  void performedBy;
 
-  const { data: run, error: runError } = await supabase
-    .from('control_runs')
-    .insert({
-      organization_id: organizationId,
-      control_type_id: controlTypeId,
-      performed_by: performedBy,
-      status: hasDeviation ? 'completed_with_deviation' : 'completed',
-    })
-    .select('*')
-    .single();
-
-  if (runError) throw runError;
-
-  const savedRun = run as ControlRun;
+  const controlRunId = createUuid();
+  const transactionalResponses: TransactionalControlResponse[] = [];
 
   for (const response of responses) {
     const field = definition.fields.find((item) => item.id === response.fieldDefinitionId);
-    const object = definition.objects.find((item) => item.id === response.controlObjectId) ?? null;
 
     if (!field) continue;
 
-    const valueNumber = field.field_type === 'temperature' || field.field_type === 'number'
-      ? toNumber(response.value)
-      : null;
-    const valueBoolean = field.field_type === 'boolean' ? toBoolean(response.value) : null;
-    const valueDate = field.field_type === 'date' ? response.value || null : null;
-    const valueText = ['text', 'textarea', 'ok_not_ok', 'select', 'datetime'].includes(field.field_type)
-      ? response.value
-      : null;
+    transactionalResponses.push({
+      controlRunItemId: createUuid(),
+      controlObjectId: response.controlObjectId,
+      fieldDefinitionId: field.id,
+      value: response.value,
+      deviationDetected: response.deviationDetected,
+      deviationReason: response.deviationReason,
+      actionText: response.actionText,
+    });
+  }
 
-    const { data: item, error: itemError } = await supabase
-      .from('control_run_items')
-      .insert({
-        organization_id: organizationId,
-        control_run_id: savedRun.id,
-        control_object_id: object?.id ?? null,
-        field_definition_id: field.id,
-        object_snapshot: object ?? {},
-        field_snapshot: field,
-        value_text: valueText,
-        value_number: valueNumber,
-        value_boolean: valueBoolean,
-        value_date: valueDate,
-        value_json: {},
-        status: response.deviationDetected ? 'deviation' : 'ok',
-        deviation_detected: response.deviationDetected,
-        deviation_reason: response.deviationReason,
-        action_text: response.actionText,
-      })
-      .select('id')
-      .single();
+  const { data, error } = await supabase.rpc('save_control_run_transactional', {
+    p_organization_id: organizationId,
+    p_control_type_id: controlTypeId,
+    p_control_run_id: controlRunId,
+    p_responses: transactionalResponses,
+    p_attachments: [],
+  });
 
-    if (itemError) throw itemError;
+  if (error) throw error;
 
-    if (response.deviationDetected) {
-      const { error: deviationError } = await supabase.from('deviations').insert({
-        organization_id: organizationId,
-        control_run_id: savedRun.id,
-        control_run_item_id: item.id,
-        control_type_id: controlTypeId,
-        control_object_id: object?.id ?? null,
-        status: 'open',
-        severity: 'medium',
-        description: response.deviationReason ?? 'Avvikelse i kontroll.',
-        action_text: response.actionText ?? 'Åtgärd saknas.',
-        opened_by: performedBy,
-      });
+  const savedRun = Array.isArray(data) ? data[0] : data;
 
-      if (deviationError) throw deviationError;
-    }
+  if (!savedRun) {
+    throw new Error('Kunde inte spara kontrollen.');
   }
 
   return savedRun;

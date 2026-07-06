@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { setupGlobalErrorReporting } from './lib/errorReporting';
 import { setupPwaInstallPromptListener } from './services/pwaInstallPrompt';
 import './styles/global.css';
 
@@ -10,11 +12,14 @@ if (!rootElement) {
   throw new Error('Root element saknas. Kontrollera att index.html innehåller <div id="root"></div>.');
 }
 
+setupGlobalErrorReporting();
 setupPwaInstallPromptListener();
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 );
 
