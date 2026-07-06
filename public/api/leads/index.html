@@ -4,26 +4,67 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>Adminlista</title>
+  <title>Leads · Min Egenkontroll</title>
   <link rel="stylesheet" href="/api/leads/styles.css">
 </head>
 <body>
   <main class="page-shell">
     <header class="page-header">
-      <div><p class="eyebrow">Privat admin</p><h1>Aktuell lista</h1></div>
+      <div>
+        <p class="eyebrow">Privat admin</p>
+        <h1>Leads</h1>
+        <p class="muted">Aktuell och automatiskt uppdaterad lista över relevanta verksamheter.</p>
+      </div>
       <a class="back-link" href="/">Till appen</a>
     </header>
-    <section id="auth-state"></section>
-    <div id="dashboard">
-      <section id="sync-summary" class="sync-grid"></section>
-      <nav class="filter-bar"></nav>
-      <form class="search-form"></form>
-      <div><strong id="result-count">0 nya</strong><span id="result-range"></span></div>
-      <p id="message"></p>
-      <section id="business-list"></section>
-      <nav id="pagination"></nav>
+
+    <section id="auth-state" hidden></section>
+
+    <div id="dashboard" hidden>
+      <section id="sync-summary" class="sync-card"></section>
+
+      <nav class="filter-bar" aria-label="Filtrera leads">
+        <button type="button" data-filter="all">Alla</button>
+        <button type="button" data-filter="new">Nya</button>
+        <button type="button" data-filter="uncontacted" class="active">Ej kontaktade</button>
+        <button type="button" data-filter="contacted">Mailade</button>
+        <button type="button" data-filter="email">Har e-post</button>
+      </nav>
+
+      <div class="lead-tools">
+        <form id="search-form" class="search-form">
+          <input id="search-input" type="search" placeholder="Sök företag, typ, adress, ort eller e-post" autocomplete="off">
+          <button type="submit">Sök</button>
+        </form>
+
+        <label class="sort-control">
+          <span>Sortera</span>
+          <select id="sort-select">
+            <option value="newest">Nya först</option>
+            <option value="email">E-post först</option>
+            <option value="name">Namn A–Ö</option>
+            <option value="type">Verksamhetstyp</option>
+            <option value="city">Ort</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="result-row">
+        <strong id="result-count">0 träffar</strong>
+        <span id="result-range"></span>
+      </div>
+
+      <p id="message" class="message" role="status" hidden></p>
+      <section id="business-list" class="business-list" aria-live="polite"></section>
+
+      <nav id="pagination" class="pagination" aria-label="Sidnavigering" hidden>
+        <button id="previous-page" type="button">Föregående</button>
+        <span id="page-label">Sida 1</span>
+        <button id="next-page" type="button">Nästa</button>
+      </nav>
     </div>
   </main>
+
   <script type="module" src="/api/leads/app.js"></script>
 </body>
 </html>
