@@ -195,6 +195,14 @@ function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
             <h3>Digital egenkontroll för livsmedel</h3>
             <p>Samla återkommande kontroller, avvikelser och historik digitalt.</p>
           </a>
+          <a className="public-card" href="/dokumentation-egenkontroll-livsmedel">
+            <h3>Dokumentation och journalföring</h3>
+            <p>Vad behöver dokumenteras och hur mycket journalföring behövs?</p>
+          </a>
+          <a className="public-card" href="/sparbarhet-livsmedel">
+            <h3>Spårbarhet för livsmedelsföretag</h3>
+            <p>Se vilka uppgifter som behöver kunna tas fram om leveranser och leverantörer.</p>
+          </a>
           <a className="public-card" href="/egenkontroll-restaurang">
             <h3>Egenkontroll för restaurang</h3>
             <p>Gör temperaturer, städning och andra dagliga kontroller enklare att få gjorda.</p>

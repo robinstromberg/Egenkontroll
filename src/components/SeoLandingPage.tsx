@@ -5,7 +5,9 @@ import './PublicLandingPage.css';
 export type SeoPageSlug =
   | 'digital-egenkontroll-livsmedel'
   | 'egenkontroll-restaurang'
-  | 'egenkontroll-cafe';
+  | 'egenkontroll-cafe'
+  | 'dokumentation-egenkontroll-livsmedel'
+  | 'sparbarhet-livsmedel';
 
 type SeoPageContent = {
   slug: SeoPageSlug;
@@ -20,6 +22,9 @@ type SeoPageContent = {
   examplesHeading: string;
   examples: string[];
   faq: Array<[string, string]>;
+  sourceLabel?: string;
+  sourceUrl?: string;
+  sourceNote?: string;
 };
 
 const siteUrl = 'https://minegenkontroll.se';
@@ -99,6 +104,62 @@ const seoPages: Record<SeoPageSlug, SeoPageContent> = {
       ['Kan vi anpassa vad som ska kontrolleras?', 'Ja. Kontrollerna kan anpassas efter verksamhetens egna behov och arbetssätt.'],
       ['Kan vi använda mobilen?', 'Ja. Tjänsten är byggd för att användas direkt i mobilens webbläsare.'],
     ],
+  },
+  'dokumentation-egenkontroll-livsmedel': {
+    slug: 'dokumentation-egenkontroll-livsmedel',
+    title: 'Dokumentation och journalföring i egenkontrollen | Min Egenkontroll',
+    description:
+      'Vad behöver dokumenteras i livsmedelsverksamhetens egenkontroll? Läs om journaler, avvikelser, korrigerande åtgärder och flexibel dokumentation.',
+    eyebrow: 'Dokumentation och journalföring',
+    heading: 'Dokumentation och journalföring i livsmedelsverksamhet',
+    intro:
+      'Dokumentationen ska hjälpa verksamheten att visa att kontroller och HACCP-baserade arbetssätt fungerar. Livsmedelsverkets vägledning betonar att omfattningen ska anpassas efter verksamhetens storlek och art och inte bli större än vad som faktiskt behövs.',
+    benefits: [
+      ['Anpassa efter verksamheten', 'En liten verksamhet behöver inte automatiskt samma mängd dokumentation som en stor och komplex produktion.'],
+      ['Spara resultat och avvikelser', 'Journaler kan visa resultat, observerade avsteg och vilka korrigerande åtgärder som har utförts.'],
+      ['Gör historiken användbar', 'Dokumentation är mest värdefull när den går att hitta och använda för att visa hur verksamheten arbetar.'],
+    ],
+    practicalHeading: 'Vad kan behöva dokumenteras?',
+    practicalText:
+      'För verksamheter med HACCP-baserade förfaranden kan dokumentationen bland annat omfatta arbetsinstruktioner, faroanalys, kritiska gränsvärden, planerad övervakning och planerade korrigerande åtgärder. Journaler kan visa resultat, avvikelser, utförda åtgärder och verifiering. Samtidigt säger Livsmedelsverkets vägledning att det inte krävs mer dokumentation än vad som behövs för att styrningen av farorna ska fungera effektivt.',
+    examplesHeading: 'Exempel på sådant som kan sparas',
+    examples: ['Temperaturkontroller', 'Avvikelser', 'Korrigerande åtgärder', 'Checklistor', 'Verifiering', 'Arbetsinstruktioner'],
+    faq: [
+      ['Måste allt i egenkontrollen dokumenteras?', 'Nej, inte nödvändigtvis. Livsmedelsverkets vägledning säger att dokumentation och journalföring ska anpassas efter verksamheten och inte vara mer omfattande än vad som behövs för att styrningen av farorna ska fungera effektivt.'],
+      ['Måste journaler vara på papper?', 'Nej. Vägledningen beskriver att journalsystemet kan integreras i verksamhetens befintliga lednings- och kvalitetssystem. Det viktiga är att dokumentationen fungerar och går att använda.'],
+      ['Måste varje kontroll alltid journalföras?', 'Inte i alla situationer. Livsmedelsverkets vägledning anger att journalföring i vissa fall kan ske endast vid avvikelse från en kritisk gräns, framför allt vid okulär övervakning. Vad som är lämpligt beror på verksamheten och riskerna.'],
+    ],
+    sourceLabel: 'Livsmedelsverkets Kontrollwiki: HACCP, princip 7 – Dokumentation och journaler',
+    sourceUrl: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp#princip-7-dokumentation-och-journaler',
+    sourceNote: 'Faktaunderlaget på sidan bygger på Livsmedelsverkets vägledning. Min Egenkontroll ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
+  },
+  'sparbarhet-livsmedel': {
+    slug: 'sparbarhet-livsmedel',
+    title: 'Spårbarhet för livsmedelsföretag – vad behöver sparas? | Min Egenkontroll',
+    description:
+      'Läs vad spårbarhet innebär för restaurang, café och andra livsmedelsföretag: leverantörer, mottagare, leveranser och dokumentation.',
+    eyebrow: 'Spårbarhet för livsmedel',
+    heading: 'Spårbarhet för livsmedelsföretag – vad behöver sparas?',
+    intro:
+      'Livsmedelsföretag ska kunna visa var livsmedel och ingredienser kommer från och, när de levereras vidare till andra livsmedelsföretag, vem mottagaren är. Systemet kan vara digitalt eller bestå av fysiska dokument, men uppgifterna måste kunna verifieras.',
+    benefits: [
+      ['Ett steg bakåt', 'Verksamheten ska kunna visa från vilka leverantörer livsmedel och ingredienser har tagits emot.'],
+      ['Ett steg framåt', 'Vid leverans till andra livsmedelsföretag ska verksamheten kunna visa vilka mottagarna är. Det gäller inte försäljning till slutkonsument.'],
+      ['Hitta uppgifterna snabbt', 'Spårbarhetsinformationen behöver vara ordnad så att relevanta uppgifter kan tas fram när de behövs.'],
+    ],
+    practicalHeading: 'Vilka uppgifter är viktiga för spårbarheten?',
+    practicalText:
+      'Underlagen kan finnas i följesedlar, fakturor, kvitton, kundregister, produktlarm eller transport- och leveransdokument. När samma leverantör eller mottagare förekommer flera gånger behövs datum eller andra uppgifter som skiljer leveranserna åt. Informationen bör vara ordnad så att den snabbt kan tas fram när myndigheten frågar eller när ett problem med ett livsmedel måste utredas.',
+    examplesHeading: 'Exempel på spårbarhetsuppgifter',
+    examples: ['Leverantörens namn och adress', 'Typ av produkt', 'Mängd', 'Leveransdatum', 'Mottagande livsmedelsföretag', 'Följesedel eller annat underlag'],
+    faq: [
+      ['Måste en restaurang kunna spåra sina gäster?', 'Nej. Kravet på spårbarhet framåt gäller mottagande livsmedelsföretag, inte försäljning till slutkonsument.'],
+      ['Räcker ett kvitto eller en faktura?', 'Det kan vara en del av underlaget, men dokumentationen behöver innehålla tillräcklig information för att varans flöde ska kunna verifieras. Fakturor och kvitton visar inte alltid allt som behövs.'],
+      ['Kan man spara bilder eller skannade kopior?', 'Ja. Livsmedelsverkets vägledning nämner att företag kan behöva skanna, fotografera eller kopiera underlag för att informationen ska vara snabbt tillgänglig, till exempel om original lämnas vidare eller riskerar att blekna.'],
+    ],
+    sourceLabel: 'Livsmedelsverkets Kontrollwiki: Spårbarhet',
+    sourceUrl: 'https://kontrollwiki.livsmedelsverket.se/artikel/741/sparbarhet',
+    sourceNote: 'Faktaunderlaget på sidan bygger på Livsmedelsverkets vägledning. Min Egenkontroll ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
   },
 };
 
@@ -199,6 +260,12 @@ export function SeoLandingPage({ page }: SeoLandingPageProps) {
           <p className="public-eyebrow">Så fungerar det</p>
           <h2>{content.practicalHeading}</h2>
           <p className="public-copy">{content.practicalText}</p>
+          {content.sourceUrl && content.sourceLabel ? (
+            <p className="public-copy">
+              Källa och vidare läsning: <a href={content.sourceUrl}>{content.sourceLabel}</a>.
+            </p>
+          ) : null}
+          {content.sourceNote ? <p className="public-copy">{content.sourceNote}</p> : null}
         </div>
         <div>
           <h2>{content.examplesHeading}</h2>
@@ -233,6 +300,18 @@ export function SeoLandingPage({ page }: SeoLandingPageProps) {
             <a className="public-card" href="/digital-egenkontroll-livsmedel">
               <h3>Digital egenkontroll för livsmedel</h3>
               <p>Se hur kontroller, avvikelser och historik kan samlas digitalt.</p>
+            </a>
+          ) : null}
+          {content.slug !== 'dokumentation-egenkontroll-livsmedel' ? (
+            <a className="public-card" href="/dokumentation-egenkontroll-livsmedel">
+              <h3>Dokumentation och journalföring</h3>
+              <p>Vad behöver dokumenteras och hur mycket journalföring behövs?</p>
+            </a>
+          ) : null}
+          {content.slug !== 'sparbarhet-livsmedel' ? (
+            <a className="public-card" href="/sparbarhet-livsmedel">
+              <h3>Spårbarhet för livsmedelsföretag</h3>
+              <p>Se vilka uppgifter som behöver kunna tas fram om leveranser och leverantörer.</p>
             </a>
           ) : null}
           {content.slug !== 'egenkontroll-restaurang' ? (
