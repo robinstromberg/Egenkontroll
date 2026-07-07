@@ -28,6 +28,7 @@ const statusLabels = {
 const state = {
   rows: [],
   filter: 'uncontacted',
+  city: 'all',
   search: '',
   sort: 'newest',
   page: 0,
@@ -89,6 +90,11 @@ function matchesFilter(row) {
   return true;
 }
 
+function matchesCity(row) {
+  if (state.city === 'all') return true;
+  return normalize(row.city) === state.city;
+}
+
 function matchesSearch(row) {
   if (!state.search) return true;
   const haystack = [
@@ -127,6 +133,7 @@ function compareRows(a, b) {
 function currentRows() {
   return state.rows
     .filter(matchesFilter)
+    .filter(matchesCity)
     .filter(matchesSearch)
     .sort(compareRows);
 }
@@ -334,6 +341,16 @@ function bindControls() {
       document.querySelectorAll('[data-filter]').forEach((item) => item.classList.remove('active'));
       button.classList.add('active');
       state.filter = button.dataset.filter;
+      state.page = 0;
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-city]').forEach((button) => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('[data-city]').forEach((item) => item.classList.remove('active'));
+      button.classList.add('active');
+      state.city = button.dataset.city;
       state.page = 0;
       render();
     });
