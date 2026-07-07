@@ -6,6 +6,10 @@ import {
   saveControlRun,
 } from '../services/controlRunService';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import {
+  getProductEventErrorCategory,
+  trackProductEvent,
+} from '../services/productEventService';
 import type {
   ControlResponse,
   ControlRunDefinition,
@@ -164,6 +168,21 @@ export function ControlRunForm({
     event.preventDefault();
     if (!definition || missingAction) return;
     if (!isOnline) {
+      trackProductEvent({
+        eventName: 'control_save_failed',
+        userId,
+        organizationId,
+        metadata: {
+          control_category: definition.controlType.category,
+          control_frequency: definition.controlType.frequency,
+          control_type_id: controlTypeId,
+          error_category: 'offline',
+          field_count: definition.fields.length,
+          has_photo: false,
+          is_online: false,
+          object_count: definition.objects.length,
+        },
+      });
       setMessage('Internet saknas. Vänta tills anslutningen är tillbaka innan du sparar kontrollen.');
       return;
     }
@@ -172,8 +191,37 @@ export function ControlRunForm({
       setSaving(true);
       setMessage('');
       await saveControlRun(organizationId, controlTypeId, userId, definition, responseList);
+      trackProductEvent({
+        eventName: 'control_saved',
+        userId,
+        organizationId,
+        metadata: {
+          control_category: definition.controlType.category,
+          control_frequency: definition.controlType.frequency,
+          control_type_id: controlTypeId,
+          field_count: definition.fields.length,
+          has_photo: false,
+          is_online: isOnline,
+          object_count: definition.objects.length,
+        },
+      });
       await onSaved();
     } catch (error) {
+      trackProductEvent({
+        eventName: 'control_save_failed',
+        userId,
+        organizationId,
+        metadata: {
+          control_category: definition.controlType.category,
+          control_frequency: definition.controlType.frequency,
+          control_type_id: controlTypeId,
+          error_category: getProductEventErrorCategory(error, isOnline),
+          field_count: definition.fields.length,
+          has_photo: false,
+          is_online: isOnline,
+          object_count: definition.objects.length,
+        },
+      });
       setMessage(error instanceof Error ? error.message : 'Kunde inte spara kontrollen.');
     } finally {
       setSaving(false);

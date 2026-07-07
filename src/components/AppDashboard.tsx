@@ -19,6 +19,7 @@ import { BackButton } from './ui/BackButton';
 import { FIRST_RUN_ORGANIZATION_KEY } from './OrganizationSetup';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
+import { trackProductEvent } from '../services/productEventService';
 import type { Organization } from '../types/database';
 
 export type AppDashboardProps = {
@@ -128,6 +129,24 @@ export function AppDashboard({
       setMenuSubview(readMenuSubviewFromHash());
     }
   }, [activeView]);
+
+  useEffect(() => {
+    if (activeView === 'history') {
+      trackProductEvent({
+        eventName: 'history_viewed',
+        userId: user.id,
+        organizationId: context.organization.id,
+      });
+    }
+
+    if (activeView === 'sharing' && canManage) {
+      trackProductEvent({
+        eventName: 'share_viewed',
+        userId: user.id,
+        organizationId: context.organization.id,
+      });
+    }
+  }, [activeView, canManage, context.organization.id, user.id]);
 
   function openMenuSubview(subview: Exclude<MenuSubview, null>) {
     setMenuSubview(subview);

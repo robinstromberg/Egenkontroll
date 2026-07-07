@@ -1,5 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppBottomNav } from './components/AppBottomNav';
 import type { AppView } from './components/AppBottomNav';
 import { AppDashboard, STAFF_ONBOARDING_ORGANIZATION_KEY } from './components/AppDashboard';
@@ -16,6 +16,7 @@ import { brandAssets } from './config/assets';
 import { getCurrentSession, signOut } from './services/authService';
 import { ensureProfile, listOrganizationContexts } from './services/organizationService';
 import type { OrganizationContext } from './services/organizationService';
+import { trackProductEvent } from './services/productEventService';
 import { supabase } from './lib/supabaseClient';
 
 const appViews: AppView[] = ['today', 'history', 'kpi', 'sharing', 'menu'];
@@ -104,6 +105,7 @@ function App() {
   );
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const loggedSessionKeys = useRef(new Set<string>());
 
   const loadOrganizationContext = useCallback(async () => {
     const contexts = await listOrganizationContexts();
@@ -206,6 +208,11 @@ function App() {
     setActiveOrganizationId(organizationId);
     window.localStorage.setItem(ACTIVE_ORGANIZATION_KEY, organizationId);
     window.localStorage.setItem(STAFF_ONBOARDING_ORGANIZATION_KEY, organizationId);
+    trackProductEvent({
+      eventName: 'invitation_accepted',
+      userId: session?.user.id,
+      organizationId,
+    });
     await loadOrganizationContext();
     setActiveView('today');
   }
@@ -231,6 +238,22 @@ function App() {
   const activeContext =
     organizationContexts.find((context) => context.organization.id === activeOrganizationId) ??
     organizationContexts[0];
+
+  useEffect(() => {
+    if (inspectorKey || !session?.user) return;
+
+    const organizationId = activeContext?.organization.id ?? null;
+    const logKey = `${session.user.id}:${organizationId ?? 'no-organization'}`;
+    if (loggedSessionKeys.current.has(logKey)) return;
+
+    loggedSessionKeys.current.add(logKey);
+    trackProductEvent({
+      eventName: 'session_loaded',
+      userId: session.user.id,
+      organizationId,
+      metadata: { status: organizationId ? 'organization_context_loaded' : 'no_organization_context' },
+    });
+  }, [activeContext?.organization.id, inspectorKey, session?.user]);
 
   useEffect(() => {
     if (!session?.user || organizationContexts.length === 0) return;
