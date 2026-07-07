@@ -27,7 +27,14 @@ export type UploadedControlAttachment = {
 };
 
 function safeName(name: string): string {
-  return name.split(' ').join('-');
+  const normalized = name
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^[-.]+|[-.]+$/g, '');
+
+  return normalized || 'attachment';
 }
 
 function isImage(file: File): boolean {
