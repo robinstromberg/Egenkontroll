@@ -5,6 +5,7 @@ import type { BillingPlan } from '../config/subscription';
 import { billingPlans } from '../config/subscription';
 import { createFirstOrganization, updateProfile } from '../services/organizationService';
 import type { BusinessType } from '../services/organizationService';
+import { trackProductEvent } from '../services/productEventService';
 import { listActiveControlTemplates } from '../services/templateService';
 import type { ControlTemplate } from '../types/database';
 import './OrganizationSetup.css';
@@ -41,6 +42,14 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    trackProductEvent({
+      eventName: 'organization_setup_viewed',
+      userId: user.id,
+      metadata: { source: 'first_run' },
+    });
+  }, [user.id]);
 
   useEffect(() => {
     let active = true;
@@ -100,6 +109,26 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
       }, {
         billingPlan,
       });
+      trackProductEvent({
+        eventName: 'organization_created',
+        userId: user.id,
+        organizationId,
+        metadata: {
+          available_template_count: templates.length,
+          selected_template_count: selectedTemplateIds.length,
+        },
+      });
+      if (selectedTemplateIds.length > 0) {
+        trackProductEvent({
+          eventName: 'templates_selected',
+          userId: user.id,
+          organizationId,
+          metadata: {
+            available_template_count: templates.length,
+            selected_template_count: selectedTemplateIds.length,
+          },
+        });
+      }
       window.localStorage.setItem(FIRST_RUN_ORGANIZATION_KEY, organizationId);
       await onCreated();
     } catch (error) {

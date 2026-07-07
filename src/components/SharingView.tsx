@@ -1,6 +1,7 @@
 import { FormEvent, lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { BackButton } from './ui/BackButton';
+import { trackProductEvent } from '../services/productEventService';
 import { createAccessLink, listAccessLinks, listExportLogs } from '../services/shareRecords';
 import type { AccessRecord, ExportLogRecord } from '../services/shareRecords';
 import './SharingView.css';
@@ -112,6 +113,12 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
       setLatestValidUntil(selectedValidUntil);
       setCopied(false);
       await refresh();
+      trackProductEvent({
+        eventName: 'share_link_created',
+        userId,
+        organizationId,
+        metadata: { share_mode: 'custom' },
+      });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa delning.');
     }
@@ -134,6 +141,12 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
       setLatestValidUntil(validUntil);
       setCopied(false);
       await refresh();
+      trackProductEvent({
+        eventName: 'share_link_created',
+        userId,
+        organizationId,
+        metadata: { share_mode: 'quick' },
+      });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa delning.');
     } finally {

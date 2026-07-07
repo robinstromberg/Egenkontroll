@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { AssetIcon } from './ui/AssetIcon';
 import { readControlTypeIcon } from '../config/assets';
 import { listOpenDeviations, listTodayControls } from '../services/dashboardService';
 import { resolveDeviation } from '../services/deviationService';
+import { trackProductEvent } from '../services/productEventService';
 import { runPwaInstallPrompt, subscribePwaInstallPrompt } from '../services/pwaInstallPrompt';
 import type { FirstRunMode } from './AppDashboard';
 import type { OpenDeviationSummary, TodayControl } from '../services/dashboardService';
@@ -207,13 +208,15 @@ function ControlSection({
   summary,
   emptyText,
   controls,
+  source,
   onStartControl,
 }: {
   title: string;
   summary: string;
   emptyText: string;
   controls: TodayControl[];
-  onStartControl: (controlTypeId: string) => void;
+  source: string;
+  onStartControl: (control: TodayControl, source: string) => void;
 }) {
   return (
     <section className="today-control-section" aria-label={title}>
@@ -236,7 +239,7 @@ function ControlSection({
           <button
             className={`today-control-row ${control.status}`}
             key={control.controlType.id}
-            onClick={() => onStartControl(control.controlType.id)}
+            onClick={() => onStartControl(control, source)}
             type="button"
           >
             <span className={`control-type-icon ${categoryMeta.className}`} aria-hidden="true">
@@ -276,6 +279,8 @@ export function TodayDashboard({
   const [installGuideStep, setInstallGuideStep] = useState(0);
   const [isStandalone] = useState(() => isRunningStandalone());
   const [isIos] = useState(() => isIosDevice());
+  const todayViewedLogged = useRef(false);
+  const pwaGuideShownLogged = useRef(false);
   const today = new Date();
   const firstName = getFirstName(displayName);
 
@@ -349,6 +354,39 @@ export function TodayDashboard({
 
   const hasAnyControls = controls.length > 0;
 
+  useEffect(() => {
+    if (loading || todayViewedLogged.current) return;
+
+    todayViewedLogged.current = true;
+    trackProductEvent({
+      eventName: 'today_viewed',
+      userId,
+      organizationId,
+      metadata: {
+        control_count: controls.length,
+        daily_control_count: dailyControls.length,
+        first_run_mode: firstRunMode,
+        open_deviation_count: deviations.length,
+        status: hasAnyControls ? 'has_controls' : 'empty',
+      },
+    });
+  }, [controls.length, dailyControls.length, deviations.length, firstRunMode, hasAnyControls, loading, organizationId, userId]);
+
+  function handleStartControl(control: TodayControl, source: string) {
+    trackProductEvent({
+      eventName: 'control_started',
+      userId,
+      organizationId,
+      metadata: {
+        control_category: control.controlType.category,
+        control_frequency: control.controlType.frequency,
+        control_type_id: control.controlType.id,
+        source,
+      },
+    });
+    onStartControl(control.controlType.id);
+  }
+
   async function handleResolve(deviationId: string) {
     setMessage('');
     try {
@@ -364,6 +402,12 @@ export function TodayDashboard({
     if (installPrompt) {
       const outcome = await runPwaInstallPrompt();
       if (outcome === 'accepted') {
+        trackProductEvent({
+          eventName: 'pwa_guide_completed',
+          userId,
+          organizationId,
+          metadata: { source: 'browser_install_prompt' },
+        });
         snoozeHomeScreenGuide(homeScreenSnoozeKey);
         setInstallGuideSnoozed(true);
       }
@@ -375,6 +419,11 @@ export function TodayDashboard({
   }
 
   function handleSnoozeInstallGuide() {
+    trackProductEvent({
+      eventName: 'pwa_guide_snoozed',
+      userId,
+      organizationId,
+    });
     snoozeHomeScreenGuide(homeScreenSnoozeKey);
     setInstallGuideSnoozed(true);
   }
@@ -386,6 +435,18 @@ export function TodayDashboard({
   const currentInstallGuideStep = homeScreenGuideSteps[installGuideStep] ?? homeScreenGuideSteps[0];
 
   const showHomeScreenGuide = !loading && !isStandalone && !installGuideSnoozed;
+
+  useEffect(() => {
+    if (!showHomeScreenGuide || pwaGuideShownLogged.current) return;
+
+    pwaGuideShownLogged.current = true;
+    trackProductEvent({
+      eventName: 'pwa_guide_shown',
+      userId,
+      organizationId,
+      metadata: { source: isIos ? 'ios_home_screen_guide' : 'browser_home_screen_guide' },
+    });
+  }, [isIos, organizationId, showHomeScreenGuide, userId]);
 
   return (
     <section className="today-dashboard" aria-labelledby="today-title">
@@ -409,7 +470,7 @@ export function TodayDashboard({
             <p className="muted-copy">{getFirstRunCopy(firstRunMode).copy}</p>
           </div>
           {nextControl ? (
-            <ActionButton type="button" onClick={() => onStartControl(nextControl.controlType.id)}>
+            <ActionButton type="button" onClick={() => handleStartControl(nextControl, `first_run_${firstRunMode}`)}>
               {getFirstRunCopy(firstRunMode).action}
             </ActionButton>
           ) : null}
@@ -511,6 +572,12 @@ export function TodayDashboard({
                   type="button"
                   onClick={() => {
                     if (installGuideStep === homeScreenGuideSteps.length - 1) {
+                      trackProductEvent({
+                        eventName: 'pwa_guide_completed',
+                        userId,
+                        organizationId,
+                        metadata: { source: 'manual_home_screen_guide' },
+                      });
                       setInstallGuideOpen(false);
                       return;
                     }
@@ -560,21 +627,24 @@ export function TodayDashboard({
               summary={`${completedCount} av ${dailyControls.length} klara`}
               emptyText="Inga dagliga kontroller är aktiva ännu."
               controls={dailyControls}
-              onStartControl={onStartControl}
+              source="daily_list"
+              onStartControl={handleStartControl}
             />
             <ControlSection
               title="Vid behov"
               summary={`${onDemandControls.length} startbara`}
               emptyText="Inga kontroller vid behov är aktiva ännu."
               controls={onDemandControls}
-              onStartControl={onStartControl}
+              source="on_demand_list"
+              onStartControl={handleStartControl}
             />
             <ControlSection
               title="Återkommande"
               summary={`${recurringControls.length} aktiva`}
               emptyText="Inga återkommande kontroller är aktiva ännu."
               controls={recurringControls}
-              onStartControl={onStartControl}
+              source="recurring_list"
+              onStartControl={handleStartControl}
             />
           </>
         ) : null}
@@ -584,7 +654,7 @@ export function TodayDashboard({
         <ActionButton
           className="today-primary-action"
           type="button"
-          onClick={() => onStartControl(nextControl.controlType.id)}
+          onClick={() => handleStartControl(nextControl, 'primary_action')}
         >
           Utför kontroll
         </ActionButton>
