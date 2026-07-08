@@ -27,6 +27,20 @@ const groups: Group[] = [
     { title: 'Kemikalier i livsmedelsverksamhet', copy: 'Förvara och hantera rengöringsmedel åtskilt från mat.', href: '/seo/kemikalier-i-livsmedelsverksamhet.html' },
     { title: 'Allergenkontamination', copy: 'Rengöring, separerad förvaring och intern märkning.', href: '/seo/allergenkontamination-livsmedel.html' },
   ] },
+  { eyebrow: 'Grundförutsättningar', title: 'Lokaler, avfall, transport, kunskap och vatten', intro: 'Guider för det praktiska grundarbete som behöver fungera runt den dagliga livsmedelshanteringen.', guides: [
+    { title: 'Grundförutsättningar', copy: 'Samlingssida för lokaler, avfall, transport, personalens kunskap och vatten.', href: '/seo/grundforutsattningar-livsmedel.html' },
+    { title: 'Lokaler och utrustning', copy: 'Hygienisk utformning, material, underhåll, handfat och ventilation.', href: '/seo/lokaler-och-utrustning-livsmedel.html' },
+    { title: 'Materialval i livsmedelslokal', copy: 'Rengörbarhet, hållbarhet och anpassning till användningen.', href: '/seo/materialval-livsmedelslokal.html' },
+    { title: 'Underhåll av livsmedelslokal', copy: 'Upptäck slitage och hantera det innan det blir en hygienrisk.', href: '/seo/underhall-livsmedelslokal.html' },
+    { title: 'Toaletter och handfat', copy: 'Placering, delning och möjlighet till hygienisk handtvätt.', href: '/seo/toalett-och-handfat-livsmedelsverksamhet.html' },
+    { title: 'Ventilation', copy: 'Kondens, os, luftflöden, filter och rena respektive orena utrymmen.', href: '/seo/ventilation-livsmedelsverksamhet.html' },
+    { title: 'Avfall', copy: 'Sopkärl, avlägsnande, returmaterial och kasserade varor.', href: '/seo/avfall-livsmedelsverksamhet.html' },
+    { title: 'Soprum och avfallsutrymme', copy: 'Rengörbarhet, skadedjur och skillnaden mellan torrt och vått avfall.', href: '/seo/soprum-och-avfallsutrymme-livsmedel.html' },
+    { title: 'Transport av livsmedel', copy: 'Skydd mot kontaminering och rätt temperatur under transport.', href: '/seo/transport-av-livsmedel.html' },
+    { title: 'Utbildning i livsmedelshygien', copy: 'Rätt kunskap för rätt arbetsuppgift utan onödiga formkrav.', href: '/seo/utbildning-livsmedelshygien-personal.html' },
+    { title: 'Vatten i livsmedelsverksamhet', copy: 'När dricksvatten krävs och vad användningen betyder för kraven.', href: '/seo/vatten-i-livsmedelsverksamhet.html' },
+    { title: 'Is i livsmedelsverksamhet', copy: 'Vattenkvalitet, rengöring av ismaskin och hygienisk hantering.', href: '/seo/is-i-livsmedelsverksamhet.html' },
+  ] },
   { eyebrow: 'Temperatur', title: 'Från kylförvaring till återuppvärmning', intro: 'Guider för temperaturmoment som behöver olika kontrollpunkter och åtgärder.', guides: [
     { title: 'Temperaturprocesser', copy: 'Samlingssida för kylförvaring, upptining, varmhållning, nedkylning och återuppvärmning.', href: '/seo/temperaturprocesser-livsmedel.html' },
     { title: 'Temperaturkontroll', copy: 'Översikt över mätning, termometrar och vanliga kontrollområden.', href: '/seo/temperaturkontroll-livsmedel.html' },
@@ -61,7 +75,7 @@ const groups: Group[] = [
 export function KnowledgeBasePage() {
   useEffect(() => {
     document.title = 'Kunskapsbank om egenkontroll och livsmedelssäkerhet | Min Egenkontroll';
-    const description = 'Guider om digital egenkontroll, hygien, varumottagning, förvaring, temperatur, datummärkning, HACCP, allergener och spårbarhet för livsmedelsföretag.';
+    const description = 'Guider om egenkontroll, hygien, lokaler, avfall, transport, utbildning, vatten, temperatur, datummärkning, HACCP och spårbarhet för livsmedelsföretag.';
     let meta = document.head.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
     meta.content = description;
