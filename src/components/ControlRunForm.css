@@ -529,6 +529,17 @@
   background: #ffe3e7;
 }
 
+.canvas-empty-fields {
+  margin: 0;
+  border: 1px dashed rgba(91, 70, 225, 0.22);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: #657089;
+  background: rgba(91, 70, 225, 0.05);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
 .form-actions {
   display: flex;
   gap: 10px;

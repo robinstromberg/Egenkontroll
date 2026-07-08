@@ -38,6 +38,7 @@ type ControlTypeDetailViewProps = {
 type FieldPreset = {
   fieldType: ControlFieldDefinition['field_type'];
   label: string;
+  defaultLabel?: string;
   required: boolean;
 };
 
@@ -76,7 +77,7 @@ const fieldTypeLabels: Record<ControlFieldDefinition['field_type'], string> = {
 };
 
 const fieldTypeOptions: FieldOption[] = [
-  { fieldType: 'ok_not_ok', label: 'OK/Ej OK', required: true, description: 'Snabb status per kontrollpunkt.', icon: 'OK' },
+  { fieldType: 'ok_not_ok', label: 'OK/Ej OK', defaultLabel: 'Avcheckning', required: true, description: 'Vad ska checkas av?', icon: 'OK' },
   { fieldType: 'text', label: 'Text', required: true, description: 'Kort text, t.ex. produkt eller batch.', icon: 'Aa' },
   { fieldType: 'textarea', label: 'Kommentar', required: false, description: 'Längre fri text.', icon: 'TXT' },
   { fieldType: 'date', label: 'Datum', required: false, description: 'Ett datumfält.', icon: 'DAT' },
@@ -193,6 +194,7 @@ export function ControlTypeDetailView({
   const [savingType, setSavingType] = useState(false);
   const [creatingObject, setCreatingObject] = useState(false);
   const [creatingField, setCreatingField] = useState(false);
+  const [creatingFieldForObjectId, setCreatingFieldForObjectId] = useState<string | null>(null);
   const [editingObjectId, setEditingObjectId] = useState<string | null>(null);
   const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
 
@@ -218,19 +220,26 @@ export function ControlTypeDetailView({
 
   const mode = readControlMode(controlType.category);
   const fixedFieldType = readFixedFieldType(controlType.category);
+  const usesPointScopedFields = mode === 'point';
   const words = getPointWords(controlType.category);
   const activeObjects = objects.filter((item) => item.active);
   const inactiveObjects = objects.filter((item) => !item.active);
   const activeFields = fields.filter((item) => item.active);
   const inactiveFields = fields.filter((item) => !item.active);
-  const lockedBaseField = fixedFieldType ? fields.find((field) => field.field_type === fixedFieldType) : null;
+  const lockedBaseField = fixedFieldType
+    ? fields.find((field) => field.field_type === fixedFieldType && !field.control_object_id)
+    : null;
   const lockedFieldIds = lockedBaseField ? [lockedBaseField.id] : [];
   const visibleInactiveFields = inactiveFields.filter((field) => field.id !== lockedBaseField?.id);
   const inactiveItemCount = inactiveObjects.length + visibleInactiveFields.length;
   const fixedFields = fixedFieldType ? activeFields.filter((field) => field.field_type === fixedFieldType) : [];
-  const canvasFields = activeFields;
+  const canvasFields = usesPointScopedFields
+    ? activeFields.filter((field) => field.control_object_id)
+    : activeFields;
   const canvasObjects = mode === 'field' ? [] : activeObjects;
-  const canShowCanvas = canvasFields.length > 0 && (mode !== 'point' || canvasObjects.length > 0);
+  const canShowCanvas = mode === 'point'
+    ? canvasObjects.length > 0
+    : canvasFields.length > 0;
   const presets = controlType.category === 'traceability'
     ? traceabilityPresets
     : controlType.category === 'receiving'
@@ -325,19 +334,21 @@ export function ControlTypeDetailView({
     }
   }
 
-  async function createField(preset: FieldPreset, openAfterCreate = false) {
+  async function createField(preset: FieldPreset, openAfterCreate = false, controlObjectId: string | null = null) {
     setMessage('');
 
     try {
       const created = await createControlField({
         organizationId,
         controlTypeId: controlType.id,
-        label: preset.label.trim(),
+        controlObjectId,
+        label: (preset.defaultLabel ?? preset.label).trim(),
         fieldType: preset.fieldType,
         required: preset.required,
       });
       await refreshFields();
       setCreatingField(false);
+      setCreatingFieldForObjectId(null);
       if (openAfterCreate) {
         startEditField(created);
       }
@@ -455,8 +466,9 @@ export function ControlTypeDetailView({
     await createField({
       fieldType: field.field_type,
       label: `${field.label} kopia`,
+      defaultLabel: `${field.label} kopia`,
       required: field.required,
-    }, true);
+    }, true, field.control_object_id ?? null);
   }
 
   async function handleSaveType(event: FormEvent<HTMLFormElement>) {
@@ -542,8 +554,14 @@ export function ControlTypeDetailView({
     return (
       <form className="canvas-inline-edit-form" onSubmit={handleSaveField}>
         <label>
-          <span>Namn</span>
-          <input className="text-input" value={editFieldLabel} onChange={(event) => setEditFieldLabel(event.target.value)} required />
+          <span>{field.field_type === 'ok_not_ok' ? 'Vad ska checkas av?' : 'Namn'}</span>
+          <input
+            className="text-input"
+            value={editFieldLabel}
+            onChange={(event) => setEditFieldLabel(event.target.value)}
+            placeholder={field.field_type === 'ok_not_ok' ? 'Vad ska checkas av?' : undefined}
+            required
+          />
         </label>
         <p className="field-editor-type">{fieldTypeLabels[field.field_type]}</p>
         <label className="control-field-checkbox">
@@ -562,9 +580,80 @@ export function ControlTypeDetailView({
     );
   }
 
+  function renderFieldPalette(controlObjectId: string | null) {
+    const isObjectPalette = Boolean(controlObjectId);
+
+    return (
+      <div className="quick-create-panel object-field-palette" aria-label="Lägg till svarsfält">
+        <div className="field-palette-heading">
+          <div>
+            <p className="eyebrow">Svarsfält</p>
+            <h5>{isObjectPalette ? 'Vad ska fyllas i här?' : 'Vad ska fyllas i per kontrollpunkt?'}</h5>
+          </div>
+          <button
+            className="control-point-action"
+            type="button"
+            onClick={() => {
+              setCreatingField(false);
+              setCreatingFieldForObjectId(null);
+            }}
+          >
+            Stäng
+          </button>
+        </div>
+        {presets.length > 0 && !isObjectPalette ? (
+          <div className="preset-strip" aria-label="Vanliga fält">
+            {presets.map((preset) => (
+              <button
+                className="preset-chip"
+                key={`${preset.fieldType}-${preset.label}`}
+                type="button"
+                onClick={() => void createField(preset, true, controlObjectId)}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+        <div className="field-type-palette">
+          {availableFieldOptions.map((option) => (
+            <button
+              className="field-type-card"
+              key={`${option.fieldType}-${option.label}`}
+              type="button"
+              onClick={() => void createField(option, true, controlObjectId)}
+            >
+              <span className="field-type-icon">{option.icon}</span>
+              <strong>{option.label}</strong>
+              <span>{option.description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  function renderObjectFieldTools(controlObject: ControlObject) {
+    return (
+      <div className="object-field-tools">
+        <button
+          className="control-point-action primary"
+          type="button"
+          onClick={() => {
+            setCreatingField(false);
+            setCreatingFieldForObjectId((current) => current === controlObject.id ? null : controlObject.id);
+          }}
+        >
+          + Lägg till svarsfält
+        </button>
+        {creatingFieldForObjectId === controlObject.id ? renderFieldPalette(controlObject.id) : null}
+      </div>
+    );
+  }
+
   const activeCountLabel = mode === 'field'
     ? `${activeFields.length} fält`
-    : `${activeObjects.length} punkter · ${activeFields.length} fält`;
+    : `${activeObjects.length} punkter · ${canvasFields.length} fält`;
 
   return (
     <section className="control-type-detail" aria-labelledby="control-type-detail-title">
@@ -595,10 +684,12 @@ export function ControlTypeDetailView({
                 {words.add}
               </button>
             ) : null}
-            <button className="control-point-action primary" type="button" onClick={() => setCreatingField((current) => !current)}>
-              Lägg till svarsfält
-            </button>
-            {fixedFieldType && fixedFields.length === 0 ? (
+            {mode !== 'point' ? (
+              <button className="control-point-action primary" type="button" onClick={() => setCreatingField((current) => !current)}>
+                Lägg till svarsfält
+              </button>
+            ) : null}
+            {!usesPointScopedFields && fixedFieldType && fixedFields.length === 0 ? (
               <button className="control-point-action" type="button" onClick={() => void handleCreateFixedField()}>
                 Återställ basfält
               </button>
@@ -660,43 +751,7 @@ export function ControlTypeDetailView({
         ) : null}
 
         {creatingField ? (
-          <div className="quick-create-panel" aria-label="Lägg till svarsfält">
-            <div className="field-palette-heading">
-              <div>
-                <p className="eyebrow">Svarsfält</p>
-                <h5>Vad ska fyllas i per kontrollpunkt?</h5>
-              </div>
-              <button className="control-point-action" type="button" onClick={() => setCreatingField(false)}>Stäng</button>
-            </div>
-            {presets.length > 0 ? (
-              <div className="preset-strip" aria-label="Vanliga fält">
-                {presets.map((preset) => (
-                  <button
-                    className="preset-chip"
-                    key={`${preset.fieldType}-${preset.label}`}
-                    type="button"
-                    onClick={() => void createField(preset, true)}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-            <div className="field-type-palette">
-              {availableFieldOptions.map((option) => (
-                <button
-                  className="field-type-card"
-                  key={`${option.fieldType}-${option.label}`}
-                  type="button"
-                  onClick={() => void createField(option, true)}
-                >
-                  <span className="field-type-icon">{option.icon}</span>
-                  <strong>{option.label}</strong>
-                  <span>{option.description}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          renderFieldPalette(null)
         ) : null}
 
         {loading ? <p className="muted-copy">Laddar...</p> : null}
@@ -713,6 +768,7 @@ export function ControlTypeDetailView({
             lockedFieldIds={lockedFieldIds}
             renderFieldEditor={renderFieldEditor}
             renderObjectEditor={renderObjectEditor}
+            renderObjectFieldTools={usesPointScopedFields ? renderObjectFieldTools : undefined}
           />
         ) : null}
         {!loading && !canShowCanvas ? (

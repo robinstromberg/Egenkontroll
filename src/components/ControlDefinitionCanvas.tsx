@@ -46,6 +46,7 @@ export type ControlDefinitionCanvasProps = {
   lockedFieldIds?: string[];
   renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
   renderObjectEditor?: (object: ControlObject) => ReactNode;
+  renderObjectFieldTools?: (object: ControlObject) => ReactNode;
 };
 
 function responseKey(objectId: string | null, fieldId: string): string {
@@ -62,18 +63,36 @@ function isSupplierField(field: ControlFieldDefinition): boolean {
   return field.field_key === 'supplier' || field.label.trim().toLowerCase() === 'leverantör';
 }
 
+function getFieldLabel(field: ControlFieldDefinition): string {
+  return field.field_type === 'textarea' && field.label.trim().toLowerCase() === 'kommentar / åtgärd'
+    ? 'Kommentar'
+    : field.label;
+}
+
+function fieldBelongsToObject(field: ControlFieldDefinition, object: ControlObject | null, hasObjectScopedFields: boolean): boolean {
+  const fieldObjectId = field.control_object_id ?? null;
+
+  if (hasObjectScopedFields) {
+    return object ? fieldObjectId === object.id : fieldObjectId === null;
+  }
+
+  return fieldObjectId === null;
+}
+
 function getDeviationReason(field: ControlFieldDefinition, object: ControlObject | null, value: string): string | null {
-  if (field.field_type === 'ok_not_ok' && value === 'not_ok') return `${field.label} är ej OK.`;
-  if (field.field_type === 'boolean' && value === 'false') return `${field.label} är inte uppfyllt.`;
+  const label = getFieldLabel(field);
+
+  if (field.field_type === 'ok_not_ok' && value === 'not_ok') return `${label} är ej OK.`;
+  if (field.field_type === 'boolean' && value === 'false') return `${label} är inte uppfyllt.`;
 
   if (field.field_type === 'temperature') {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return null;
     if (object?.limit_max !== null && object?.limit_max !== undefined && parsed > object.limit_max) {
-      return `${field.label} är över maxgräns ${object.limit_max}${object.unit ?? ''}.`;
+      return `${label} är över maxgräns ${object.limit_max}${object.unit ?? ''}.`;
     }
     if (object?.limit_min !== null && object?.limit_min !== undefined && parsed < object.limit_min) {
-      return `${field.label} är under mingräns ${object.limit_min}${object.unit ?? ''}.`;
+      return `${label} är under mingräns ${object.limit_min}${object.unit ?? ''}.`;
     }
   }
 
@@ -259,7 +278,7 @@ function ChecklistMatrix({
       aria-labelledby={`matrix-${field.id}`}
     >
       <div className="check-matrix-header">
-        <strong id={`matrix-${field.id}`}>{field.label}</strong>
+        <strong id={`matrix-${field.id}`}>{getFieldLabel(field)}</strong>
         <span>OK</span>
         <span>Ej OK</span>
       </div>
@@ -328,8 +347,8 @@ function ChecklistMatrix({
 
             {showAction ? (
               <div className="matrix-action-box">
-                <strong>Avvikelse: {field.label} är ej OK.</strong>
-                <label className="action-label" htmlFor={actionId}>Vad är fel / åtgärd?</label>
+                <strong>Avvikelse: {getFieldLabel(field)} är ej OK.</strong>
+                <label className="action-label" htmlFor={actionId}>Åtgärd</label>
                 <textarea
                   className="text-input"
                   disabled={disabled}
@@ -445,15 +464,24 @@ export function ControlDefinitionCanvas({
   lockedFieldIds = [],
   renderFieldEditor,
   renderObjectEditor,
+  renderObjectFieldTools,
 }: ControlDefinitionCanvasProps) {
   const disabled = mode !== 'use';
   const isEditMode = mode === 'edit';
-  const renderObjects = objects.length ? objects : [null];
+  const hasObjectScopedFields = fields.some((field) => field.control_object_id);
+  const usesObjects = controlType.category !== 'traceability';
+  const renderObjects = objects.length ? objects : usesObjects ? [] : [null];
   const matrixObjects = objects;
-  const matrixField = !isEditMode && matrixObjects.length > 1 ? fields.find((field) => field.field_type === 'ok_not_ok') : undefined;
+  const matrixField = !isEditMode && !hasObjectScopedFields && matrixObjects.length > 1
+    ? fields.find((field) => field.field_type === 'ok_not_ok' && !field.control_object_id)
+    : undefined;
 
   return (
     <div className={`control-definition-canvas control-definition-canvas-${mode}`}>
+      {usesObjects && objects.length === 0 ? (
+        <p className="canvas-empty-fields">Det finns inga aktiva kontrollpunkter att fylla i.</p>
+      ) : null}
+
       {matrixField ? (
         <ChecklistMatrix
           field={matrixField}
@@ -473,9 +501,10 @@ export function ControlDefinitionCanvas({
 
       {renderObjects.map((object) => {
         const visibleFields = matrixField
-          ? fields.filter((field) => field.id !== matrixField.id)
-          : fields;
-        if (visibleFields.length === 0) return null;
+          ? fields.filter((field) => !field.control_object_id && field.field_type !== 'ok_not_ok')
+          : fields.filter((field) => fieldBelongsToObject(field, object, hasObjectScopedFields));
+        const canRenderEmptyObject = isEditMode && object;
+        if (visibleFields.length === 0 && !canRenderEmptyObject) return null;
 
         return (
           <section
@@ -488,7 +517,7 @@ export function ControlDefinitionCanvas({
             role={isEditMode && object ? 'button' : undefined}
             tabIndex={isEditMode && object ? 0 : undefined}
             onClick={isEditMode && object ? (event) => {
-              if ((event.target as HTMLElement).closest('button, input, textarea, select, label, .canvas-inline-editor, .control-field')) return;
+              if ((event.target as HTMLElement).closest('button, input, textarea, select, label, .canvas-inline-editor, .control-field, .object-field-tools')) return;
               onEditObject?.(object);
             } : undefined}
             onKeyDown={isEditMode && object ? (event) => {
@@ -512,6 +541,12 @@ export function ControlDefinitionCanvas({
 
             {object?.id === selectedObjectId && renderObjectEditor ? (
               <div className="canvas-inline-editor">{renderObjectEditor(object)}</div>
+            ) : null}
+
+            {isEditMode && object && renderObjectFieldTools ? renderObjectFieldTools(object) : null}
+
+            {visibleFields.length === 0 ? (
+              <p className="canvas-empty-fields">Inga svarsfält ännu.</p>
             ) : null}
 
             {visibleFields.map((field) => {
@@ -552,7 +587,7 @@ export function ControlDefinitionCanvas({
                   {field.field_type === 'photo' ? (
                     <PhotoCaptureField
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       file={files[key] ?? null}
                       required={field.required && !disabled}
                       disabled={disabled}
@@ -561,7 +596,7 @@ export function ControlDefinitionCanvas({
                   ) : field.field_type === 'temperature' ? (
                     <TemperatureField
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       object={object}
                       value={value}
                       required={field.required && !disabled}
@@ -572,7 +607,7 @@ export function ControlDefinitionCanvas({
                   ) : field.field_type === 'ok_not_ok' ? (
                     <SegmentedChoice
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       value={value}
                       disabled={disabled}
                       onChange={(nextValue) => onResponseChange?.(key, nextValue)}
@@ -584,7 +619,7 @@ export function ControlDefinitionCanvas({
                   ) : field.field_type === 'boolean' ? (
                     <SegmentedChoice
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       value={value}
                       disabled={disabled}
                       onChange={(nextValue) => onResponseChange?.(key, nextValue)}
@@ -596,7 +631,7 @@ export function ControlDefinitionCanvas({
                   ) : isSupplierField(field) ? (
                     <SupplierSelectField
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       value={value}
                       required={field.required && !disabled}
                       disabled={disabled}
@@ -605,7 +640,7 @@ export function ControlDefinitionCanvas({
                     />
                   ) : field.field_type === 'select' && readSelectOptions(field).length > 0 ? (
                     <>
-                      <label htmlFor={key}>{field.label}</label>
+                      <label htmlFor={key}>{getFieldLabel(field)}</label>
                       <select
                         className="text-input"
                         disabled={disabled}
@@ -625,7 +660,7 @@ export function ControlDefinitionCanvas({
                   ) : field.field_type === 'date' ? (
                     <DateField
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       value={value}
                       required={field.required && !disabled}
                       disabled={disabled}
@@ -633,7 +668,7 @@ export function ControlDefinitionCanvas({
                     />
                   ) : field.field_type === 'textarea' ? (
                     <>
-                      <label htmlFor={key}>{field.label}</label>
+                      <label htmlFor={key}>{getFieldLabel(field)}</label>
                       <textarea
                         className="text-input"
                         disabled={disabled}
@@ -644,7 +679,7 @@ export function ControlDefinitionCanvas({
                     </>
                   ) : (
                     <>
-                      <label htmlFor={key}>{field.label}</label>
+                      <label htmlFor={key}>{getFieldLabel(field)}</label>
                       <input
                         className="text-input"
                         disabled={disabled}

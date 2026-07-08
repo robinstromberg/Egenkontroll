@@ -33,6 +33,7 @@ export type CreateControlObjectInput = {
 export type CreateControlFieldInput = {
   organizationId: string;
   controlTypeId: string;
+  controlObjectId?: string | null;
   label: string;
   fieldType: ControlFieldDefinition['field_type'];
   required: boolean;
@@ -153,13 +154,16 @@ export async function createControlField(input: CreateControlFieldInput): Promis
     suffix += 1;
   }
 
-  const maxSortOrder = existingFields.reduce((max, field) => Math.max(max, field.sort_order), -1);
+  const targetObjectId = input.controlObjectId ?? null;
+  const siblingFields = existingFields.filter((field) => (field.control_object_id ?? null) === targetObjectId);
+  const maxSortOrder = siblingFields.reduce((max, field) => Math.max(max, field.sort_order), -1);
 
   const { data, error } = await supabase
     .from('control_field_definitions')
     .insert({
       organization_id: input.organizationId,
       control_type_id: input.controlTypeId,
+      control_object_id: targetObjectId,
       field_key: fieldKey,
       label,
       field_type: input.fieldType,

@@ -117,6 +117,7 @@ export type ControlFieldDefinition = {
   id: string;
   organization_id: string;
   control_type_id: string;
+  control_object_id: string | null;
   field_key: string;
   label: string;
   field_type: 'text' | 'textarea' | 'number' | 'temperature' | 'boolean' | 'ok_not_ok' | 'date' | 'datetime' | 'photo' | 'select';

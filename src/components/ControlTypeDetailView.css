@@ -92,6 +92,21 @@
   gap: 10px;
 }
 
+.object-field-tools {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 10px;
+}
+
+.object-field-tools > .control-point-action {
+  justify-self: start;
+}
+
+.object-field-palette {
+  padding: 12px;
+  box-shadow: none;
+}
+
 .field-palette-heading {
   display: flex;
   gap: 12px;
@@ -440,5 +455,9 @@
   .field-type-card {
     min-height: 118px;
     padding: 10px;
+  }
+
+  .object-field-tools > .control-point-action {
+    justify-self: stretch;
   }
 }
