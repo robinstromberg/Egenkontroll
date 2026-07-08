@@ -12,10 +12,10 @@ type PublicLandingPageProps = {
 };
 
 const phoneControlRows = [
-  { name: 'Kyltemperaturer', fallback: '\u00b0C' },
-  { name: 'St\u00e4dning', fallback: 'OK' },
-  { name: 'Datumm\u00e4rkning', fallback: 'DM' },
-  { name: 'Varumottagning', fallback: 'IN' },
+  { name: 'Kyltemperaturer', category: 'Temperatur', fallback: '\u00b0C', status: 'Klar' },
+  { name: 'St\u00e4dning', category: 'Checklista', fallback: 'OK', status: 'Klar' },
+  { name: 'Datumm\u00e4rkning', category: 'Checklista', fallback: 'DM', status: 'Klar' },
+  { name: 'Sp\u00e5rbarhet', category: 'Sp\u00e5rbarhet', fallback: 'SP', status: 'Ej utf\u00f6rd' },
 ];
 
 const reliefItems = [
@@ -129,22 +129,45 @@ function setCanonical(url: string) {
 
 function MiniAppScreen() {
   return (
-    <div className="landing-phone" aria-label={'F\u00f6rhandsvisning av appens dagens kontroller'}>
-      <div className="phone-status"><span>9:41</span><span>...</span></div>
-      <div className="phone-title"><p>God morgon, Emma</p><strong>Idag</strong></div>
-      <div className="phone-progress"><span>3 av 5 kontroller klara</span><strong>{'0 \u00f6ppna avvikelser'}</strong></div>
-      <div className="phone-list">
-        {phoneControlRows.map((control, index) => (
-          <div className="phone-row" key={control.name}>
-            <span className={`phone-row-mark mark-${index + 1}`}>
-              <AssetIcon src={readControlTypeIcon({ name: control.name })} fallback={control.fallback} />
-            </span>
-            <span>{control.name}</span>
-            <strong>{index < 2 ? 'Klar' : 'Ej utf\u00f6rd'}</strong>
+    <div className="landing-phone-frame" aria-label={'F\u00f6rhandsvisning av appens dagens kontroller'}>
+      <div className="landing-phone">
+        <div className="phone-status"><span>14:26</span><span>87</span></div>
+        <div className="phone-organization">
+          <span>Inloggad</span>
+          <strong>{'Caf\u00e9 Solgl\u00e4ntan'}</strong>
+          <p>{'Robin \u00b7 \u00c4gare'}</p>
+        </div>
+        <div className="phone-today-card">
+          <div>
+            <span>Idag</span>
+            <strong>Hej, Robin</strong>
+            <p>Tisdag 7 Juli</p>
           </div>
-        ))}
+          <span className="phone-weather" aria-hidden="true">{'\u2600'}</span>
+        </div>
+        <div className="phone-stats">
+          <div><span>Dagens kontroller</span><strong>3 av 4 klara</strong></div>
+          <div><span>{'\u00d6ppna avvikelser'}</span><strong>0</strong></div>
+        </div>
+        <div className="phone-section-title">
+          <span>{'Ska g\u00f6ras idag'}</span>
+          <strong>3 av 4 klara</strong>
+        </div>
+        <div className="phone-list">
+          {phoneControlRows.map((control, index) => (
+            <div className="phone-row" key={control.name}>
+              <span className={`phone-row-mark mark-${index + 1}`}>
+                <AssetIcon src={readControlTypeIcon({ name: control.name })} fallback={control.fallback} />
+              </span>
+              <span><strong>{control.name}</strong><small>{control.category}</small></span>
+              <b>{control.status}</b>
+            </div>
+          ))}
+        </div>
+        <div className="phone-tabs" aria-hidden="true">
+          <span>Idag</span><span>Historik</span><span>KPI</span><span>Delning</span><span>Meny</span>
+        </div>
       </div>
-      <button className="phone-action" type="button">{'Utf\u00f6r kontroll'}</button>
     </div>
   );
 }
@@ -179,8 +202,8 @@ function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
       <section className="public-hero">
         <div className="public-hero-copy">
           <p className="public-eyebrow">{'F\u00f6rhandslansering \u00b7 kostnadsfritt just nu'}</p>
-          <h1>{'Egenkontroll direkt i mobilen, utan p\u00e4rmar och papperslistor.'}</h1>
-          <p>{'Min Egenkontroll visar vad som ska g\u00f6ras, l\u00e5ter personalen dokumentera p\u00e5 plats och samlar historiken s\u00e5 den \u00e4r redo n\u00e4r kontrollanten kommer.'}</p>
+          <h1>{'Spara tid. F\u00e5 full kontroll.'}</h1>
+          <p>{'Egenkontroll - enklare f\u00f6r dig och din personal. Se dagens kontroller, dokumentera p\u00e5 plats och ha historiken redo n\u00e4r kontrollanten kommer.'}</p>
           <div className="public-hero-actions">
             <button className="public-primary" type="button" onClick={onStartTrial}>{'Kom ig\u00e5ng'}</button>
             <a className="public-secondary" href="#how">{'Se hur det fungerar'}</a>
