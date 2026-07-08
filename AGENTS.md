@@ -1,300 +1,88 @@
-# AGENTS.md – Egenkontroll
+# AGENTS.md - Min Egenkontroll
 
-Det här dokumentet styr hur framtida AI-/Codex-sessioner ska arbeta i projektet **Egenkontroll**.
+Detta dokument styr hur Codex och andra AI-agenter ska arbeta i repot. Det viktigaste är att skydda produktens kärnflöden: en liten livsmedelsverksamhet ska kunna öppna mobilen, se vad som ska göras, dokumentera kontrollen och visa historiken utan krångel.
 
-Projektet är i planerings- och uppstartsfas. Den befintliga kodbasen kan vara tom eller ofullständig. GitHub-issues och produktbesluten i detta dokument ska därför väga tyngre än eventuell framtida provisorisk implementation om de står i konflikt.
+## Projektet i korthet
 
-## Produktmål
+Min Egenkontroll är en mobilförst SaaS-app för små livsmedelsverksamheter som restauranger, caféer, bagerier, foodtrucks och butiker. Appen ersätter pärmar, utspridda checklistor och osäker dokumentation med ett enkelt arbetsflöde:
 
-Egenkontroll är en mobilförst SaaS-webapp för digital egenkontroll i livsmedelsverksamheter som restauranger, caféer, bagerier, foodtrucks och mindre butiker.
+1. ansvarig skapar verksamhet och kontrolltyper,
+2. personalen ser dagens kontroller,
+3. personalen dokumenterar på plats,
+4. avvikelser och åtgärder sparas tydligt,
+5. historik och delning kan visas vid kontroll.
 
-Appen ska göra det enkelt för verksamheter att:
+Produkten ska kännas trygg, snabb och begriplig för användare utan teknisk bakgrund. Den är inte en teknisk formulärbyggare som råkar kunna dokumentera kontroller; den är ett arbetsverktyg för egenkontroll.
 
-- skapa egna kontrolltyper, objekt, gränsvärden, frekvenser och instruktioner,
-- utföra dagens kontroller snabbt från mobilen,
-- dokumentera avvikelser direkt i arbetsflödet,
-- följa upp öppna avvikelser,
-- spara all historik med datum, tid och användare,
-- dela dokumentation säkert via tidsbegränsad läslänk/QR vid myndighetskontroll,
-- exportera relevant historik till PDF/CSV.
+## Arbetsregler för Codex
 
-## Grundprincip för användarflödet
+- Läs relevant GitHub-issue, befintliga docs och berörda filer innan du ändrar något.
+- Gör minsta säkra ändring som löser uppgiften. Undvik opportunistiska refaktorer.
+- Ändra bara filer som hör till uppgiften. Lämna användarens övriga ändringar i fred.
+- Gissa inte tekniska fakta. Inventera koden, databasen eller dokumentationen och markera osäkerhet när något inte kan verifieras.
+- Fråga eller pausa vid risk för destruktiva åtgärder, dataförlust, auth/RLS-förändringar, produktionspåverkan eller otydlig scope.
+- Kör relevanta kontroller efter ändring. För appkod är normal nivå `npm run typecheck`, `npm run lint` och `npm run build`. För docs-only räcker normalt diffkontroll och en tydlig notering om att appbygge inte behövdes.
+- Sammanfatta ändrade filer, verifiering och kvarvarande risker i slutet.
 
-Alla kontroller ska följa samma grundlogik:
+## Särskilt skyddade områden
 
-1. Öppna kontroll.
-2. Fyll i uppgifter.
-3. Hantera eventuell avvikelse.
-4. Spara.
-5. Dokumentationen hamnar automatiskt i historiken.
+Ändra inte följande utan tydlig issue och extra försiktighet:
 
-Det ska inte kännas som separata system för temperaturer, städning, datummärkning, varumottagning och spårbarhet. Det ska kännas som ett gemensamt kontrollflöde där endast formulärinnehållet varierar.
+- Supabase Auth, sessionshantering och lösenords-/magic-link-flöden.
+- RLS-policies, helper-funktioner och migrationer.
+- Organisations- och rollbehörigheter.
+- Historik, export, inspektörslänkar och delning.
+- Kontrollsparning, avvikelser och bilagereferenser.
+- Storage-bucketar, backup, återställning eller radering.
+- Produktionsmiljö, Vercel environment variables och Supabase-projekt.
 
-## Beslutad MVP-riktning
+Service role-nycklar får aldrig in i frontend, repo, issues eller logs. Secrets, backupfiler, manifest från backupkörningar och testdata ska inte committas.
 
-- MVP ska vara en SaaS-app med stöd för flera kundverksamheter från start.
-- Varje verksamhet ska ha isolerad data genom organisation/verksamhetstillhörighet.
-- Första versionen ska vara svensk i språk och exempel, men tekniskt förberedd för fler språk.
-- Appen ska använda hybridstart: föreslagna mallar finns, men allt ska vara redigerbart.
-- Exempelmallar: kyltemperaturer, städning, datummärkning, varumottagning, spårbarhet och egenkontrollrunda.
-- Roller i MVP: ägare/admin, personal och inspektör via tidsbegränsad read-only-länk.
-- Bilduppladdning ska ingå i MVP, inklusive möjlighet att ta foto direkt från mobil där webbläsaren stödjer det.
-- Avvikelser ska kunna vara öppna och följas upp, inte bara dokumenteras historiskt.
-- Betalning/prenumeration byggs inte i första MVP, men arkitekturen ska inte blockera framtida prenumerationskoppling.
+## Produktprinciper
 
-## Centrala moduler
+- Mobil först: primära flöden ska fungera väl på smal skärm och med tumme.
+- Få steg: användaren ska se nästa rimliga handling utan att läsa instruktioner länge.
+- Samma mentala modell: det man bygger i editorn ska likna det personalen fyller i vid kontroll.
+- Historik är helig: förändringar får inte förstöra spårbarhet, export, delning eller gamla kontroller.
+- Säkert men inte tungt: skydda organisationsdata utan att göra vardagsflödet trögt.
+- Svenska först i MVP: UI-copy, felmeddelanden och tomma lägen ska vara tydliga på svenska.
+- Stressad användare är default: designa för någon som står i kök, butik eller servering och vill bli klar.
 
-### 1. Dashboard / Idag
+## UI- och frontendregler
 
-Daglig startsida för personalen. Ska visa:
+- Återanvänd befintliga komponenter, CSS-mönster och ikon-/bildsystem innan du skapar nytt.
+- Bevara den etablerade appstrukturen med dashboard-vyer och nedernavigering där den används.
+- Kontrollera mobilbredd när layout ändras. Text får inte tryckas ihop, hamna utanför kanten eller döljas av nedernavigering.
+- Knappar, tomma lägen och felmeddelanden ska beskriva vad användaren kan göra nu.
+- Landningssida och appflöden har olika mål: landningssidan ska konvertera, appen ska få arbetet gjort.
+- PWA ska inte lova offline-funktion som inte finns. Offline-läge ska vara tydligt och blockera osäker sparning.
 
-- dagens kontroller,
-- status per kontroll,
-- antal klara/ej klara,
-- öppna avvikelser,
-- snabb väg till att utföra kontroll.
+## Datamodell och säkerhet
 
-### 2. Kontrollmotor
+Den centrala modellen är organisationsbaserad. Data ska alltid kopplas till rätt `organization_id` och skyddas av RLS. Viktiga områden:
 
-Generell motor som kan hantera olika kontrolltyper med samma grundflöde:
+- profiler, organisationer, medlemskap och inbjudningar,
+- kontrolltyper, kontrollpunkter/objekt och fältdefinitioner,
+- kontrollkörningar, kontrollrader, avvikelser och bilagor,
+- delningslänkar, exportloggar och inspektörsvyer.
 
-- mätvärden, t.ex. temperatur,
-- checklistor med OK/Ej OK,
-- formulärfält,
-- kommentarer,
-- bilder/foton,
-- gränsvärden,
-- obligatoriska åtgärder vid avvikelse.
+Barnrader ska höra till rätt parent och organisation. Vid arkivering används i första hand `active=false` när historik kan finnas. Hård radering ska behandlas som riskfyllt.
 
-### 3. Kontrolltyper och objekt
+## Supabase och Vercel
 
-Admin ska kunna skapa och redigera:
+- Supabase används för Auth, Postgres, RLS, RPC och Storage.
+- Vercel används för frontend/API-deploys och miljövariabler.
+- Migrationer ska alltid skapas som nya filer. Ändra inte gamla applicerade migrationer.
+- RLS- och RPC-ändringar ska ha smoke-test eller tydlig manuell verifiering.
+- Storage-filer ingår inte i vanliga databasbackuper och kräver separat backup-rutin.
+- Vercel Preview är rätt plats för visuell kontroll innan merge när UI ändras.
 
-- kontrolltyper,
-- objekt/kontrollpunkter,
-- frekvenser,
-- gränsvärden,
-- instruktioner,
-- aktiv/inaktiv-status.
+## När du är osäker
 
-Objekt ska normalt inte hårdraderas om de har historik. Använd inaktiv-status för att bevara historisk begriplighet.
+Välj det som:
 
-### 4. Avvikelsehantering
-
-När en kontrollpunkt avviker ska appen:
-
-- visa tydlig röd status med text och ikon,
-- kräva åtgärdstext innan kontrollen kan sparas,
-- skapa avvikelse kopplad till kontrollregistrering, objekt, användare och tidpunkt,
-- stödja minst statusarna `open` och `resolved`,
-- visa öppna avvikelser på dashboarden,
-- spara avvikelser i historiken.
-
-### 5. Historik
-
-Alla registreringar ska sparas med:
-
-- verksamhet,
-- kontrolltyp,
-- objekt/kontrollpunkter,
-- värden/svar,
-- status,
-- avvikelser och åtgärder,
-- datum och tid,
-- utförd av.
-
-Historiken ska kunna filtreras på datumperiod, kontrolltyp, objekt, användare och status/avvikelse.
-
-### 6. Delning / Inspektörsvy
-
-Appen ska stödja tidsbegränsad read-only-delning via länk och QR-kod.
-
-Delning ska kunna begränsas till:
-
-- viss period,
-- valda kontrolltyper,
-- aktuell verksamhet.
-
-Inspektörsvyn ska inte kräva vanligt användarkonto och ska inte kunna ändra data.
-
-### 7. Export
-
-MVP ska planeras för export av delad eller filtrerad historik till:
-
-- PDF,
-- CSV.
-
-PDF ska vara läsbar och inspektörsvänlig. CSV ska vara enkel och strukturerad.
-
-## Designprinciper
-
-Appen ska vara:
-
-- mobilförst,
-- tumvänlig,
-- tydlig,
-- tillgänglig,
-- modern men inte dekorativ på bekostnad av funktion,
-- säker,
-- konsekvent över alla kontrolltyper.
-
-### CRUD-princip för administrerade resurser
-
-När användaren kan skapa en verksamhetsrelaterad resurs ska AI:n som huvudregel även planera för:
-
-- visa/lista,
-- redigera,
-- ta bort eller arkivera/inaktivera.
-
-Detta gäller exempelvis:
-
-- leverantörer,
-- kontrolltyper,
-- kontrollpunkter,
-- kontrollobjekt,
-- användare,
-- roller,
-- delningslänkar.
-
-Undantag ska vara medvetna och dokumenterade. Historiska registreringar, revisionsspår och signerade kontroller ska normalt inte hårdraderas.
-
-Nya funktioner ska inte betraktas som kompletta enbart för att användaren kan lägga till data.
-
-### Gemensamma UI-komponenter och konsekvens
-
-Återkommande UI-element ska byggas som gemensamma komponenter och återanvändas, inte återskapas lokalt i varje vy.
-
-Detta gäller särskilt:
-
-- tillbaka-knappar,
-- sidhuvuden,
-- formulärfält,
-- datumfält,
-- primär- och sekundärknappar,
-- statusbadges,
-- kortlayout,
-- tabeller/listor,
-- tomma tillstånd och felmeddelanden.
-
-Innan en ny vy eller funktion implementeras ska AI/Codex först kontrollera om det redan finns en komponent eller ett etablerat mönster som ska återanvändas.
-
-Om en vy behöver avvika från ett befintligt UI-mönster ska avvikelsen vara medveten och motiveras i issue eller PR. Små visuella skillnader, som olika pilsymboler i tillbaka-knappar, olika datumfält eller olika statusbadges, ska betraktas som inkonsekvenser om de inte är uttryckligen motiverade.
-
-Visuell riktning:
-
-- ljus, ren layout,
-- rundade kort,
-- mycket vit yta,
-- lila/blå primär accent,
-- grönt för OK,
-- rött för avvikelse,
-- status ska alltid visas med text och ikon, inte endast färg,
-- stöd för mörkt läge bör planeras, men är inte viktigare än tydlig MVP.
-
-Primär bottennavigation bör i MVP utgå från:
-
-- Idag,
-- Historik,
-- Lägg till,
-- Delning,
-- Meny.
-
-## Tekniska riktlinjer
-
-Föreslagen standard om inget annat är beslutat:
-
-- TypeScript.
-- React-baserad webapp, gärna Next.js eller Vite beroende på projektets faktiska startpunkt.
-- Supabase för databas, auth, storage och RLS.
-- Vercel för hosting.
-- GitHub issues ska vara huvudkälla för arbetsplan.
-
-Om teknisk stack redan har skapats i repo ska den analyseras innan ändringar. Byt inte stack utan att först förklara varför och få godkännande.
-
-## Framtida branschutökning
-
-När appen i framtiden ska expandera från livsmedel till andra branscher ska AI/Codex först läsa `docs/FUTURE_INDUSTRY_EXPANSION.md`.
-
-Ny bransch ska inte behandlas som en enkel kopia av livsmedelsflödet. Codex ska först analysera branschspecifika behov för:
-
-- kontrollparametrar,
-- kontrollpunkter/objekt,
-- kontrolltyper,
-- avvikelser och åtgärder,
-- KPI:er,
-- historik,
-- rapporter,
-- export,
-- extern mottagare av dokumentationen.
-
-Målet är att nya branscher ska läggas till som mallpaket och generiska byggstenar ovanpå samma kontrollmotor, utan att bryta livsmedels-MVP:n.
-
-## Framtida privatläge
-
-När appen i framtiden ska utökas med privatläge, hushållsläge eller personlig egenkontroll ska AI/Codex först läsa `docs/FUTURE_PERSONAL_MODE.md`.
-
-Privatläge ska inte byggas som en separat app eller ett separat loginflöde om det kan undvikas. Rekommenderad riktning är ett användarkonto med flera arbetsytor, till exempel företag, privat yta och hushåll.
-
-Privatläge ska återanvända samma kontrollmotor, men med annan terminologi och andra standardflöden:
-
-- kontrolltyp blir rutinområde,
-- kontrollpunkt blir rutin eller sak,
-- utförd kontroll blir check-in,
-- avvikelse blir hinder eller missad rutin,
-- åtgärd blir justering eller nästa steg,
-- inspektörsvy blir självinspektion, analysläge eller rapport.
-
-Privatläge ska inte ärva myndighets- eller inspektörslogik som standard, men ska kunna återanvända historik, rapport, export och läslänkar som frivillig självinspektion och egen analys.
-
-Privatdata ska behandlas som känslig som standard och får inte blandas med företagsdata eller företagsrapporter.
-
-## Datamodell – principer
-
-Datamodellen ska förberedas för SaaS och multi-tenant från start.
-
-Centrala begrepp att planera för:
-
-- organization/business,
-- users/profiles,
-- organization_memberships,
-- roles,
-- control_templates,
-- control_types,
-- control_objects,
-- control_fields eller field definitions,
-- control_runs / performed checks,
-- control_run_items,
-- deviations,
-- attachments,
-- share_links,
-- exports.
-
-RLS ska utgå från att en användare bara får läsa/skriva data i verksamheter där användaren är medlem, förutom tidsbegränsade read-only-länkar för inspektörer.
-
-## Arbetssätt för AI/Codex
-
-- Börja inte bygga stora funktioner utan att först kontrollera relevant issue.
-- Håll varje ändring liten, testbar och kopplad till en issue.
-- Fråga om saknade värden innan kod skrivs, särskilt Supabase project id, tabellnamn, miljövariabler, auth-flöden och RLS-antaganden.
-- Gissa inte vid tekniska oklarheter.
-- Förklara först kort vad som ska göras och varför.
-- Leverera kompletta filer eller tydliga diff-liknande ändringar när användaren behöver klistra in manuellt.
-- Undvik att skapa provisoriska mönster som senare måste rivas upp, särskilt kring auth, multi-tenant och historik.
-- Prioritera stabil grundarkitektur före många UI-detaljer.
-- Betalning ska inte byggas i MVP om det inte finns ett särskilt issue för det.
-
-## Definition av klar MVP
-
-En första MVP är klar när en verksamhet kan:
-
-1. logga in,
-2. skapa eller använda föreslagna kontrolltyper,
-3. skapa/redigera objekt,
-4. utföra dagens kontroller från mobil vy,
-5. registrera avvikelser med obligatorisk åtgärd,
-6. se öppna avvikelser,
-7. stänga/följa upp avvikelser,
-8. se filtrerbar historik,
-9. ladda upp/ta bilder i relevanta kontroller,
-10. skapa tidsbegränsad läslänk/QR för inspektör,
-11. exportera historik/delning till PDF och CSV.
+1. skyddar kunddata,
+2. bevarar historik och spårbarhet,
+3. gör vardagsflödet enklare för en icke-teknisk användare,
+4. håller ändringen liten och testbar,
+5. lämnar en tydlig issue eller dokumenterad uppföljning för större förbättringar.
