@@ -11,20 +11,90 @@ type PublicLandingPageProps = {
   onLogin: () => void;
 };
 
-const controlTypes = ['Kyltemperaturer', 'Städning', 'Datummärkning', 'Varumottagning', 'Spårbarhet', 'Kontrollrunda'];
-
 const phoneControlRows = [
-  { name: 'Kyltemperaturer', fallback: '°C' },
-  { name: 'Städning', fallback: 'OK' },
-  { name: 'Datummärkning', fallback: 'DM' },
+  { name: 'Kyltemperaturer', fallback: '\u00b0C' },
+  { name: 'St\u00e4dning', fallback: 'OK' },
+  { name: 'Datumm\u00e4rkning', fallback: 'DM' },
   { name: 'Varumottagning', fallback: 'IN' },
 ];
 
+const reliefItems = [
+  ['Det som \u00e5terst\u00e5r syns direkt', 'Dagens kontroller visar vad som \u00e4r kvar, s\u00e5 inget beh\u00f6ver ligga i minnet eller p\u00e5 en lapp.'],
+  ['Dokumentationen hamnar p\u00e5 r\u00e4tt plats', 'Temperaturer, checklistor, foton och \u00e5tg\u00e4rder sparas d\u00e4r kontrollen faktiskt g\u00f6rs.'],
+  ['Historiken finns n\u00e4r n\u00e5gon fr\u00e5gar', 'N\u00e4r kontrollanten vill se underlag finns perioden samlad och redo att delas.'],
+  ['Vem som gjort vad sparas automatiskt', 'Tidpunkt och ansvarig f\u00f6ljer med varje kontroll, utan extra anteckningar vid sidan av.'],
+];
+
+const solutionItems = [
+  {
+    title: 'Mindre tid p\u00e5 administration',
+    copy: 'Personalen ser dagens kontroller direkt och dokumenterar p\u00e5 plats i mobilen.',
+    result: 'F\u00e4rre rundor till p\u00e4rmen och mer tid till verksamheten.',
+  },
+  {
+    title: 'Enklare att visa dokumentation',
+    copy: 'Historik, avvikelser och bilagor samlas digitalt per kontroll.',
+    result: 'R\u00e4tt underlag g\u00e5r att visa \u00e4ven n\u00e4r du inte sj\u00e4lv \u00e4r p\u00e5 plats.',
+  },
+  {
+    title: 'B\u00e4ttre koll p\u00e5 ansvar och uppf\u00f6ljning',
+    copy: 'Varje kontroll sparas med tidpunkt, status och den som utf\u00f6rde den.',
+    result: 'Du ser snabbt vad som \u00e4r klart, vad som saknas och vad som beh\u00f6ver f\u00f6ljas upp.',
+  },
+];
+
+const howSteps = [
+  ['Skapa verksamheten', 'V\u00e4lj typ av verksamhet och starta med f\u00e4rdiga kontroller.'],
+  ['Personalen ser vad som ska g\u00f6ras', 'Dagens kontroller visas direkt i mobilen.'],
+  ['Dokumentera p\u00e5 plats', 'Temperaturer, checklistor, foto och kommentarer sparas direkt.'],
+  ['Visa historik vid kontroll', 'Dela eller exportera dokumentationen n\u00e4r den beh\u00f6vs.'],
+];
+
+const featureItems = [
+  ['Dagens kontroller', 'En tydlig mobilvy visar vad som ska g\u00f6ras och vad som redan \u00e4r klart.'],
+  ['Avvikelser och \u00e5tg\u00e4rder', 'Om n\u00e5got inte \u00e4r OK skrivs \u00e5tg\u00e4rden direkt p\u00e5 samma plats.'],
+  ['Historik per period', 'Kontroller, status och ansvarig sparas s\u00e5 att uppf\u00f6ljning blir enklare.'],
+  ['S\u00e4ker delning', 'Skapa en tidsbegr\u00e4nsad l\u00e4sl\u00e4nk n\u00e4r dokumentationen beh\u00f6ver visas.'],
+  ['F\u00e4rdiga mallar', 'Kom ig\u00e5ng med vanliga kontroller och anpassa dem efter din verksamhet.'],
+  ['Mobil f\u00f6rst', 'Byggt f\u00f6r att anv\u00e4ndas i k\u00f6ket, serveringen, butiken eller bilen.'],
+];
+
+const industryItems = [
+  ['Restaurang', 'Dagliga kontroller f\u00f6r kyl, st\u00e4dning, varumottagning och avvikelser i ett h\u00f6gt tempo.'],
+  ['Caf\u00e9', 'Enkel egenkontroll f\u00f6r servering, kylda varor, datumm\u00e4rkning och personalrutiner.'],
+  ['Bageri', 'Rutiner f\u00f6r produktion, reng\u00f6ring, sp\u00e5rbarhet och \u00e5terkommande kontrollpunkter.'],
+  ['Livsmedelsbutik', '\u00d6verblick \u00f6ver kylar, frysar, mottagning, m\u00e4rkning och uppf\u00f6ljning.'],
+  ['Foodtruck', 'Mobil dokumentation f\u00f6r verksamheter som inte har p\u00e4rmen p\u00e5 samma plats varje dag.'],
+];
+
+const knowledgeItems = [
+  ['HACCP f\u00f6r sm\u00e5 livsmedelsf\u00f6retag', '/haccp-sma-livsmedelsforetag'],
+  ['Dokumentation och journalf\u00f6ring', '/dokumentation-egenkontroll-livsmedel'],
+  ['Sp\u00e5rbarhet f\u00f6r livsmedelsf\u00f6retag', '/sparbarhet-livsmedel'],
+  ['Avvikelser och korrigerande \u00e5tg\u00e4rder', '/avvikelser-korrigerande-atgarder-livsmedel'],
+];
+
 const faqItems = [
-  { question: 'Vad innebär förhandslanseringen?', answer: 'Min Egenkontroll är just nu i förhandslansering. Under denna period använder du tjänsten kostnadsfritt medan vi fortsätter utveckla den tillsammans med våra användare. Innan några abonnemang börjar gälla informeras alla användare i god tid.' },
-  { question: 'Behöver personalen installera något?', answer: 'Nej. Min Egenkontroll körs i webbläsaren och är byggd för snabb användning direkt i mobilen.' },
-  { question: 'Kan jag dela dokumentation med kontrollant?', answer: 'Ja. Skapa en tidsbegränsad läslänk och visa historik, avvikelser och bilagor utan att leta i pärmar eller mappar.' },
-  { question: 'Ingår mallar från start?', answer: 'Ja. Vanliga kontrolltyper finns färdiga från start och kan anpassas efter hur din verksamhet faktiskt fungerar.' },
+  {
+    question: 'M\u00e5ste egenkontroll vara digital?',
+    answer: 'Nej. Men digital dokumentation g\u00f6r det l\u00e4ttare att se vad som \u00e4r gjort, hitta historik och visa upp r\u00e4tt underlag n\u00e4r n\u00e5gon fr\u00e5gar.',
+  },
+  {
+    question: 'Passar det om vi \u00e4r en liten verksamhet?',
+    answer: 'Ja. Tanken \u00e4r att sm\u00e5 restauranger, caf\u00e9er, bagerier, butiker och foodtrucks ska slippa bygga ett eget system fr\u00e5n grunden.',
+  },
+  {
+    question: 'Beh\u00f6ver personalen installera n\u00e5got?',
+    answer: 'Nej. Appen k\u00f6rs i webbl\u00e4saren och kan l\u00e4ggas p\u00e5 hemsk\u00e4rmen i mobilen f\u00f6r snabb \u00e5tkomst.',
+  },
+  {
+    question: 'Kan jag visa dokumentationen f\u00f6r kontrollant?',
+    answer: 'Ja. Du kan skapa en tidsbegr\u00e4nsad l\u00e4sl\u00e4nk s\u00e5 kontrollanten kan se relevant historik utan att f\u00e5 tillg\u00e5ng till hela appen.',
+  },
+  {
+    question: 'Vad kostar det?',
+    answer: 'Under f\u00f6rhandslanseringen \u00e4r tj\u00e4nsten kostnadsfri. Innan betalning b\u00f6rjar g\u00e4lla f\u00e5r anv\u00e4ndare tydlig information i god tid.',
+  },
 ];
 
 function setMeta(name: string, content: string) {
@@ -59,34 +129,36 @@ function setCanonical(url: string) {
 
 function MiniAppScreen() {
   return (
-    <div className="landing-phone" aria-label="Förhandsvisning av appens dagens kontroller">
-      <div className="phone-status"><span>9:41</span><span>●●●</span></div>
+    <div className="landing-phone" aria-label={'F\u00f6rhandsvisning av appens dagens kontroller'}>
+      <div className="phone-status"><span>9:41</span><span>...</span></div>
       <div className="phone-title"><p>God morgon, Emma</p><strong>Idag</strong></div>
-      <div className="phone-progress"><span>3 av 5 kontroller klara</span><strong>0 öppna avvikelser</strong></div>
+      <div className="phone-progress"><span>3 av 5 kontroller klara</span><strong>{'0 \u00f6ppna avvikelser'}</strong></div>
       <div className="phone-list">
         {phoneControlRows.map((control, index) => (
           <div className="phone-row" key={control.name}>
-            <span className={`phone-row-mark mark-${index + 1}`}><AssetIcon src={readControlTypeIcon({ name: control.name })} fallback={control.fallback} /></span>
+            <span className={`phone-row-mark mark-${index + 1}`}>
+              <AssetIcon src={readControlTypeIcon({ name: control.name })} fallback={control.fallback} />
+            </span>
             <span>{control.name}</span>
-            <strong>{index < 2 ? 'Klar' : 'Ej utförd'}</strong>
+            <strong>{index < 2 ? 'Klar' : 'Ej utf\u00f6rd'}</strong>
           </div>
         ))}
       </div>
-      <button className="phone-action" type="button">Utför kontroll</button>
+      <button className="phone-action" type="button">{'Utf\u00f6r kontroll'}</button>
     </div>
   );
 }
 
 function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
   useEffect(() => {
-    const title = 'Min Egenkontroll - digital egenkontroll för restaurang och café';
-    const description = 'Digital egenkontroll för restaurang, café och livsmedelsverksamhet. Dokumentera kontroller, avvikelser och historik från mobilen under förhandslanseringen.';
+    const title = 'Min Egenkontroll - digital egenkontroll utan p\u00e4rmkaos';
+    const description = 'Digital egenkontroll f\u00f6r restaurang, caf\u00e9, bageri, butik och foodtruck. Se vad som ska g\u00f6ras, spara dokumentation och dela historik vid kontroll.';
     const canonicalUrl = 'https://minegenkontroll.se/';
     document.title = title;
     setMeta('description', description);
     setMeta('robots', 'index, follow');
     setCanonical(canonicalUrl);
-    setOpenGraphMeta('og:title', 'Min Egenkontroll - digital egenkontroll för livsmedelsverksamheter');
+    setOpenGraphMeta('og:title', 'Min Egenkontroll - digital egenkontroll f\u00f6r livsmedelsverksamheter');
     setOpenGraphMeta('og:description', description);
     setOpenGraphMeta('og:url', canonicalUrl);
   }, []);
@@ -95,81 +167,190 @@ function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
     <main className="public-site">
       <nav className="public-nav" aria-label="Publik navigation">
         <a className="public-brand" href="/"><img src={brandAssets.logo} alt="Min Egenkontroll" /></a>
-        <div className="public-nav-actions"><a href="/kunskapsbank">Kunskapsbank</a><a href="#pricing">Pris</a><button type="button" onClick={onLogin}>Logga in</button></div>
+        <div className="public-nav-actions">
+          <a href="#how">{'S\u00e5 fungerar det'}</a>
+          <a href="#pricing">Pris</a>
+          <a href="#faq">{'Fr\u00e5gor'}</a>
+          <button className="public-nav-primary" type="button" onClick={onStartTrial}>{'Kom ig\u00e5ng'}</button>
+          <button type="button" onClick={onLogin}>Logga in</button>
+        </div>
       </nav>
 
       <section className="public-hero">
         <div className="public-hero-copy">
-          <p className="public-eyebrow">Förhandslansering · kostnadsfritt under utvecklingen</p>
-          <h1>Digital egenkontroll för restaurang, café och livsmedelsverksamhet.</h1>
-          <p>Inget mer letande! Visa precis den dokumentation kontrollanten vill se – med ett knapptryck.</p>
-          <p className="public-copy">Min Egenkontroll är just nu i förhandslansering. Du använder tjänsten kostnadsfritt medan vi fortsätter utveckla den tillsammans med våra användare.</p>
-          <div className="public-hero-actions"><button className="public-primary" type="button" onClick={onStartTrial}>Gå med i förhandslanseringen</button><a className="public-secondary" href="#how">Se hur det fungerar</a></div>
+          <p className="public-eyebrow">{'F\u00f6rhandslansering \u00b7 kostnadsfritt just nu'}</p>
+          <h1>{'Egenkontroll direkt i mobilen, utan p\u00e4rmar och papperslistor.'}</h1>
+          <p>{'Min Egenkontroll visar vad som ska g\u00f6ras, l\u00e5ter personalen dokumentera p\u00e5 plats och samlar historiken s\u00e5 den \u00e4r redo n\u00e4r kontrollanten kommer.'}</p>
+          <div className="public-hero-actions">
+            <button className="public-primary" type="button" onClick={onStartTrial}>{'Kom ig\u00e5ng'}</button>
+            <a className="public-secondary" href="#how">{'Se hur det fungerar'}</a>
+          </div>
         </div>
         <MiniAppScreen />
       </section>
 
-      <section className="public-band" id="how">
-        <div className="public-section-heading"><p className="public-eyebrow">Så fungerar det</p><h2>Gör kontrollen direkt när den ska göras.</h2></div>
-        <div className="public-steps">
-          {[
-            ['Öppna dagens kontroller', 'Personalen ser direkt vad som ska göras, vad som är klart och vad som återstår.'],
-            ['Fyll i värden eller status', 'Temperatur, OK/Ej OK, foto och kommentar sparas på rätt kontroll utan krångel.'],
-            ['Hantera avvikelse direkt', 'Om något avviker dokumenteras åtgärden direkt tillsammans med kontrollen.'],
-            ['Dela vid kontroll', 'När kontrollanten kommer skapar du en tidsbegränsad läslänk med rätt dokumentation.'],
-          ].map(([title, copy], index) => <article className="public-card" key={title}><span className="step-number">{index + 1}</span><h3>{title}</h3><p>{copy}</p></article>)}
-        </div>
-      </section>
-
-      <section className="public-grid-section">
-        <div><p className="public-eyebrow">Kontrolltyper</p><h2>Allt samlat för vardagen i kök, café, butik och produktion.</h2><p className="public-copy">Börja med färdiga mallar för de vanligaste delarna av egenkontrollen och anpassa dem efter din verksamhet.</p></div>
-        <div className="control-chip-grid">{controlTypes.map((name) => <span key={name}>{name}</span>)}</div>
-      </section>
-
-      <section className="public-band">
+      <section className="public-band problem-band" id="problems">
         <div className="public-section-heading">
-          <p className="public-eyebrow">Kunskapsbank</p>
-          <h2>Förstå egenkontroll, HACCP och spårbarhet utan onödigt krångel.</h2>
-          <p className="public-copy">Sakliga guider för mindre livsmedelsföretag, byggda på vägledning från bland annat Livsmedelsverket.</p>
+          <p className="public-eyebrow">{'S\u00e5 blir vardagen enklare'}</p>
+          <h2>{'Mindre att h\u00e5lla i huvudet. Mer som bara blir gjort.'}</h2>
+          <p className="public-copy">{'Min Egenkontroll hj\u00e4lper personalen fram\u00e5t i stunden och sparar underlaget automatiskt, s\u00e5 rutinen inte beh\u00f6ver b\u00e4ras av en person.'}</p>
         </div>
-        <div className="faq-list">
-          <a className="public-card" href="/haccp-sma-livsmedelsforetag"><h3>HACCP för små livsmedelsföretag</h3><p>Se hur risker, styrning och dokumentation kan anpassas till en mindre verksamhet.</p></a>
-          <a className="public-card" href="/dokumentation-egenkontroll-livsmedel"><h3>Dokumentation och journalföring</h3><p>Vad behöver dokumenteras och hur mycket journalföring behövs?</p></a>
-          <a className="public-card" href="/sparbarhet-livsmedel"><h3>Spårbarhet för livsmedelsföretag</h3><p>Vilka uppgifter behöver kunna tas fram om leveranser och leverantörer?</p></a>
-          <a className="public-card" href="/avvikelser-korrigerande-atgarder-livsmedel"><h3>Avvikelser och korrigerande åtgärder</h3><p>Vad behöver hända när en kontroll avviker och hur följer man upp orsaken?</p></a>
+        <div className="problem-list">
+          {reliefItems.map(([title, copy]) => (
+            <article className="problem-item" key={title}>
+              <span aria-hidden="true">✓</span>
+              <div>
+                <h3>{title}</h3>
+                <p>{copy}</p>
+              </div>
+            </article>
+          ))}
         </div>
-        <div className="public-hero-actions"><a className="public-primary" href="/kunskapsbank">Se alla guider i kunskapsbanken</a></div>
       </section>
 
-      <section className="public-band insights-band" id="insights">
-        <div className="public-section-heading"><p className="public-eyebrow">Statistik och insikter</p><h2>Se vad som fungerar – och vad som behöver följas upp.</h2></div>
-        <div className="insight-grid">
-          {[
-            ['96 %', 'kontroller utförda senaste 30 dagarna'],
-            ['4', 'avvikelser dokumenterade och redo att följas upp'],
-            ['2 områden', 'behöver mest uppmärksamhet just nu'],
-            ['90 dagar', 'dokumentation samlad och redo att visas'],
-          ].map(([value, label]) => <article className="insight-card" key={label}><strong>{value}</strong><span>{label}</span></article>)}
+      <section className="public-band" id="how">
+        <div className="public-section-heading">
+          <p className="public-eyebrow">{'S\u00e5 fungerar det'}</p>
+          <h2>{'Fr\u00e5n f\u00e4rdiga kontroller till historik som g\u00e5r att visa.'}</h2>
+        </div>
+        <div className="how-grid">
+          {howSteps.map(([title, copy], index) => (
+            <article className="public-card" key={title}>
+              <span className="step-number">{index + 1}</span>
+              <h3>{title}</h3>
+              <p>{copy}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="public-grid-section inspector-section">
+        <div>
+          <p className="public-eyebrow">{'Kontrollant / inspekt\u00f6r'}</p>
+          <h2>{'N\u00e4r kontrollanten kommer \u00e4r dokumentationen redan samlad.'}</h2>
+          <p className="public-copy">{'Du beh\u00f6ver inte leta efter p\u00e4rmen eller v\u00e4nta p\u00e5 r\u00e4tt person. Dela dokumentationen direkt fr\u00e5n appen och visa historik f\u00f6r den period som beh\u00f6vs.'}</p>
+        </div>
+        <article className="public-card inspector-card">
+          <p className="public-eyebrow">{'Exempel vid kontroll'}</p>
+          <h3>{'Historik f\u00f6r vald period'}</h3>
+          <ul>
+            <li>{'Utf\u00f6rda kontroller med datum och ansvarig'}</li>
+            <li>{'Avvikelser och korrigerande \u00e5tg\u00e4rder'}</li>
+            <li>{'Foton, bilagor och export n\u00e4r det beh\u00f6vs'}</li>
+          </ul>
+        </article>
+      </section>
+
+      <section className="public-grid-section solution-section" id="solution">
+        <div>
+          <p className="public-eyebrow">{'Tre huvudvinster'}</p>
+          <h2>{'Samma egenkontroll, men med mer flyt.'}</h2>
+          <p className="public-copy">{'Po\u00e4ngen \u00e4r inte att l\u00e4gga till mer administration. Po\u00e4ngen \u00e4r att samla det som redan beh\u00f6ver g\u00f6ras p\u00e5 ett st\u00e4lle.'}</p>
+        </div>
+        <div className="solution-stack">
+          {solutionItems.map((item, index) => (
+            <article className="public-card solution-card" key={item.title}>
+              <span className="step-number">{index + 1}</span>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.copy}</p>
+                <strong>{item.result}</strong>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="public-band" id="features">
+        <div className="public-section-heading">
+          <p className="public-eyebrow">{'Funktioner som st\u00f6djer vardagen'}</p>
+          <h2>{'Allt som beh\u00f6vs f\u00f6r att f\u00e5 kontrollen gjord och sparad.'}</h2>
+        </div>
+        <div className="feature-grid">
+          {featureItems.map(([title, copy]) => (
+            <article className="public-card" key={title}>
+              <h3>{title}</h3>
+              <p>{copy}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="public-grid-section industries-section">
+        <div>
+          <p className="public-eyebrow">{'F\u00f6r vilka verksamheter?'}</p>
+          <h2>{'F\u00f6r sm\u00e5 livsmedelsf\u00f6retag d\u00e4r tiden \u00e4r knapp och ansvaret \u00e4r tydligt.'}</h2>
+          <p className="public-copy">{'Starta med f\u00e4rdiga kontrolltyper och anpassa dem efter hur just din verksamhet arbetar.'}</p>
+        </div>
+        <div className="industry-list">
+          {industryItems.map(([title, copy]) => (
+            <article className="industry-item" key={title}>
+              <h3>{title}</h3>
+              <p>{copy}</p>
+            </article>
+          ))}
         </div>
       </section>
 
       <section className="public-grid-section" id="pricing">
-        <div><p className="public-eyebrow">Pris</p><h2>Kostnadsfritt under förhandslanseringen.</h2><p className="public-copy">Du kan använda Min Egenkontroll gratis medan tjänsten utvecklas. Innan betalda abonnemang börjar gälla får du tydlig information i god tid.</p></div>
+        <div>
+          <p className="public-eyebrow">Pris</p>
+          <h2>{'Kostnadsfritt under f\u00f6rhandslanseringen.'}</h2>
+          <p className="public-copy">{'Du kan anv\u00e4nda Min Egenkontroll gratis medan tj\u00e4nsten utvecklas. Innan betalda abonnemang b\u00f6rjar g\u00e4lla f\u00e5r du tydlig information i god tid.'}</p>
+        </div>
         <div className="price-cards">
-          <article className="price-card highlighted"><p>Förhandslansering</p><strong>0 kr</strong><span>Kostnadsfri tillgång under utvecklingsperioden.</span></article>
-          <article className="price-card"><p>Efter lansering</p><strong>{billingPlans.monthly.priceLabel}</strong><span>Planerade abonnemang blir aktuella först när tjänsten lanseras skarpt.</span></article>
-          <article className="price-card"><p>{billingPlans.annual.label}</p><strong>{billingPlans.annual.priceLabel}</strong><span>Lägre månadskostnad när du betalar årsvis efter lansering.</span></article>
+          <article className="price-card highlighted"><p>{'F\u00f6rhandslansering'}</p><strong>0 kr</strong><span>{'Kostnadsfri tillg\u00e5ng under utvecklingsperioden.'}</span></article>
+          <article className="price-card"><p>Efter lansering</p><strong>{billingPlans.monthly.priceLabel}</strong><span>{'Planerat abonnemang n\u00e4r tj\u00e4nsten lanseras skarpt.'}</span></article>
+          <article className="price-card"><p>{billingPlans.annual.label}</p><strong>{billingPlans.annual.priceLabel}</strong><span>{'L\u00e4gre m\u00e5nadskostnad n\u00e4r du betalar \u00e5rsvis efter lansering.'}</span></article>
         </div>
       </section>
 
-      <section className="public-band">
-        <div className="public-section-heading"><p className="public-eyebrow">Frågor</p><h2>Vanliga frågor</h2></div>
-        <div className="faq-list">{faqItems.map((item) => <article className="public-card" key={item.question}><h3>{item.question}</h3><p>{item.answer}</p></article>)}</div>
+      <section className="public-band" id="faq">
+        <div className="public-section-heading">
+          <p className="public-eyebrow">{'Vanliga fr\u00e5gor'}</p>
+          <h2>{'Fr\u00e5gor som ofta dyker upp n\u00e4r p\u00e4rmen ska bli digital.'}</h2>
+        </div>
+        <div className="faq-list">
+          {faqItems.map((item) => (
+            <article className="public-card" key={item.question}>
+              <h3>{item.question}</h3>
+              <p>{item.answer}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
-      <section className="public-cta"><p className="public-eyebrow">Förhandslansering</p><h2>Gå med kostnadsfritt och hjälp oss forma ett enklare sätt att sköta egenkontrollen.</h2><button className="public-primary" type="button" onClick={onStartTrial}>Gå med i förhandslanseringen</button></section>
+      <section className="public-grid-section knowledge-section">
+        <div>
+          <p className="public-eyebrow">Kunskapsbank</p>
+          <h2>{'F\u00f6rdjupa dig n\u00e4r du beh\u00f6ver, inte i f\u00f6rsta vyn.'}</h2>
+          <p className="public-copy">{'Guiderna hj\u00e4lper dig f\u00f6rst\u00e5 egenkontroll, HACCP, sp\u00e5rbarhet och dokumentation med sakligt spr\u00e5k och tydliga k\u00e4llor.'}</p>
+          <div className="public-hero-actions"><a className="public-primary" href="/kunskapsbank">Se alla guider</a></div>
+        </div>
+        <div className="knowledge-link-list">
+          {knowledgeItems.map(([title, href]) => (
+            <a className="public-card knowledge-link" href={href} key={href}>
+              <h3>{title}</h3>
+              <p>{'L\u00e4s en praktisk guide f\u00f6r mindre livsmedelsverksamheter.'}</p>
+            </a>
+          ))}
+        </div>
+      </section>
 
-      <footer className="public-footer"><span>© 2026 Min Egenkontroll</span><div className="public-footer-links"><a href="/integritetspolicy">Integritetspolicy</a><a href="/anvandarvillkor">Användarvillkor</a></div></footer>
+      <section className="public-cta">
+        <p className="public-eyebrow">{'F\u00f6rhandslansering'}</p>
+        <h2>{'G\u00f6r egenkontrollen enklare att f\u00e5 gjord varje dag.'}</h2>
+        <p className="public-copy">{'Samla rutiner, dokumentation och historik p\u00e5 ett st\u00e4lle, direkt i mobilen.'}</p>
+        <button className="public-primary" type="button" onClick={onStartTrial}>{'Kom ig\u00e5ng'}</button>
+      </section>
+
+      <footer className="public-footer">
+        <span>{'\u00a9 2026 Min Egenkontroll'}</span>
+        <div className="public-footer-links">
+          <a href="/integritetspolicy">Integritetspolicy</a>
+          <a href="/anvandarvillkor">{'Anv\u00e4ndarvillkor'}</a>
+        </div>
+      </footer>
     </main>
   );
 }
