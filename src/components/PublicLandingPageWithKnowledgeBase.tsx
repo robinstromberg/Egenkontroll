@@ -29,26 +29,36 @@ const problemItems = [
 
 const solutionItems = [
   {
-    title: 'Mindre tid p\u00e5 administration',
-    copy: 'Dagens kontroller ligger redo i mobilen. Personalen fyller i r\u00e4tt sak direkt n\u00e4r arbetet g\u00f6rs.',
+    problem: 'Egenkontroll tar on\u00f6digt mycket tid',
+    solution: 'Personalen ser dagens kontroller direkt och dokumenterar p\u00e5 plats i mobilen.',
+    result: 'Mindre tid p\u00e5 dokumentation, mer tid p\u00e5 verksamheten.',
   },
   {
-    title: 'Dokumentation som g\u00e5r att visa',
-    copy: 'Historik, avvikelser, foton och \u00e5tg\u00e4rder samlas p\u00e5 r\u00e4tt kontroll och kan delas via en tidsbegr\u00e4nsad l\u00e4sl\u00e4nk.',
+    problem: 'Det blir kr\u00e5ngligt n\u00e4r kontrollanten vill se dokumentationen',
+    solution: 'Dela dokumentationen med ett knapptryck n\u00e4r kontrollanten kommer.',
+    result: 'Vem som helst i personalen kan visa r\u00e4tt underlag.',
   },
   {
-    title: 'Tydligare ansvar i vardagen',
-    copy: 'Du ser vad som \u00e4r klart, vad som saknas och vem som utf\u00f6rt kontrollen utan att jaga runt i verksamheten.',
+    problem: 'Det \u00e4r sv\u00e5rt att veta vem som gjort vad',
+    solution: 'Tidpunkt och anv\u00e4ndare loggas automatiskt med egen inloggning.',
+    result: 'Du f\u00e5r \u00f6verblick \u00e4ven n\u00e4r du inte \u00e4r p\u00e5 plats.',
   },
 ];
 
+const howSteps = [
+  ['Skapa verksamheten', 'V\u00e4lj typ av verksamhet och starta med f\u00e4rdiga kontroller.'],
+  ['Personalen ser vad som ska g\u00f6ras', 'Dagens kontroller visas direkt i mobilen.'],
+  ['Dokumentera p\u00e5 plats', 'Temperaturer, checklistor, foto och kommentarer sparas direkt.'],
+  ['Visa historik vid kontroll', 'Dela eller exportera dokumentationen n\u00e4r den beh\u00f6vs.'],
+];
+
 const featureItems = [
-  ['Dagens kontroller', 'En tydlig lista \u00f6ver vad som ska g\u00f6ras idag och vad som redan \u00e4r klart.'],
-  ['Avvikelser direkt', 'Om n\u00e5got inte \u00e4r OK skrivs \u00e5tg\u00e4rden direkt d\u00e4r kontrollen utf\u00f6rs.'],
-  ['Historik och export', 'Samlad dokumentation med datum, utf\u00f6rare och status n\u00e4r n\u00e5gon vill granska.'],
-  ['Delning vid kontroll', 'Skapa en s\u00e4ker l\u00e4sl\u00e4nk till kontrollanten i st\u00e4llet f\u00f6r att skicka filer fram och tillbaka.'],
-  ['F\u00e4rdiga mallar', 'Starta med vanliga kontroller f\u00f6r kyl, st\u00e4dning, datumm\u00e4rkning, varumottagning och sp\u00e5rbarhet.'],
-  ['Mobil f\u00f6rst', 'Byggt f\u00f6r att anv\u00e4ndas d\u00e4r arbetet sker, inte bara framf\u00f6r en dator p\u00e5 kontoret.'],
+  ['N\u00e4r kontroller gl\u00f6ms bort', 'Dagens kontroller visar vad som \u00e5terst\u00e5r och vad som redan \u00e4r klart.'],
+  ['N\u00e4r dokumentation ligger utspridd', 'Historiken samlas digitalt per kontroll med datum, utf\u00f6rare och status.'],
+  ['N\u00e4r kontrollanten fr\u00e5gar', 'Delningsvy och export g\u00f6r det l\u00e4tt att visa r\u00e4tt underlag.'],
+  ['N\u00e4r ny personal b\u00f6rjar', 'Appen visar vad som ska g\u00f6ras utan att allt beh\u00f6ver f\u00f6rklaras muntligt.'],
+  ['N\u00e4r n\u00e5got inte \u00e4r OK', 'Avvikelse och \u00e5tg\u00e4rd skrivs direkt d\u00e4r kontrollen utf\u00f6rs.'],
+  ['N\u00e4r tiden \u00e4r knapp', 'Mobilfl\u00f6det \u00e4r gjort f\u00f6r att anv\u00e4ndas d\u00e4r arbetet sker.'],
 ];
 
 const industryItems = [
@@ -160,8 +170,10 @@ function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
       <nav className="public-nav" aria-label="Publik navigation">
         <a className="public-brand" href="/"><img src={brandAssets.logo} alt="Min Egenkontroll" /></a>
         <div className="public-nav-actions">
-          <a href="/kunskapsbank">Kunskapsbank</a>
-          <a href="#pricing">Pris</a>
+          <a href="#problems">Problem</a>
+          <a href="#how">S\u00e5 fungerar det</a>
+          <a href="#faq">Fr\u00e5gor</a>
+          <button className="public-nav-primary" type="button" onClick={onStartTrial}>Kom ig\u00e5ng</button>
           <button type="button" onClick={onLogin}>Logga in</button>
         </div>
       </nav>
@@ -169,11 +181,11 @@ function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
       <section className="public-hero">
         <div className="public-hero-copy">
           <p className="public-eyebrow">{'F\u00f6rhandslansering \u00b7 kostnadsfritt just nu'}</p>
-          <h1>{'Egenkontroll utan p\u00e4rmkaos.'}</h1>
-          <p>{'Se vad som ska g\u00f6ras idag, spara dokumentationen direkt och visa historiken n\u00e4r kontrollanten fr\u00e5gar.'}</p>
+          <h1>{'Egenkontroll direkt i mobilen, utan p\u00e4rmar och papperslistor.'}</h1>
+          <p>{'Min Egenkontroll visar vad som ska g\u00f6ras, l\u00e5ter personalen dokumentera p\u00e5 plats och samlar historiken s\u00e5 den \u00e4r redo n\u00e4r kontrollanten kommer.'}</p>
           <div className="public-hero-actions">
-            <button className="public-primary" type="button" onClick={onStartTrial}>{'G\u00e5 med kostnadsfritt'}</button>
-            <a className="public-secondary" href="#problems">{'K\u00e4nner du igen vardagen?'}</a>
+            <button className="public-primary" type="button" onClick={onStartTrial}>Kom ig\u00e5ng</button>
+            <a className="public-secondary" href="#how">{'Se hur det fungerar'}</a>
           </div>
         </div>
         <MiniAppScreen />
@@ -182,7 +194,7 @@ function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
       <section className="public-band problem-band" id="problems">
         <div className="public-section-heading">
           <p className="public-eyebrow">{'Vardagen f\u00f6rst'}</p>
-          <h2>{'Egenkontroll \u00e4r s\u00e4llan sv\u00e5r f\u00f6r att reglerna \u00e4r om\u00f6jliga. Den \u00e4r sv\u00e5r f\u00f6r att dagen redan \u00e4r full.'}</h2>
+          <h2>{'K\u00e4nns egenkontrollen som n\u00e5got som alltid hamnar mellan allt annat?'}</h2>
           <p className="public-copy">{'Det \u00e4r h\u00e4r m\u00e5nga mindre livsmedelsverksamheter fastnar: inte i viljan att g\u00f6ra r\u00e4tt, utan i att f\u00e5 rutinen att fungera varje dag.'}</p>
         </div>
         <div className="problem-list">
@@ -203,10 +215,31 @@ function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
         </div>
         <div className="solution-stack">
           {solutionItems.map((item, index) => (
-            <article className="public-card solution-card" key={item.title}>
+            <article className="public-card solution-card" key={item.problem}>
               <span className="step-number">{index + 1}</span>
-              <h3>{item.title}</h3>
-              <p>{item.copy}</p>
+              <div>
+                <small>Problem</small>
+                <h3>{item.problem}</h3>
+                <small>{'L\u00f6sning'}</small>
+                <p>{item.solution}</p>
+                <strong>{item.result}</strong>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="public-band" id="how">
+        <div className="public-section-heading">
+          <p className="public-eyebrow">{'S\u00e5 fungerar det'}</p>
+          <h2>{'Fr\u00e5n f\u00e4rdiga kontroller till historik som g\u00e5r att visa.'}</h2>
+        </div>
+        <div className="how-grid">
+          {howSteps.map(([title, copy], index) => (
+            <article className="public-card" key={title}>
+              <span className="step-number">{index + 1}</span>
+              <h3>{title}</h3>
+              <p>{copy}</p>
             </article>
           ))}
         </div>
@@ -241,6 +274,23 @@ function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="public-grid-section inspector-section">
+        <div>
+          <p className="public-eyebrow">{'Kontrollant / inspekt\u00f6r'}</p>
+          <h2>{'N\u00e4r kontrollanten kommer \u00e4r dokumentationen redan samlad.'}</h2>
+          <p className="public-copy">{'Du beh\u00f6ver inte leta efter p\u00e4rmen eller v\u00e4nta p\u00e5 r\u00e4tt person. Dela dokumentationen direkt fr\u00e5n appen och visa historik f\u00f6r den period som beh\u00f6vs.'}</p>
+        </div>
+        <article className="public-card inspector-card">
+          <p className="public-eyebrow">{'Exempel vid kontroll'}</p>
+          <h3>{'Historik f\u00f6r vald period'}</h3>
+          <ul>
+            <li>{'Utf\u00f6rda kontroller med datum och ansvarig'}</li>
+            <li>{'Avvikelser och korrigerande \u00e5tg\u00e4rder'}</li>
+            <li>{'Foton, bilagor och export n\u00e4r det beh\u00f6vs'}</li>
+          </ul>
+        </article>
       </section>
 
       <section className="public-band" id="faq">
@@ -290,8 +340,9 @@ function HomeLandingPage({ onStartTrial, onLogin }: PublicLandingPageProps) {
 
       <section className="public-cta">
         <p className="public-eyebrow">{'F\u00f6rhandslansering'}</p>
-        <h2>{'G\u00f6r egenkontrollen l\u00e4ttare att komma ih\u00e5g, utf\u00f6ra och visa upp.'}</h2>
-        <button className="public-primary" type="button" onClick={onStartTrial}>{'G\u00e5 med kostnadsfritt'}</button>
+        <h2>{'G\u00f6r egenkontrollen enklare att f\u00e5 gjord varje dag.'}</h2>
+        <p className="public-copy">{'Samla rutiner, dokumentation och historik p\u00e5 ett st\u00e4lle, direkt i mobilen.'}</p>
+        <button className="public-primary" type="button" onClick={onStartTrial}>Kom ig\u00e5ng</button>
       </section>
 
       <footer className="public-footer">

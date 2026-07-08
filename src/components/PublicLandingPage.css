@@ -72,6 +72,10 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
+.public-nav-actions .public-nav-primary {
+  background: linear-gradient(135deg, #7055ff, #5138db);
+}
+
 .public-hero {
   display: grid;
   min-height: min(780px, calc(100vh - 74px));
@@ -317,6 +321,7 @@
 .price-cards,
 .problem-list,
 .solution-stack,
+.how-grid,
 .feature-grid,
 .industry-list,
 .knowledge-link-list,
@@ -401,9 +406,22 @@
   align-items: start;
 }
 
-.solution-card h3,
-.solution-card p {
-  grid-column: 2;
+.solution-card > div {
+  display: grid;
+  gap: 8px;
+}
+
+.solution-card small {
+  color: #a99cff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.solution-card strong {
+  color: #ffffff;
+  line-height: 1.45;
 }
 
 .industry-item {
@@ -426,6 +444,18 @@
   border-color: rgba(112, 85, 255, 0.45);
   background: rgba(112, 85, 255, 0.12);
   transform: translateY(-2px);
+}
+
+.inspector-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.inspector-card li {
+  color: #c3cbdf;
+  line-height: 1.55;
 }
 
 .step-number {
@@ -598,7 +628,8 @@
   }
 
   .public-steps,
-  .insight-grid {
+  .insight-grid,
+  .how-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 
