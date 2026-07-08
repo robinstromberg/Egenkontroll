@@ -43,6 +43,7 @@ export type ControlDefinitionCanvasProps = {
   onEditField?: (field: ControlFieldDefinition) => void;
   onEditObject?: (object: ControlObject) => void;
   hideFieldEditControls?: boolean;
+  lockedFieldIds?: string[];
   renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
   renderObjectEditor?: (object: ControlObject) => ReactNode;
 };
@@ -441,6 +442,7 @@ export function ControlDefinitionCanvas({
   onEditField,
   onEditObject,
   hideFieldEditControls = false,
+  lockedFieldIds = [],
   renderFieldEditor,
   renderObjectEditor,
 }: ControlDefinitionCanvasProps) {
@@ -448,7 +450,7 @@ export function ControlDefinitionCanvas({
   const isEditMode = mode === 'edit';
   const renderObjects = objects.length ? objects : [null];
   const matrixObjects = objects;
-  const matrixField = matrixObjects.length > 1 ? fields.find((field) => field.field_type === 'ok_not_ok') : undefined;
+  const matrixField = !isEditMode && matrixObjects.length > 1 ? fields.find((field) => field.field_type === 'ok_not_ok') : undefined;
 
   return (
     <div className={`control-definition-canvas control-definition-canvas-${mode}`}>
@@ -471,7 +473,7 @@ export function ControlDefinitionCanvas({
 
       {renderObjects.map((object) => {
         const visibleFields = matrixField
-          ? fields.filter((field) => field.id !== matrixField.id && field.field_type !== 'textarea')
+          ? fields.filter((field) => field.id !== matrixField.id)
           : fields;
         if (visibleFields.length === 0) return null;
 
@@ -486,7 +488,7 @@ export function ControlDefinitionCanvas({
             role={isEditMode && object ? 'button' : undefined}
             tabIndex={isEditMode && object ? 0 : undefined}
             onClick={isEditMode && object ? (event) => {
-              if ((event.target as HTMLElement).closest('button, input, textarea, select, label, .canvas-inline-editor')) return;
+              if ((event.target as HTMLElement).closest('button, input, textarea, select, label, .canvas-inline-editor, .control-field')) return;
               onEditObject?.(object);
             } : undefined}
             onKeyDown={isEditMode && object ? (event) => {
@@ -517,29 +519,34 @@ export function ControlDefinitionCanvas({
               const value = responses[key] ?? (disabled ? getDefaultValue(field) : '');
               const reason = getDeviationReason(field, object, value);
               const selected = field.id === selectedFieldId;
+              const fieldLocked = hideFieldEditControls || lockedFieldIds.includes(field.id);
 
               return (
                 <div
                   className={selected ? 'control-field canvas-field-editable selected' : isEditMode ? 'control-field canvas-field-editable' : 'control-field'}
                   key={key}
-                  role={isEditMode && !hideFieldEditControls ? 'button' : undefined}
-                  tabIndex={isEditMode && !hideFieldEditControls ? 0 : undefined}
-                  onClick={isEditMode && !hideFieldEditControls ? (event) => {
+                  role={isEditMode && !fieldLocked ? 'button' : undefined}
+                  tabIndex={isEditMode && !fieldLocked ? 0 : undefined}
+                  onClick={isEditMode && !fieldLocked ? (event) => {
                     if ((event.target as HTMLElement).closest('button, input, textarea, select, label, .canvas-inline-editor')) return;
                     onEditField?.(field);
                   } : undefined}
-                  onKeyDown={isEditMode && !hideFieldEditControls ? (event) => {
+                  onKeyDown={isEditMode && !fieldLocked ? (event) => {
                     if (event.key !== 'Enter' && event.key !== ' ') return;
                     event.preventDefault();
                     onEditField?.(field);
                   } : undefined}
                 >
-                  {isEditMode && !hideFieldEditControls ? (
+                  {isEditMode ? (
                     <div className="canvas-field-toolbar">
-                      <span>{fieldTypeLabels[field.field_type]} · {field.required ? 'Obligatoriskt' : 'Frivilligt'}</span>
-                      <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>
-                        Redigera fält
-                      </button>
+                      <span>
+                        {fieldLocked ? 'Standardfält' : fieldTypeLabels[field.field_type]} · {field.required ? 'Obligatoriskt' : 'Frivilligt'}
+                      </span>
+                      {!fieldLocked ? (
+                        <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>
+                          Redigera svarsfält
+                        </button>
+                      ) : null}
                     </div>
                   ) : null}
                   {field.field_type === 'photo' ? (

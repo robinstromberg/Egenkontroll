@@ -41,6 +41,11 @@ type FieldPreset = {
   required: boolean;
 };
 
+type FieldOption = FieldPreset & {
+  description: string;
+  icon: string;
+};
+
 const frequencyLabels: Record<ControlFrequency, string> = {
   daily: 'Dagligen',
   weekly: 'Veckovis',
@@ -70,23 +75,18 @@ const fieldTypeLabels: Record<ControlFieldDefinition['field_type'], string> = {
   select: 'Val',
 };
 
-const fieldTypeOptions: Array<{
-  fieldType: ControlFieldDefinition['field_type'];
-  label: string;
-  defaultLabel: string;
-}> = [
-  { fieldType: 'text', label: 'Text', defaultLabel: 'Text' },
-  { fieldType: 'date', label: 'Datum', defaultLabel: 'Datum' },
-  { fieldType: 'temperature', label: 'Temperatur', defaultLabel: 'Temperatur' },
-  { fieldType: 'ok_not_ok', label: 'OK/Ej OK', defaultLabel: 'Status' },
-  { fieldType: 'photo', label: 'Foto', defaultLabel: 'Foto' },
-  { fieldType: 'select', label: 'Val', defaultLabel: 'Val' },
-  { fieldType: 'textarea', label: 'Kommentar', defaultLabel: 'Kommentar' },
-  { fieldType: 'number', label: 'Nummer', defaultLabel: 'Nummer' },
+const fieldTypeOptions: FieldOption[] = [
+  { fieldType: 'ok_not_ok', label: 'OK/Ej OK', required: true, description: 'Snabb status per kontrollpunkt.', icon: 'OK' },
+  { fieldType: 'text', label: 'Text', required: true, description: 'Kort text, t.ex. produkt eller batch.', icon: 'Aa' },
+  { fieldType: 'textarea', label: 'Kommentar', required: false, description: 'Längre fri text.', icon: 'TXT' },
+  { fieldType: 'date', label: 'Datum', required: false, description: 'Ett datumfält.', icon: 'DAT' },
+  { fieldType: 'datetime', label: 'Datum och tid', required: false, description: 'Datum med klockslag.', icon: 'TID' },
+  { fieldType: 'photo', label: 'Foto', required: false, description: 'Bild eller etikett.', icon: 'IMG' },
+  { fieldType: 'temperature', label: 'Temperatur', required: true, description: 'Temperatur mot gränsvärde.', icon: '°C' },
+  { fieldType: 'number', label: 'Nummer', required: true, description: 'Ett numeriskt värde.', icon: '123' },
+  { fieldType: 'text', label: 'Leverantör', required: true, description: 'Välj eller ange leverantör.', icon: 'LEV' },
+  { fieldType: 'select', label: 'Val', required: true, description: 'Ett fördefinierat val.', icon: 'VAL' },
 ];
-
-const traceabilityFieldTypes = new Set<ControlFieldDefinition['field_type']>(['text', 'date', 'photo', 'select']);
-const receivingFieldTypes = new Set<ControlFieldDefinition['field_type']>(['text', 'temperature', 'ok_not_ok', 'date', 'photo', 'select']);
 
 const traceabilityPresets: FieldPreset[] = [
   { fieldType: 'text', label: 'Produkt', required: true },
@@ -104,8 +104,12 @@ const receivingPresets: FieldPreset[] = [
 ];
 
 function getFieldOptions(category: ControlCategory) {
-  if (category === 'traceability') return fieldTypeOptions.filter((option) => traceabilityFieldTypes.has(option.fieldType));
-  if (category === 'receiving') return fieldTypeOptions.filter((option) => receivingFieldTypes.has(option.fieldType));
+  if (category === 'traceability') {
+    return fieldTypeOptions.filter((option) => ['text', 'date', 'photo', 'select'].includes(option.fieldType));
+  }
+  if (category === 'receiving') {
+    return fieldTypeOptions.filter((option) => ['text', 'temperature', 'ok_not_ok', 'date', 'photo', 'select'].includes(option.fieldType));
+  }
   return fieldTypeOptions;
 }
 
@@ -198,9 +202,6 @@ export function ControlTypeDetailView({
   const [limitMax, setLimitMax] = useState('');
 
   const availableFieldOptions = useMemo(() => getFieldOptions(controlType.category), [controlType.category]);
-  const [fieldType, setFieldType] = useState<ControlFieldDefinition['field_type']>(availableFieldOptions[0]?.fieldType ?? 'text');
-  const [fieldLabel, setFieldLabel] = useState(availableFieldOptions[0]?.defaultLabel ?? 'Text');
-  const [fieldRequired, setFieldRequired] = useState(true);
 
   const [editObjectName, setEditObjectName] = useState('');
   const [editObjectLocation, setEditObjectLocation] = useState('');
@@ -222,10 +223,12 @@ export function ControlTypeDetailView({
   const inactiveObjects = objects.filter((item) => !item.active);
   const activeFields = fields.filter((item) => item.active);
   const inactiveFields = fields.filter((item) => !item.active);
-  const visibleInactiveFields = mode === 'point' ? [] : inactiveFields;
+  const lockedBaseField = fixedFieldType ? fields.find((field) => field.field_type === fixedFieldType) : null;
+  const lockedFieldIds = lockedBaseField ? [lockedBaseField.id] : [];
+  const visibleInactiveFields = inactiveFields.filter((field) => field.id !== lockedBaseField?.id);
   const inactiveItemCount = inactiveObjects.length + visibleInactiveFields.length;
   const fixedFields = fixedFieldType ? activeFields.filter((field) => field.field_type === fixedFieldType) : [];
-  const canvasFields = fixedFieldType ? fixedFields : activeFields;
+  const canvasFields = activeFields;
   const canvasObjects = mode === 'field' ? [] : activeObjects;
   const canShowCanvas = canvasFields.length > 0 && (mode !== 'point' || canvasObjects.length > 0);
   const presets = controlType.category === 'traceability'
@@ -284,13 +287,6 @@ export function ControlTypeDetailView({
     setLimitMax('');
   }
 
-  function resetFieldForm(nextType = availableFieldOptions[0]?.fieldType ?? 'text') {
-    const option = availableFieldOptions.find((item) => item.fieldType === nextType) ?? availableFieldOptions[0];
-    setFieldType(option?.fieldType ?? 'text');
-    setFieldLabel(option?.defaultLabel ?? 'Text');
-    setFieldRequired(true);
-  }
-
   function startEditObject(controlObject: ControlObject) {
     setEditingFieldId(null);
     setEditingObjectId(controlObject.id);
@@ -329,11 +325,6 @@ export function ControlTypeDetailView({
     }
   }
 
-  async function handleCreateField(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    await createField({ fieldType, label: fieldLabel, required: fieldRequired });
-  }
-
   async function createField(preset: FieldPreset, openAfterCreate = false) {
     setMessage('');
 
@@ -347,7 +338,6 @@ export function ControlTypeDetailView({
       });
       await refreshFields();
       setCreatingField(false);
-      resetFieldForm(preset.fieldType);
       if (openAfterCreate) {
         startEditField(created);
       }
@@ -572,7 +562,9 @@ export function ControlTypeDetailView({
     );
   }
 
-  const activeCount = activeObjects.length || activeFields.length;
+  const activeCountLabel = mode === 'field'
+    ? `${activeFields.length} fält`
+    : `${activeObjects.length} punkter · ${activeFields.length} fält`;
 
   return (
     <section className="control-type-detail" aria-labelledby="control-type-detail-title">
@@ -593,7 +585,7 @@ export function ControlTypeDetailView({
             <p className="eyebrow">{mode === 'field' ? 'Information att fylla i' : words.plural}</p>
             <h4>{mode === 'field' ? 'Bygg genom att klicka på fälten' : 'Bygg genom att klicka direkt i listan'}</h4>
           </div>
-          <span className="control-point-count">{activeCount} aktiva</span>
+          <span className="control-point-count">{activeCountLabel}</span>
         </div>
 
         {canManage ? (
@@ -603,11 +595,9 @@ export function ControlTypeDetailView({
                 {words.add}
               </button>
             ) : null}
-            {mode !== 'point' ? (
-              <button className="control-point-action primary" type="button" onClick={() => setCreatingField((current) => !current)}>
-                Lägg till fält
-              </button>
-            ) : null}
+            <button className="control-point-action primary" type="button" onClick={() => setCreatingField((current) => !current)}>
+              Lägg till svarsfält
+            </button>
             {fixedFieldType && fixedFields.length === 0 ? (
               <button className="control-point-action" type="button" onClick={() => void handleCreateFixedField()}>
                 Återställ basfält
@@ -670,7 +660,14 @@ export function ControlTypeDetailView({
         ) : null}
 
         {creatingField ? (
-          <form className="quick-create-panel" onSubmit={handleCreateField}>
+          <div className="quick-create-panel" aria-label="Lägg till svarsfält">
+            <div className="field-palette-heading">
+              <div>
+                <p className="eyebrow">Svarsfält</p>
+                <h5>Vad ska fyllas i per kontrollpunkt?</h5>
+              </div>
+              <button className="control-point-action" type="button" onClick={() => setCreatingField(false)}>Stäng</button>
+            </div>
             {presets.length > 0 ? (
               <div className="preset-strip" aria-label="Vanliga fält">
                 {presets.map((preset) => (
@@ -678,43 +675,28 @@ export function ControlTypeDetailView({
                     className="preset-chip"
                     key={`${preset.fieldType}-${preset.label}`}
                     type="button"
-                    onClick={() => void createField(preset)}
+                    onClick={() => void createField(preset, true)}
                   >
                     {preset.label}
                   </button>
                 ))}
               </div>
             ) : null}
-            <label>
-              <span>Typ</span>
-              <select
-                className="text-input"
-                value={fieldType}
-                onChange={(event) => {
-                  const nextType = event.target.value as ControlFieldDefinition['field_type'];
-                  const option = availableFieldOptions.find((item) => item.fieldType === nextType);
-                  setFieldType(nextType);
-                  setFieldLabel(option?.defaultLabel ?? fieldLabel);
-                }}
-              >
-                {availableFieldOptions.map((option) => (
-                  <option value={option.fieldType} key={option.fieldType}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Namn</span>
-              <input className="text-input" value={fieldLabel} onChange={(event) => setFieldLabel(event.target.value)} required />
-            </label>
-            <label className="control-field-checkbox">
-              <input checked={fieldRequired} onChange={(event) => setFieldRequired(event.target.checked)} type="checkbox" />
-              Obligatoriskt
-            </label>
-            <div className="editor-action-row">
-              <button className="control-point-action primary" type="submit">Skapa</button>
-              <button className="control-point-action" type="button" onClick={() => setCreatingField(false)}>Avbryt</button>
+            <div className="field-type-palette">
+              {availableFieldOptions.map((option) => (
+                <button
+                  className="field-type-card"
+                  key={`${option.fieldType}-${option.label}`}
+                  type="button"
+                  onClick={() => void createField(option, true)}
+                >
+                  <span className="field-type-icon">{option.icon}</span>
+                  <strong>{option.label}</strong>
+                  <span>{option.description}</span>
+                </button>
+              ))}
             </div>
-          </form>
+          </div>
         ) : null}
 
         {loading ? <p className="muted-copy">Laddar...</p> : null}
@@ -728,7 +710,7 @@ export function ControlTypeDetailView({
             selectedObjectId={editingObjectId}
             onEditField={startEditField}
             onEditObject={startEditObject}
-            hideFieldEditControls={Boolean(fixedFieldType)}
+            lockedFieldIds={lockedFieldIds}
             renderFieldEditor={renderFieldEditor}
             renderObjectEditor={renderObjectEditor}
           />
