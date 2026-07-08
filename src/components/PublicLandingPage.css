@@ -74,7 +74,7 @@
 
 .public-hero {
   display: grid;
-  min-height: calc(100vh - 74px);
+  min-height: min(780px, calc(100vh - 74px));
   align-items: center;
   gap: 40px;
   padding: 24px 0 70px;
@@ -105,7 +105,7 @@
 .public-hero h1 {
   max-width: 760px;
   color: #ffffff;
-  font-size: clamp(2.55rem, 10vw, 5.65rem);
+  font-size: clamp(2.7rem, 8.8vw, 5.2rem);
   line-height: 1;
   overflow-wrap: normal;
   text-wrap: balance;
@@ -114,6 +114,9 @@
 .public-hero-copy > p:not(.public-eyebrow),
 .public-copy,
 .public-card p,
+.problem-item p,
+.industry-item p,
+.knowledge-link p,
 .price-card span,
 .insight-card span {
   color: #c3cbdf;
@@ -312,12 +315,19 @@
 .insight-grid,
 .faq-list,
 .price-cards,
+.problem-list,
+.solution-stack,
+.feature-grid,
+.industry-list,
+.knowledge-link-list,
 .control-chip-grid {
   display: grid;
   gap: 14px;
 }
 
 .public-card,
+.problem-item,
+.industry-item,
 .insight-card,
 .price-card,
 .control-chip-grid span {
@@ -342,6 +352,80 @@
 
 .public-card p {
   margin: 0;
+}
+
+.problem-band {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.problem-list,
+.feature-grid,
+.industry-list,
+.knowledge-link-list {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.problem-item {
+  display: flex;
+  min-height: 112px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+}
+
+.problem-item span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  border-radius: 10px;
+  color: #ffdf78;
+  background: rgba(255, 184, 77, 0.16);
+  font-weight: 900;
+}
+
+.problem-item p,
+.industry-item p,
+.knowledge-link p {
+  margin: 0;
+}
+
+.solution-stack {
+  align-content: start;
+}
+
+.solution-card {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+}
+
+.solution-card h3,
+.solution-card p {
+  grid-column: 2;
+}
+
+.industry-item {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+}
+
+.industry-item h3,
+.knowledge-link h3 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.knowledge-link {
+  transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+}
+
+.knowledge-link:hover {
+  border-color: rgba(112, 85, 255, 0.45);
+  background: rgba(112, 85, 255, 0.12);
+  transform: translateY(-2px);
 }
 
 .step-number {
@@ -533,7 +617,12 @@
 
   .public-hero {
     min-height: auto;
-    padding-top: 34px;
+    gap: 28px;
+    padding-top: 28px;
+  }
+
+  .public-hero h1 {
+    font-size: clamp(2.6rem, 15vw, 4rem);
   }
 
   .public-primary,
