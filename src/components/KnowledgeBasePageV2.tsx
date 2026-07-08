@@ -11,6 +11,7 @@ const groups: Group[] = [
     { title: 'Egenkontroll för restaurang', copy: 'Temperaturer, städning, varumottagning och dagliga kontroller.', href: '/egenkontroll-restaurang' },
     { title: 'Egenkontroll för café och bageri', copy: 'Återkommande kontroller utan onödig administration.', href: '/egenkontroll-cafe' },
     { title: 'Dokumentation och journalföring', copy: 'Vad som kan behöva dokumenteras och hur omfattningen kan anpassas.', href: '/dokumentation-egenkontroll-livsmedel' },
+    { title: 'Källor och faktagranskning', copy: 'Så skiljer vi på regler, myndighetsvägledning och våra praktiska förklaringar.', href: '/seo/kallor-och-faktagranskning.html' },
   ] },
   { eyebrow: 'Hygien och daglig drift', title: 'Rutiner som behöver fungera varje dag', intro: 'Personal, rengöring, skadedjur och allergeninformation.', guides: [
     { title: 'Hygien och daglig drift', copy: 'Samlingssida för de dagliga hygienrutinerna.', href: '/seo/hygien-och-daglig-drift.html' },
@@ -86,9 +87,9 @@ export function KnowledgeBasePage() {
 
   return <main className="public-site">
     <nav className="public-nav" aria-label="Publik navigation"><a className="public-brand" href="/"><img src={brandAssets.logo} alt="Min Egenkontroll" /></a><div className="public-nav-actions"><a href="/">Startsida</a><a href="/signup">Gå med</a></div></nav>
-    <section className="public-hero"><div className="public-hero-copy"><p className="public-eyebrow">Kunskapsbank</p><h1>Egenkontroll och livsmedelssäkerhet – enkelt förklarat</h1><p className="public-copy">Praktiska guider för mindre livsmedelsföretag. Fakta bygger på myndigheters vägledning och förklaras med fokus på vardagen.</p><div className="public-hero-actions"><a className="public-primary" href="/digital-egenkontroll-livsmedel">Börja med digital egenkontroll</a><a className="public-secondary" href="/">Se Min Egenkontroll</a></div></div></section>
+    <section className="public-hero"><div className="public-hero-copy"><p className="public-eyebrow">Kunskapsbank</p><h1>Egenkontroll och livsmedelssäkerhet – enkelt förklarat</h1><p className="public-copy">Praktiska guider för mindre livsmedelsföretag. Fakta bygger på myndigheters vägledning, länkar till underlaget och visar när innehållet faktakontrollerades.</p><div className="public-hero-actions"><a className="public-primary" href="/digital-egenkontroll-livsmedel">Börja med digital egenkontroll</a><a className="public-secondary" href="/seo/kallor-och-faktagranskning.html">Så granskar vi innehållet</a></div></div></section>
     {groups.map((group, index) => <section className={index % 2 === 0 ? 'public-band' : 'public-grid-section'} key={group.title}><div className="public-section-heading"><p className="public-eyebrow">{group.eyebrow}</p><h2>{group.title}</h2><p className="public-copy">{group.intro}</p></div><div className="faq-list">{group.guides.map(guide => <a className="public-card" href={guide.href} key={guide.href}><h3>{guide.title}</h3><p>{guide.copy}</p></a>)}</div></section>)}
     <section className="public-cta"><p className="public-eyebrow">Från kunskap till vardag</p><h2>Samla kontroller, avvikelser och historik på ett ställe.</h2><a className="public-primary" href="/signup">Gå med i förhandslanseringen</a></section>
-    <footer className="public-footer"><span>© 2026 Min Egenkontroll</span><div className="public-footer-links"><a href="/integritetspolicy">Integritetspolicy</a><a href="/anvandarvillkor">Användarvillkor</a></div></footer>
+    <footer className="public-footer"><span>© 2026 Min Egenkontroll</span><div className="public-footer-links"><a href="/seo/kallor-och-faktagranskning.html">Källor och faktagranskning</a><a href="/integritetspolicy">Integritetspolicy</a><a href="/anvandarvillkor">Användarvillkor</a></div></footer>
   </main>;
 }
