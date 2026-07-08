@@ -307,7 +307,7 @@ export function ControlTypeDetailView({
     setMessage('');
 
     try {
-      const created = await createControlObject({
+      await createControlObject({
         organizationId,
         controlTypeId: controlType.id,
         name: objectName.trim(),
@@ -319,7 +319,6 @@ export function ControlTypeDetailView({
       await refreshObjects();
       setCreatingObject(false);
       resetObjectForm();
-      startEditObject(created);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa punkten.');
     }
@@ -330,7 +329,7 @@ export function ControlTypeDetailView({
     await createField({ fieldType, label: fieldLabel, required: fieldRequired });
   }
 
-  async function createField(preset: FieldPreset) {
+  async function createField(preset: FieldPreset, openAfterCreate = false) {
     setMessage('');
 
     try {
@@ -344,7 +343,9 @@ export function ControlTypeDetailView({
       await refreshFields();
       setCreatingField(false);
       resetFieldForm(preset.fieldType);
-      startEditField(created);
+      if (openAfterCreate) {
+        startEditField(created);
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa fältet.');
     }
@@ -460,7 +461,7 @@ export function ControlTypeDetailView({
       fieldType: field.field_type,
       label: `${field.label} kopia`,
       required: field.required,
-    });
+    }, true);
   }
 
   async function handleSaveType(event: FormEvent<HTMLFormElement>) {
