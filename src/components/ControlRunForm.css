@@ -85,6 +85,11 @@
   background: rgba(255, 255, 255, 0.72);
 }
 
+.canvas-object-editable,
+.canvas-field-editable {
+  cursor: pointer;
+}
+
 .canvas-edit-selected,
 .canvas-field-editable.selected {
   border-color: rgba(91, 70, 225, 0.5);
@@ -196,6 +201,18 @@
   font-weight: 800;
   line-height: 1.25;
   white-space: normal;
+}
+
+.canvas-row-edit-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.canvas-object-editable .check-matrix-row {
+  outline: 1px dashed rgba(91, 70, 225, 0.12);
+  outline-offset: -6px;
 }
 
 .matrix-choice {
@@ -578,6 +595,14 @@
   .canvas-field-editable {
     border-color: rgba(159, 145, 255, 0.24);
     background: rgba(17, 26, 47, 0.62);
+  }
+
+  .canvas-row-edit-button {
+    color: #f7f9ff;
+  }
+
+  .canvas-object-editable .check-matrix-row {
+    outline-color: rgba(159, 145, 255, 0.2);
   }
 
   .canvas-edit-selected,

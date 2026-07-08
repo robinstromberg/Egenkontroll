@@ -17,6 +17,10 @@
   gap: 10px;
 }
 
+.inactive-list {
+  margin-top: 10px;
+}
+
 .control-type-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -33,7 +37,7 @@
 }
 
 .control-type-row.inactive {
-  opacity: 0.76;
+  opacity: 0.72;
 }
 
 .control-type-icon {
@@ -157,11 +161,34 @@
   gap: 10px;
 }
 
-.control-type-edit-form label {
+.control-type-create-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(91, 70, 225, 0.12);
+  border-radius: 18px;
+  padding: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(62, 46, 135, 0.07);
+}
+
+.control-type-edit-form label,
+.control-type-create-card label {
   display: grid;
   gap: 6px;
   color: #172033;
   font-weight: 900;
+}
+
+.control-type-create-card label span {
+  color: #657089;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.control-type-create-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .add-control-type-button {
@@ -184,8 +211,55 @@
   background: #ffffff;
 }
 
+.inactive-control-types {
+  overflow: hidden;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 18px;
+  background: rgba(246, 243, 255, 0.58);
+}
+
+.inactive-control-types > summary {
+  display: flex;
+  min-height: 52px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  color: #657089;
+  font-weight: 900;
+  list-style: none;
+}
+
+.inactive-control-types > summary::-webkit-details-marker {
+  display: none;
+}
+
+.inactive-control-types > summary::after {
+  content: "+";
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 12px;
+  color: #5b46e1;
+  background: #efedff;
+}
+
+.inactive-control-types[open] > summary::after {
+  content: "-";
+}
+
+.inactive-control-types[open] {
+  padding-bottom: 12px;
+}
+
+.inactive-control-types .control-type-row {
+  margin-inline: 12px;
+}
+
 @media (prefers-color-scheme: dark) {
   .control-type-row,
+  .control-type-create-card,
   .empty-view-card {
     border-color: rgba(159, 145, 255, 0.18);
     color: #f7f9ff;
@@ -197,8 +271,14 @@
     color: #aeb8d0;
   }
 
-  .control-type-edit-form label {
+  .control-type-edit-form label,
+  .control-type-create-card label {
     color: #f7f9ff;
+  }
+
+  .control-type-create-card label span,
+  .inactive-control-types > summary {
+    color: #aeb8d0;
   }
 
   .control-type-status.active {
@@ -234,6 +314,16 @@
     color: #b9afff;
     background: #171335;
   }
+
+  .inactive-control-types {
+    border-color: rgba(159, 145, 255, 0.18);
+    background: rgba(17, 26, 47, 0.58);
+  }
+
+  .inactive-control-types > summary::after {
+    color: #b9afff;
+    background: #211b45;
+  }
 }
 
 @media (max-width: 520px) {
@@ -247,7 +337,9 @@
   }
 
   .control-type-actions .primary-button,
-  .control-type-actions .secondary-button {
+  .control-type-actions .secondary-button,
+  .control-type-create-actions .primary-button,
+  .control-type-create-actions .secondary-button {
     flex: 1 1 96px;
   }
 }

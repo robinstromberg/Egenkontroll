@@ -228,10 +228,13 @@ function ChecklistMatrix({
   actions,
   mode,
   selectedFieldId,
+  selectedObjectId,
   onChange,
   onActionChange,
   onEditField,
+  onEditObject,
   renderFieldEditor,
+  renderObjectEditor,
 }: {
   field: ControlFieldDefinition;
   objects: ControlObject[];
@@ -239,10 +242,13 @@ function ChecklistMatrix({
   actions: DeviationState;
   mode: ControlDefinitionCanvasMode;
   selectedFieldId?: string | null;
+  selectedObjectId?: string | null;
   onChange?: (key: string, value: string) => void;
   onActionChange?: (key: string, value: string) => void;
   onEditField?: (field: ControlFieldDefinition) => void;
+  onEditObject?: (object: ControlObject) => void;
   renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
+  renderObjectEditor?: (object: ControlObject) => ReactNode;
 }) {
   const disabled = mode !== 'use';
   const isEditMode = mode === 'edit';
@@ -275,10 +281,25 @@ function ChecklistMatrix({
         const value = responses[key] ?? getDefaultValue(field);
         const showAction = value === 'not_ok';
 
+        const objectSelected = selectedObjectId === object.id;
+
         return (
-          <div className={showAction ? 'check-matrix-item has-action' : 'check-matrix-item'} key={object.id}>
+          <div
+            className={[
+              showAction ? 'check-matrix-item has-action' : 'check-matrix-item',
+              objectSelected ? 'canvas-edit-selected' : '',
+              isEditMode ? 'canvas-object-editable' : '',
+            ].filter(Boolean).join(' ')}
+            key={object.id}
+          >
             <div className="check-matrix-row">
-              <span className="check-matrix-name">{object.name}</span>
+              {isEditMode ? (
+                <button className="check-matrix-name canvas-row-edit-button" type="button" onClick={() => onEditObject?.(object)}>
+                  {object.name}
+                </button>
+              ) : (
+                <span className="check-matrix-name">{object.name}</span>
+              )}
               <button
                 type="button"
                 className={value === 'ok' ? 'matrix-choice ok selected' : 'matrix-choice ok'}
@@ -301,6 +322,10 @@ function ChecklistMatrix({
                 ×
               </button>
             </div>
+
+            {objectSelected && renderObjectEditor ? (
+              <div className="canvas-inline-editor">{renderObjectEditor(object)}</div>
+            ) : null}
 
             {showAction ? (
               <div className="matrix-action-box">
@@ -437,10 +462,13 @@ export function ControlDefinitionCanvas({
           actions={actions}
           mode={mode}
           selectedFieldId={selectedFieldId}
+          selectedObjectId={selectedObjectId}
           onChange={onResponseChange}
           onActionChange={onActionChange}
           onEditField={onEditField}
+          onEditObject={onEditObject}
           renderFieldEditor={renderFieldEditor}
+          renderObjectEditor={renderObjectEditor}
         />
       ) : null}
 
@@ -452,8 +480,23 @@ export function ControlDefinitionCanvas({
 
         return (
           <section
-            className={object?.id === selectedObjectId ? 'control-group canvas-edit-selected' : 'control-group'}
+            className={[
+              'control-group',
+              isEditMode && object ? 'canvas-object-editable' : '',
+              object?.id === selectedObjectId ? 'canvas-edit-selected' : '',
+            ].filter(Boolean).join(' ')}
             key={object?.id ?? 'global'}
+            role={isEditMode && object ? 'button' : undefined}
+            tabIndex={isEditMode && object ? 0 : undefined}
+            onClick={isEditMode && object ? (event) => {
+              if ((event.target as HTMLElement).closest('button, input, textarea, select, label, .canvas-inline-editor')) return;
+              onEditObject?.(object);
+            } : undefined}
+            onKeyDown={isEditMode && object ? (event) => {
+              if (event.key !== 'Enter' && event.key !== ' ') return;
+              event.preventDefault();
+              onEditObject?.(object);
+            } : undefined}
           >
             <div className="canvas-object-heading">
               <div>
@@ -482,6 +525,17 @@ export function ControlDefinitionCanvas({
                 <div
                   className={selected ? 'control-field canvas-field-editable selected' : isEditMode ? 'control-field canvas-field-editable' : 'control-field'}
                   key={key}
+                  role={isEditMode && !hideFieldEditControls ? 'button' : undefined}
+                  tabIndex={isEditMode && !hideFieldEditControls ? 0 : undefined}
+                  onClick={isEditMode && !hideFieldEditControls ? (event) => {
+                    if ((event.target as HTMLElement).closest('button, input, textarea, select, label, .canvas-inline-editor')) return;
+                    onEditField?.(field);
+                  } : undefined}
+                  onKeyDown={isEditMode && !hideFieldEditControls ? (event) => {
+                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                    event.preventDefault();
+                    onEditField?.(field);
+                  } : undefined}
                 >
                   {isEditMode && !hideFieldEditControls ? (
                     <div className="canvas-field-toolbar">
