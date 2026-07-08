@@ -81,8 +81,12 @@ const groups: Group[] = [
     { title: 'Verifiering', copy: 'Kontrollera att rutiner och åtgärder faktiskt fungerar.', href: '/verifiering-egenkontroll-livsmedel' },
     { title: 'Kontrollplan', copy: 'Planera kontrollpunkter, ansvar och uppföljning.', href: '/seo/kontrollplan.html' },
   ] },
-  { eyebrow: 'Spårbarhet', title: 'Hitta rätt uppgifter när ett livsmedel måste följas', intro: 'Leverantörer, mottagare och hur länge uppgifter kan behöva sparas.', guides: [
+  { eyebrow: 'Spårbarhet', title: 'Hitta rätt uppgifter när ett livsmedel måste följas', intro: 'Leverantörer, mottagare, interna flöden, partier, återkallanden och lagringstid.', guides: [
     { title: 'Spårbarhet för livsmedelsföretag', copy: 'Ett steg bakåt, ett steg framåt och användbara underlag.', href: '/sparbarhet-livsmedel' },
+    { title: 'Intern spårbarhet', copy: 'Koppla råvaror och tillverkningsomgångar till rätt produkter när det behövs.', href: '/seo/intern-sparbarhet-livsmedel.html' },
+    { title: 'Partimärkning', copy: 'Identifiera vilka livsmedel som hör till samma parti.', href: '/seo/partimarkning-livsmedel.html' },
+    { title: 'Återkalla livsmedel', copy: 'Använd spårbarheten för att hitta berörda varor, leveranser och mottagare.', href: '/seo/aterkalla-livsmedel-sparbarhet.html' },
+    { title: 'Mängdbalans och kvantitativ spårbarhet', copy: 'Jämför inköp, lager, svinn och försäljning för att verifiera varuflöden.', href: '/seo/mangdbalans-sparbarhet-livsmedel.html' },
     { title: 'Hur länge ska spårbarhetsuppgifter sparas?', copy: 'Lagringstid, hållbarhet och produktens verkliga livslängd.', href: '/spara-sparbarhetsuppgifter-livsmedel' },
   ] },
 ];
