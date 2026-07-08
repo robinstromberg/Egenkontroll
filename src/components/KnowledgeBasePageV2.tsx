@@ -23,8 +23,18 @@ const groups: Group[] = [
     { title: 'Temperaturprocesser', copy: 'Samlingssida för kylförvaring, upptining, varmhållning, nedkylning och återuppvärmning.', href: '/seo/temperaturprocesser-livsmedel.html' },
     { title: 'Temperaturkontroll', copy: 'Översikt över mätning, termometrar och vanliga kontrollområden.', href: '/seo/temperaturkontroll-livsmedel.html' },
     { title: 'Kylförvaring', copy: 'Kylkedja, mottagna kylvaror och avvikelser.', href: '/seo/kylforvaring-livsmedel.html' },
+    { title: 'Upptining', copy: 'Metod, tid, temperatur och hantering av smältvatten.', href: '/seo/upptining-livsmedel.html' },
     { title: 'Nedkylning', copy: 'Tid, temperatur, kärntemperatur och riktvärden.', href: '/seo/nedkylning-mat-livsmedel.html' },
     { title: 'Varmhållning', copy: 'Temperatur, mätning och riskbedömning.', href: '/seo/varmhallning-mat-temperatur.html' },
+    { title: 'Återuppvärmning', copy: 'Snabb uppvärmning och kopplingen till nedkylning och kylförvaring.', href: '/seo/ateruppvarmning-mat.html' },
+  ] },
+  { eyebrow: 'Datummärkning och hållbarhet', title: 'Förstå datumen och vad som händer när de passerar', intro: 'Guider om bäst före, sista förbrukningsdag, hållbarhetsbedömning och infrysning nära utgångsdatum.', guides: [
+    { title: 'Datummärkning av livsmedel', copy: 'Samlingssida för bäst före, sista förbrukningsdag och hållbarhet.', href: '/seo/datummarkning-livsmedel.html' },
+    { title: 'Bäst före eller sista förbrukningsdag?', copy: 'Skillnaden mellan kvalitet, säkerhet och ansvar.', href: '/seo/bast-fore-eller-sista-forbrukningsdag.html' },
+    { title: 'Sälja mat efter bäst före', copy: 'När det är möjligt och vilket ansvar företaget har.', href: '/seo/salja-mat-efter-bast-fore.html' },
+    { title: 'Efter sista förbrukningsdag', copy: 'Vad som gäller för försäljning, donation och användning som ingrediens.', href: '/seo/mat-efter-sista-forbrukningsdag.html' },
+    { title: 'Bestämma hållbarhetsdatum', copy: 'Produkt, förpackning, förvaring och möjliga underlag.', href: '/seo/bestamma-hallbarhetsdatum-livsmedel.html' },
+    { title: 'Frysa in kylvaror nära utgångsdatum', copy: 'Märkning, förvaring och spårbarhet när varor fryses in.', href: '/seo/frysa-in-kylvaror-fore-utgangsdatum.html' },
   ] },
   { eyebrow: 'HACCP och riskstyrning', title: 'Förstå faror, gränser och uppföljning', intro: 'Centrala delar av HACCP för mindre livsmedelsföretag.', guides: [
     { title: 'HACCP för små livsmedelsföretag', copy: 'Flexibilitet, risker och dokumentation.', href: '/haccp-sma-livsmedelsforetag' },
@@ -43,7 +53,7 @@ const groups: Group[] = [
 export function KnowledgeBasePage() {
   useEffect(() => {
     document.title = 'Kunskapsbank om egenkontroll och livsmedelssäkerhet | Min Egenkontroll';
-    const description = 'Guider om digital egenkontroll, hygien, temperatur, HACCP, dokumentation, allergener och spårbarhet för livsmedelsföretag.';
+    const description = 'Guider om digital egenkontroll, hygien, temperatur, datummärkning, hållbarhet, HACCP, allergener och spårbarhet för livsmedelsföretag.';
     let meta = document.head.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
     meta.content = description;
