@@ -19,6 +19,14 @@ const groups: Group[] = [
     { title: 'Skadedjur', copy: 'Förebygg problem, upptäck spår och agera vid fynd.', href: '/seo/skadedjur-livsmedelsverksamhet.html' },
     { title: 'Allergeninformation', copy: 'Information om allergener och fungerande rutiner för personalen.', href: '/seo/allergeninformation-restaurang.html' },
   ] },
+  { eyebrow: 'Hantering och förvaring', title: 'Skydda livsmedel från mottagning till servering', intro: 'Guider om varumottagning, separering, korskontamination, kemikalier och allergenöverföring.', guides: [
+    { title: 'Hantering och förvaring', copy: 'Samlingssida för mottagning, förvaring och separering.', href: '/seo/hantering-och-forvaring-livsmedel.html' },
+    { title: 'Varumottagning', copy: 'Rätt vara, temperatur, emballage, skadedjursspår och ersättningsvaror.', href: '/seo/varumottagning-livsmedel.html' },
+    { title: 'Korskontamination', copy: 'Mikroorganismer, allergener, kemikalier och smuts mellan livsmedel.', href: '/seo/korskontamination-livsmedel.html' },
+    { title: 'Separera rått och ätfärdigt', copy: 'Praktiska lösningar även i små kylskåp och mindre kök.', href: '/seo/separera-raa-och-atfardiga-livsmedel.html' },
+    { title: 'Kemikalier i livsmedelsverksamhet', copy: 'Förvara och hantera rengöringsmedel åtskilt från mat.', href: '/seo/kemikalier-i-livsmedelsverksamhet.html' },
+    { title: 'Allergenkontamination', copy: 'Rengöring, separerad förvaring och intern märkning.', href: '/seo/allergenkontamination-livsmedel.html' },
+  ] },
   { eyebrow: 'Temperatur', title: 'Från kylförvaring till återuppvärmning', intro: 'Guider för temperaturmoment som behöver olika kontrollpunkter och åtgärder.', guides: [
     { title: 'Temperaturprocesser', copy: 'Samlingssida för kylförvaring, upptining, varmhållning, nedkylning och återuppvärmning.', href: '/seo/temperaturprocesser-livsmedel.html' },
     { title: 'Temperaturkontroll', copy: 'Översikt över mätning, termometrar och vanliga kontrollområden.', href: '/seo/temperaturkontroll-livsmedel.html' },
@@ -53,7 +61,7 @@ const groups: Group[] = [
 export function KnowledgeBasePage() {
   useEffect(() => {
     document.title = 'Kunskapsbank om egenkontroll och livsmedelssäkerhet | Min Egenkontroll';
-    const description = 'Guider om digital egenkontroll, hygien, temperatur, datummärkning, hållbarhet, HACCP, allergener och spårbarhet för livsmedelsföretag.';
+    const description = 'Guider om digital egenkontroll, hygien, varumottagning, förvaring, temperatur, datummärkning, HACCP, allergener och spårbarhet för livsmedelsföretag.';
     let meta = document.head.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
     meta.content = description;
