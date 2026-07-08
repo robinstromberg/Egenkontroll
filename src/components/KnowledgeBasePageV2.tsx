@@ -59,6 +59,20 @@ const groups: Group[] = [
     { title: 'Bestämma hållbarhetsdatum', copy: 'Produkt, förpackning, förvaring och möjliga underlag.', href: '/seo/bestamma-hallbarhetsdatum-livsmedel.html' },
     { title: 'Frysa in kylvaror nära utgångsdatum', copy: 'Märkning, förvaring och spårbarhet när varor fryses in.', href: '/seo/frysa-in-kylvaror-fore-utgangsdatum.html' },
   ] },
+  { eyebrow: 'Information och märkning', title: 'Rätt information till kunden – från meny till etikett', intro: 'Guider om ansvar, etiketter, oförpackad mat och vilken information som behöver finnas vid beställning.', guides: [
+    { title: 'Information och märkning', copy: 'Samlingssida för etiketter, menyer, oförpackad mat och distansförsäljning.', href: '/seo/information-och-markning-livsmedel.html' },
+    { title: 'Ansvar för livsmedelsinformationen', copy: 'Vem ansvarar för att uppgifterna finns, är korrekta och följer med?', href: '/seo/ansvar-livsmedelsinformation.html' },
+    { title: 'Informationen får inte vilseleda', copy: 'Namn, bilder, presentation och reklam behöver ge en rättvisande helhetsbild.', href: '/seo/vilseledande-livsmedelsinformation.html' },
+    { title: 'Färdigförpackade livsmedel', copy: 'När en vara räknas som färdigförpackad och varför det påverkar märkningen.', href: '/seo/fardigforpackade-livsmedel-markning.html' },
+    { title: 'Obligatorisk märkning', copy: 'Översikt över uppgifter som kan behöva finnas på färdigförpackade livsmedel.', href: '/seo/obligatorisk-markning-livsmedel.html' },
+    { title: 'Ingrediensförteckning', copy: 'Fallande viktordning, rubrik, beteckningar och särskilda ingredienstyper.', href: '/seo/ingrediensforteckning-livsmedel.html' },
+    { title: 'Livsmedlets beteckning', copy: 'Föreskriven, vedertagen eller beskrivande beteckning.', href: '/seo/livsmedlets-beteckning.html' },
+    { title: 'Förvaringsanvisning', copy: 'När temperatur, förvaring och hållbarhet efter öppning behöver anges.', href: '/seo/forvaringsanvisning-livsmedel.html' },
+    { title: 'Märka om färdigförpackade livsmedel', copy: 'Ansvar, korrekta uppgifter och bibehållen spårbarhet vid ommärkning.', href: '/seo/marka-om-fardigforpackade-livsmedel.html' },
+    { title: 'Oförpackade livsmedel', copy: 'Mat över disk, serverad mat och mat som förpackas på kundens begäran.', href: '/seo/oforpackade-livsmedel-information.html' },
+    { title: 'Obligatorisk information om oförpackad mat', copy: 'Allergener och övriga uppgifter som kunden ska kunna få.', href: '/seo/obligatorisk-information-oforpackad-mat.html' },
+    { title: 'Distansförsäljning och hemleverans', copy: 'Information före köp och vid leverans när mat beställs på distans.', href: '/seo/distansforsaljning-oforpackad-mat.html' },
+  ] },
   { eyebrow: 'HACCP och riskstyrning', title: 'Förstå faror, gränser och uppföljning', intro: 'Centrala delar av HACCP för mindre livsmedelsföretag.', guides: [
     { title: 'HACCP för små livsmedelsföretag', copy: 'Flexibilitet, risker och dokumentation.', href: '/haccp-sma-livsmedelsforetag' },
     { title: 'Faroanalys', copy: 'Identifiera relevanta faror i den faktiska verksamheten.', href: '/faroanalys-livsmedel' },
@@ -76,7 +90,7 @@ const groups: Group[] = [
 export function KnowledgeBasePage() {
   useEffect(() => {
     document.title = 'Kunskapsbank om egenkontroll och livsmedelssäkerhet | Min Egenkontroll';
-    const description = 'Guider om egenkontroll, hygien, lokaler, avfall, transport, utbildning, vatten, temperatur, datummärkning, HACCP och spårbarhet för livsmedelsföretag.';
+    const description = 'Guider om egenkontroll, hygien, lokaler, märkning, livsmedelsinformation, temperatur, datummärkning, HACCP och spårbarhet för livsmedelsföretag.';
     let meta = document.head.querySelector<HTMLMetaElement>('meta[name="description"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
     meta.content = description;
