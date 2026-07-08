@@ -231,7 +231,6 @@ function ChecklistMatrix({
   selectedObjectId,
   onChange,
   onActionChange,
-  onEditField,
   onEditObject,
   renderFieldEditor,
   renderObjectEditor,
@@ -245,7 +244,6 @@ function ChecklistMatrix({
   selectedObjectId?: string | null;
   onChange?: (key: string, value: string) => void;
   onActionChange?: (key: string, value: string) => void;
-  onEditField?: (field: ControlFieldDefinition) => void;
   onEditObject?: (object: ControlObject) => void;
   renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
   renderObjectEditor?: (object: ControlObject) => ReactNode;
@@ -265,11 +263,7 @@ function ChecklistMatrix({
         <span>Ej OK</span>
       </div>
       {isEditMode ? (
-        <div className="canvas-edit-toolbar">
-          <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>
-            Redigera fält
-          </button>
-        </div>
+        <p className="canvas-edit-hint">Tryck på en kontrollpunkt för att redigera den.</p>
       ) : null}
       {selected && renderFieldEditor ? (
         <div className="canvas-inline-editor">{renderFieldEditor(field)}</div>
@@ -293,13 +287,17 @@ function ChecklistMatrix({
             key={object.id}
           >
             <div className="check-matrix-row">
-              {isEditMode ? (
-                <button className="check-matrix-name canvas-row-edit-button" type="button" onClick={() => onEditObject?.(object)}>
-                  {object.name}
-                </button>
-              ) : (
-                <span className="check-matrix-name">{object.name}</span>
-              )}
+              <div className="check-matrix-copy">
+                {isEditMode ? (
+                  <button className="check-matrix-name canvas-row-edit-button" type="button" onClick={() => onEditObject?.(object)}>
+                    {object.name}
+                  </button>
+                ) : (
+                  <span className="check-matrix-name">{object.name}</span>
+                )}
+                {object.location ? <span className="check-matrix-meta">{object.location}</span> : null}
+                {object.instructions ? <span className="check-matrix-meta">{object.instructions}</span> : null}
+              </div>
               <button
                 type="button"
                 className={value === 'ok' ? 'matrix-choice ok selected' : 'matrix-choice ok'}
@@ -465,7 +463,6 @@ export function ControlDefinitionCanvas({
           selectedObjectId={selectedObjectId}
           onChange={onResponseChange}
           onActionChange={onActionChange}
-          onEditField={onEditField}
           onEditObject={onEditObject}
           renderFieldEditor={renderFieldEditor}
           renderObjectEditor={renderObjectEditor}

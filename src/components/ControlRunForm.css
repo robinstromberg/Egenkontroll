@@ -66,6 +66,15 @@
   padding: 8px 12px 0;
 }
 
+.canvas-edit-hint {
+  margin: 0;
+  padding: 8px 12px 0;
+  color: #657089;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .canvas-edit-action {
   min-height: 30px;
   border: 0;
@@ -201,6 +210,19 @@
   font-weight: 800;
   line-height: 1.25;
   white-space: normal;
+}
+
+.check-matrix-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.check-matrix-meta {
+  color: #657089;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .canvas-row-edit-button {
@@ -590,6 +612,11 @@
   .canvas-edit-action {
     color: #b9afff;
     background: #211b45;
+  }
+
+  .canvas-edit-hint,
+  .check-matrix-meta {
+    color: #aeb8d0;
   }
 
   .canvas-field-editable {

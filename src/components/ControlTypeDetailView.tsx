@@ -127,11 +127,12 @@ function getPointWords(category: ControlCategory) {
       singular: 'kyl/frys',
       plural: 'Kylar och frysar',
       add: 'Lägg till kyl/frys',
-      name: 'Namn',
+      name: 'Namn (obligatoriskt)',
       namePlaceholder: 'Exempel: Kyl 1 - Kök',
-      location: 'Plats',
+      location: 'Plats (frivilligt)',
       locationPlaceholder: 'Kök, servering...',
       limit: 'Maxgräns',
+      instruction: 'Instruktion (frivilligt)',
     };
   }
 
@@ -140,23 +141,25 @@ function getPointWords(category: ControlCategory) {
       singular: 'mottagningspunkt',
       plural: 'Mottagningspunkter',
       add: 'Lägg till mottagningspunkt',
-      name: 'Namn',
+      name: 'Namn (obligatoriskt)',
       namePlaceholder: 'Exempel: Kylvaror',
-      location: 'Plats eller grupp',
+      location: 'Plats eller grupp (frivilligt)',
       locationPlaceholder: 'Frivilligt',
       limit: 'Maxgräns',
+      instruction: 'Instruktion (frivilligt)',
     };
   }
 
   return {
     singular: 'punkt',
     plural: category === 'round' ? 'Områden' : 'Punkter',
-    add: category === 'round' ? 'Lägg till område' : 'Lägg till punkt',
-    name: 'Namn',
+    add: category === 'round' ? 'Lägg till kontrollpunkt' : 'Lägg till kontrollpunkt',
+    name: 'Vad ska checkas? (obligatoriskt)',
     namePlaceholder: category === 'round' ? 'Exempel: Hygien och rengöring' : 'Exempel: Kök',
-    location: 'Plats',
+    location: 'Plats (frivilligt)',
     locationPlaceholder: 'Frivilligt',
     limit: 'Maxgräns',
+    instruction: 'Instruktion (frivilligt)',
   };
 }
 
@@ -219,6 +222,8 @@ export function ControlTypeDetailView({
   const inactiveObjects = objects.filter((item) => !item.active);
   const activeFields = fields.filter((item) => item.active);
   const inactiveFields = fields.filter((item) => !item.active);
+  const visibleInactiveFields = mode === 'point' ? [] : inactiveFields;
+  const inactiveItemCount = inactiveObjects.length + visibleInactiveFields.length;
   const fixedFields = fixedFieldType ? activeFields.filter((field) => field.field_type === fixedFieldType) : [];
   const canvasFields = fixedFieldType ? fixedFields : activeFields;
   const canvasObjects = mode === 'field' ? [] : activeObjects;
@@ -523,7 +528,7 @@ export function ControlTypeDetailView({
           </label>
         ) : null}
         <label>
-          <span>Instruktion</span>
+          <span>{words.instruction}</span>
           <textarea
             className="text-input control-type-instructions-input"
             value={editObjectInstructions}
@@ -649,7 +654,7 @@ export function ControlTypeDetailView({
               </label>
             ) : null}
             <label>
-              <span>Instruktion</span>
+              <span>{words.instruction}</span>
               <textarea
                 className="text-input control-type-instructions-input"
                 value={objectInstructions}
@@ -740,9 +745,9 @@ export function ControlTypeDetailView({
         ) : null}
       </section>
 
-      {inactiveObjects.length > 0 || inactiveFields.length > 0 ? (
+      {inactiveItemCount > 0 ? (
         <details className="inactive-editor-list">
-          <summary>Inaktiva saker ({inactiveObjects.length + inactiveFields.length})</summary>
+          <summary>Inaktiva saker ({inactiveItemCount})</summary>
           <div className="inactive-editor-grid">
             {inactiveObjects.map((controlObject) => (
               <article className="inactive-editor-row" key={controlObject.id}>
@@ -755,7 +760,7 @@ export function ControlTypeDetailView({
                 </button>
               </article>
             ))}
-            {mode !== 'point' ? inactiveFields.map((field) => (
+            {visibleInactiveFields.map((field) => (
               <article className="inactive-editor-row" key={field.id}>
                 <div>
                   <strong>{field.label}</strong>
@@ -765,7 +770,7 @@ export function ControlTypeDetailView({
                   Aktivera
                 </button>
               </article>
-            )) : null}
+            ))}
           </div>
         </details>
       ) : null}
