@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
-import { AdminControls } from './AdminControls';
+import { FormEvent, useEffect, useState } from 'react';
 import { ControlTypeDetailView } from './ControlTypeDetailView';
 import { ActionButton } from './ui/ActionButton';
 import { AssetIcon } from './ui/AssetIcon';
 import { BackButton } from './ui/BackButton';
 import { readControlTypeIcon } from '../config/assets';
-import { formatFrequencyLabel } from '../services/scheduleService';
+import { formatFrequencyLabel, getFrequencyConfigWithWeekday, weekdayOptions } from '../services/scheduleService';
 import {
+  createControlType,
   listControlTypes,
   setControlTypeActive,
 } from '../services/controlAdminService';
-import type { ControlCategory, ControlType } from '../types/database';
+import type { ControlCategory, ControlFrequency, ControlType } from '../types/database';
+import type { IsoWeekday } from '../services/scheduleService';
 import './ControlTypesView.css';
 
 type ControlTypesViewProps = {
@@ -28,6 +29,22 @@ const categoryMeta: Record<ControlCategory, { icon: string; label: string; class
   round: { icon: 'R', label: 'Runda', className: 'round' },
   custom: { icon: '+', label: 'Egen', className: 'custom' },
 };
+
+const categories: Array<{ value: ControlCategory; label: string }> = [
+  { value: 'temperature', label: 'Temperatur' },
+  { value: 'checklist', label: 'Checklista' },
+  { value: 'receiving', label: 'Varumottagning' },
+  { value: 'traceability', label: 'Spårbarhet' },
+  { value: 'round', label: 'Egenkontrollrunda' },
+  { value: 'custom', label: 'Anpassad' },
+];
+
+const frequencies: Array<{ value: ControlFrequency; label: string }> = [
+  { value: 'daily', label: 'Dagligen' },
+  { value: 'weekly', label: 'Veckovis' },
+  { value: 'per_delivery', label: 'Vid leverans' },
+  { value: 'custom', label: 'Anpassad' },
+];
 
 type ControlTypeRowProps = {
   controlType: ControlType;
@@ -70,7 +87,7 @@ function ControlTypeRow({
             Redigera
           </ActionButton>
           <ActionButton type="button" variant="secondary" onClick={onToggleActive} disabled={saving}>
-            {controlType.active ? 'Arkivera' : 'Återaktivera'}
+            {controlType.active ? 'Inaktivera' : 'Aktivera'}
           </ActionButton>
         </div>
       ) : null}
@@ -105,7 +122,11 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const [showAdminControls, setShowAdminControls] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [typeName, setTypeName] = useState('');
+  const [category, setCategory] = useState<ControlCategory>('temperature');
+  const [frequency, setFrequency] = useState<ControlFrequency>('daily');
+  const [weekday, setWeekday] = useState<IsoWeekday>(1);
 
   async function refreshControlTypes() {
     const nextTypes = await listControlTypes(organizationId);
@@ -133,7 +154,7 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
     return () => {
       active = false;
     };
-  }, [organizationId, showAdminControls]);
+  }, [organizationId]);
 
   const selectedControlType = selectedControlTypeId
     ? controlTypes.find((controlType) => controlType.id === selectedControlTypeId) ?? null
@@ -172,6 +193,34 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
     }
   }
 
+  async function handleCreateType(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    try {
+      setSaving(true);
+      setMessage('');
+      const created = await createControlType({
+        organizationId,
+        name: typeName.trim(),
+        category,
+        frequency,
+        frequencyConfig: frequency === 'weekly' ? getFrequencyConfigWithWeekday({}, weekday) : undefined,
+        createdBy: userId,
+      });
+      setTypeName('');
+      setCategory('temperature');
+      setFrequency('daily');
+      setWeekday(1);
+      setShowCreateForm(false);
+      await refreshControlTypes();
+      openControlType(created.id);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa kontrolltyp.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (selectedControlType) {
     return (
       <ControlTypeDetailView
@@ -186,17 +235,8 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
     );
   }
 
-  if (showAdminControls) {
-    return (
-      <section className="control-types-view" aria-labelledby="control-types-title">
-        <div className="control-types-topbar">
-          <BackButton onClick={() => setShowAdminControls(false)} />
-          <h3 id="control-types-title">Lägg till kontrolltyp</h3>
-        </div>
-        <AdminControls organizationId={organizationId} userId={userId} />
-      </section>
-    );
-  }
+  const activeControlTypes = controlTypes.filter((controlType) => controlType.active);
+  const inactiveControlTypes = controlTypes.filter((controlType) => !controlType.active);
 
   return (
     <section className="control-types-view" aria-labelledby="control-types-title">
@@ -210,11 +250,54 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
 
       {message ? <p className="form-message error-message">{message}</p> : null}
 
+      {showCreateForm ? (
+        <form className="control-type-create-card" onSubmit={handleCreateType}>
+          <label>
+            <span>Namn</span>
+            <input
+              className="text-input"
+              value={typeName}
+              onChange={(event) => setTypeName(event.target.value)}
+              placeholder="Exempel: Kyltemperaturer"
+              required
+            />
+          </label>
+          <label>
+            <span>Typ</span>
+            <select className="text-input" value={category} onChange={(event) => setCategory(event.target.value as ControlCategory)}>
+              {categories.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Frekvens</span>
+            <select className="text-input" value={frequency} onChange={(event) => setFrequency(event.target.value as ControlFrequency)}>
+              {frequencies.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+            </select>
+          </label>
+          {frequency === 'weekly' ? (
+            <label>
+              <span>Veckodag</span>
+              <select className="text-input" value={weekday} onChange={(event) => setWeekday(Number(event.target.value) as IsoWeekday)}>
+                {weekdayOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+          ) : null}
+          <div className="control-type-create-actions">
+            <ActionButton type="submit" disabled={saving || !typeName.trim()}>
+              {saving ? 'Skapar...' : 'Skapa och öppna'}
+            </ActionButton>
+            <ActionButton type="button" variant="secondary" onClick={() => setShowCreateForm(false)} disabled={saving}>
+              Avbryt
+            </ActionButton>
+          </div>
+        </form>
+      ) : null}
+
       {loading ? (
         <p className="muted-copy">Laddar kontrolltyper...</p>
       ) : controlTypes.length > 0 ? (
         <div className="control-type-list">
-          {controlTypes.map((controlType) => (
+          {activeControlTypes.map((controlType) => (
             <ControlTypeRow
               canManage={canManage}
               controlType={controlType}
@@ -224,6 +307,24 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
               onToggleActive={() => handleToggleActive(controlType)}
             />
           ))}
+
+          {inactiveControlTypes.length > 0 ? (
+            <details className="inactive-control-types">
+              <summary>Inaktiva kontrolltyper ({inactiveControlTypes.length})</summary>
+              <div className="control-type-list inactive-list">
+                {inactiveControlTypes.map((controlType) => (
+                  <ControlTypeRow
+                    canManage={canManage}
+                    controlType={controlType}
+                    key={controlType.id}
+                    saving={saving}
+                    onOpen={() => openControlType(controlType.id)}
+                    onToggleActive={() => handleToggleActive(controlType)}
+                  />
+                ))}
+              </div>
+            </details>
+          ) : null}
         </div>
       ) : (
         <div className="empty-view-card">
@@ -238,7 +339,7 @@ export function ControlTypesView({ organizationId, userId, canManage, onBack }: 
       )}
 
       {canManage ? (
-        <button className="add-control-type-button" type="button" onClick={() => setShowAdminControls(true)}>
+        <button className="add-control-type-button" type="button" onClick={() => setShowCreateForm(true)}>
           <span aria-hidden="true">+</span>
           Lägg till kontrolltyp
         </button>

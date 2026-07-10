@@ -43,8 +43,10 @@ export type ControlDefinitionCanvasProps = {
   onEditField?: (field: ControlFieldDefinition) => void;
   onEditObject?: (object: ControlObject) => void;
   hideFieldEditControls?: boolean;
+  lockedFieldIds?: string[];
   renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
   renderObjectEditor?: (object: ControlObject) => ReactNode;
+  renderObjectFieldTools?: (object: ControlObject) => ReactNode;
 };
 
 function responseKey(objectId: string | null, fieldId: string): string {
@@ -61,18 +63,36 @@ function isSupplierField(field: ControlFieldDefinition): boolean {
   return field.field_key === 'supplier' || field.label.trim().toLowerCase() === 'leverantör';
 }
 
+function getFieldLabel(field: ControlFieldDefinition): string {
+  return field.field_type === 'textarea' && field.label.trim().toLowerCase() === 'kommentar / åtgärd'
+    ? 'Kommentar'
+    : field.label;
+}
+
+function fieldBelongsToObject(field: ControlFieldDefinition, object: ControlObject | null, hasObjectScopedFields: boolean): boolean {
+  const fieldObjectId = field.control_object_id ?? null;
+
+  if (hasObjectScopedFields) {
+    return object ? fieldObjectId === object.id : fieldObjectId === null;
+  }
+
+  return fieldObjectId === null;
+}
+
 function getDeviationReason(field: ControlFieldDefinition, object: ControlObject | null, value: string): string | null {
-  if (field.field_type === 'ok_not_ok' && value === 'not_ok') return `${field.label} är ej OK.`;
-  if (field.field_type === 'boolean' && value === 'false') return `${field.label} är inte uppfyllt.`;
+  const label = getFieldLabel(field);
+
+  if (field.field_type === 'ok_not_ok' && value === 'not_ok') return `${label} är ej OK.`;
+  if (field.field_type === 'boolean' && value === 'false') return `${label} är inte uppfyllt.`;
 
   if (field.field_type === 'temperature') {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return null;
     if (object?.limit_max !== null && object?.limit_max !== undefined && parsed > object.limit_max) {
-      return `${field.label} är över maxgräns ${object.limit_max}${object.unit ?? ''}.`;
+      return `${label} är över maxgräns ${object.limit_max}${object.unit ?? ''}.`;
     }
     if (object?.limit_min !== null && object?.limit_min !== undefined && parsed < object.limit_min) {
-      return `${field.label} är under mingräns ${object.limit_min}${object.unit ?? ''}.`;
+      return `${label} är under mingräns ${object.limit_min}${object.unit ?? ''}.`;
     }
   }
 
@@ -228,10 +248,12 @@ function ChecklistMatrix({
   actions,
   mode,
   selectedFieldId,
+  selectedObjectId,
   onChange,
   onActionChange,
-  onEditField,
+  onEditObject,
   renderFieldEditor,
+  renderObjectEditor,
 }: {
   field: ControlFieldDefinition;
   objects: ControlObject[];
@@ -239,10 +261,12 @@ function ChecklistMatrix({
   actions: DeviationState;
   mode: ControlDefinitionCanvasMode;
   selectedFieldId?: string | null;
+  selectedObjectId?: string | null;
   onChange?: (key: string, value: string) => void;
   onActionChange?: (key: string, value: string) => void;
-  onEditField?: (field: ControlFieldDefinition) => void;
+  onEditObject?: (object: ControlObject) => void;
   renderFieldEditor?: (field: ControlFieldDefinition) => ReactNode;
+  renderObjectEditor?: (object: ControlObject) => ReactNode;
 }) {
   const disabled = mode !== 'use';
   const isEditMode = mode === 'edit';
@@ -254,16 +278,12 @@ function ChecklistMatrix({
       aria-labelledby={`matrix-${field.id}`}
     >
       <div className="check-matrix-header">
-        <strong id={`matrix-${field.id}`}>{field.label}</strong>
+        <strong id={`matrix-${field.id}`}>{getFieldLabel(field)}</strong>
         <span>OK</span>
         <span>Ej OK</span>
       </div>
       {isEditMode ? (
-        <div className="canvas-edit-toolbar">
-          <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>
-            Redigera fält
-          </button>
-        </div>
+        <p className="canvas-edit-hint">Tryck på en kontrollpunkt för att redigera den.</p>
       ) : null}
       {selected && renderFieldEditor ? (
         <div className="canvas-inline-editor">{renderFieldEditor(field)}</div>
@@ -275,10 +295,29 @@ function ChecklistMatrix({
         const value = responses[key] ?? getDefaultValue(field);
         const showAction = value === 'not_ok';
 
+        const objectSelected = selectedObjectId === object.id;
+
         return (
-          <div className={showAction ? 'check-matrix-item has-action' : 'check-matrix-item'} key={object.id}>
+          <div
+            className={[
+              showAction ? 'check-matrix-item has-action' : 'check-matrix-item',
+              objectSelected ? 'canvas-edit-selected' : '',
+              isEditMode ? 'canvas-object-editable' : '',
+            ].filter(Boolean).join(' ')}
+            key={object.id}
+          >
             <div className="check-matrix-row">
-              <span className="check-matrix-name">{object.name}</span>
+              <div className="check-matrix-copy">
+                {isEditMode ? (
+                  <button className="check-matrix-name canvas-row-edit-button" type="button" onClick={() => onEditObject?.(object)}>
+                    {object.name}
+                  </button>
+                ) : (
+                  <span className="check-matrix-name">{object.name}</span>
+                )}
+                {object.location ? <span className="check-matrix-meta">{object.location}</span> : null}
+                {object.instructions ? <span className="check-matrix-meta">{object.instructions}</span> : null}
+              </div>
               <button
                 type="button"
                 className={value === 'ok' ? 'matrix-choice ok selected' : 'matrix-choice ok'}
@@ -302,10 +341,14 @@ function ChecklistMatrix({
               </button>
             </div>
 
+            {objectSelected && renderObjectEditor ? (
+              <div className="canvas-inline-editor">{renderObjectEditor(object)}</div>
+            ) : null}
+
             {showAction ? (
               <div className="matrix-action-box">
-                <strong>Avvikelse: {field.label} är ej OK.</strong>
-                <label className="action-label" htmlFor={actionId}>Vad är fel / åtgärd?</label>
+                <strong>Avvikelse: {getFieldLabel(field)} är ej OK.</strong>
+                <label className="action-label" htmlFor={actionId}>Åtgärd</label>
                 <textarea
                   className="text-input"
                   disabled={disabled}
@@ -418,17 +461,27 @@ export function ControlDefinitionCanvas({
   onEditField,
   onEditObject,
   hideFieldEditControls = false,
+  lockedFieldIds = [],
   renderFieldEditor,
   renderObjectEditor,
+  renderObjectFieldTools,
 }: ControlDefinitionCanvasProps) {
   const disabled = mode !== 'use';
   const isEditMode = mode === 'edit';
-  const renderObjects = objects.length ? objects : [null];
+  const hasObjectScopedFields = fields.some((field) => field.control_object_id);
+  const usesObjects = controlType.category !== 'traceability';
+  const renderObjects = objects.length ? objects : usesObjects ? [] : [null];
   const matrixObjects = objects;
-  const matrixField = matrixObjects.length > 1 ? fields.find((field) => field.field_type === 'ok_not_ok') : undefined;
+  const matrixField = !isEditMode && !hasObjectScopedFields && matrixObjects.length > 1
+    ? fields.find((field) => field.field_type === 'ok_not_ok' && !field.control_object_id)
+    : undefined;
 
   return (
     <div className={`control-definition-canvas control-definition-canvas-${mode}`}>
+      {usesObjects && objects.length === 0 ? (
+        <p className="canvas-empty-fields">Det finns inga aktiva kontrollpunkter att fylla i.</p>
+      ) : null}
+
       {matrixField ? (
         <ChecklistMatrix
           field={matrixField}
@@ -437,23 +490,41 @@ export function ControlDefinitionCanvas({
           actions={actions}
           mode={mode}
           selectedFieldId={selectedFieldId}
+          selectedObjectId={selectedObjectId}
           onChange={onResponseChange}
           onActionChange={onActionChange}
-          onEditField={onEditField}
+          onEditObject={onEditObject}
           renderFieldEditor={renderFieldEditor}
+          renderObjectEditor={renderObjectEditor}
         />
       ) : null}
 
       {renderObjects.map((object) => {
         const visibleFields = matrixField
-          ? fields.filter((field) => field.id !== matrixField.id && field.field_type !== 'textarea')
-          : fields;
-        if (visibleFields.length === 0) return null;
+          ? fields.filter((field) => !field.control_object_id && field.field_type !== 'ok_not_ok')
+          : fields.filter((field) => fieldBelongsToObject(field, object, hasObjectScopedFields));
+        const canRenderEmptyObject = isEditMode && object;
+        if (visibleFields.length === 0 && !canRenderEmptyObject) return null;
 
         return (
           <section
-            className={object?.id === selectedObjectId ? 'control-group canvas-edit-selected' : 'control-group'}
+            className={[
+              'control-group',
+              isEditMode && object ? 'canvas-object-editable' : '',
+              object?.id === selectedObjectId ? 'canvas-edit-selected' : '',
+            ].filter(Boolean).join(' ')}
             key={object?.id ?? 'global'}
+            role={isEditMode && object ? 'button' : undefined}
+            tabIndex={isEditMode && object ? 0 : undefined}
+            onClick={isEditMode && object ? (event) => {
+              if ((event.target as HTMLElement).closest('button, input, textarea, select, label, .canvas-inline-editor, .control-field, .object-field-tools')) return;
+              onEditObject?.(object);
+            } : undefined}
+            onKeyDown={isEditMode && object ? (event) => {
+              if (event.key !== 'Enter' && event.key !== ' ') return;
+              event.preventDefault();
+              onEditObject?.(object);
+            } : undefined}
           >
             <div className="canvas-object-heading">
               <div>
@@ -472,29 +543,51 @@ export function ControlDefinitionCanvas({
               <div className="canvas-inline-editor">{renderObjectEditor(object)}</div>
             ) : null}
 
+            {isEditMode && object && renderObjectFieldTools ? renderObjectFieldTools(object) : null}
+
+            {visibleFields.length === 0 ? (
+              <p className="canvas-empty-fields">Inga svarsfält ännu.</p>
+            ) : null}
+
             {visibleFields.map((field) => {
               const key = responseKey(object?.id ?? null, field.id);
               const value = responses[key] ?? (disabled ? getDefaultValue(field) : '');
               const reason = getDeviationReason(field, object, value);
               const selected = field.id === selectedFieldId;
+              const fieldLocked = hideFieldEditControls || lockedFieldIds.includes(field.id);
 
               return (
                 <div
                   className={selected ? 'control-field canvas-field-editable selected' : isEditMode ? 'control-field canvas-field-editable' : 'control-field'}
                   key={key}
+                  role={isEditMode && !fieldLocked ? 'button' : undefined}
+                  tabIndex={isEditMode && !fieldLocked ? 0 : undefined}
+                  onClick={isEditMode && !fieldLocked ? (event) => {
+                    if ((event.target as HTMLElement).closest('button, input, textarea, select, label, .canvas-inline-editor')) return;
+                    onEditField?.(field);
+                  } : undefined}
+                  onKeyDown={isEditMode && !fieldLocked ? (event) => {
+                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                    event.preventDefault();
+                    onEditField?.(field);
+                  } : undefined}
                 >
-                  {isEditMode && !hideFieldEditControls ? (
+                  {isEditMode ? (
                     <div className="canvas-field-toolbar">
-                      <span>{fieldTypeLabels[field.field_type]} · {field.required ? 'Obligatoriskt' : 'Frivilligt'}</span>
-                      <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>
-                        Redigera fält
-                      </button>
+                      <span>
+                        {fieldLocked ? 'Standardfält' : fieldTypeLabels[field.field_type]} · {field.required ? 'Obligatoriskt' : 'Frivilligt'}
+                      </span>
+                      {!fieldLocked ? (
+                        <button className="canvas-edit-action" type="button" onClick={() => onEditField?.(field)}>
+                          Redigera svarsfält
+                        </button>
+                      ) : null}
                     </div>
                   ) : null}
                   {field.field_type === 'photo' ? (
                     <PhotoCaptureField
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       file={files[key] ?? null}
                       required={field.required && !disabled}
                       disabled={disabled}
@@ -503,7 +596,7 @@ export function ControlDefinitionCanvas({
                   ) : field.field_type === 'temperature' ? (
                     <TemperatureField
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       object={object}
                       value={value}
                       required={field.required && !disabled}
@@ -514,7 +607,7 @@ export function ControlDefinitionCanvas({
                   ) : field.field_type === 'ok_not_ok' ? (
                     <SegmentedChoice
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       value={value}
                       disabled={disabled}
                       onChange={(nextValue) => onResponseChange?.(key, nextValue)}
@@ -526,7 +619,7 @@ export function ControlDefinitionCanvas({
                   ) : field.field_type === 'boolean' ? (
                     <SegmentedChoice
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       value={value}
                       disabled={disabled}
                       onChange={(nextValue) => onResponseChange?.(key, nextValue)}
@@ -538,7 +631,7 @@ export function ControlDefinitionCanvas({
                   ) : isSupplierField(field) ? (
                     <SupplierSelectField
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       value={value}
                       required={field.required && !disabled}
                       disabled={disabled}
@@ -547,7 +640,7 @@ export function ControlDefinitionCanvas({
                     />
                   ) : field.field_type === 'select' && readSelectOptions(field).length > 0 ? (
                     <>
-                      <label htmlFor={key}>{field.label}</label>
+                      <label htmlFor={key}>{getFieldLabel(field)}</label>
                       <select
                         className="text-input"
                         disabled={disabled}
@@ -567,7 +660,7 @@ export function ControlDefinitionCanvas({
                   ) : field.field_type === 'date' ? (
                     <DateField
                       id={key}
-                      label={field.label}
+                      label={getFieldLabel(field)}
                       value={value}
                       required={field.required && !disabled}
                       disabled={disabled}
@@ -575,7 +668,7 @@ export function ControlDefinitionCanvas({
                     />
                   ) : field.field_type === 'textarea' ? (
                     <>
-                      <label htmlFor={key}>{field.label}</label>
+                      <label htmlFor={key}>{getFieldLabel(field)}</label>
                       <textarea
                         className="text-input"
                         disabled={disabled}
@@ -586,7 +679,7 @@ export function ControlDefinitionCanvas({
                     </>
                   ) : (
                     <>
-                      <label htmlFor={key}>{field.label}</label>
+                      <label htmlFor={key}>{getFieldLabel(field)}</label>
                       <input
                         className="text-input"
                         disabled={disabled}

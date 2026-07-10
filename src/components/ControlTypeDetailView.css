@@ -1,16 +1,17 @@
 .control-type-detail {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .control-type-detail-topbar {
   position: sticky;
   top: 8px;
   z-index: 8;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
   align-items: center;
-  border: 1px solid rgba(91, 70, 225, 0.1);
+  border: 1px solid rgba(91, 70, 225, 0.12);
   border-radius: 18px;
   padding: 10px;
   background: rgba(255, 255, 255, 0.94);
@@ -18,184 +19,52 @@
   backdrop-filter: blur(14px);
 }
 
-.control-type-detail-topbar h3 {
-  margin-bottom: 0;
+.control-type-detail-topbar h3,
+.control-type-detail-topbar p,
+.control-editor-heading h4,
+.quick-create-panel p {
+  margin: 0;
 }
 
-.control-type-detail-card,
-.control-type-preview-section,
-.control-type-settings-form,
-.control-field-section,
-.control-field-form,
-.control-point-section,
-.control-point-form,
-.control-field-card,
-.control-point-card {
-  border: 1px solid rgba(91, 70, 225, 0.1);
+.control-type-detail-topbar > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.control-type-detail-topbar > div > p:last-child {
+  color: #657089;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.control-editor-canvas-shell,
+.quick-create-panel,
+.inactive-editor-list,
+.control-type-settings-panel {
+  border: 1px solid rgba(91, 70, 225, 0.14);
   border-radius: 18px;
   padding: 14px;
   background: #ffffff;
-  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+  box-shadow: 0 10px 26px rgba(62, 46, 135, 0.07);
 }
 
-.control-type-detail-card {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.control-type-context-card {
-  padding: 10px 12px;
-  box-shadow: none;
-}
-
-.control-type-settings-form {
+.control-editor-canvas-shell {
   display: grid;
   gap: 12px;
-}
-
-.control-type-preview-section {
-  display: grid;
-  gap: 14px;
-  border-color: rgba(91, 70, 225, 0.2);
-  padding: 16px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfaff 100%);
-  box-shadow: 0 14px 34px rgba(62, 46, 135, 0.1);
 }
 
-.control-type-preview-section .control-definition-canvas-preview {
-  opacity: 0.94;
-}
-
-.control-type-detail-card div,
-.control-type-settings-form label,
-.control-field-form,
-.control-field-form label,
-.control-field-edit-form,
-.control-field-edit-form label,
-.control-point-edit-form,
-.control-point-edit-form label,
-.control-point-form label {
-  display: grid;
-  gap: 5px;
-}
-
-.control-type-detail-card span,
-.control-type-settings-form label span,
-.control-field-form label span,
-.control-field-edit-form label span,
-.control-point-edit-form label span,
-.control-point-form label span {
-  color: #657089;
-  font-size: 0.78rem;
-  font-weight: 900;
-}
-
-.control-type-detail-card strong {
-  color: #172033;
-  font-size: 0.9rem;
-}
-
-.control-type-instructions-input {
-  min-height: 128px;
-  resize: vertical;
-}
-
-.control-type-instructions-copy {
-  margin: 0;
-  color: #34405a;
-  line-height: 1.5;
-  white-space: pre-wrap;
-}
-
-.control-field-section,
-.control-point-section {
-  display: grid;
-  gap: 12px;
-  background: #fbfaff;
-}
-
-.control-admin-panel {
-  overflow: hidden;
-}
-
-.control-admin-panel > summary {
-  display: flex;
-  min-height: 58px;
-  cursor: pointer;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  list-style: none;
-  color: #172033;
-  font-weight: 900;
-}
-
-.control-admin-panel > summary::-webkit-details-marker {
-  display: none;
-}
-
-.control-admin-panel > summary::after {
-  content: "+";
-  display: grid;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 12px;
-  color: #5b46e1;
-  background: #efedff;
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
-.control-admin-panel[open] > summary {
-  margin-bottom: 12px;
-}
-
-.control-admin-panel[open] > summary::after {
-  content: "−";
-}
-
-.control-admin-panel > summary span {
-  display: grid;
-  gap: 3px;
-}
-
-.control-admin-panel > summary small {
-  color: #657089;
-  font-size: 0.78rem;
-  font-weight: 800;
-  line-height: 1.3;
-}
-
-.control-point-heading {
+.control-editor-heading {
   display: flex;
   gap: 12px;
   align-items: flex-start;
   justify-content: space-between;
 }
 
-.control-canvas-heading-actions {
+.control-editor-heading > div {
   display: grid;
-  flex: 0 1 auto;
-  justify-items: end;
-  gap: 8px;
-}
-
-.control-canvas-shortcuts {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.control-point-heading h4,
-.control-field-card h4,
-.control-field-form h4,
-.control-point-card h4,
-.control-point-form h4 {
-  margin: 0;
+  gap: 2px;
 }
 
 .control-point-count {
@@ -208,100 +77,160 @@
   font-weight: 900;
 }
 
-.control-point-list,
-.control-field-list,
-.control-field-form,
-.control-point-form {
+.control-editor-actions,
+.editor-action-row,
+.control-type-create-actions,
+.preset-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-create-panel,
+.control-type-settings-form.compact {
   display: grid;
   gap: 10px;
 }
 
-.control-detail-empty {
+.object-field-tools {
   display: grid;
-  gap: 6px;
-  border: 1px solid rgba(91, 70, 225, 0.1);
+  gap: 10px;
+  margin: 4px 0 10px;
+}
+
+.object-field-tools > .control-point-action {
+  justify-self: start;
+}
+
+.object-field-palette {
+  padding: 12px;
+  box-shadow: none;
+}
+
+.field-palette-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.field-palette-heading h5 {
+  margin: 0;
+  color: #172033;
+  font-size: 1rem;
+}
+
+.field-type-palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 8px;
+}
+
+.field-type-card {
+  display: grid;
+  min-height: 132px;
+  cursor: pointer;
+  gap: 7px;
+  align-content: start;
+  border: 1px solid rgba(91, 70, 225, 0.16);
   border-radius: 16px;
   padding: 12px;
-  background: #ffffff;
-}
-
-.control-detail-empty strong {
   color: #172033;
+  background: #ffffff;
+  text-align: left;
 }
 
-.control-field-card,
-.control-point-card {
+.field-type-card:hover,
+.field-type-card:focus-visible {
+  border-color: rgba(91, 70, 225, 0.42);
+  box-shadow: 0 0 0 3px rgba(91, 70, 225, 0.1);
+  outline: 0;
+}
+
+.field-type-card strong {
+  font-size: 0.92rem;
+}
+
+.field-type-card > span:last-child {
+  color: #657089;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.field-type-icon {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
-}
-
-.control-field-card.inactive,
-.control-point-card.inactive {
-  opacity: 0.68;
-}
-
-.control-field-card p,
-.control-point-card p {
-  margin: 0;
-  color: #566078;
-  font-size: 0.84rem;
-  line-height: 1.35;
-}
-
-.control-field-icon,
-.control-point-icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   place-items: center;
-  border-radius: 14px;
-  color: #0c6638;
-  background: #ddf8e7;
+  border-radius: 12px;
+  color: #5b46e1;
+  background: #efedff;
+  font-size: 0.72rem;
   font-weight: 900;
 }
 
-.control-field-icon img,
-.control-point-icon img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
+.quick-create-panel label,
+.control-type-settings-form.compact label,
+.canvas-inline-edit-form label {
+  display: grid;
+  gap: 5px;
 }
 
-.control-field-icon {
+.quick-create-panel label span,
+.control-type-settings-form.compact label span,
+.canvas-inline-edit-form label span {
+  color: #657089;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.limit-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.limit-input-row > span {
+  min-width: 44px;
+  border-radius: 12px;
+  padding: 11px 12px;
   color: #5b46e1;
   background: #efedff;
+  font-weight: 900;
+  text-align: center;
+}
+
+.control-type-instructions-input {
+  min-height: 96px;
+  resize: vertical;
 }
 
 .control-point-action {
   min-height: 34px;
   border: 0;
   border-radius: 999px;
-  padding: 0 10px;
+  padding: 0 12px;
   color: #5b46e1;
   background: #efedff;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 900;
   white-space: nowrap;
 }
 
-.control-field-edit-form {
-  grid-column: span 2;
+.control-point-action.primary {
+  color: #ffffff;
+  background: #5b46e1;
 }
 
-.control-point-edit-form {
-  grid-column: span 2;
-}
-
-.control-field-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.control-point-action.danger {
+  color: #b42334;
+  background: #ffe9ed;
 }
 
 .control-field-checkbox {
-  display: flex;
+  display: flex !important;
   gap: 9px;
   align-items: center;
   color: #34405a;
@@ -314,222 +243,221 @@
   accent-color: #5b46e1;
 }
 
-.field-type-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+.field-editor-type {
+  width: fit-content;
+  margin: 0;
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: #5b46e1;
+  background: #efedff;
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
-.field-type-option {
-  display: grid;
-  gap: 4px;
-  min-height: 82px;
-  border: 1px solid rgba(91, 70, 225, 0.12);
-  border-radius: 16px;
-  padding: 10px;
+.preset-chip {
+  border: 1px solid rgba(91, 70, 225, 0.16);
+  border-radius: 14px;
+  padding: 9px 11px;
   color: #172033;
   background: #ffffff;
-  text-align: left;
+  font-weight: 900;
 }
 
-.field-type-option.selected {
-  border-color: rgba(91, 70, 225, 0.34);
+.control-detail-empty.compact {
+  display: grid;
+  gap: 5px;
+  border: 1px dashed rgba(91, 70, 225, 0.22);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.inactive-editor-list,
+.control-type-settings-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.inactive-editor-list > summary,
+.control-type-settings-panel > summary {
+  display: flex;
+  min-height: 52px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  color: #172033;
+  font-weight: 900;
+  list-style: none;
+}
+
+.inactive-editor-list > summary::-webkit-details-marker,
+.control-type-settings-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.inactive-editor-list > summary::after,
+.control-type-settings-panel > summary::after {
+  content: "+";
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 12px;
+  color: #5b46e1;
   background: #efedff;
 }
 
-.field-type-option span {
-  color: #657089;
-  font-size: 0.76rem;
-  line-height: 1.25;
+.inactive-editor-list[open] > summary::after,
+.control-type-settings-panel[open] > summary::after {
+  content: "-";
 }
 
-.field-create-panel {
-  display: grid;
-  gap: 12px;
-  border: 1px solid rgba(91, 70, 225, 0.14);
-  border-radius: 16px;
-  padding: 12px;
-  background: #ffffff;
+.inactive-editor-grid,
+.control-type-settings-form.compact {
+  padding: 0 14px 14px;
 }
 
-.field-create-summary {
+.inactive-editor-grid {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+}
+
+.inactive-editor-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
+  border: 1px solid rgba(91, 70, 225, 0.1);
+  border-radius: 14px;
+  padding: 10px;
+  background: #fbfaff;
 }
 
-.field-create-summary h5,
-.field-create-summary p {
-  margin: 0;
+.inactive-editor-row > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
 }
 
-.field-create-summary h5 {
-  color: #172033;
-  font-size: 0.95rem;
-}
-
-.field-create-summary p {
-  color: #566078;
+.inactive-editor-row span {
+  color: #657089;
   font-size: 0.82rem;
-  line-height: 1.35;
-}
-
-.control-point-instructions {
-  margin-top: 6px;
-  white-space: pre-wrap;
 }
 
 @media (prefers-color-scheme: dark) {
-  .control-type-detail-card,
   .control-type-detail-topbar,
-  .control-type-preview-section,
-  .control-type-settings-form,
-  .control-field-section,
-  .control-field-form,
-  .control-point-section,
-  .control-point-form,
-  .control-field-card,
-  .control-point-card,
-  .control-detail-empty {
+  .control-editor-canvas-shell,
+  .quick-create-panel,
+  .inactive-editor-list,
+  .control-type-settings-panel {
     border-color: rgba(159, 145, 255, 0.18);
     background: #121a2e;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
   }
 
   .control-type-detail-topbar {
     background: rgba(18, 26, 46, 0.94);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
   }
 
-  .control-field-section,
-  .control-type-preview-section,
-  .control-point-section {
-    background: #111a2f;
-  }
-
-  .control-type-preview-section {
-    border-color: rgba(159, 145, 255, 0.28);
+  .control-editor-canvas-shell {
     background: linear-gradient(180deg, #121a2e 0%, #111a2f 100%);
   }
 
-  .control-type-detail-card strong,
-  .control-admin-panel > summary,
-  .control-type-settings-form label span,
-  .control-point-heading h4,
-  .control-field-card h4,
-  .control-field-form h4,
-  .control-field-form label span,
-  .control-field-edit-form label span,
-  .control-point-edit-form label span,
-  .control-point-card h4,
-  .control-point-form h4,
-  .control-point-form label span,
-  .control-detail-empty strong {
-    color: #f7f9ff;
-  }
-
-  .control-type-detail-card span,
-  .control-admin-panel > summary small,
-  .control-type-instructions-copy,
-  .control-field-card p,
-  .control-point-card p {
+  .control-type-detail-topbar > div > p:last-child,
+  .quick-create-panel label span,
+  .control-type-settings-form.compact label span,
+  .canvas-inline-edit-form label span,
+  .field-type-card > span:last-child,
+  .inactive-editor-row span {
     color: #aeb8d0;
   }
 
-  .control-point-count,
-  .control-point-icon {
+  .control-point-count {
     color: #61d992;
     background: rgba(39, 128, 83, 0.22);
   }
 
-  .control-point-action {
+  .control-point-action,
+  .field-editor-type,
+  .limit-input-row > span,
+  .inactive-editor-list > summary::after,
+  .control-type-settings-panel > summary::after {
     color: #b9afff;
     background: #211b45;
   }
 
-  .control-field-icon {
+  .control-point-action.primary {
+    color: #ffffff;
+    background: #6d55ff;
+  }
+
+  .control-point-action.danger {
+    color: #ff9caa;
+    background: rgba(159, 29, 43, 0.18);
+  }
+
+  .preset-chip,
+  .field-type-card,
+  .inactive-editor-row,
+  .control-detail-empty.compact {
+    border-color: rgba(159, 145, 255, 0.18);
+    color: #f7f9ff;
+    background: #111a2f;
+  }
+
+  .field-palette-heading h5 {
+    color: #f7f9ff;
+  }
+
+  .field-type-icon {
     color: #b9afff;
     background: #211b45;
   }
 
+  .inactive-editor-list > summary,
+  .control-type-settings-panel > summary,
   .control-field-checkbox {
-    color: #d8deef;
-  }
-
-  .field-type-option {
-    border-color: rgba(159, 145, 255, 0.18);
     color: #f7f9ff;
-    background: #121a2e;
-  }
-
-  .field-type-option.selected {
-    border-color: rgba(159, 145, 255, 0.38);
-    background: #211b45;
-  }
-
-  .field-type-option span {
-    color: #aeb8d0;
-  }
-
-  .field-create-panel {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: #121a2e;
-  }
-
-  .field-create-summary h5 {
-    color: #f7f9ff;
-  }
-
-  .field-create-summary p {
-    color: #aeb8d0;
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 520px) {
   .control-type-detail-topbar {
-    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .control-type-detail-topbar .nav-back-button {
     justify-self: start;
   }
 
-  .control-type-detail-card {
-    grid-template-columns: 1fr;
-  }
-
-  .control-point-heading {
+  .control-editor-heading,
+  .inactive-editor-row {
     display: grid;
   }
 
-  .control-canvas-heading-actions,
-  .control-canvas-shortcuts {
-    justify-items: stretch;
-    justify-content: stretch;
+  .control-editor-actions .control-point-action,
+  .editor-action-row .control-point-action,
+  .control-type-create-actions .primary-button,
+  .control-type-create-actions .secondary-button {
+    flex: 1 1 120px;
   }
 
-  .control-canvas-shortcuts .control-point-action {
-    flex: 1 1 140px;
+  .field-palette-heading {
+    display: grid;
   }
 
-  .field-type-grid {
-    grid-template-columns: 1fr;
+  .field-type-palette {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .control-field-card,
-  .control-point-card {
-    grid-template-columns: auto minmax(0, 1fr);
+  .field-type-card {
+    min-height: 118px;
+    padding: 10px;
   }
 
-  .control-field-edit-form,
-  .control-point-edit-form,
-  .control-point-action {
-    grid-column: 1 / -1;
-  }
-
-  .control-field-card > .control-point-action,
-  .control-point-card > .control-point-action {
-    justify-self: start;
+  .object-field-tools > .control-point-action {
+    justify-self: stretch;
   }
 }

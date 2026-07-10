@@ -25,7 +25,7 @@ import type {
   ControlRunDefinition,
 } from '../services/controlRunWithAttachmentsService';
 import type { SavedControlSummary } from './SavedControlView';
-import type { Supplier } from '../types/database';
+import type { ControlFieldDefinition, Supplier } from '../types/database';
 import './ControlRunForm.css';
 
 export type ControlRunFormWithPhotosProps = {
@@ -38,6 +38,10 @@ export type ControlRunFormWithPhotosProps = {
   canManage: boolean;
   onConfigureControlType: () => void;
 };
+
+function fieldAppliesToObject(field: ControlFieldDefinition, objectId: string | null): boolean {
+  return !field.control_object_id || field.control_object_id === objectId;
+}
 
 export function ControlRunFormWithPhotos({
   organizationId,
@@ -79,8 +83,10 @@ export function ControlRunFormWithPhotos({
         const nextResponses: ResponseState = {};
         const objects = nextDefinition.objects.length ? nextDefinition.objects : [null];
         for (const object of objects) {
+          const objectId = object?.id ?? null;
           for (const field of nextDefinition.fields) {
-            nextResponses[responseKey(object?.id ?? null, field.id)] = getDefaultValue(field);
+            if (!fieldAppliesToObject(field, objectId)) continue;
+            nextResponses[responseKey(objectId, field.id)] = getDefaultValue(field);
           }
         }
         setResponses(nextResponses);
@@ -107,12 +113,14 @@ export function ControlRunFormWithPhotos({
     const result: ControlResponse[] = [];
 
     for (const object of objects) {
+      const objectId = object?.id ?? null;
       for (const field of definition.fields) {
-        const key = responseKey(object?.id ?? null, field.id);
+        if (!fieldAppliesToObject(field, objectId)) continue;
+        const key = responseKey(objectId, field.id);
         const value = responses[key] ?? '';
         const reason = getDeviationReason(field, object, value);
         result.push({
-          controlObjectId: object?.id ?? null,
+          controlObjectId: objectId,
           fieldDefinitionId: field.id,
           value,
           file: files[key] ?? null,
@@ -214,6 +222,25 @@ export function ControlRunFormWithPhotos({
   if (!definition) return <p className="form-message error-message">Kontrollen kunde inte visas.</p>;
 
   const canRunControl = definition.fields.length > 0;
+  const globalFields = definition.fields.filter((field) => !field.control_object_id);
+  const objectScopedFields = definition.fields.filter((field) => Boolean(field.control_object_id));
+  const objectIdsWithScopedFields = new Set(
+    objectScopedFields
+      .map((field) => field.control_object_id)
+      .filter((objectId): objectId is string => Boolean(objectId)),
+  );
+  const objectsWithScopedFields = definition.objects.filter((object) => objectIdsWithScopedFields.has(object.id));
+
+  const canvasProps = {
+    controlType: definition.controlType,
+    responses,
+    actions,
+    files,
+    suppliers,
+    onResponseChange: updateResponse,
+    onActionChange: updateAction,
+    onFileChange: updateFile,
+  };
 
   return (
     <form className={`control-form control-form-${definition.controlType.category}`} onSubmit={handleSubmit}>
@@ -255,18 +282,19 @@ export function ControlRunFormWithPhotos({
         </section>
       ) : null}
 
-      {canRunControl ? (
+      {canRunControl && globalFields.length > 0 ? (
         <ControlDefinitionCanvas
-          controlType={definition.controlType}
+          {...canvasProps}
           objects={definition.objects}
-          fields={definition.fields}
-          responses={responses}
-          actions={actions}
-          files={files}
-          suppliers={suppliers}
-          onResponseChange={updateResponse}
-          onActionChange={updateAction}
-          onFileChange={updateFile}
+          fields={globalFields}
+        />
+      ) : null}
+
+      {canRunControl && objectScopedFields.length > 0 ? (
+        <ControlDefinitionCanvas
+          {...canvasProps}
+          objects={objectsWithScopedFields}
+          fields={objectScopedFields}
         />
       ) : null}
 
