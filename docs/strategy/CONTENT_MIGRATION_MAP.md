@@ -1,252 +1,252 @@
-# Content Migration Map
+# Migrationskarta för innehåll
 
 Issue: #247
-Date: 2026-07-10
-Builds on: #243, #245, PR #246, `docs/strategy/PIVOT.md`, and `docs/strategy/CURRENT_STATE_INVENTORY.md`
+Datum: 2026-07-10
+Bygger på: #243, #245, PR #246, `docs/strategy/PIVOT.md` och `docs/strategy/CURRENT_STATE_INVENTORY.md`
 
-This document turns the current-state inventory into a practical migration map. It does not remove, merge, redirect, rewrite, redesign, or rebuild any page.
+Det här dokumentet översätter nulägesinventeringen till en praktisk migrationskarta. Det tar inte bort, slår ihop, omdirigerar, skriver om, designar om eller bygger om någon sida.
 
-The default recommendation is to preserve existing URLs until there is clear traffic, Search Console, backlink, conversion, or product evidence for changing them.
+Grundrekommendationen är att bevara befintliga URL:er tills det finns tydliga data om trafik, Search Console, inlänkar, konvertering eller produktvärde som motiverar en ändring.
 
-## Guiding Principle
+## Vägledande princip
 
-The migration should follow the pivot principle:
+Migrationen ska följa pivotens princip:
 
-**Hjalp forst -> bygg fortroende -> lat anvandaren prova vardet -> visa sedan att samma arbete kan goras annu enklare i appen.**
+**Hjälp först -> bygg förtroende -> låt användaren prova värdet -> visa sedan att samma arbete kan göras ännu enklare i appen.**
 
-This means:
+Det innebär att:
 
-- informational pages should answer the user's question before showing the app,
-- resource pages should deliver the promised template, checklist, or tool before asking for anything,
-- high-intent pages may show the app clearly,
-- URL, merge, and redirect decisions should wait for evidence when there is any meaningful SEO risk.
+- informationssidor ska svara på användarens fråga innan appen visas,
+- resurssidor ska leverera den utlovade mallen, checklistan eller verktyget innan något efterfrågas,
+- sidor med hög köpavsikt kan visa appen tydligt,
+- beslut om URL:er, sammanslagningar och omdirigeringar ska vänta på underlag när det finns meningsfull SEO-risk.
 
-## 1. Page-By-Page Migration Map
+## 1. Migrationskarta sida för sida
 
-### React Public Pages And Public App Entrances
+### Publika React-sidor och publika/appnära ingångar
 
-| Current URL | Current role / purpose | Future page type | Recommended action | App visibility | Dependencies or risks |
+| Nuvarande URL | Nuvarande roll/syfte | Framtida sidtyp | Rekommenderad åtgärd | Appens synlighet | Beroenden eller risker |
 | --- | --- | --- | --- | --- | --- |
-| `/` | Product homepage and prelaunch signup path. | Startsida | Behall URL och migrera till ny startsidemall. | Tydlig | Must explain platform breadth, not only app. Depends on future visual direction and web/app split. |
-| `/kunskapsbank` | Directory for guides grouped by subject. | Resursbibliotek | Behall URL och bygg ut till real resursbibliotek with filtering and links to navs. | Mattlig | Currently also behaves like a topic hub. Avoid turning it into a sales page. |
-| `/digital-egenkontroll-livsmedel` | Explains digital egenkontroll and product value. | Sida med hog kopavsikt | Behall som hog-intent-sida and improve product/value narrative later. | Tydlig | Should keep commercial focus but link back to helpful resources. |
-| `/egenkontroll-restaurang` | Product/value page for restaurants. | Sida med hog kopavsikt | Behall som hog-intent-sida. | Tydlig | Good candidate for industry-specific solution page; needs future conversion data. |
-| `/egenkontroll-cafe` | Product/value page for cafe and bakery. | Sida med hog kopavsikt | Behall som hog-intent-sida. | Tydlig | Good candidate for industry-specific solution page; needs future conversion data. |
-| `/dokumentation-egenkontroll-livsmedel` | Explains documentation and journaling. | Faktasida / artikel | Behall URL och migrera to factual article template. | Diskret | Related to product value, but primary intent is information. |
-| `/sparbarhet-livsmedel` | Explains food traceability and links to traceability cluster. | Amnesnav or strong huvudartikel | Bygg ut till amnesnav or strong head article; keep URL. | Mattlig | Overlaps traceability static pages. Do not merge without search/backlink data. |
-| `/haccp-sma-livsmedelsforetag` | Explains HACCP for small businesses. | Amnesnav or strong huvudartikel | Bygg ut to HACCP hub or strong head article; keep URL. | Mattlig | Overlaps HACCP/risk pages. Good pilot candidate. |
-| `/faroanalys-livsmedel` | Explains hazard analysis. | Faktasida / artikel; possible tool candidate | Behall URL och forbattras as article; evaluate embedded or child generator later. | Diskret | Tool/generator decision needs UX and product scope. |
-| `/avvikelser-korrigerande-atgarder-livsmedel` | Explains deviations and corrective actions. | Faktasida / artikel | Behall URL och migrera to factual article template. | Diskret | App is relevant as next step, not main page purpose. |
-| `/verifiering-egenkontroll-livsmedel` | Explains verification. | Faktasida / artikel | Behall URL och migrera to factual article template. | Diskret | Part of HACCP/risk cluster. |
-| `/spara-sparbarhetsuppgifter-livsmedel` | Explains retention of traceability data. | Faktasida / artikel | Behall URL och forbattras. Candidate merge only after data. | Diskret | Overlaps `/sparbarhet-livsmedel` and static traceability pages. |
-| `/login` | Login / magic-link entry. | Inloggning | Behall utanfor innehallsmigrationen. Future target may be `app.minegenkontroll.se/login`. | Tydlig | Auth/session risk. Robots currently disallow. Requires separate web/app split decision. |
-| `/signup` | Account creation / prelaunch entry. | Signup | Behall utanfor innehallsmigrationen. Future target may be `app.minegenkontroll.se/signup`. | Tydlig | Auth/session and conversion risk. Robots currently disallow. |
-| `/integritetspolicy` | Privacy/legal information. | Legal / stodjande sida | Behall utanfor content migration, but include in future legal page model. | Diskret | Not in sitemap today. Legal text should not be casually rewritten. |
-| `/anvandarvillkor` | Terms. | Legal / stodjande sida | Behall utanfor content migration, but include in future legal page model. | Diskret | Not in sitemap today. Legal text should not be casually rewritten. |
-| `/#inspector=<key>` | Public-by-token inspection/share view. | Delat appflode / ej SEO-sida | Behall utanfor innehallsmigrationen. | Tydlig within flow | High-risk shared app flow. Must not be treated as SEO content. |
+| `/` | Produktstartsida och väg till förhandsregistrering. | Startsida | Behåll URL och migrera till ny startsidemall. | Tydlig | Måste förklara plattformens bredd, inte bara appen. Beror på framtida visuell riktning och webb/app-separation. |
+| `/kunskapsbank` | Katalog för guider grupperade efter ämne. | Resursbibliotek | Behåll URL och bygg ut till riktigt resursbibliotek med filtrering och länkar till nav. | Måttlig | Fungerar idag också som ämnesnav. Undvik att göra den till säljsida. |
+| `/digital-egenkontroll-livsmedel` | Förklarar digital egenkontroll och produktvärde. | Sida med hög köpavsikt | Behåll som hög-intent-sida och förbättra produkt-/värdeberättelsen senare. | Tydlig | Ska behålla kommersiellt fokus men länka tillbaka till hjälpsamma resurser. |
+| `/egenkontroll-restaurang` | Produkt-/värdesida för restauranger. | Sida med hög köpavsikt | Behåll som hög-intent-sida. | Tydlig | Bra kandidat för branschspecifik lösningssida; behöver framtida konverteringsdata. |
+| `/egenkontroll-cafe` | Produkt-/värdesida för café och bageri. | Sida med hög köpavsikt | Behåll som hög-intent-sida. | Tydlig | Bra kandidat för branschspecifik lösningssida; behöver framtida konverteringsdata. |
+| `/dokumentation-egenkontroll-livsmedel` | Förklarar dokumentation och journalföring. | Faktasida / artikel | Behåll URL och migrera till faktasidemall. | Diskret | Kopplad till produktvärde, men primär avsikt är information. |
+| `/sparbarhet-livsmedel` | Förklarar spårbarhet för livsmedel och länkar till spårbarhetsklustret. | Ämnesnav eller stark huvudartikel | Bygg ut till ämnesnav eller stark huvudartikel; behåll URL. | Måttlig | Överlappar statiska spårbarhetssidor. Slå inte ihop utan sök-/inlänksdata. |
+| `/haccp-sma-livsmedelsforetag` | Förklarar HACCP för små verksamheter. | Ämnesnav eller stark huvudartikel | Bygg ut till HACCP-nav eller stark huvudartikel; behåll URL. | Måttlig | Överlappar HACCP-/risksidor. Bra pilotkandidat. |
+| `/faroanalys-livsmedel` | Förklarar faroanalys. | Faktasida / artikel; möjlig verktygskandidat | Behåll URL och förbättra som artikel; utvärdera inbäddad generator eller undersida senare. | Diskret | Verktygs-/generatorbeslut kräver UX- och produktbeslut. |
+| `/avvikelser-korrigerande-atgarder-livsmedel` | Förklarar avvikelser och korrigerande åtgärder. | Faktasida / artikel | Behåll URL och migrera till faktasidemall. | Diskret | Appen är relevant som nästa steg, inte som sidans huvudsyfte. |
+| `/verifiering-egenkontroll-livsmedel` | Förklarar verifiering. | Faktasida / artikel | Behåll URL och migrera till faktasidemall. | Diskret | Del av HACCP-/riskklustret. |
+| `/spara-sparbarhetsuppgifter-livsmedel` | Förklarar hur länge spårbarhetsuppgifter ska sparas. | Faktasida / artikel | Behåll URL och förbättra. Kandidat för sammanslagning först efter data. | Diskret | Överlappar `/sparbarhet-livsmedel` och statiska spårbarhetssidor. |
+| `/login` | Inloggning / magic-link-ingång. | Inloggning | Behåll utanför innehållsmigrationen. Framtida mål kan vara `app.minegenkontroll.se/login`. | Tydlig | Auth-/sessionsrisk. Robots disallow idag. Kräver separat beslut om webb/app-separation. |
+| `/signup` | Kontoskapande / förhandsregistrering. | Signup | Behåll utanför innehållsmigrationen. Framtida mål kan vara `app.minegenkontroll.se/signup`. | Tydlig | Auth-/sessions- och konverteringsrisk. Robots disallow idag. |
+| `/integritetspolicy` | Integritets-/juridisk information. | Legal / stödjande sida | Behåll utanför innehållsmigrationen, men inkludera i framtida legal sidmodell. | Diskret | Finns inte i sitemap idag. Juridisk text ska inte skrivas om slentrianmässigt. |
+| `/anvandarvillkor` | Användarvillkor. | Legal / stödjande sida | Behåll utanför innehållsmigrationen, men inkludera i framtida legal sidmodell. | Diskret | Finns inte i sitemap idag. Juridisk text ska inte skrivas om slentrianmässigt. |
+| `/#inspector=<key>` | Publik-via-token tillsyns-/delningsvy. | Delat appflöde / ej SEO-sida | Behåll utanför innehållsmigrationen. | Tydlig i flödet | Högriskflöde för delning i appen. Ska inte behandlas som SEO-innehåll. |
 
-### Static SEO Pages
+### Statiska SEO-sidor
 
-| Current URL | Current role / purpose | Future page type | Recommended action | App visibility | Dependencies or risks |
+| Nuvarande URL | Nuvarande roll/syfte | Framtida sidtyp | Rekommenderad åtgärd | Appens synlighet | Beroenden eller risker |
 | --- | --- | --- | --- | --- | --- |
-| `/seo/kallor-och-faktagranskning.html` | Source and fact-checking explanation. | Legal / stodjande sida or Faktasida / artikel | Behall URL och forbattras as trust/editorial support page. | Diskret | Could support E-E-A-T. Do not bury if it has trust value. |
-| `/seo/kritiska-gransvarden.html` | Critical limits in HACCP. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Strong HACCP support page. |
-| `/seo/kontrollplan.html` | Control plan basics. | Mall / checklista / resurs candidate | Kandidat for framtida mall/checklista; keep URL while deciding format. | Mattlig | Good resource candidate. Needs template/checklist UX decision. |
-| `/seo/hygien-och-daglig-drift.html` | Hygiene and daily routines overview. | Amnesnav | Bygg ut till amnesnav. | Mattlig | Current thin hub; keep URL and expand before adding many children. |
-| `/seo/personlig-hygien-livsmedel.html` | Personal hygiene. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Belongs under hygiene nav. |
-| `/seo/rengoring-livsmedelsverksamhet.html` | Cleaning routines. | Faktasida / artikel; checklist candidate | Behall URL och forbattras; candidate for checklist/resource. | Mattlig | Good operational checklist candidate. |
-| `/seo/skadedjur-livsmedelsverksamhet.html` | Pest prevention. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Belongs under hygiene or prerequisites nav. |
-| `/seo/temperaturkontroll-livsmedel.html` | Temperature control overview. | Faktasida / artikel or strong huvudartikel | Behall URL och improve as head article for temperature cluster. | Mattlig | Overlaps temperature process hub; decide hierarchy later with data. |
-| `/seo/allergeninformation-restaurang.html` | Allergen information for restaurants/cafes. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Could later link to checklist/resource. |
-| `/seo/hantering-och-forvaring-livsmedel.html` | Handling and storage overview. | Amnesnav | Bygg ut till amnesnav. | Mattlig | Current thin hub; likely strong IA node. |
-| `/seo/varumottagning-livsmedel.html` | Receiving goods. | Faktasida / artikel; checklist candidate | Behall URL och forbattras; candidate for receiving checklist. | Mattlig | Good resource/app bridge. |
-| `/seo/korskontamination-livsmedel.html` | Cross-contamination. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Belongs under handling/storage. |
-| `/seo/separera-raa-och-atfardiga-livsmedel.html` | Separate raw and ready-to-eat foods. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Related to cross-contamination; merge only with data. |
-| `/seo/kemikalier-i-livsmedelsverksamhet.html` | Chemicals in food business. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Operational/compliance page. |
-| `/seo/allergenkontamination-livsmedel.html` | Allergen contamination. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Related to allergen information; merge only with data. |
-| `/seo/grundforutsattningar-livsmedel.html` | Prerequisites overview. | Amnesnav | Bygg ut till amnesnav. | Mattlig | Broad cluster; avoid making it too generic. |
-| `/seo/lokaler-och-utrustning-livsmedel.html` | Premises and equipment. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Belongs under prerequisites. |
-| `/seo/materialval-livsmedelslokal.html` | Material choices in food premises. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Specific compliance topic. |
-| `/seo/underhall-livsmedelslokal.html` | Maintenance. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Could later connect to checklist. |
-| `/seo/toalett-och-handfat-livsmedelsverksamhet.html` | Toilet and sink requirements. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Specific compliance topic. |
-| `/seo/ventilation-livsmedelsverksamhet.html` | Ventilation. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Specific compliance topic. |
-| `/seo/avfall-livsmedelsverksamhet.html` | Waste handling. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Related to waste-room page; merge only with data. |
-| `/seo/soprum-och-avfallsutrymme-livsmedel.html` | Waste room / waste space. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Related to waste handling; merge only with data. |
-| `/seo/transport-av-livsmedel.html` | Food transport. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Could belong under handling/storage or prerequisites. |
-| `/seo/utbildning-livsmedelshygien-personal.html` | Staff hygiene training. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Could later connect to checklist/resource. |
-| `/seo/vatten-i-livsmedelsverksamhet.html` | Water in food businesses. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Specific compliance topic. |
-| `/seo/is-i-livsmedelsverksamhet.html` | Ice hygiene. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Related to water/hygiene; merge only with data. |
-| `/seo/temperaturprocesser-livsmedel.html` | Temperature processes overview. | Amnesnav | Bygg ut till amnesnav. | Mattlig | Needs relationship decision with `/seo/temperaturkontroll-livsmedel.html`. |
-| `/seo/kylforvaring-livsmedel.html` | Cold storage. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Temperature cluster. |
-| `/seo/upptining-livsmedel.html` | Thawing. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Temperature cluster. |
-| `/seo/varmhallning-mat-temperatur.html` | Hot holding. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Temperature cluster. |
-| `/seo/nedkylning-mat-livsmedel.html` | Cooling food. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Temperature cluster; strong operational value. |
-| `/seo/ateruppvarmning-mat.html` | Reheating food. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Temperature cluster. |
-| `/seo/datummarkning-livsmedel.html` | Date marking overview. | Amnesnav | Bygg ut till amnesnav. | Mattlig | Strong cluster already exists. |
-| `/seo/bast-fore-eller-sista-forbrukningsdag.html` | Best before vs use by. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Strong informational query. |
-| `/seo/salja-mat-efter-bast-fore.html` | Selling after best before. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Compliance/operational topic. |
-| `/seo/mat-efter-sista-forbrukningsdag.html` | After use-by date. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Compliance topic; should answer quickly. |
-| `/seo/bestamma-hallbarhetsdatum-livsmedel.html` | Setting durability dates. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Could later connect to tool/resource. |
-| `/seo/frysa-in-kylvaror-fore-utgangsdatum.html` | Freezing chilled goods near expiry. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Specific operational query. |
-| `/seo/information-och-markning-livsmedel.html` | Information and labelling overview. | Amnesnav | Bygg ut till amnesnav. | Mattlig | Large cluster; strong candidate for proper nav. |
-| `/seo/ansvar-livsmedelsinformation.html` | Responsibility for food information. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Labelling cluster. |
-| `/seo/vilseledande-livsmedelsinformation.html` | Misleading food information. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Labelling cluster. |
-| `/seo/fardigforpackade-livsmedel-markning.html` | Prepacked food definition. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Labelling cluster. |
-| `/seo/obligatorisk-markning-livsmedel.html` | Mandatory labelling overview. | Faktasida / artikel or strong huvudartikel | Behall URL och improve as major article. | Diskret | Could become head article under labelling nav. |
-| `/seo/ingrediensforteckning-livsmedel.html` | Ingredient list. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Labelling cluster. |
-| `/seo/livsmedlets-beteckning.html` | Food name / designation. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Labelling cluster. |
-| `/seo/forvaringsanvisning-livsmedel.html` | Storage instructions. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Labelling cluster; also related to storage. |
-| `/seo/marka-om-fardigforpackade-livsmedel.html` | Relabelling prepacked foods. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Labelling cluster. |
-| `/seo/oforpackade-livsmedel-information.html` | Non-prepacked food information. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Labelling cluster. |
-| `/seo/obligatorisk-information-oforpackad-mat.html` | Mandatory info for non-prepacked food. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Related to non-prepacked page; merge only with data. |
-| `/seo/distansforsaljning-oforpackad-mat.html` | Distance selling of non-prepacked food. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Specific compliance topic. |
-| `/seo/intern-sparbarhet-livsmedel.html` | Internal traceability. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Traceability cluster; app can be relevant after answer. |
-| `/seo/partimarkning-livsmedel.html` | Lot marking. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Traceability cluster. |
-| `/seo/aterkalla-livsmedel-sparbarhet.html` | Recall and traceability. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Strong operational importance. |
-| `/seo/mangdbalans-sparbarhet-livsmedel.html` | Mass balance / quantitative traceability. | Faktasida / artikel | Behall URL och migrera to article template. | Diskret | Traceability cluster. |
+| `/seo/kallor-och-faktagranskning.html` | Förklaring av källor och faktagranskning. | Legal / stödjande sida eller Faktasida / artikel | Behåll URL och förbättra som stödjande förtroende-/redaktionell sida. | Diskret | Kan stödja E-E-A-T. Göm inte undan om den har förtroendevärde. |
+| `/seo/kritiska-gransvarden.html` | Kritiska gränsvärden i HACCP. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Stark stödsida i HACCP-klustret. |
+| `/seo/kontrollplan.html` | Grunderna i kontrollplan. | Mall / checklista / resurskandidat | Kandidat för framtida mall/checklista; behåll URL medan format beslutas. | Måttlig | Bra resurskandidat. Kräver mall-/checkliste-UX-beslut. |
+| `/seo/hygien-och-daglig-drift.html` | Översikt över hygien och daglig drift. | Ämnesnav | Bygg ut till ämnesnav. | Måttlig | Tunt nav idag; behåll URL och bygg ut före många nya undersidor. |
+| `/seo/personlig-hygien-livsmedel.html` | Personlig hygien. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Hör hemma under hygiennav. |
+| `/seo/rengoring-livsmedelsverksamhet.html` | Rengöringsrutiner. | Faktasida / artikel; checklistekandidat | Behåll URL och förbättra; kandidat för checklista/resurs. | Måttlig | Bra operativ checklistekandidat. |
+| `/seo/skadedjur-livsmedelsverksamhet.html` | Förebyggande arbete mot skadedjur. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Hör hemma under hygien eller grundförutsättningar. |
+| `/seo/temperaturkontroll-livsmedel.html` | Översikt över temperaturkontroll. | Faktasida / artikel eller stark huvudartikel | Behåll URL och förbättra som huvudartikel för temperaturklustret. | Måttlig | Överlappar temperaturprocessnav; besluta hierarki senare med data. |
+| `/seo/allergeninformation-restaurang.html` | Allergeninformation för restauranger/caféer. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Kan senare länka till checklista/resurs. |
+| `/seo/hantering-och-forvaring-livsmedel.html` | Översikt över hantering och förvaring. | Ämnesnav | Bygg ut till ämnesnav. | Måttlig | Tunt nav idag; sannolikt stark IA-nod. |
+| `/seo/varumottagning-livsmedel.html` | Varumottagning. | Faktasida / artikel; checklistekandidat | Behåll URL och förbättra; kandidat för varumottagningschecklista. | Måttlig | Bra brygga mellan resurs och app. |
+| `/seo/korskontamination-livsmedel.html` | Korskontamination. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Hör hemma under hantering/förvaring. |
+| `/seo/separera-raa-och-atfardiga-livsmedel.html` | Separera råa och ätfärdiga livsmedel. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Relaterad till korskontamination; slå ihop endast med data. |
+| `/seo/kemikalier-i-livsmedelsverksamhet.html` | Kemikalier i livsmedelsverksamhet. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Operativ sida för regelefterlevnad. |
+| `/seo/allergenkontamination-livsmedel.html` | Allergenkontamination. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Relaterad till allergeninformation; slå ihop endast med data. |
+| `/seo/grundforutsattningar-livsmedel.html` | Översikt över grundförutsättningar. | Ämnesnav | Bygg ut till ämnesnav. | Måttlig | Brett kluster; undvik att göra sidan för generisk. |
+| `/seo/lokaler-och-utrustning-livsmedel.html` | Lokaler och utrustning. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Hör hemma under grundförutsättningar. |
+| `/seo/materialval-livsmedelslokal.html` | Materialval i livsmedelslokal. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Specifik fråga om regelefterlevnad. |
+| `/seo/underhall-livsmedelslokal.html` | Underhåll. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Kan senare kopplas till checklista. |
+| `/seo/toalett-och-handfat-livsmedelsverksamhet.html` | Krav på toalett och handfat. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Specifik fråga om regelefterlevnad. |
+| `/seo/ventilation-livsmedelsverksamhet.html` | Ventilation. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Specifik fråga om regelefterlevnad. |
+| `/seo/avfall-livsmedelsverksamhet.html` | Avfallshantering. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Relaterad till soprumssidan; slå ihop endast med data. |
+| `/seo/soprum-och-avfallsutrymme-livsmedel.html` | Soprum / avfallsutrymme. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Relaterad till avfallshantering; slå ihop endast med data. |
+| `/seo/transport-av-livsmedel.html` | Transport av livsmedel. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Kan höra hemma under hantering/förvaring eller grundförutsättningar. |
+| `/seo/utbildning-livsmedelshygien-personal.html` | Utbildning i livsmedelshygien för personal. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Kan senare kopplas till checklista/resurs. |
+| `/seo/vatten-i-livsmedelsverksamhet.html` | Vatten i livsmedelsverksamheter. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Specifik fråga om regelefterlevnad. |
+| `/seo/is-i-livsmedelsverksamhet.html` | Ishygien. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Relaterad till vatten/hygien; slå ihop endast med data. |
+| `/seo/temperaturprocesser-livsmedel.html` | Översikt över temperaturprocesser. | Ämnesnav | Bygg ut till ämnesnav. | Måttlig | Behöver relationsbeslut mot `/seo/temperaturkontroll-livsmedel.html`. |
+| `/seo/kylforvaring-livsmedel.html` | Kylförvaring. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Temperaturklustret. |
+| `/seo/upptining-livsmedel.html` | Upptining. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Temperaturklustret. |
+| `/seo/varmhallning-mat-temperatur.html` | Varmhållning. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Temperaturklustret. |
+| `/seo/nedkylning-mat-livsmedel.html` | Nedkylning av mat. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Temperaturklustret; starkt operativt värde. |
+| `/seo/ateruppvarmning-mat.html` | Återuppvärmning av mat. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Temperaturklustret. |
+| `/seo/datummarkning-livsmedel.html` | Översikt över datummärkning. | Ämnesnav | Bygg ut till ämnesnav. | Måttlig | Starkt kluster finns redan. |
+| `/seo/bast-fore-eller-sista-forbrukningsdag.html` | Bäst före jämfört med sista förbrukningsdag. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Stark informationssökning. |
+| `/seo/salja-mat-efter-bast-fore.html` | Sälja mat efter bäst före. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Fråga om regelefterlevnad och operativ hantering. |
+| `/seo/mat-efter-sista-forbrukningsdag.html` | Mat efter sista förbrukningsdag. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Fråga om regelefterlevnad; ska svara snabbt. |
+| `/seo/bestamma-hallbarhetsdatum-livsmedel.html` | Bestämma hållbarhetsdatum. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Kan senare kopplas till verktyg/resurs. |
+| `/seo/frysa-in-kylvaror-fore-utgangsdatum.html` | Frysa in kylvaror före utgångsdatum. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Specifik operativ fråga. |
+| `/seo/information-och-markning-livsmedel.html` | Översikt över information och märkning. | Ämnesnav | Bygg ut till ämnesnav. | Måttlig | Stort kluster; stark kandidat för riktigt nav. |
+| `/seo/ansvar-livsmedelsinformation.html` | Ansvar för livsmedelsinformation. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Märkningsklustret. |
+| `/seo/vilseledande-livsmedelsinformation.html` | Vilseledande livsmedelsinformation. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Märkningsklustret. |
+| `/seo/fardigforpackade-livsmedel-markning.html` | Definition av färdigförpackade livsmedel. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Märkningsklustret. |
+| `/seo/obligatorisk-markning-livsmedel.html` | Översikt över obligatorisk märkning. | Faktasida / artikel eller stark huvudartikel | Behåll URL och förbättra som större artikel. | Diskret | Kan bli huvudartikel under märkningsnav. |
+| `/seo/ingrediensforteckning-livsmedel.html` | Ingrediensförteckning. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Märkningsklustret. |
+| `/seo/livsmedlets-beteckning.html` | Livsmedlets beteckning. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Märkningsklustret. |
+| `/seo/forvaringsanvisning-livsmedel.html` | Förvaringsanvisning. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Märkningsklustret; även relaterad till förvaring. |
+| `/seo/marka-om-fardigforpackade-livsmedel.html` | Märka om färdigförpackade livsmedel. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Märkningsklustret. |
+| `/seo/oforpackade-livsmedel-information.html` | Information om oförpackade livsmedel. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Märkningsklustret. |
+| `/seo/obligatorisk-information-oforpackad-mat.html` | Obligatorisk information för oförpackad mat. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Relaterad till oförpackade livsmedel; slå ihop endast med data. |
+| `/seo/distansforsaljning-oforpackad-mat.html` | Distansförsäljning av oförpackad mat. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Specifik fråga om regelefterlevnad. |
+| `/seo/intern-sparbarhet-livsmedel.html` | Intern spårbarhet. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Spårbarhetsklustret; appen kan vara relevant efter svaret. |
+| `/seo/partimarkning-livsmedel.html` | Partimärkning. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Spårbarhetsklustret. |
+| `/seo/aterkalla-livsmedel-sparbarhet.html` | Återkallelse och spårbarhet. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Stark operativ betydelse. |
+| `/seo/mangdbalans-sparbarhet-livsmedel.html` | Mängdbalans / kvantitativ spårbarhet. | Faktasida / artikel | Behåll URL och migrera till artikelmall. | Diskret | Spårbarhetsklustret. |
 
-### Other Public Or Public-Adjacent Surfaces
+### Övriga publika eller publiknära ytor
 
-These are not content migration targets.
+De här är inte mål för innehållsmigrationen.
 
-| Surface | Future classification | Recommended action | App visibility | Dependencies or risks |
+| Yta | Framtida klassificering | Rekommenderad åtgärd | Appens synlighet | Beroenden eller risker |
 | --- | --- | --- | --- | --- |
-| `/api/leads/index.html` and related static files | Supporting/private admin surface, not SEO content | Behall utanfor innehallsmigrationen. Separate access/security review if needed. | Not applicable | Public reachability was not runtime-verified in #245. |
-| `/api/shared-attachment-url` | Supporting API | Behall utanfor innehallsmigrationen. | Not applicable | Shared attachment security and token handling are protected app concerns. |
-| `/api/send-inspector-report` | Supporting API | Behall utanfor innehallsmigrationen. | Not applicable | Inspector/report flow is app-adjacent and should not be changed in content migration. |
-| `/api/client-error` | Supporting API | Behall utanfor innehallsmigrationen. | Not applicable | Operational endpoint, not content. |
+| `/api/leads/index.html` och relaterade statiska filer | Stödjande/privat adminyta, inte SEO-innehåll | Behåll utanför innehållsmigrationen. Separat åtkomst-/säkerhetsgranskning vid behov. | Ej relevant | Publik åtkomlighet verifierades inte i körning i #245. |
+| `/api/shared-attachment-url` | Stödjande API | Behåll utanför innehållsmigrationen. | Ej relevant | Säkerhet för delade bilagor och tokenhantering är skyddade appfrågor. |
+| `/api/send-inspector-report` | Stödjande API | Behåll utanför innehållsmigrationen. | Ej relevant | Tillsyns-/rapportflödet är appnära och ska inte ändras i innehållsmigrationen. |
+| `/api/client-error` | Stödjande API | Behåll utanför innehållsmigrationen. | Ej relevant | Operativ slutpunkt, inte innehåll. |
 
-## 2. Recommended Topic Hubs And Clusters
+## 2. Rekommenderade ämnesnav och kluster
 
-This first structure reuses existing content. It should guide wireframes and IA before any large rewrite.
+Den första strukturen återanvänder befintligt innehåll. Den bör styra wireframes och informationsarkitektur före större omskrivningar.
 
-### Egenkontroll I Vardagen
+### Egenkontroll i vardagen
 
-- Visitor intent: understand what egenkontroll is, why it matters, and how to start practically.
-- Current pages: `/`, `/digital-egenkontroll-livsmedel`, `/dokumentation-egenkontroll-livsmedel`, `/seo/kontrollplan.html`.
-- Strong head articles: `/dokumentation-egenkontroll-livsmedel`, `/seo/kontrollplan.html`.
-- Gaps: beginner overview for "vad ar egenkontroll", printable starter checklist, simple responsibility map for small teams.
+- Besökarens avsikt: förstå vad egenkontroll är, varför det spelar roll och hur man börjar praktiskt.
+- Nuvarande sidor: `/`, `/digital-egenkontroll-livsmedel`, `/dokumentation-egenkontroll-livsmedel`, `/seo/kontrollplan.html`.
+- Starka huvudartiklar: `/dokumentation-egenkontroll-livsmedel`, `/seo/kontrollplan.html`.
+- Luckor: nybörjaröversikt för "vad är egenkontroll", utskrivbar startchecklista, enkel ansvarskarta för små team.
 
-### HACCP Och Riskstyrning
+### HACCP och riskstyrning
 
-- Visitor intent: understand HACCP, hazard analysis, limits, deviations, and verification.
-- Current pages: `/haccp-sma-livsmedelsforetag`, `/faroanalys-livsmedel`, `/avvikelser-korrigerande-atgarder-livsmedel`, `/verifiering-egenkontroll-livsmedel`, `/seo/kritiska-gransvarden.html`, `/seo/kontrollplan.html`.
-- Strong head articles: `/haccp-sma-livsmedelsforetag`, `/faroanalys-livsmedel`.
-- Gaps: HACCP step-by-step hub, simple hazard-analysis worksheet, critical-limit examples, generator for first draft hazard analysis.
+- Besökarens avsikt: förstå HACCP, faroanalys, gränsvärden, avvikelser och verifiering.
+- Nuvarande sidor: `/haccp-sma-livsmedelsforetag`, `/faroanalys-livsmedel`, `/avvikelser-korrigerande-atgarder-livsmedel`, `/verifiering-egenkontroll-livsmedel`, `/seo/kritiska-gransvarden.html`, `/seo/kontrollplan.html`.
+- Starka huvudartiklar: `/haccp-sma-livsmedelsforetag`, `/faroanalys-livsmedel`.
+- Luckor: steg-för-steg-nav för HACCP, enkel arbetsmall för faroanalys, exempel på kritiska gränser, generator för första utkast till faroanalys.
 
-### Hygien Och Daglig Drift
+### Hygien och daglig drift
 
-- Visitor intent: solve daily operational hygiene questions and routines.
-- Current pages: `/seo/hygien-och-daglig-drift.html`, `/seo/personlig-hygien-livsmedel.html`, `/seo/rengoring-livsmedelsverksamhet.html`, `/seo/skadedjur-livsmedelsverksamhet.html`, `/seo/allergeninformation-restaurang.html`, `/seo/utbildning-livsmedelshygien-personal.html`.
-- Strong head articles: `/seo/hygien-och-daglig-drift.html`, `/seo/rengoring-livsmedelsverksamhet.html`.
-- Gaps: daily hygiene checklist, cleaning schedule template, staff hygiene onboarding resource.
+- Besökarens avsikt: lösa dagliga operativa hygienfrågor och rutiner.
+- Nuvarande sidor: `/seo/hygien-och-daglig-drift.html`, `/seo/personlig-hygien-livsmedel.html`, `/seo/rengoring-livsmedelsverksamhet.html`, `/seo/skadedjur-livsmedelsverksamhet.html`, `/seo/allergeninformation-restaurang.html`, `/seo/utbildning-livsmedelshygien-personal.html`.
+- Starka huvudartiklar: `/seo/hygien-och-daglig-drift.html`, `/seo/rengoring-livsmedelsverksamhet.html`.
+- Luckor: daglig hygienchecklista, mall för rengöringsschema, onboardingresurs för personalhygien.
 
-### Hantering Och Forvaring
+### Hantering och förvaring
 
-- Visitor intent: handle, receive, store, and separate food safely.
-- Current pages: `/seo/hantering-och-forvaring-livsmedel.html`, `/seo/varumottagning-livsmedel.html`, `/seo/korskontamination-livsmedel.html`, `/seo/separera-raa-och-atfardiga-livsmedel.html`, `/seo/kemikalier-i-livsmedelsverksamhet.html`, `/seo/allergenkontamination-livsmedel.html`, `/seo/transport-av-livsmedel.html`.
-- Strong head articles: `/seo/hantering-och-forvaring-livsmedel.html`, `/seo/varumottagning-livsmedel.html`.
-- Gaps: receiving checklist, storage-zone checklist, cross-contamination quick guide.
+- Besökarens avsikt: hantera, ta emot, förvara och separera livsmedel säkert.
+- Nuvarande sidor: `/seo/hantering-och-forvaring-livsmedel.html`, `/seo/varumottagning-livsmedel.html`, `/seo/korskontamination-livsmedel.html`, `/seo/separera-raa-och-atfardiga-livsmedel.html`, `/seo/kemikalier-i-livsmedelsverksamhet.html`, `/seo/allergenkontamination-livsmedel.html`, `/seo/transport-av-livsmedel.html`.
+- Starka huvudartiklar: `/seo/hantering-och-forvaring-livsmedel.html`, `/seo/varumottagning-livsmedel.html`.
+- Luckor: varumottagningschecklista, checklista för förvaringszoner, snabbguide om korskontamination.
 
-### Grundforutsattningar
+### Grundförutsättningar
 
-- Visitor intent: understand premises, equipment, water, waste, ventilation, and maintenance requirements.
-- Current pages: `/seo/grundforutsattningar-livsmedel.html`, `/seo/lokaler-och-utrustning-livsmedel.html`, `/seo/materialval-livsmedelslokal.html`, `/seo/underhall-livsmedelslokal.html`, `/seo/toalett-och-handfat-livsmedelsverksamhet.html`, `/seo/ventilation-livsmedelsverksamhet.html`, `/seo/avfall-livsmedelsverksamhet.html`, `/seo/soprum-och-avfallsutrymme-livsmedel.html`, `/seo/vatten-i-livsmedelsverksamhet.html`, `/seo/is-i-livsmedelsverksamhet.html`.
-- Strong head articles: `/seo/grundforutsattningar-livsmedel.html`, `/seo/lokaler-och-utrustning-livsmedel.html`.
-- Gaps: premises self-check checklist, maintenance plan template, waste-handling checklist.
+- Besökarens avsikt: förstå krav på lokaler, utrustning, vatten, avfall, ventilation och underhåll.
+- Nuvarande sidor: `/seo/grundforutsattningar-livsmedel.html`, `/seo/lokaler-och-utrustning-livsmedel.html`, `/seo/materialval-livsmedelslokal.html`, `/seo/underhall-livsmedelslokal.html`, `/seo/toalett-och-handfat-livsmedelsverksamhet.html`, `/seo/ventilation-livsmedelsverksamhet.html`, `/seo/avfall-livsmedelsverksamhet.html`, `/seo/soprum-och-avfallsutrymme-livsmedel.html`, `/seo/vatten-i-livsmedelsverksamhet.html`, `/seo/is-i-livsmedelsverksamhet.html`.
+- Starka huvudartiklar: `/seo/grundforutsattningar-livsmedel.html`, `/seo/lokaler-och-utrustning-livsmedel.html`.
+- Luckor: egenkontrollchecklista för lokaler, mall för underhållsplan, checklista för avfallshantering.
 
 ### Temperatur
 
-- Visitor intent: understand temperature control and specific temperature processes.
-- Current pages: `/seo/temperaturkontroll-livsmedel.html`, `/seo/temperaturprocesser-livsmedel.html`, `/seo/kylforvaring-livsmedel.html`, `/seo/upptining-livsmedel.html`, `/seo/varmhallning-mat-temperatur.html`, `/seo/nedkylning-mat-livsmedel.html`, `/seo/ateruppvarmning-mat.html`.
-- Strong head articles: `/seo/temperaturkontroll-livsmedel.html`, `/seo/temperaturprocesser-livsmedel.html`.
-- Gaps: temperature log template, cooling-time calculator/generator candidate, control-frequency guide.
+- Besökarens avsikt: förstå temperaturkontroll och specifika temperaturprocesser.
+- Nuvarande sidor: `/seo/temperaturkontroll-livsmedel.html`, `/seo/temperaturprocesser-livsmedel.html`, `/seo/kylforvaring-livsmedel.html`, `/seo/upptining-livsmedel.html`, `/seo/varmhallning-mat-temperatur.html`, `/seo/nedkylning-mat-livsmedel.html`, `/seo/ateruppvarmning-mat.html`.
+- Starka huvudartiklar: `/seo/temperaturkontroll-livsmedel.html`, `/seo/temperaturprocesser-livsmedel.html`.
+- Luckor: temperaturjournalmall, kalkylator/generator för nedkylningstid, guide för kontrollfrekvens.
 
-### Datummarkning Och Hallbarhet
+### Datummärkning och hållbarhet
 
-- Visitor intent: understand durability dates, what may be sold, and how to decide dates.
-- Current pages: `/seo/datummarkning-livsmedel.html`, `/seo/bast-fore-eller-sista-forbrukningsdag.html`, `/seo/salja-mat-efter-bast-fore.html`, `/seo/mat-efter-sista-forbrukningsdag.html`, `/seo/bestamma-hallbarhetsdatum-livsmedel.html`, `/seo/frysa-in-kylvaror-fore-utgangsdatum.html`.
-- Strong head articles: `/seo/datummarkning-livsmedel.html`, `/seo/bast-fore-eller-sista-forbrukningsdag.html`.
-- Gaps: date-marking decision tree, durability-date worksheet, printable date-labelling checklist.
+- Besökarens avsikt: förstå hållbarhetsdatum, vad som får säljas och hur datum bestäms.
+- Nuvarande sidor: `/seo/datummarkning-livsmedel.html`, `/seo/bast-fore-eller-sista-forbrukningsdag.html`, `/seo/salja-mat-efter-bast-fore.html`, `/seo/mat-efter-sista-forbrukningsdag.html`, `/seo/bestamma-hallbarhetsdatum-livsmedel.html`, `/seo/frysa-in-kylvaror-fore-utgangsdatum.html`.
+- Starka huvudartiklar: `/seo/datummarkning-livsmedel.html`, `/seo/bast-fore-eller-sista-forbrukningsdag.html`.
+- Luckor: beslutsträd för datummärkning, arbetsblad för hållbarhetsdatum, utskrivbar datummärkningschecklista.
 
-### Information Och Markning
+### Information och märkning
 
-- Visitor intent: understand food information and labelling obligations.
-- Current pages: `/seo/information-och-markning-livsmedel.html`, `/seo/ansvar-livsmedelsinformation.html`, `/seo/vilseledande-livsmedelsinformation.html`, `/seo/fardigforpackade-livsmedel-markning.html`, `/seo/obligatorisk-markning-livsmedel.html`, `/seo/ingrediensforteckning-livsmedel.html`, `/seo/livsmedlets-beteckning.html`, `/seo/forvaringsanvisning-livsmedel.html`, `/seo/marka-om-fardigforpackade-livsmedel.html`, `/seo/oforpackade-livsmedel-information.html`, `/seo/obligatorisk-information-oforpackad-mat.html`, `/seo/distansforsaljning-oforpackad-mat.html`.
-- Strong head articles: `/seo/information-och-markning-livsmedel.html`, `/seo/obligatorisk-markning-livsmedel.html`.
-- Gaps: labelling checklist, non-prepacked information checklist, simple label review tool.
+- Besökarens avsikt: förstå ansvar för livsmedelsinformation och märkningskrav.
+- Nuvarande sidor: `/seo/information-och-markning-livsmedel.html`, `/seo/ansvar-livsmedelsinformation.html`, `/seo/vilseledande-livsmedelsinformation.html`, `/seo/fardigforpackade-livsmedel-markning.html`, `/seo/obligatorisk-markning-livsmedel.html`, `/seo/ingrediensforteckning-livsmedel.html`, `/seo/livsmedlets-beteckning.html`, `/seo/forvaringsanvisning-livsmedel.html`, `/seo/marka-om-fardigforpackade-livsmedel.html`, `/seo/oforpackade-livsmedel-information.html`, `/seo/obligatorisk-information-oforpackad-mat.html`, `/seo/distansforsaljning-oforpackad-mat.html`.
+- Starka huvudartiklar: `/seo/information-och-markning-livsmedel.html`, `/seo/obligatorisk-markning-livsmedel.html`.
+- Luckor: märkningschecklista, checklista för oförpackad information, enkelt granskningsverktyg för märkning.
 
-### Sparbarhet
+### Spårbarhet
 
-- Visitor intent: understand what traceability information to save, how to identify batches, and what to do during recall.
-- Current pages: `/sparbarhet-livsmedel`, `/spara-sparbarhetsuppgifter-livsmedel`, `/seo/intern-sparbarhet-livsmedel.html`, `/seo/partimarkning-livsmedel.html`, `/seo/aterkalla-livsmedel-sparbarhet.html`, `/seo/mangdbalans-sparbarhet-livsmedel.html`.
-- Strong head articles: `/sparbarhet-livsmedel`, `/seo/intern-sparbarhet-livsmedel.html`.
-- Gaps: traceability record template, recall checklist, batch/lot marking examples, mass-balance worksheet.
+- Besökarens avsikt: förstå vilken spårbarhetsinformation som ska sparas, hur partier identifieras och vad man gör vid återkallelse.
+- Nuvarande sidor: `/sparbarhet-livsmedel`, `/spara-sparbarhetsuppgifter-livsmedel`, `/seo/intern-sparbarhet-livsmedel.html`, `/seo/partimarkning-livsmedel.html`, `/seo/aterkalla-livsmedel-sparbarhet.html`, `/seo/mangdbalans-sparbarhet-livsmedel.html`.
+- Starka huvudartiklar: `/sparbarhet-livsmedel`, `/seo/intern-sparbarhet-livsmedel.html`.
+- Luckor: mall för spårbarhetsjournal, återkallelsechecklista, exempel på parti-/lotmärkning, arbetsblad för mängdbalans.
 
-## 3. Commercial Restraint By Page Type
+## 3. Kommersiell återhållsamhet per sidtyp
 
-| Future page type | Recommended app visibility | Rationale |
+| Framtida sidtyp | Rekommenderad synlighet för appen | Motivering |
 | --- | --- | --- |
-| Startsida | Tydlig | The visitor is evaluating the whole offer, so the app can be clear while still leading to knowledge and resources. |
-| Amnesnav | Mattlig | The visitor is orienting within a topic. The app should be present as a relevant next step, not the main content. |
-| Faktasida / artikel | Diskret | The visitor wants an answer. App promotion should come after the answer and be tied to the page's practical problem. |
-| Sida med hog kopavsikt | Tydlig | The visitor is already solution-aware, so app value, signup, and proof can be prominent. |
-| Mall / checklista / nedladdningsbar resurs | Mattlig | The resource must be usable first. App value can be shown as the easier ongoing workflow after the resource. |
-| Verktyg / generator | Mattlig | The tool and result come first. The app can be offered after the result when it helps save or repeat the work. |
-| Resursbibliotek | Mattlig | The visitor is browsing for help. App visibility should support discovery without blocking resources. |
-| Inloggning | Tydlig | The page is already an app entry flow and should be frictionless. |
-| Signup | Tydlig | The page is already a conversion flow and should be frictionless. |
-| Legal / stodjande sida | Diskret | The visitor needs trust/compliance information. Commercial content should stay minimal. |
-| Delat appflode / ej SEO-sida | Tydlig within flow | The user is inside an app-supported workflow. Do not treat as public content or SEO. |
+| Startsida | Tydlig | Besökaren utvärderar hela erbjudandet, så appen kan vara tydlig samtidigt som sidan leder vidare till kunskap och resurser. |
+| Ämnesnav | Måttlig | Besökaren orienterar sig inom ett ämne. Appen ska finnas som relevant nästa steg, inte som huvudinnehåll. |
+| Faktasida / artikel | Diskret | Besökaren vill ha ett svar. Appen bör visas efter svaret och knytas till sidans praktiska problem. |
+| Sida med hög köpavsikt | Tydlig | Besökaren är redan lösningsmedveten, så appvärde, signup och bevis kan vara framträdande. |
+| Mall / checklista / nedladdningsbar resurs | Måttlig | Resursen måste gå att använda först. Appvärdet kan visas som enklare löpande arbetsflöde efter resursen. |
+| Verktyg / generator | Måttlig | Verktyget och resultatet kommer först. Appen kan erbjudas efter resultatet när den hjälper användaren att spara eller upprepa arbetet. |
+| Resursbibliotek | Måttlig | Besökaren letar hjälp. Appens synlighet ska stödja upptäckt utan att blockera resurser. |
+| Inloggning | Tydlig | Sidan är redan en appingång och ska vara friktionsfri. |
+| Signup | Tydlig | Sidan är redan ett konverteringsflöde och ska vara friktionsfri. |
+| Legal / stödjande sida | Diskret | Besökaren behöver förtroendeinformation eller information om regelefterlevnad. Kommersiellt innehåll ska hållas minimalt. |
+| Delat appflöde / ej SEO-sida | Tydlig i flödet | Användaren är inne i ett appstött flöde. Behandla inte som publikt innehåll eller SEO. |
 
-## 4. First Complete Minisystem
+## 4. Första kompletta minisystemet
 
-The first pilot should test the full strategy on a narrow but commercially relevant area with existing content and clear product adjacency. The recommended pilot is **HACCP och riskstyrning for small food businesses**.
+Den första piloten bör testa hela strategin på ett smalt men kommersiellt relevant område med befintligt innehåll och tydlig produktkoppling. Rekommenderad pilot är **HACCP och riskstyrning för små livsmedelsverksamheter**.
 
-| Required part | Recommended URL / asset | Why this is a good pilot |
+| Del som krävs | Rekommenderad URL / resurs | Varför detta är en bra pilot |
 | --- | --- | --- |
-| 1 startsida | `/` | Tests the new platform promise and routes users toward knowledge, resources, and app without making the app the only path. |
-| 1 amnesnav | `/haccp-sma-livsmedelsforetag` | Already strong and broad enough to become a HACCP/risk hub. High relevance to the product. |
-| 2-3 faktasidor | `/faroanalys-livsmedel`, `/avvikelser-korrigerande-atgarder-livsmedel`, `/verifiering-egenkontroll-livsmedel` | Together they cover understand -> assess risk -> document deviation -> verify control. |
-| 1 mall/checklista candidate | `/seo/kontrollplan.html` | A control plan naturally becomes a practical worksheet/checklist and connects directly to app workflows. |
-| 1 tool/generator candidate | `/faroanalys-livsmedel` | Hazard analysis can support a future guided generator for a first draft or structured worksheet. |
-| Resursbibliotek | `/kunskapsbank` | Tests whether the library can expose the pilot hub, articles, resource, and tool candidate clearly. |
-| Login/signup flow | `/login`, `/signup` | Tests a natural transition from public help to app entry without changing auth in this issue. |
+| 1 startsida | `/` | Testar det nya plattformslöftet och leder användare mot kunskap, resurser och app utan att göra appen till enda vägen. |
+| 1 ämnesnav | `/haccp-sma-livsmedelsforetag` | Redan stark och bred nog att bli HACCP-/risknav. Hög relevans för produkten. |
+| 2-3 faktasidor | `/faroanalys-livsmedel`, `/avvikelser-korrigerande-atgarder-livsmedel`, `/verifiering-egenkontroll-livsmedel` | Tillsammans täcker de förstå -> bedöm risk -> dokumentera avvikelse -> verifiera kontroll. |
+| 1 mall-/checklistekandidat | `/seo/kontrollplan.html` | En kontrollplan blir naturligt ett praktiskt arbetsblad/checklista och kopplar direkt till appflöden. |
+| 1 verktygs-/generatorkandidat | `/faroanalys-livsmedel` | Faroanalys kan stödja en framtida guidad generator för ett första utkast eller strukturerat arbetsblad. |
+| Resursbibliotek | `/kunskapsbank` | Testar om biblioteket kan visa pilotnavet, artiklar, resursen och verktygskandidaten tydligt. |
+| Inloggnings-/signup-flöde | `/login`, `/signup` | Testar en naturlig övergång från publik hjälp till appingång utan att ändra autentisering i denna issue. |
 
-Pilot boundaries:
+Pilotens gränser:
 
-- Keep current URLs.
-- Do not redirect or remove overlapping pages.
-- Do not introduce a new tool URL until the wireframe/product decision is made.
-- Use the pilot to validate page-type wireframes, app visibility, internal linking, and metadata approach before scaling.
+- Behåll nuvarande URL:er.
+- Omdirigera eller ta inte bort överlappande sidor.
+- Introducera inte en ny verktygs-URL innan wireframe-/produktbeslut är fattat.
+- Använd piloten för att validera sidtypswireframes, appens synlighet, internlänkning och metadatastrategi före skalning.
 
-## 5. Decisions
+## 5. Beslut
 
-### Can Be Decided Now From Repo And Strategy
+### Kan beslutas nu utifrån repo och strategi
 
-- Existing public URLs should be preserved as the default migration rule.
-- `/` should remain the public startsida.
-- `/kunskapsbank` should become the resource library rather than a purely commercial page.
-- High-intent pages are `/digital-egenkontroll-livsmedel`, `/egenkontroll-restaurang`, and `/egenkontroll-cafe`.
-- Most current static SEO pages should remain fact/article pages and receive better article templates later.
-- Current thin hub-like pages are better treated as future amnesnav than as pages to remove.
-- App visibility should be lower on factual pages than on high-intent and auth pages.
-- `/login`, `/signup`, legal pages, inspector links, and API surfaces should stay outside content migration.
-- The first minisystem should use an existing topic cluster before broad page migration.
+- Befintliga publika URL:er ska bevaras som grundregel för migrationen.
+- `/` ska fortsätta vara publik startsida.
+- `/kunskapsbank` ska bli resursbibliotek snarare än renodlad kommersiell sida.
+- Hög-intent-sidor är `/digital-egenkontroll-livsmedel`, `/egenkontroll-restaurang` och `/egenkontroll-cafe`.
+- De flesta nuvarande statiska SEO-sidor bör förbli fakta-/artikelsidor och senare få bättre artikelmallar.
+- Nuvarande tunna navliknande sidor bör behandlas som framtida ämnesnav snarare än som sidor att ta bort.
+- Appens synlighet bör vara lägre på faktasidor än på sidor med hög köpavsikt och autentiseringssidor.
+- `/login`, `/signup`, legal-sidor, inspektörslänkar och API-ytor ska ligga utanför innehållsmigrationen.
+- Det första minisystemet bör använda ett befintligt ämneskluster före bred innehållsmigration.
 
-### Requires Data Or User Decision First
+### Kräver data eller användarbeslut först
 
-- Any redirect, deletion, or permanent merge of existing URLs.
-- Whether `/sparbarhet-livsmedel` or `/haccp-sma-livsmedelsforetag` should be final hub URLs or head articles.
-- Whether `/seo/temperaturkontroll-livsmedel.html` or `/seo/temperaturprocesser-livsmedel.html` should lead the temperature cluster.
-- Which overlapping traceability, allergen, waste, and non-prepacked-information pages should remain separate.
-- Search Console impressions, clicks, queries, indexed status, and cannibalization signals.
-- Organic traffic, backlinks, assisted conversions, signup paths, and paid/customer value by page.
-- Final visual direction and design-system decisions for each page type.
-- Whether public web and app should move to `minegenkontroll.se` and `app.minegenkontroll.se` in one step or staged releases.
-- Whether future tools/generators get dedicated URLs, embedded sections, or both.
-- Whether `/api/leads` should remain in the deployed public surface.
+- Alla omdirigeringar, borttagningar eller permanenta sammanslagningar av befintliga URL:er.
+- Om `/sparbarhet-livsmedel` eller `/haccp-sma-livsmedelsforetag` ska vara slutliga nav-URL:er eller huvudartiklar.
+- Om `/seo/temperaturkontroll-livsmedel.html` eller `/seo/temperaturprocesser-livsmedel.html` ska leda temperaturklustret.
+- Vilka överlappande sidor om spårbarhet, allergener, avfall och information om oförpackade livsmedel som ska vara separata.
+- Search Console-data om visningar, klick, sökfrågor, indexering och kannibaliseringssignaler.
+- Organisk trafik, inlänkar, assisterade konverteringar, signup-vägar och betalt/kundvärde per sida.
+- Slutlig visuell riktning och designsystembeslut för varje sidtyp.
+- Om publik webb och app ska flyttas till `minegenkontroll.se` och `app.minegenkontroll.se` i ett steg eller etappvis.
+- Om framtida verktyg/generatorer ska få egna URL:er, inbäddade sektioner eller båda.
+- Om `/api/leads` ska ligga kvar på den deployade publika ytan.
 
-## Next-Step Use
+## Nästa användning
 
-Use this map to guide the next phase only after reading the strategic context and the current-state inventory. The next safe work product is likely page-type wireframes or an implementation-neutral IA decision document, not content rewrites or route changes.
+Använd den här kartan för att styra nästa fas först efter att den strategiska kontexten och nulägesinventeringen har lästs. Nästa säkra leverans är sannolikt sidtypswireframes eller ett implementationsneutralt beslut om informationsarkitektur, inte innehållsomskrivningar eller route-ändringar.
