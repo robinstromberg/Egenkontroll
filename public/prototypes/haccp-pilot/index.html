@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="color-scheme" content="light dark" />
+    <title>HACCP-pilot - visuell prototyp</title>
+    <link rel="stylesheet" href="prototype.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Hoppa till innehåll</a>
+
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="#fact" data-screen="fact" aria-label="HACCP-pilotens startsida">
+          <span class="brand-mark" aria-hidden="true">ME</span>
+          <span>Min Egenkontroll</span>
+        </a>
+
+        <nav class="desktop-nav" aria-label="Huvudnavigation">
+          <a href="#fact" data-screen="fact">Kunskap</a>
+          <a href="#resource" data-screen="resource">Mallar och checklistor</a>
+          <a href="#topic" data-screen="topic">Verktyg</a>
+          <a href="#topic" data-screen="topic">Utbildning</a>
+          <a href="#fact" data-screen="fact">Referenser och källor</a>
+          <a href="#topic" data-screen="topic">Appen</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Byt tema">Tema</button>
+          <button class="text-action" type="button" data-prototype-notice>Logga in</button>
+          <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-open>Meny</button>
+        </div>
+      </div>
+    </header>
+
+    <dialog class="mobile-dialog" id="mobile-menu" aria-label="Mobilnavigation" data-mobile-menu>
+      <div class="mobile-dialog-inner">
+        <div class="mobile-dialog-top">
+          <span class="brand"><span class="brand-mark" aria-hidden="true">ME</span><span>Min Egenkontroll</span></span>
+          <button class="icon-button" type="button" data-menu-close>Stäng</button>
+        </div>
+        <nav class="mobile-nav" aria-label="Mobilnavigation">
+          <a href="#fact" data-screen="fact">Kunskap</a>
+          <a href="#resource" data-screen="resource">Mallar och checklistor</a>
+          <a href="#topic" data-screen="topic">Verktyg</a>
+          <a href="#topic" data-screen="topic">Utbildning</a>
+          <a href="#fact" data-screen="fact">Referenser och källor</a>
+          <hr />
+          <a href="#topic" data-screen="topic">Appen</a>
+          <button type="button" data-prototype-notice>Logga in</button>
+          <button class="button button-primary" type="button" data-prototype-notice>Kom igang</button>
+        </nav>
+      </div>
+    </dialog>
+
+    <main id="main-content">
+      <section class="prototype-banner" aria-label="Prototypinformation">
+        <div class="shell"><strong>Visuell prototyp</strong><span> Tillfällig preview - inte produktionsinnehåll eller slutlig copy.</span></div>
+      </section>
+
+      <section class="screen screen-fact" data-screen-panel="fact" aria-labelledby="fact-title">
+        <div class="shell breadcrumb" aria-label="Brödsmulor"><span>Kunskap</span><span aria-hidden="true">/</span><a href="#topic" data-screen="topic">HACCP och riskstyrning</a><span aria-hidden="true">/</span><span>Faroanalys</span></div>
+        <div class="shell article-layout">
+          <article class="article-column">
+            <p class="eyebrow">Faktasida</p>
+            <h1 id="fact-title" tabindex="-1">Faroanalys för mindre livsmedelsverksamheter</h1>
+            <p class="lead">En faroanalys hjälper dig att se var hanteringen kan behöva styras. Exemplet visar hierarki, inte slutliga instruktioner.</p>
+
+            <nav class="article-toc" aria-label="På denna sida">
+              <p>På denna sida</p>
+              <a href="#fact-answer">Kort svar</a>
+              <a href="#fact-steps">Praktisk arbetsgang</a>
+              <a href="#fact-example">Exempel</a>
+              <a href="#fact-sources">Källor och faktagranskning</a>
+            </nav>
+
+            <section id="fact-answer" class="answer-block">
+              <p class="section-label">Kort svar</p>
+              <h2>Borja med det som faktiskt hander i verksamheten</h2>
+              <p>Beskriv först dina vanligaste steg, från mottagning till servering. Identifiera sedan var risker kan uppstå och hur de följs upp i vardagen.</p>
+            </section>
+
+            <section id="fact-steps" class="content-section">
+              <p class="section-label">Praktisk arbetsgang</p>
+              <h2>Fyra enkla steg att gå igenom</h2>
+              <ol class="numbered-steps">
+                <li><strong>Beskriv flödet.</strong><span>Vad händer innan, under och efter ett arbetsmoment?</span></li>
+                <li><strong>Fundera på risker.</strong><span>Vad behöver verksamheten vara uppmärksam på i just det steget?</span></li>
+                <li><strong>Bestäm arbetssätt.</strong><span>Hur ska ni upptäcka och hantera ett avsteg?</span></li>
+                <li><strong>Följ upp.</strong><span>När behöver rutinen ses över eller justeras?</span></li>
+              </ol>
+            </section>
+
+            <section id="fact-example" class="example-block">
+              <div>
+                <p class="section-label">Exempel - anpassa till din verksamhet</p>
+                <h2>En kort beskrivning av ett arbetsmoment</h2>
+                <p>"Varor tas emot, kontrolleras och placeras på rätt plats. Om något inte verkar stämma stoppas hanteringen och ansvarig följer upp."</p>
+              </div>
+              <span class="status status-attention">Exempel, inte regel</span>
+            </section>
+
+            <section class="content-section">
+              <p class="section-label">Nasta steg</p>
+              <h2>När en kontroll inte blir som planerat</h2>
+              <p>Se ett exempel på hur en avvikelse kan beskrivas och följas upp innan du fortsätter till kontrollplansresursen.</p>
+              <button class="text-link" type="button" data-screen="topic">Se HACCP-arbetskedjan <span aria-hidden="true">-></span></button>
+            </section>
+
+            <section id="fact-sources" class="fact-status">
+              <div><p class="section-label">Källor och faktagranskning</p><h2>Plats för faktastatus</h2><p>Här visas i en slutlig sida direktlänkar, granskningsdatum och tydlig skillnad mellan vägledning och praktiska exempel.</p></div>
+              <span class="status status-clear">Faktastatus: exempel</span>
+            </section>
+
+            <section class="app-bridge app-bridge-discreet">
+              <p class="section-label">När arbetet återkommer</p>
+              <h2>Samla uppföljning i en arbetsyta</h2>
+              <p>När arbetet återkommer kan Min Egenkontroll hjälpa till att samla kontroller, åtgärder och historik.</p>
+              <button class="text-link" type="button" data-prototype-notice>Visa appbrygga i prototypen <span aria-hidden="true">-></span></button>
+            </section>
+          </article>
+
+          <aside class="article-aside" aria-label="Faktasidestatus">
+            <p class="aside-title">Faktasida</p>
+            <p>Läsyta med svar, arbetsgång och källor före appen.</p>
+            <a href="#topic" data-screen="topic">Till HACCP-navet</a>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen screen-topic" data-screen-panel="topic" aria-labelledby="topic-title" hidden>
+        <div class="shell breadcrumb" aria-label="Brödsmulor"><span>Kunskap</span><span aria-hidden="true">/</span><span>HACCP och riskstyrning</span></div>
+        <div class="shell topic-hero">
+          <div><p class="eyebrow">Ämnesnav</p><h1 id="topic-title" tabindex="-1">HACCP och riskstyrning</h1><p class="lead">En karta över det som kan behöva hänga ihop i en mindre livsmedelsverksamhet.</p></div>
+          <div class="start-card"><p class="section-label">Börja här</p><strong>Vill du förstå ett arbetsmoment eller göra en praktisk plan?</strong><div><button class="button button-secondary" type="button" data-screen="fact">Läs om faroanalys</button><button class="button button-quiet" type="button" data-screen="resource">Öppna kontrollplan</button></div></div>
+        </div>
+
+        <div class="shell topic-content">
+          <section aria-labelledby="chain-title"><p class="section-label">Arbetskedja</p><h2 id="chain-title">Från översikt till uppföljning</h2><div class="process-grid">
+            <button class="process-step" type="button" data-screen="fact"><span>01</span><strong>Beskriv flödet</strong><small>Faktasida</small></button>
+            <button class="process-step" type="button" data-screen="fact"><span>02</span><strong>Bedöm risker</strong><small>Faktasida</small></button>
+            <button class="process-step" type="button" data-screen="resource"><span>03</span><strong>Planera kontroll</strong><small>Mall</small></button>
+            <button class="process-step" type="button" data-prototype-notice><span>04</span><strong>Hantera avvikelse</strong><small>Faktasida</small></button>
+            <button class="process-step" type="button" data-prototype-notice><span>05</span><strong>Verifiera</strong><small>Faktasida</small></button>
+            <button class="process-step" type="button" data-prototype-notice><span>06</span><strong>Dokumentera</strong><small>Appbrygga</small></button>
+          </div></section>
+
+          <section class="resource-shelf" aria-labelledby="resource-title"><div class="section-heading"><p class="section-label">Praktiska resurser</p><h2 id="resource-title">Valj en vag vidare</h2></div><div class="resource-grid">
+            <button class="resource-card resource-card-article" type="button" data-screen="fact"><span>Faktasida</span><h3>Faroanalys</h3><p>En lugn läsa-och-förstå-yta med tydligt kort svar.</p></button>
+            <button class="resource-card resource-card-template" type="button" data-screen="resource"><span>Mall</span><h3>Kontrollplan</h3><p>Ett arbetsblad att anpassa till den egna vardagen.</p></button>
+            <button class="resource-card resource-card-tool" type="button" data-prototype-notice><span>Verktyg - koncept</span><h3>Forsta utkast</h3><p>En framtida guidad arbetsyta, utan beslut om URL eller funktion.</p></button>
+          </div></section>
+
+          <section class="topic-note"><div><p class="section-label">För mindre verksamheter</p><h2>Gör det begripligt och relevant</h2><p>Prototypen visar hur ett nav kan leda vidare utan att bli en lång artikel eller en säljsida.</p></div><span class="status status-clear">Orientering före app</span></section>
+
+          <section class="app-bridge app-bridge-moderate"><div><p class="section-label">Löpande arbete</p><h2>När rutinerna ska följas i vardagen</h2><p>Min Egenkontroll kan vara en arbetsyta för återkommande kontroller, åtgärder och historik.</p></div><button class="button button-primary" type="button" data-prototype-notice>Se appbrygga</button></section>
+        </div>
+      </section>
+
+      <section class="screen screen-resource" data-screen-panel="resource" aria-labelledby="resource-title-main" hidden>
+        <div class="shell breadcrumb" aria-label="Brödsmulor"><span>Resursbibliotek</span><span aria-hidden="true">/</span><a href="#topic" data-screen="topic">HACCP och riskstyrning</a><span aria-hidden="true">/</span><span>Kontrollplan</span></div>
+        <div class="shell resource-intro"><div><p class="eyebrow">Mall och checklista</p><h1 id="resource-title-main" tabindex="-1">Kontrollplan - ett arbetsblad för vardagen</h1><p class="lead">Använd fälten för att få en tydligare bild av vem som gör vad, när och hur. Allt innehåll är prototypcopy.</p></div><div class="resource-actions"><button class="button button-primary" type="button" data-example-toggle aria-expanded="false">Visa ifyllt exempel</button><button class="button button-secondary" type="button" data-print>Förhandsvisa utskrift</button></div></div>
+
+        <div class="shell resource-layout">
+          <section class="worksheet" aria-labelledby="worksheet-title"><div class="worksheet-heading"><div><p class="section-label">Arbetsblad</p><h2 id="worksheet-title">Planera en kontrollpunkt</h2></div><span class="status status-attention">Anpassa till din verksamhet</span></div>
+            <form class="worksheet-form"><div class="field"><label for="area">Område eller processteg</label><input id="area" name="area" placeholder="Exempel: Kylmonter" /></div><div class="field"><label for="check">Vad kontrolleras?</label><input id="check" name="check" placeholder="Beskriv kontrollen" /></div><div class="field"><label for="method">Hur gör ni?</label><textarea id="method" name="method" rows="3" placeholder="Beskriv arbetssätt eller kontrollmetod"></textarea></div><div class="field"><label for="owner">Ansvarig</label><input id="owner" name="owner" placeholder="Roll eller arbetslag" /></div><div class="field"><label for="followup">Vid avvikelse</label><textarea id="followup" name="followup" rows="3" placeholder="Beskriv hur ni bedömer och följer upp"></textarea></div></form>
+            <div class="filled-example" data-filled-example hidden><p class="section-label">Ifyllt exempel - inte regel</p><div class="example-row"><strong>Kylmonter</strong><span>Temperaturkontroll</span><span>Morgonpasset</span><span>Bedöm och följ upp vid avvikelse</span></div></div>
+          </section>
+          <aside class="document-preview" aria-label="Forhandsvisning av kontrollplan"><p class="section-label">Forhandsvisning</p><h2>Kontrollplan</h2><div class="preview-lines"><span></span><span></span><span></span><span></span><span></span></div><p>En utskriftsbar sammanfattning visas har i prototypen.</p></aside>
+        </div>
+
+        <div class="shell resource-bottom"><section class="how-to"><p class="section-label">Så används mallen</p><h2>Gör den till din egen</h2><p>Fyll i det som är relevant för ert arbetssätt. Exemplet är bara en visuell platshållare och ersätter inte er egen bedömning.</p></section><section class="fact-status"><div><p class="section-label">Källor och faktagranskning</p><h2>Plats för källunderlag</h2><p>Den slutliga resursen ska visa underlag och skillnaden mellan vägledning och praktiskt exempel.</p></div><span class="status status-clear">Resurs före app</span></section></div>
+        <div class="shell app-bridge app-bridge-moderate"><div><p class="section-label">När planen ska följas</p><h2>Samla det återkommande arbetet</h2><p>När planen används i vardagen kan appen hjälpa till att samla kontroller, åtgärder och historik.</p></div><button class="button button-primary" type="button" data-prototype-notice>Se appbrygga</button></div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><div class="shell footer-grid"><div><span class="brand"><span class="brand-mark" aria-hidden="true">ME</span><span>Min Egenkontroll</span></span><p>Tillfällig visuell prototyp för HACCP-piloten.</p></div><div><p class="footer-title">Förstå</p><a href="#fact" data-screen="fact">Faroanalys</a><a href="#topic" data-screen="topic">HACCP-nav</a></div><div><p class="footer-title">Göra</p><a href="#resource" data-screen="resource">Kontrollplan</a><button type="button" data-prototype-notice>Verktyg - koncept</button></div><div><p class="footer-title">Förtroende</p><button type="button" data-prototype-notice>Källor och faktagranskning</button><button type="button" data-prototype-notice>Integritet</button></div></div></footer>
+
+    <div class="toast" role="status" aria-live="polite" data-toast hidden></div>
+    <script src="prototype.js"></script>
+  </body>
+</html>
