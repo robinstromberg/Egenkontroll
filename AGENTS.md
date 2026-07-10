@@ -24,6 +24,16 @@ Produkten ska kännas trygg, snabb och begriplig för användare utan teknisk ba
 - Kör relevanta kontroller efter ändring. För appkod är normal nivå `npm run typecheck`, `npm run lint` och `npm run build`. För docs-only räcker normalt diffkontroll och en tydlig notering om att appbygge inte behövdes.
 - Sammanfatta ändrade filer, verifiering och kvarvarande risker i slutet.
 
+## Användning av subagents
+
+- Använd inte subagents för små, lokala eller tydligt avgränsade ändringar.
+- Använd subagents vid komplex felsökning, större analys eller när problemet kan ligga i flera delar av systemet, till exempel frontend, Supabase, RLS eller deploy.
+- Låt subagents i första hand undersöka parallellt med tydligt avgränsade uppdrag.
+- Huvudagenten ska väga ihop resultaten och välja väg framåt innan kod ändras.
+- Som standard ska endast en agent åt gången göra överlappande kodändringar.
+- Använd minsta antal subagents som behövs, normalt 2–3, för att undvika onödig resursförbrukning.
+- Subagents får inte kringgå reglerna för särskilt skyddade områden. Riskfyllda eller destruktiva ändringar kräver fortfarande paus och tydligt godkännande.
+
 ## Särskilt skyddade områden
 
 Ändra inte följande utan tydlig issue och extra försiktighet:
