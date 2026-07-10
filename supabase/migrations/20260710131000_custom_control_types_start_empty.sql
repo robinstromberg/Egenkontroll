@@ -91,14 +91,10 @@ begin
     from (
       values
         ('product', 'Produkt', 'text', true, 0),
-        ('supplier', 'Leverantör', 'select', false, 1),
-        ('delivery_date', 'Leveransdatum', 'date', false, 2),
-        ('document_reference', 'Dokumentnummer / följesedel', 'text', false, 3),
-        ('batch_number', 'Batch / lot', 'text', true, 4),
-        ('best_before', 'Bäst före / sista förbrukningsdag', 'date', false, 5),
-        ('used_in_product', 'Använt i / vidare till', 'text', false, 6),
-        ('delivered_to', 'Kund / mottagare', 'text', false, 7),
-        ('label_photo', 'Foto / etikett', 'photo', false, 8)
+        ('batch_number', 'Batchnummer', 'text', true, 1),
+        ('best_before', 'Bäst före', 'date', false, 2),
+        ('supplier', 'Leverantör', 'select', false, 3),
+        ('label_photo', 'Foto / etikett', 'photo', false, 4)
     ) as fields(field_key, label, field_type, required, sort_order)
     where p_category = 'traceability'
 
