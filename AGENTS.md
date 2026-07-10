@@ -44,6 +44,13 @@ Produkten ska kännas trygg, snabb och begriplig för användare utan teknisk ba
 - Större pivotarbete och appbuggar ska normalt hållas i separata issues, branches och PR:er.
 - Starta inte flera större pivotfaser samtidigt. Följ genomförandeordningen i `docs/strategy/PIVOT.md` om inte en issue uttryckligen motiverar annat.
 
+## Återkoppling efter pivot- och strategiarbete
+
+- När en uppgift rör pivot, strategi, publik webb, SEO, innehåll, resurser, varumärke, designsystem, wireframes, repo-separation eller större appredesign ska slutsvaret innehålla en tydlig sektion med rubriken `Till ChatGPT inför nästa steg`.
+- Där ska agenten lista exakt vilka strategidokument, Epic, issues och PR:er ChatGPT ska läsa innan nästa steg rekommenderas.
+- Lista alltid den nya eller uppdaterade leveransen samt de relevanta tidigare källorna. Förlita dig inte på att chattkontexten är komplett.
+- En sammanfattning i slutsvaret ersätter inte källorna. Uppmana ChatGPT att läsa dem innan beslut eller nästa uppgift rekommenderas.
+
 ## Användning av subagents
 
 - Använd inte subagents för små, lokala eller tydligt avgränsade ändringar.
