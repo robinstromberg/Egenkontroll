@@ -17,6 +17,10 @@ import {
   readWeeklyWeekday,
   weekdayOptions,
 } from '../services/scheduleService';
+import {
+  buildTemperatureDeviationRule,
+  readFieldTemperatureRule,
+} from '../services/controlFieldRules';
 import type {
   ControlCategory,
   ControlFieldDefinition,
@@ -40,6 +44,7 @@ type FieldPreset = {
   label: string;
   defaultLabel?: string;
   required: boolean;
+  deviationRule?: Record<string, unknown>;
 };
 
 type FieldOption = FieldPreset & {
@@ -212,6 +217,9 @@ export function ControlTypeDetailView({
 
   const [editFieldLabel, setEditFieldLabel] = useState('');
   const [editFieldRequired, setEditFieldRequired] = useState(true);
+  const [editFieldLimitMin, setEditFieldLimitMin] = useState('');
+  const [editFieldLimitMax, setEditFieldLimitMax] = useState('');
+  const [editFieldUnit, setEditFieldUnit] = useState('°C');
 
   const [typeName, setTypeName] = useState(controlType.name);
   const [typeFrequency, setTypeFrequency] = useState<ControlFrequency>(controlType.frequency);
@@ -233,9 +241,7 @@ export function ControlTypeDetailView({
   const visibleInactiveFields = inactiveFields.filter((field) => field.id !== lockedBaseField?.id);
   const inactiveItemCount = inactiveObjects.length + visibleInactiveFields.length;
   const fixedFields = fixedFieldType ? activeFields.filter((field) => field.field_type === fixedFieldType) : [];
-  const canvasFields = usesPointScopedFields
-    ? activeFields.filter((field) => field.control_object_id)
-    : activeFields;
+  const canvasFields = activeFields;
   const canvasObjects = mode === 'field' ? [] : activeObjects;
   const canShowCanvas = mode === 'point'
     ? canvasObjects.length > 0
@@ -306,10 +312,14 @@ export function ControlTypeDetailView({
   }
 
   function startEditField(field: ControlFieldDefinition) {
+    const temperatureRule = readFieldTemperatureRule(field);
     setEditingObjectId(null);
     setEditingFieldId(field.id);
     setEditFieldLabel(field.label);
     setEditFieldRequired(field.required);
+    setEditFieldLimitMin(temperatureRule.limitMin);
+    setEditFieldLimitMax(temperatureRule.limitMax);
+    setEditFieldUnit(temperatureRule.unit);
   }
 
   async function handleCreateObject(event: FormEvent<HTMLFormElement>) {
@@ -345,6 +355,7 @@ export function ControlTypeDetailView({
         label: (preset.defaultLabel ?? preset.label).trim(),
         fieldType: preset.fieldType,
         required: preset.required,
+        deviationRule: preset.deviationRule,
       });
       await refreshFields();
       setCreatingField(false);
@@ -393,6 +404,23 @@ export function ControlTypeDetailView({
   async function handleSaveField(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editingFieldId) return;
+    const editingField = fields.find((field) => field.id === editingFieldId);
+    if (!editingField) return;
+
+    const parsedLimitMin = editFieldLimitMin.trim() ? Number(editFieldLimitMin) : null;
+    const parsedLimitMax = editFieldLimitMax.trim() ? Number(editFieldLimitMax) : null;
+
+    if (
+      editingField.field_type === 'temperature'
+      && parsedLimitMin !== null
+      && parsedLimitMax !== null
+      && Number.isFinite(parsedLimitMin)
+      && Number.isFinite(parsedLimitMax)
+      && parsedLimitMin > parsedLimitMax
+    ) {
+      setMessage('Minvärde kan inte vara högre än maxvärde.');
+      return;
+    }
 
     try {
       await updateControlField({
@@ -401,6 +429,13 @@ export function ControlTypeDetailView({
         label: editFieldLabel,
         required: editFieldRequired,
         active: true,
+        deviationRule: editingField.field_type === 'temperature'
+          ? buildTemperatureDeviationRule({
+            limitMin: editFieldLimitMin,
+            limitMax: editFieldLimitMax,
+            unit: editFieldUnit,
+          })
+          : undefined,
       });
       await refreshFields();
       setEditingFieldId(null);
@@ -468,6 +503,7 @@ export function ControlTypeDetailView({
       label: `${field.label} kopia`,
       defaultLabel: `${field.label} kopia`,
       required: field.required,
+      deviationRule: field.deviation_rule,
     }, true, field.control_object_id ?? null);
   }
 
@@ -564,6 +600,41 @@ export function ControlTypeDetailView({
           />
         </label>
         <p className="field-editor-type">{fieldTypeLabels[field.field_type]}</p>
+        {field.field_type === 'temperature' ? (
+          <div className="temperature-rule-editor">
+            <div className="temperature-rule-grid">
+              <label>
+                <span>Minvärde</span>
+                <input
+                  className="text-input"
+                  value={editFieldLimitMin}
+                  onChange={(event) => setEditFieldLimitMin(event.target.value)}
+                  placeholder="Frivilligt"
+                  type="number"
+                />
+              </label>
+              <label>
+                <span>Maxvärde</span>
+                <input
+                  className="text-input"
+                  value={editFieldLimitMax}
+                  onChange={(event) => setEditFieldLimitMax(event.target.value)}
+                  placeholder="Frivilligt"
+                  type="number"
+                />
+              </label>
+            </div>
+            <label>
+              <span>Enhet</span>
+              <input
+                className="text-input"
+                value={editFieldUnit}
+                onChange={(event) => setEditFieldUnit(event.target.value)}
+                placeholder="°C"
+              />
+            </label>
+          </div>
+        ) : null}
         <label className="control-field-checkbox">
           <input checked={editFieldRequired} onChange={(event) => setEditFieldRequired(event.target.checked)} type="checkbox" />
           Obligatoriskt

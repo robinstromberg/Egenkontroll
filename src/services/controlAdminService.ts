@@ -37,6 +37,7 @@ export type CreateControlFieldInput = {
   label: string;
   fieldType: ControlFieldDefinition['field_type'];
   required: boolean;
+  deviationRule?: Record<string, unknown>;
 };
 
 export type UpdateControlFieldInput = {
@@ -45,6 +46,7 @@ export type UpdateControlFieldInput = {
   label: string;
   required: boolean;
   active: boolean;
+  deviationRule?: Record<string, unknown>;
 };
 
 export type UpdateControlObjectInput = {
@@ -168,7 +170,7 @@ export async function createControlField(input: CreateControlFieldInput): Promis
       label,
       field_type: input.fieldType,
       required: input.required,
-      deviation_rule: {},
+      deviation_rule: input.deviationRule ?? {},
       options: [],
       sort_order: maxSortOrder + 1,
       active: true,
@@ -189,13 +191,24 @@ export async function updateControlField(input: UpdateControlFieldInput): Promis
     throw new Error('Fältnamn krävs.');
   }
 
+  const updatePayload: {
+    label: string;
+    required: boolean;
+    active: boolean;
+    deviation_rule?: Record<string, unknown>;
+  } = {
+    label,
+    required: input.required,
+    active: input.active,
+  };
+
+  if (input.deviationRule) {
+    updatePayload.deviation_rule = input.deviationRule;
+  }
+
   const { error } = await supabase
     .from('control_field_definitions')
-    .update({
-      label,
-      required: input.required,
-      active: input.active,
-    })
+    .update(updatePayload)
     .eq('id', input.fieldDefinitionId)
     .eq('organization_id', input.organizationId);
 

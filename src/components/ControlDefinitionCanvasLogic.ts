@@ -1,4 +1,5 @@
 import type { ControlFieldDefinition, ControlObject } from '../types/database';
+import { getTemperatureDeviationReason } from '../services/controlFieldRules';
 
 export type ResponseState = Record<string, string>;
 export type DeviationState = Record<string, string>;
@@ -23,14 +24,7 @@ export function getDeviationReason(field: ControlFieldDefinition, object: Contro
   if (field.field_type === 'boolean' && value === 'false') return `${field.label} är inte uppfyllt.`;
 
   if (field.field_type === 'temperature') {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return null;
-    if (object?.limit_max !== null && object?.limit_max !== undefined && parsed > object.limit_max) {
-      return `${field.label} är över maxgräns ${object.limit_max}${object.unit ?? ''}.`;
-    }
-    if (object?.limit_min !== null && object?.limit_min !== undefined && parsed < object.limit_min) {
-      return `${field.label} är under mingräns ${object.limit_min}${object.unit ?? ''}.`;
-    }
+    return getTemperatureDeviationReason(field, object, value);
   }
 
   return null;

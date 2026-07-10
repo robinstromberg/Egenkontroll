@@ -1,6 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { SegmentedChoice } from './ui/SegmentedChoice';
 import type { ControlFieldDefinition, ControlObject, ControlType, Supplier } from '../types/database';
+import {
+  getTemperatureDeviationReason,
+  getTemperatureLimitText,
+  getTemperatureUnit,
+} from '../services/controlFieldRules';
 import './ControlRunForm.css';
 
 export type ResponseState = Record<string, string>;
@@ -73,7 +78,7 @@ function fieldBelongsToObject(field: ControlFieldDefinition, object: ControlObje
   const fieldObjectId = field.control_object_id ?? null;
 
   if (hasObjectScopedFields) {
-    return object ? fieldObjectId === object.id : fieldObjectId === null;
+    return object ? fieldObjectId === null || fieldObjectId === object.id : fieldObjectId === null;
   }
 
   return fieldObjectId === null;
@@ -86,14 +91,7 @@ function getDeviationReason(field: ControlFieldDefinition, object: ControlObject
   if (field.field_type === 'boolean' && value === 'false') return `${label} är inte uppfyllt.`;
 
   if (field.field_type === 'temperature') {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return null;
-    if (object?.limit_max !== null && object?.limit_max !== undefined && parsed > object.limit_max) {
-      return `${label} är över maxgräns ${object.limit_max}${object.unit ?? ''}.`;
-    }
-    if (object?.limit_min !== null && object?.limit_min !== undefined && parsed < object.limit_min) {
-      return `${label} är under mingräns ${object.limit_min}${object.unit ?? ''}.`;
-    }
+    return getTemperatureDeviationReason(field, object, value, label);
   }
 
   return null;
@@ -119,17 +117,6 @@ function readSelectOptions(field: ControlFieldDefinition): SelectOption[] {
       return null;
     })
     .filter((option): option is SelectOption => Boolean(option));
-}
-
-function getLimitText(object: ControlObject | null): string | null {
-  if (!object) return null;
-  const unit = object.unit ?? '°C';
-  if (object.limit_min !== null && object.limit_min !== undefined && object.limit_max !== null && object.limit_max !== undefined) {
-    return `${object.limit_min}${unit}-${object.limit_max}${unit}`;
-  }
-  if (object.limit_max !== null && object.limit_max !== undefined) return `Max ${object.limit_max}${unit}`;
-  if (object.limit_min !== null && object.limit_min !== undefined) return `Min ${object.limit_min}${unit}`;
-  return null;
 }
 
 function PhotoCaptureField({
@@ -196,6 +183,7 @@ function PhotoCaptureField({
 function TemperatureField({
   id,
   label,
+  field,
   object,
   value,
   required,
@@ -205,6 +193,7 @@ function TemperatureField({
 }: {
   id: string;
   label: string;
+  field: ControlFieldDefinition;
   object: ControlObject | null;
   value: string;
   required: boolean;
@@ -212,7 +201,7 @@ function TemperatureField({
   reason: string | null;
   onChange?: (value: string) => void;
 }) {
-  const limitText = getLimitText(object);
+  const limitText = getTemperatureLimitText(field, object);
   const hasValue = value.trim().length > 0;
   const statusClass = reason ? 'temperature-status bad' : 'temperature-status good';
   const statusText = reason ? 'Utanför gränsvärde' : 'Inom gränsvärde';
@@ -231,7 +220,7 @@ function TemperatureField({
           onChange={(event) => onChange?.(event.target.value)}
           required={required}
         />
-        <span className="temperature-unit">{object?.unit ?? '°C'}</span>
+        <span className="temperature-unit">{getTemperatureUnit(field, object)}</span>
       </div>
       <div className="temperature-meta-row">
         {limitText ? <span>{limitText}</span> : <span>Gränsvärde saknas</span>}
@@ -597,6 +586,7 @@ export function ControlDefinitionCanvas({
                     <TemperatureField
                       id={key}
                       label={getFieldLabel(field)}
+                      field={field}
                       object={object}
                       value={value}
                       required={field.required && !disabled}
