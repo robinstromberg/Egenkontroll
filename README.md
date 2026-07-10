@@ -1,6 +1,12 @@
 # Egenkontroll
 
-Mobilförst SaaS-webapp för digital egenkontroll i livsmedelsverksamheter.
+Min Egenkontroll är en mobilförst tjänst för egenkontroll i livsmedelsverksamheter. Kärnprodukten är en SaaS-app, och runt den byggs en publik plattform med kunskap, mallar, checklistor, verktyg och andra resurser.
+
+## Strategi
+
+Den pågående strategiomläggningen styrs av `docs/strategy/PIVOT.md`.
+
+Nuvarande tekniska struktur är ännu inte den långsiktiga målstrukturen. Större förändringar av publik webb, appseparation, varumärke, designsystem eller sidtyper ska följa genomförandeordningen i strategidokumentet.
 
 ## Teknisk grund
 
@@ -47,4 +53,6 @@ npm run build
 
 ## Arbetsregler
 
-Läs `AGENTS.md` innan du implementerar nya issues. Projektet ska byggas issue för issue med tydlig koppling till planerad MVP.
+Läs `AGENTS.md` innan du implementerar nya issues. Läs även `docs/strategy/PIVOT.md` när arbetet rör strategi, publik webb, SEO, innehåll, varumärke, designsystem, wireframes, repo-separation eller större appredesign.
+
+Projektet ska byggas issue för issue med tydlig koppling till aktuell fas och prioritet.
