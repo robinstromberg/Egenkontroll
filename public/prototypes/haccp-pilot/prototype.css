@@ -54,8 +54,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .brand { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 9px; color: var(--text); font-weight: 700; text-decoration: none; white-space: nowrap; }
 .brand-mark { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 4px; background: var(--text); color: var(--bg); font-size: 10px; letter-spacing: 1px; }
 .desktop-nav { display: none; flex: 1; align-items: center; justify-content: center; gap: 2px; }
-.desktop-nav a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 8px; color: var(--text); font-size: 14px; text-decoration: none; }
-.desktop-nav a:hover { color: var(--link); }
+.desktop-nav a, .desktop-nav button { min-height: 44px; display: inline-flex; align-items: center; border: 0; background: transparent; padding: 0 8px; color: var(--text); font-size: 14px; text-decoration: none; }
+.desktop-nav a:hover, .desktop-nav button:hover { color: var(--link); }
 .header-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .icon-button, .menu-button, .text-action { min-height: 44px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); padding: 0 12px; font-weight: 700; }
 .icon-button { font-size: 13px; }
@@ -149,17 +149,13 @@ h3 { font-size: 20px; line-height: 1.25; }
 .field input, .field textarea { width: 100%; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); padding: 11px; }
 .field textarea { resize: vertical; }
 .filled-example { margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 18px; }
-.example-row { display: grid; gap: 5px; border-radius: 4px; background: var(--surface-alt); padding: 14px; }
-.example-row span { color: var(--muted); }
+.example-fields, .preview-fields { display: grid; margin: 0; gap: 10px; }
+.example-fields div, .preview-fields div { border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+.example-fields dt, .preview-fields dt { color: var(--muted); font-size: 12px; font-weight: 800; }
+.example-fields dd, .preview-fields dd { margin: 2px 0 0; }
 .document-preview { min-height: 350px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-alt); padding: 22px; }
-.document-preview h2 { margin-bottom: 36px; }
-.preview-lines { display: grid; gap: 16px; }
-.preview-lines span { display: block; height: 13px; border-radius: 99px; background: var(--border); }
-.preview-lines span:nth-child(2) { width: 72%; }
-.preview-lines span:nth-child(3) { width: 87%; }
-.preview-lines span:nth-child(4) { width: 54%; }
-.preview-lines span:nth-child(5) { width: 78%; }
-.document-preview p:last-child { margin-top: 34px; color: var(--muted); }
+.document-preview h2 { margin-bottom: 24px; }
+.document-preview p:last-child { margin-top: 24px; color: var(--muted); }
 .resource-bottom { display: grid; gap: 18px; margin-top: 18px; }
 .how-to { border-top: 1px solid var(--border); padding: 24px 0; }
 

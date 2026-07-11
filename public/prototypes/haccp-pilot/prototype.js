@@ -99,9 +99,8 @@ document.querySelectorAll('[data-prototype-notice]').forEach((button) => {
 exampleButton?.addEventListener('click', () => {
   const expanded = exampleButton.getAttribute('aria-expanded') === 'true';
   exampleButton.setAttribute('aria-expanded', String(!expanded));
-  exampleButton.textContent = expanded ? 'Visa ifyllt exempel' : 'Dolj ifyllt exempel';
+  exampleButton.textContent = expanded ? 'Visa ifyllt exempel' : 'Dölj ifyllt exempel';
   filledExample.hidden = expanded;
-  if (!expanded) filledExample.querySelector('strong')?.focus?.();
 });
 
 document.querySelector('[data-print]')?.addEventListener('click', () => window.print());

@@ -19,12 +19,12 @@
         </a>
 
         <nav class="desktop-nav" aria-label="Huvudnavigation">
-          <a href="#fact" data-screen="fact">Kunskap</a>
+          <a href="#topic" data-screen="topic">Kunskap</a>
           <a href="#resource" data-screen="resource">Mallar och checklistor</a>
-          <a href="#topic" data-screen="topic">Verktyg</a>
-          <a href="#topic" data-screen="topic">Utbildning</a>
-          <a href="#fact" data-screen="fact">Referenser och källor</a>
-          <a href="#topic" data-screen="topic">Appen</a>
+          <button type="button" data-prototype-notice>Verktyg</button>
+          <button type="button" data-prototype-notice>Utbildning</button>
+          <button type="button" data-prototype-notice>Referenser och källor</button>
+          <button type="button" data-prototype-notice>Appen</button>
         </nav>
 
         <div class="header-actions">
@@ -42,15 +42,15 @@
           <button class="icon-button" type="button" data-menu-close>Stäng</button>
         </div>
         <nav class="mobile-nav" aria-label="Mobilnavigation">
-          <a href="#fact" data-screen="fact">Kunskap</a>
+          <a href="#topic" data-screen="topic">Kunskap</a>
           <a href="#resource" data-screen="resource">Mallar och checklistor</a>
-          <a href="#topic" data-screen="topic">Verktyg</a>
-          <a href="#topic" data-screen="topic">Utbildning</a>
-          <a href="#fact" data-screen="fact">Referenser och källor</a>
+          <button type="button" data-prototype-notice>Verktyg</button>
+          <button type="button" data-prototype-notice>Utbildning</button>
+          <button type="button" data-prototype-notice>Referenser och källor</button>
           <hr />
-          <a href="#topic" data-screen="topic">Appen</a>
+          <button type="button" data-prototype-notice>Appen</button>
           <button type="button" data-prototype-notice>Logga in</button>
-          <button class="button button-primary" type="button" data-prototype-notice>Kom igang</button>
+          <button class="button button-primary" type="button" data-prototype-notice>Kom igång</button>
         </nav>
       </div>
     </dialog>
@@ -71,19 +71,19 @@
             <nav class="article-toc" aria-label="På denna sida">
               <p>På denna sida</p>
               <a href="#fact-answer">Kort svar</a>
-              <a href="#fact-steps">Praktisk arbetsgang</a>
+              <a href="#fact-steps">Praktisk arbetsgång</a>
               <a href="#fact-example">Exempel</a>
               <a href="#fact-sources">Källor och faktagranskning</a>
             </nav>
 
             <section id="fact-answer" class="answer-block">
               <p class="section-label">Kort svar</p>
-              <h2>Borja med det som faktiskt hander i verksamheten</h2>
+              <h2>Börja med det som faktiskt händer i verksamheten</h2>
               <p>Beskriv först dina vanligaste steg, från mottagning till servering. Identifiera sedan var risker kan uppstå och hur de följs upp i vardagen.</p>
             </section>
 
             <section id="fact-steps" class="content-section">
-              <p class="section-label">Praktisk arbetsgang</p>
+              <p class="section-label">Praktisk arbetsgång</p>
               <h2>Fyra enkla steg att gå igenom</h2>
               <ol class="numbered-steps">
                 <li><strong>Beskriv flödet.</strong><span>Vad händer innan, under och efter ett arbetsmoment?</span></li>
@@ -103,7 +103,7 @@
             </section>
 
             <section class="content-section">
-              <p class="section-label">Nasta steg</p>
+              <p class="section-label">Nästa steg</p>
               <h2>När en kontroll inte blir som planerat</h2>
               <p>Se ett exempel på hur en avvikelse kan beskrivas och följas upp innan du fortsätter till kontrollplansresursen.</p>
               <button class="text-link" type="button" data-screen="topic">Se HACCP-arbetskedjan <span aria-hidden="true">-></span></button>
@@ -147,10 +147,10 @@
             <button class="process-step" type="button" data-prototype-notice><span>06</span><strong>Dokumentera</strong><small>Appbrygga</small></button>
           </div></section>
 
-          <section class="resource-shelf" aria-labelledby="resource-title"><div class="section-heading"><p class="section-label">Praktiska resurser</p><h2 id="resource-title">Valj en vag vidare</h2></div><div class="resource-grid">
+          <section class="resource-shelf" aria-labelledby="resource-title"><div class="section-heading"><p class="section-label">Praktiska resurser</p><h2 id="resource-title">Välj en väg vidare</h2></div><div class="resource-grid">
             <button class="resource-card resource-card-article" type="button" data-screen="fact"><span>Faktasida</span><h3>Faroanalys</h3><p>En lugn läsa-och-förstå-yta med tydligt kort svar.</p></button>
             <button class="resource-card resource-card-template" type="button" data-screen="resource"><span>Mall</span><h3>Kontrollplan</h3><p>Ett arbetsblad att anpassa till den egna vardagen.</p></button>
-            <button class="resource-card resource-card-tool" type="button" data-prototype-notice><span>Verktyg - koncept</span><h3>Forsta utkast</h3><p>En framtida guidad arbetsyta, utan beslut om URL eller funktion.</p></button>
+            <button class="resource-card resource-card-tool" type="button" data-prototype-notice><span>Verktyg - koncept</span><h3>Första utkast</h3><p>En framtida guidad arbetsyta, utan beslut om URL eller funktion.</p></button>
           </div></section>
 
           <section class="topic-note"><div><p class="section-label">För mindre verksamheter</p><h2>Gör det begripligt och relevant</h2><p>Prototypen visar hur ett nav kan leda vidare utan att bli en lång artikel eller en säljsida.</p></div><span class="status status-clear">Orientering före app</span></section>
@@ -165,10 +165,10 @@
 
         <div class="shell resource-layout">
           <section class="worksheet" aria-labelledby="worksheet-title"><div class="worksheet-heading"><div><p class="section-label">Arbetsblad</p><h2 id="worksheet-title">Planera en kontrollpunkt</h2></div><span class="status status-attention">Anpassa till din verksamhet</span></div>
-            <form class="worksheet-form"><div class="field"><label for="area">Område eller processteg</label><input id="area" name="area" placeholder="Exempel: Kylmonter" /></div><div class="field"><label for="check">Vad kontrolleras?</label><input id="check" name="check" placeholder="Beskriv kontrollen" /></div><div class="field"><label for="method">Hur gör ni?</label><textarea id="method" name="method" rows="3" placeholder="Beskriv arbetssätt eller kontrollmetod"></textarea></div><div class="field"><label for="owner">Ansvarig</label><input id="owner" name="owner" placeholder="Roll eller arbetslag" /></div><div class="field"><label for="followup">Vid avvikelse</label><textarea id="followup" name="followup" rows="3" placeholder="Beskriv hur ni bedömer och följer upp"></textarea></div></form>
-            <div class="filled-example" data-filled-example hidden><p class="section-label">Ifyllt exempel - inte regel</p><div class="example-row"><strong>Kylmonter</strong><span>Temperaturkontroll</span><span>Morgonpasset</span><span>Bedöm och följ upp vid avvikelse</span></div></div>
+            <form class="worksheet-form"><div class="field"><label for="area">Område eller processteg</label><input id="area" name="area" placeholder="Exempel: Kylmonter" /></div><div class="field"><label for="check">Vad som kontrolleras</label><input id="check" name="check" placeholder="Exempel: Kontroll av förvaring" /></div><div class="field"><label for="purpose">Risk eller syfte</label><textarea id="purpose" name="purpose" rows="3" placeholder="Exempel: Säker och ordnad hantering"></textarea></div><div class="field"><label for="criterion">Acceptabelt kriterium</label><input id="criterion" name="criterion" placeholder="Exempel: Beskriv vad som ska följas" /></div><div class="field"><label for="method">Metod</label><textarea id="method" name="method" rows="3" placeholder="Exempel: Se över och anteckna enligt er rutin"></textarea></div><div class="field"><label for="frequency">Frekvens</label><input id="frequency" name="frequency" placeholder="Exempel: Vid dagens start" /></div><div class="field"><label for="owner">Ansvarig</label><input id="owner" name="owner" placeholder="Exempel: Morgonpasset" /></div><div class="field"><label for="corrective-action">Åtgärd vid avvikelse</label><textarea id="corrective-action" name="corrective-action" rows="3" placeholder="Exempel: Bedöm, åtgärda och dokumentera"></textarea></div><div class="field"><label for="followup">Uppföljning</label><textarea id="followup" name="followup" rows="3" placeholder="Exempel: Följ upp att rutinen fungerar"></textarea></div></form>
+            <div class="filled-example" data-filled-example hidden><p class="section-label">Ifyllt exempel - inte regel</p><dl class="example-fields"><div><dt>Område eller processteg</dt><dd>Kylmonter</dd></div><div><dt>Vad som kontrolleras</dt><dd>Kontroll av förvaring</dd></div><div><dt>Risk eller syfte</dt><dd>Säker och ordnad hantering</dd></div><div><dt>Acceptabelt kriterium</dt><dd>Varorna förvaras enligt den egna rutinen</dd></div><div><dt>Metod</dt><dd>Se över och anteckna enligt rutinen</dd></div><div><dt>Frekvens</dt><dd>Vid dagens start</dd></div><div><dt>Ansvarig</dt><dd>Morgonpasset</dd></div><div><dt>Åtgärd vid avvikelse</dt><dd>Bedöm, åtgärda och dokumentera</dd></div><div><dt>Uppföljning</dt><dd>Följ upp att rutinen fungerar</dd></div></dl></div>
           </section>
-          <aside class="document-preview" aria-label="Forhandsvisning av kontrollplan"><p class="section-label">Forhandsvisning</p><h2>Kontrollplan</h2><div class="preview-lines"><span></span><span></span><span></span><span></span><span></span></div><p>En utskriftsbar sammanfattning visas har i prototypen.</p></aside>
+          <aside class="document-preview" aria-label="Förhandsvisning av kontrollplan"><p class="section-label">Förhandsvisning</p><h2>Kontrollplan</h2><dl class="preview-fields"><div><dt>Område eller processteg</dt><dd>Kylmonter</dd></div><div><dt>Vad som kontrolleras</dt><dd>Kontroll av förvaring</dd></div><div><dt>Risk eller syfte</dt><dd>Säker och ordnad hantering</dd></div><div><dt>Acceptabelt kriterium</dt><dd>Varorna förvaras enligt den egna rutinen</dd></div><div><dt>Metod</dt><dd>Se över och anteckna enligt rutinen</dd></div><div><dt>Frekvens</dt><dd>Vid dagens start</dd></div><div><dt>Ansvarig</dt><dd>Morgonpasset</dd></div><div><dt>Åtgärd vid avvikelse</dt><dd>Bedöm, åtgärda och dokumentera</dd></div><div><dt>Uppföljning</dt><dd>Följ upp att rutinen fungerar</dd></div></dl><p>En utskriftsbar sammanfattning visas här i prototypen.</p></aside>
         </div>
 
         <div class="shell resource-bottom"><section class="how-to"><p class="section-label">Så används mallen</p><h2>Gör den till din egen</h2><p>Fyll i det som är relevant för ert arbetssätt. Exemplet är bara en visuell platshållare och ersätter inte er egen bedömning.</p></section><section class="fact-status"><div><p class="section-label">Källor och faktagranskning</p><h2>Plats för källunderlag</h2><p>Den slutliga resursen ska visa underlag och skillnaden mellan vägledning och praktiskt exempel.</p></div><span class="status status-clear">Resurs före app</span></section></div>
