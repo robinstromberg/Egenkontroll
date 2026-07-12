@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Alternativ A - Precisionsateljén</title>
+    <link rel="stylesheet" href="prototype.css" />
+    <style>
+      .product-control { align-items:center; background:#fff; border:1px solid #b7c2b8; color:#1b2420; display:inline-flex; font-size:11px; font-weight:700; min-height:30px; padding:0 7px; }
+      .product-footer .product-control { background:#70cda7; border:0; color:#103d31; font-weight:800; margin-left:auto; padding:6px 9px; }
+      @media (max-width:899px) { .login { display:none; } .icon-button,.menu-button { min-height:44px; min-width:44px; } footer { flex-wrap:wrap; } }
+      @media (min-width:680px) { .resource-grid { grid-template-columns:repeat(2,1fr); } }
+      @media (min-width:900px) { .resource-grid { grid-template-columns:repeat(4,1fr); } }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Hoppa till innehåll</a>
+    <div class="prototype-note">Tillfällig visuell prototyp. DO NOT MERGE.</div>
+    <header class="site-header">
+      <a class="wordmark" href="#top" aria-label="Min Egenkontroll, prototyp A"><span>ME</span> Min Egenkontroll</a>
+      <nav class="desktop-nav" aria-label="Huvudnavigation">
+        <a href="#haccp">Information</a><a href="#resources">Mallar och checklistor</a><a href="#tools">Verktyg</a><a href="#app">Appen</a>
+      </nav>
+      <div class="header-actions"><button class="icon-button" type="button" data-theme-toggle aria-label="Byt tema">Tema</button><a class="login" href="#app">Logga in</a><button class="menu-button" type="button" data-menu-open aria-expanded="false" aria-controls="mobile-menu">Meny</button></div>
+    </header>
+    <dialog id="mobile-menu" class="mobile-menu" aria-label="Mobilnavigation" data-mobile-menu>
+      <div class="mobile-menu-top"><strong>Min Egenkontroll</strong><button type="button" data-menu-close>Stäng</button></div>
+      <nav aria-label="Mobilnavigation"><a href="#haccp">Information</a><a href="#resources">Mallar och checklistor</a><a href="#tools">Verktyg</a><a href="#app">Appen</a><a href="#app">Logga in</a><a class="mobile-cta" href="#app">Kom igång</a></nav>
+    </dialog>
+    <main id="main-content">
+      <section id="top" class="hero shell">
+        <div class="hero-copy"><p class="eyebrow">Egenkontroll för små livsmedelsverksamheter</p><h1>Ordning i vardagen. Bevis när det behövs.</h1><p class="lead">Planera kontroller, fånga upp avvikelser och visa historik utan att jaga papper, listor eller lösta minnen.</p><div class="hero-actions"><a class="button primary" href="#app">Se appen i arbete</a><a class="button quiet" href="#haccp">Hitta rätt hjälp</a></div><div class="hero-proof"><span class="status-dot"></span><span>Byggd för kontroll, åtgärd och uppföljning</span></div></div>
+        <div class="product-frame" aria-label="Prototypvy av appens dagens kontroller"><div class="product-top"><span class="product-brand">ME</span><span>Prototypvy: dagens kontroller</span><span class="online">Klar att arbeta</span></div><div class="product-body"><aside><strong>Översikt</strong><span class="active">Dagens kontroller</span><span>Avvikelser</span><span>Historik</span></aside><section><div class="product-heading"><div><p>Idag</p><h2>3 kontroller att göra</h2></div><span class="product-control">Veckovy</span></div><article class="task-card"><span class="check clear">OK</span><div><strong>Kylförvaring</strong><small>Kontrollera och dokumentera</small></div><span class="time">08:00</span></article><article class="task-card"><span class="check warm">!</span><div><strong>Varumottagning</strong><small>En kontroll väntar på åtgärd</small></div><span class="time">08:30</span></article><article class="task-card"><span class="check">03</span><div><strong>Rengöring</strong><small>Nästa kontroll efter lunch</small></div><span class="time">12:00</span></article></section></div><div class="product-footer"><span>Allt sparas i verksamhetens historik.</span><span class="product-control">Öppna kontroll</span></div></div>
+      </section>
+      <section class="route-strip shell" aria-label="Snabba vägar"><a href="#app"><b>01</b><span>Appen</span><small>Arbeta med dagens kontroller</small></a><a href="#haccp"><b>02</b><span>Information</span><small>Förstå vad som behövs</small></a><a href="#resources"><b>03</b><span>Mallar</span><small>Få ett arbetsunderlag</small></a><a href="#tools"><b>04</b><span>Verktyg</span><small>Skapa ett första utkast</small></a></section>
+      <section id="search-a" class="search-band"><div class="shell"><p class="eyebrow">Hitta rätt på en gång</p><form class="search-form" data-search><label for="search-a-input">Sök i Min Egenkontroll</label><div><input id="search-a-input" type="search" placeholder="Sök i vägledning, mallar och checklistor" required /><button type="submit">Sök</button></div><p data-search-result aria-live="polite"></p></form></div></section>
+      <section id="haccp" class="shell section split-section"><div><p class="eyebrow">Bortom listan</p><h2>Hjälp som gör nästa steg tydligt</h2><p>En liten verksamhet behöver inte ett stort system för att få kontroll. Börja med det du vill förstå eller göra idag.</p></div><div class="question-list"><a href="#resources"><span>Plats för verifierad sökfråga 01</span><b>Kontrollplan för din vardag</b></a><a href="#tools"><span>Plats för verifierad sökfråga 02</span><b>Faroanalys, steg för steg</b></a><a href="#app"><span>Plats för verifierad sökfråga 03</span><b>Dokumentera utan dubbelarbete</b></a></div></section>
+      <section id="resources" class="shell section resource-area"><div class="section-heading"><p class="eyebrow">HACCP-piloten</p><h2>Direkt användbara resurser</h2><a href="#tools">Se alla resurser</a></div><div class="resource-grid"><article><span class="resource-type">ÄMNE</span><h3>HACCP och riskstyrning</h3><p>En startpunkt för det som hör ihop.</p><a href="#haccp">Öppna ämnesnav</a></article><article><span class="resource-type">MALL</span><h3>Kontrollplan</h3><p>Ett arbetsblad att göra till ert eget.</p><a href="#app">Använd mallen</a></article><article id="tools"><span class="resource-type">VERKTYG</span><h3>Faroanalys</h3><p>Ett tydligt första utkast, inte en automatisk bedömning.</p><a href="#tools">Se verktyg</a></article><article><span class="resource-type">FRAMTIDA KANDIDAT</span><h3>HACCP-verktyg</h3><p>Tydligt märkt som ett framtida verktyg, inte en färdig funktion.</p><a href="#haccp">Se pilotens avgränsning</a></article></div></section>
+      <section id="app" class="workflow"><div class="shell"><div class="workflow-heading"><p class="eyebrow">Appen i vardagen</p><h2>Från plan till uppföljning, utan tapp mellan stegen.</h2></div><ol><li><b>01</b><div><h3>Planera</h3><p>Samla det som ska göras i en tydlig dagsvy.</p></div></li><li><b>02</b><div><h3>Dokumentera</h3><p>Gör kontrollen på plats och märk avvikelsen direkt.</p></div></li><li><b>03</b><div><h3>Följa upp</h3><p>Hitta historik och visa vad som faktiskt hände.</p></div></li></ol><a class="button light" href="#top">Se hur appen stöttar vardagen</a></div></section>
+      <section class="trust shell"><p class="eyebrow">Trovärdigt, utan genvägar</p><div><h2>Praktisk hjälp med tydliga gränser.</h2><p>Här finns plats för källor, faktagranskning och skillnaden mellan vägledning, regel och praktiskt exempel.</p></div><a href="#haccp">Så arbetar vi med källor</a></section>
+      <section class="closing shell"><div><p class="eyebrow">Välj ditt nästa steg</p><h2>Arbeta i appen eller börja med en resurs.</h2></div><div><a class="button primary" href="#app">Kom igång i appen</a><a class="button quiet" href="#resources">Hitta en mall eller guide</a></div></section>
+    </main>
+    <footer><span>Min Egenkontroll - tillfällig prototyp A</span><a href="../homepage-comparison/index.html">Jämför A och B</a></footer>
+    <script src="prototype.js"></script>
+  </body>
+</html>
