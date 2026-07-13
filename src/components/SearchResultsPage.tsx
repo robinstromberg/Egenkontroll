@@ -1,14 +1,8 @@
 import { useEffect } from 'react';
 import { LinkButton, Button } from './ui/Button';
 import { TextField } from './ui/TextField';
+import { searchPublicResources, type PublicResource } from '../config/publicResources';
 import './Homepage.css';
-
-const resources = [
-  { href: '/haccp-sma-livsmedelsforetag', type: 'Ämnesnav', title: 'HACCP och riskstyrning', copy: 'Hitta rätt startpunkt för risker, kontrollplan och uppföljning.' },
-  { href: '/faroanalys-livsmedel', type: 'Guide', title: 'Faroanalys för livsmedel', copy: 'Förstå hur du kan bedöma faror i din verksamhet.' },
-  { href: '/seo/kontrollplan.html', type: 'Resurskandidat', title: 'Kontrollplan', copy: 'Läs om vad en kontrollplan behöver omfatta.' },
-  { href: '/seo/varumottagning-livsmedel.html', type: 'Guide', title: 'Varumottagning', copy: 'Stöd för mottagning, kontroll och dokumentation.' },
-];
 
 function setSearchMeta() {
   document.title = 'Sök i Min Egenkontroll';
@@ -20,10 +14,15 @@ function setSearchMeta() {
   if (canonical) canonical.href = 'https://minegenkontroll.se/sok';
 }
 
+function SearchSummary({ query, results }: { query: string; results: readonly PublicResource[] }) {
+  if (!query) return <p className="home-search-summary" aria-live="polite" aria-atomic="true">Skriv en sökfras för att hitta en guide, mall eller checklista.</p>;
+  if (!results.length) return <p className="home-search-summary" aria-live="polite" aria-atomic="true">0 träffar för “{query}”.</p>;
+  return <p className="home-search-summary" aria-live="polite" aria-atomic="true">{results.length} {results.length === 1 ? 'träff' : 'träffar'} för “{query}”.</p>;
+}
+
 export function SearchResultsPage() {
   const query = new URLSearchParams(window.location.search).get('q')?.trim() ?? '';
-  const term = query.toLocaleLowerCase('sv-SE');
-  const matches = term ? resources.filter((resource) => `${resource.title} ${resource.copy}`.toLocaleLowerCase('sv-SE').includes(term)) : resources;
+  const matches = searchPublicResources(query);
 
   useEffect(() => { setSearchMeta(); }, []);
 
@@ -36,10 +35,9 @@ export function SearchResultsPage() {
         <label htmlFor="site-search">Sök i Min Egenkontroll</label>
         <div><TextField id="site-search" name="q" type="search" defaultValue={query} /><Button type="submit">Sök</Button></div>
       </form>
-      <p className="home-search-summary">{query ? `Resultat för “${query}”` : 'Välj en resurs eller skriv en sökfras.'}</p>
-      <div className="home-resource-list">
-        {matches.map((resource) => <a href={resource.href} key={resource.href}><span>{resource.type}</span><strong>{resource.title}</strong><p>{resource.copy}</p></a>)}
-      </div>
+      <SearchSummary query={query} results={matches} />
+      {matches.length ? <div className="home-resource-list">{matches.map((resource) => <a href={resource.href} key={resource.href}><span>{resource.group}</span><strong>{resource.title}</strong><p>{resource.copy}</p></a>)}</div> : null}
+      {!query ? <section className="home-empty"><h2>Börja med en sökning</h2><p>Du kan också bläddra bland alla befintliga resurser i kunskapsbanken.</p><LinkButton href="/kunskapsbank" variant="secondary">Öppna kunskapsbanken</LinkButton></section> : null}
       {query && !matches.length ? <section className="home-empty"><h2>Vi hittade ingen direkt träff.</h2><p>Prova en annan formulering eller börja i kunskapsbanken.</p><LinkButton href="/kunskapsbank" variant="secondary">Öppna kunskapsbanken</LinkButton></section> : null}
     </div>
   </main>;
