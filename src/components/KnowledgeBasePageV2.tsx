@@ -1,95 +1,7 @@
 import { useEffect } from 'react';
 import { brandAssets } from '../config/assets';
+import { publicResourceGroups } from '../config/publicResources';
 import './PublicLandingPage.css';
-
-type Guide = { title: string; copy: string; href: string };
-type Group = { eyebrow: string; title: string; intro: string; guides: Guide[] };
-
-const groups: Group[] = [
-  { eyebrow: 'Egenkontroll i vardagen', title: 'Kom igång och få ordning på dokumentationen', intro: 'Guider för mindre livsmedelsverksamheter som vill förstå vad som behöver göras och hålla arbetet enkelt.', guides: [
-    { title: 'Digital egenkontroll för livsmedel', copy: 'Samla kontroller, avvikelser och historik digitalt.', href: '/digital-egenkontroll-livsmedel' },
-    { title: 'Egenkontroll för restaurang', copy: 'Temperaturer, städning, varumottagning och dagliga kontroller.', href: '/egenkontroll-restaurang' },
-    { title: 'Egenkontroll för café och bageri', copy: 'Återkommande kontroller utan onödig administration.', href: '/egenkontroll-cafe' },
-    { title: 'Dokumentation och journalföring', copy: 'Vad som kan behöva dokumenteras och hur omfattningen kan anpassas.', href: '/dokumentation-egenkontroll-livsmedel' },
-    { title: 'Källor och faktagranskning', copy: 'Så skiljer vi på regler, myndighetsvägledning och våra praktiska förklaringar.', href: '/seo/kallor-och-faktagranskning.html' },
-  ] },
-  { eyebrow: 'Hygien och daglig drift', title: 'Rutiner som behöver fungera varje dag', intro: 'Personal, rengöring, skadedjur och allergeninformation.', guides: [
-    { title: 'Hygien och daglig drift', copy: 'Samlingssida för de dagliga hygienrutinerna.', href: '/seo/hygien-och-daglig-drift.html' },
-    { title: 'Personlig hygien', copy: 'Handtvätt, arbetskläder, handskar och smitta.', href: '/seo/personlig-hygien-livsmedel.html' },
-    { title: 'Rengöring', copy: 'Vad som ska rengöras, hur ofta och hur resultatet följs upp.', href: '/seo/rengoring-livsmedelsverksamhet.html' },
-    { title: 'Skadedjur', copy: 'Förebygg problem, upptäck spår och agera vid fynd.', href: '/seo/skadedjur-livsmedelsverksamhet.html' },
-    { title: 'Allergeninformation', copy: 'Information om allergener och fungerande rutiner för personalen.', href: '/seo/allergeninformation-restaurang.html' },
-  ] },
-  { eyebrow: 'Hantering och förvaring', title: 'Skydda livsmedel från mottagning till servering', intro: 'Guider om varumottagning, separering, korskontamination, kemikalier och allergenöverföring.', guides: [
-    { title: 'Hantering och förvaring', copy: 'Samlingssida för mottagning, förvaring och separering.', href: '/seo/hantering-och-forvaring-livsmedel.html' },
-    { title: 'Varumottagning', copy: 'Rätt vara, temperatur, emballage, skadedjursspår och ersättningsvaror.', href: '/seo/varumottagning-livsmedel.html' },
-    { title: 'Korskontamination', copy: 'Mikroorganismer, allergener, kemikalier och smuts mellan livsmedel.', href: '/seo/korskontamination-livsmedel.html' },
-    { title: 'Separera rått och ätfärdigt', copy: 'Praktiska lösningar även i små kylskåp och mindre kök.', href: '/seo/separera-raa-och-atfardiga-livsmedel.html' },
-    { title: 'Kemikalier i livsmedelsverksamhet', copy: 'Förvara och hantera rengöringsmedel åtskilt från mat.', href: '/seo/kemikalier-i-livsmedelsverksamhet.html' },
-    { title: 'Allergenkontamination', copy: 'Rengöring, separerad förvaring och intern märkning.', href: '/seo/allergenkontamination-livsmedel.html' },
-  ] },
-  { eyebrow: 'Grundförutsättningar', title: 'Lokaler, avfall, transport, kunskap och vatten', intro: 'Guider för det praktiska grundarbete som behöver fungera runt den dagliga livsmedelshanteringen.', guides: [
-    { title: 'Grundförutsättningar', copy: 'Samlingssida för lokaler, avfall, transport, personalens kunskap och vatten.', href: '/seo/grundforutsattningar-livsmedel.html' },
-    { title: 'Lokaler och utrustning', copy: 'Hygienisk utformning, material, underhåll, handfat och ventilation.', href: '/seo/lokaler-och-utrustning-livsmedel.html' },
-    { title: 'Materialval i livsmedelslokal', copy: 'Rengörbarhet, hållbarhet och anpassning till användningen.', href: '/seo/materialval-livsmedelslokal.html' },
-    { title: 'Underhåll av livsmedelslokal', copy: 'Upptäck slitage och hantera det innan det blir en hygienrisk.', href: '/seo/underhall-livsmedelslokal.html' },
-    { title: 'Toaletter och handfat', copy: 'Placering, delning och möjlighet till hygienisk handtvätt.', href: '/seo/toalett-och-handfat-livsmedelsverksamhet.html' },
-    { title: 'Ventilation', copy: 'Kondens, os, luftflöden, filter och rena respektive orena utrymmen.', href: '/seo/ventilation-livsmedelsverksamhet.html' },
-    { title: 'Avfall', copy: 'Sopkärl, avlägsnande, returmaterial och kasserade varor.', href: '/seo/avfall-livsmedelsverksamhet.html' },
-    { title: 'Soprum och avfallsutrymme', copy: 'Rengörbarhet, skadedjur och skillnaden mellan torrt och vått avfall.', href: '/seo/soprum-och-avfallsutrymme-livsmedel.html' },
-    { title: 'Transport av livsmedel', copy: 'Skydd mot kontaminering och rätt temperatur under transport.', href: '/seo/transport-av-livsmedel.html' },
-    { title: 'Utbildning i livsmedelshygien', copy: 'Rätt kunskap för rätt arbetsuppgift utan onödiga formkrav.', href: '/seo/utbildning-livsmedelshygien-personal.html' },
-    { title: 'Vatten i livsmedelsverksamhet', copy: 'När dricksvatten krävs och vad användningen betyder för kraven.', href: '/seo/vatten-i-livsmedelsverksamhet.html' },
-    { title: 'Is i livsmedelsverksamhet', copy: 'Vattenkvalitet, rengöring av ismaskin och hygienisk hantering.', href: '/seo/is-i-livsmedelsverksamhet.html' },
-  ] },
-  { eyebrow: 'Temperatur', title: 'Från kylförvaring till återuppvärmning', intro: 'Guider för temperaturmoment som behöver olika kontrollpunkter och åtgärder.', guides: [
-    { title: 'Temperaturprocesser', copy: 'Samlingssida för kylförvaring, upptining, varmhållning, nedkylning och återuppvärmning.', href: '/seo/temperaturprocesser-livsmedel.html' },
-    { title: 'Temperaturkontroll', copy: 'Översikt över mätning, termometrar och vanliga kontrollområden.', href: '/seo/temperaturkontroll-livsmedel.html' },
-    { title: 'Kylförvaring', copy: 'Kylkedja, mottagna kylvaror och avvikelser.', href: '/seo/kylforvaring-livsmedel.html' },
-    { title: 'Upptining', copy: 'Metod, tid, temperatur och hantering av smältvatten.', href: '/seo/upptining-livsmedel.html' },
-    { title: 'Nedkylning', copy: 'Tid, temperatur, kärntemperatur och riktvärden.', href: '/seo/nedkylning-mat-livsmedel.html' },
-    { title: 'Varmhållning', copy: 'Temperatur, mätning och riskbedömning.', href: '/seo/varmhallning-mat-temperatur.html' },
-    { title: 'Återuppvärmning', copy: 'Snabb uppvärmning och kopplingen till nedkylning och kylförvaring.', href: '/seo/ateruppvarmning-mat.html' },
-  ] },
-  { eyebrow: 'Datummärkning och hållbarhet', title: 'Förstå datumen och vad som händer när de passerar', intro: 'Guider om bäst före, sista förbrukningsdag, hållbarhetsbedömning och infrysning nära utgångsdatum.', guides: [
-    { title: 'Datummärkning av livsmedel', copy: 'Samlingssida för bäst före, sista förbrukningsdag och hållbarhet.', href: '/seo/datummarkning-livsmedel.html' },
-    { title: 'Bäst före eller sista förbrukningsdag?', copy: 'Skillnaden mellan kvalitet, säkerhet och ansvar.', href: '/seo/bast-fore-eller-sista-forbrukningsdag.html' },
-    { title: 'Sälja mat efter bäst före', copy: 'När det är möjligt och vilket ansvar företaget har.', href: '/seo/salja-mat-efter-bast-fore.html' },
-    { title: 'Efter sista förbrukningsdag', copy: 'Vad som gäller för försäljning, donation och användning som ingrediens.', href: '/seo/mat-efter-sista-forbrukningsdag.html' },
-    { title: 'Bestämma hållbarhetsdatum', copy: 'Produkt, förpackning, förvaring och möjliga underlag.', href: '/seo/bestamma-hallbarhetsdatum-livsmedel.html' },
-    { title: 'Frysa in kylvaror nära utgångsdatum', copy: 'Märkning, förvaring och spårbarhet när varor fryses in.', href: '/seo/frysa-in-kylvaror-fore-utgangsdatum.html' },
-  ] },
-  { eyebrow: 'Information och märkning', title: 'Rätt information till kunden – från meny till etikett', intro: 'Guider om ansvar, etiketter, oförpackad mat och vilken information som behöver finnas vid beställning.', guides: [
-    { title: 'Information och märkning', copy: 'Samlingssida för etiketter, menyer, oförpackad mat och distansförsäljning.', href: '/seo/information-och-markning-livsmedel.html' },
-    { title: 'Ansvar för livsmedelsinformationen', copy: 'Vem ansvarar för att uppgifterna finns, är korrekta och följer med?', href: '/seo/ansvar-livsmedelsinformation.html' },
-    { title: 'Informationen får inte vilseleda', copy: 'Namn, bilder, presentation och reklam behöver ge en rättvisande helhetsbild.', href: '/seo/vilseledande-livsmedelsinformation.html' },
-    { title: 'Färdigförpackade livsmedel', copy: 'När en vara räknas som färdigförpackad och varför det påverkar märkningen.', href: '/seo/fardigforpackade-livsmedel-markning.html' },
-    { title: 'Obligatorisk märkning', copy: 'Översikt över uppgifter som kan behöva finnas på färdigförpackade livsmedel.', href: '/seo/obligatorisk-markning-livsmedel.html' },
-    { title: 'Ingrediensförteckning', copy: 'Fallande viktordning, rubrik, beteckningar och särskilda ingredienstyper.', href: '/seo/ingrediensforteckning-livsmedel.html' },
-    { title: 'Livsmedlets beteckning', copy: 'Föreskriven, vedertagen eller beskrivande beteckning.', href: '/seo/livsmedlets-beteckning.html' },
-    { title: 'Förvaringsanvisning', copy: 'När temperatur, förvaring och hållbarhet efter öppning behöver anges.', href: '/seo/forvaringsanvisning-livsmedel.html' },
-    { title: 'Märka om färdigförpackade livsmedel', copy: 'Ansvar, korrekta uppgifter och bibehållen spårbarhet vid ommärkning.', href: '/seo/marka-om-fardigforpackade-livsmedel.html' },
-    { title: 'Oförpackade livsmedel', copy: 'Mat över disk, serverad mat och mat som förpackas på kundens begäran.', href: '/seo/oforpackade-livsmedel-information.html' },
-    { title: 'Obligatorisk information om oförpackad mat', copy: 'Allergener och övriga uppgifter som kunden ska kunna få.', href: '/seo/obligatorisk-information-oforpackad-mat.html' },
-    { title: 'Distansförsäljning och hemleverans', copy: 'Information före köp och vid leverans när mat beställs på distans.', href: '/seo/distansforsaljning-oforpackad-mat.html' },
-  ] },
-  { eyebrow: 'HACCP och riskstyrning', title: 'Förstå faror, gränser och uppföljning', intro: 'Centrala delar av HACCP för mindre livsmedelsföretag.', guides: [
-    { title: 'HACCP för små livsmedelsföretag', copy: 'Flexibilitet, risker och dokumentation.', href: '/haccp-sma-livsmedelsforetag' },
-    { title: 'Faroanalys', copy: 'Identifiera relevanta faror i den faktiska verksamheten.', href: '/faroanalys-livsmedel' },
-    { title: 'Kritiska gränsvärden', copy: 'Tydliga gränser mellan acceptabelt och oacceptabelt.', href: '/seo/kritiska-gransvarden.html' },
-    { title: 'Avvikelser och korrigerande åtgärder', copy: 'Vad som behöver hända när en kontroll avviker.', href: '/avvikelser-korrigerande-atgarder-livsmedel' },
-    { title: 'Verifiering', copy: 'Kontrollera att rutiner och åtgärder faktiskt fungerar.', href: '/verifiering-egenkontroll-livsmedel' },
-    { title: 'Kontrollplan', copy: 'Planera kontrollpunkter, ansvar och uppföljning.', href: '/seo/kontrollplan.html' },
-  ] },
-  { eyebrow: 'Spårbarhet', title: 'Hitta rätt uppgifter när ett livsmedel måste följas', intro: 'Leverantörer, mottagare, interna flöden, partier, återkallanden och lagringstid.', guides: [
-    { title: 'Spårbarhet för livsmedelsföretag', copy: 'Ett steg bakåt, ett steg framåt och användbara underlag.', href: '/sparbarhet-livsmedel' },
-    { title: 'Intern spårbarhet', copy: 'Koppla råvaror och tillverkningsomgångar till rätt produkter när det behövs.', href: '/seo/intern-sparbarhet-livsmedel.html' },
-    { title: 'Partimärkning', copy: 'Identifiera vilka livsmedel som hör till samma parti.', href: '/seo/partimarkning-livsmedel.html' },
-    { title: 'Återkalla livsmedel', copy: 'Använd spårbarheten för att hitta berörda varor, leveranser och mottagare.', href: '/seo/aterkalla-livsmedel-sparbarhet.html' },
-    { title: 'Mängdbalans och kvantitativ spårbarhet', copy: 'Jämför inköp, lager, svinn och försäljning för att verifiera varuflöden.', href: '/seo/mangdbalans-sparbarhet-livsmedel.html' },
-    { title: 'Hur länge ska spårbarhetsuppgifter sparas?', copy: 'Lagringstid, hållbarhet och produktens verkliga livslängd.', href: '/spara-sparbarhetsuppgifter-livsmedel' },
-  ] },
-];
 
 export function KnowledgeBasePage() {
   useEffect(() => {
@@ -106,7 +18,7 @@ export function KnowledgeBasePage() {
   return <main className="public-site">
     <nav className="public-nav" aria-label="Publik navigation"><a className="public-brand" href="/"><img src={brandAssets.logo} alt="Min Egenkontroll" /></a><div className="public-nav-actions"><a href="/">Startsida</a><a href="/signup">Gå med</a></div></nav>
     <section className="public-hero"><div className="public-hero-copy"><p className="public-eyebrow">Kunskapsbank</p><h1>Egenkontroll och livsmedelssäkerhet – enkelt förklarat</h1><p className="public-copy">Praktiska guider för mindre livsmedelsföretag. Fakta bygger på myndigheters vägledning, länkar till underlaget och visar när innehållet faktakontrollerades.</p><div className="public-hero-actions"><a className="public-primary" href="/digital-egenkontroll-livsmedel">Börja med digital egenkontroll</a><a className="public-secondary" href="/seo/kallor-och-faktagranskning.html">Så granskar vi innehållet</a></div></div></section>
-    {groups.map((group, index) => <section className={index % 2 === 0 ? 'public-band' : 'public-grid-section'} key={group.title}><div className="public-section-heading"><p className="public-eyebrow">{group.eyebrow}</p><h2>{group.title}</h2><p className="public-copy">{group.intro}</p></div><div className="faq-list">{group.guides.map(guide => <a className="public-card" href={guide.href} key={guide.href}><h3>{guide.title}</h3><p>{guide.copy}</p></a>)}</div></section>)}
+    {publicResourceGroups.map((group, index) => <section className={index % 2 === 0 ? 'public-band' : 'public-grid-section'} key={group.title}><div className="public-section-heading"><p className="public-eyebrow">{group.eyebrow}</p><h2>{group.title}</h2><p className="public-copy">{group.intro}</p></div><div className="faq-list">{group.guides.map((guide) => <a className="public-card" href={guide.href} key={guide.href}><h3>{guide.title}</h3><p>{guide.copy}</p></a>)}</div></section>)}
     <section className="public-cta"><p className="public-eyebrow">Från kunskap till vardag</p><h2>Samla kontroller, avvikelser och historik på ett ställe.</h2><a className="public-primary" href="/signup">Gå med i förhandslanseringen</a></section>
     <footer className="public-footer"><span>© 2026 Min Egenkontroll</span><div className="public-footer-links"><a href="/seo/kallor-och-faktagranskning.html">Källor och faktagranskning</a><a href="/integritetspolicy">Integritetspolicy</a><a href="/anvandarvillkor">Användarvillkor</a></div></footer>
   </main>;
