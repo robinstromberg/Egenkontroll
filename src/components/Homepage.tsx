@@ -5,6 +5,14 @@ import { brandAssets } from '../config/assets';
 import './Homepage.css';
 
 type HomepageProps = { onStartTrial: () => void; onLogin: () => void };
+type Theme = 'light' | 'dark';
+const homepageThemeKey = 'egenkontroll:homepage-theme';
+
+function readHomepageTheme(): Theme {
+  const saved = window.localStorage.getItem(homepageThemeKey);
+  if (saved === 'light' || saved === 'dark') return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 
 const paths = [
   { label: 'Appen', title: 'Gör dagens kontroller', copy: 'För återkommande arbete, avvikelser och historik.', href: '/digital-egenkontroll-livsmedel' },
@@ -55,6 +63,7 @@ function AppProof() {
 
 export function Homepage({ onStartTrial, onLogin }: HomepageProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>(readHomepageTheme);
   const menuButton = useRef<HTMLButtonElement>(null);
   const menuPanel = useRef<HTMLDivElement>(null);
   useEffect(() => { setHomepageMeta(); }, []);
@@ -74,18 +83,24 @@ export function Homepage({ onStartTrial, onLogin }: HomepageProps) {
     window.addEventListener('keydown', onKeyDown); return () => window.removeEventListener('keydown', onKeyDown);
   }, [menuOpen]);
   const closeMenu = () => { setMenuOpen(false); menuButton.current?.focus(); };
-  return <div className="home-page">
+  const toggleTheme = () => setTheme((current) => {
+    const next = current === 'light' ? 'dark' : 'light';
+    window.localStorage.setItem(homepageThemeKey, next);
+    return next;
+  });
+  const themeLabel = theme === 'light' ? 'Aktivera mörkt läge' : 'Aktivera ljust läge';
+  return <div className="home-page" data-theme={theme}>
     <a className="home-skip" href="#main-content">Hoppa till innehållet</a>
     <header className="home-header"><div className="home-shell home-header__inner">
       <a className="home-brand" href="/"><img src={brandAssets.icon} alt="" /><span>Min Egenkontroll</span></a>
       <nav className="home-nav" aria-label="Huvudnavigation"><a href="/kunskapsbank">Kunskap</a><a href="/seo/kontrollplan.html">Mallar och checklistor</a><a href="/faroanalys-livsmedel">Verktyg</a><a href="/seo/utbildning-livsmedelshygien-personal.html">Utbildning</a><a href="/seo/kallor-och-faktagranskning.html">Referenser och källor</a><a href="/digital-egenkontroll-livsmedel">Appen</a></nav>
-      <div className="home-header__actions"><button className="home-login" type="button" onClick={onLogin}>Logga in</button><button className="ds-button ds-button--primary" type="button" onClick={onStartTrial}>Kom igång</button><button ref={menuButton} className="home-menu-button" type="button" aria-controls="home-menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>Meny</button></div>
+      <div className="home-header__actions"><button className="home-theme-toggle" type="button" onClick={toggleTheme} aria-label={themeLabel} title={themeLabel}><span aria-hidden="true">{theme === 'light' ? '◐' : '◑'}</span><span className="home-theme-toggle__text">{theme === 'light' ? 'Mörkt' : 'Ljust'}</span></button><button className="home-login" type="button" onClick={onLogin}>Logga in</button><button className="ds-button ds-button--primary" type="button" onClick={onStartTrial}>Kom igång</button><button ref={menuButton} className="home-menu-button" type="button" aria-controls="home-menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>Meny</button></div>
     </div></header>
-    {menuOpen ? <div className="home-menu-backdrop"><div className="home-menu" id="home-menu" ref={menuPanel} role="dialog" aria-modal="true" aria-label="Huvudmeny"><div><strong>Min Egenkontroll</strong><button type="button" onClick={closeMenu}>Stäng</button></div><nav><a onClick={closeMenu} href="/kunskapsbank">Kunskap</a><a onClick={closeMenu} href="/seo/kontrollplan.html">Mallar och checklistor</a><a onClick={closeMenu} href="/faroanalys-livsmedel">Verktyg</a><a onClick={closeMenu} href="/seo/utbildning-livsmedelshygien-personal.html">Utbildning</a><a onClick={closeMenu} href="/seo/kallor-och-faktagranskning.html">Referenser och källor</a><a onClick={closeMenu} href="/digital-egenkontroll-livsmedel">Appen</a><button type="button" onClick={onLogin}>Logga in</button><button className="ds-button ds-button--primary" type="button" onClick={onStartTrial}>Kom igång</button></nav></div></div> : null}
+    {menuOpen ? <div className="home-menu-backdrop"><div className="home-menu" id="home-menu" ref={menuPanel} role="dialog" aria-modal="true" aria-label="Huvudmeny"><div><strong>Min Egenkontroll</strong><button type="button" onClick={closeMenu}>Stäng</button></div><nav><a onClick={closeMenu} href="/kunskapsbank">Kunskap</a><a onClick={closeMenu} href="/seo/kontrollplan.html">Mallar och checklistor</a><a onClick={closeMenu} href="/faroanalys-livsmedel">Verktyg</a><a onClick={closeMenu} href="/seo/utbildning-livsmedelshygien-personal.html">Utbildning</a><a onClick={closeMenu} href="/seo/kallor-och-faktagranskning.html">Referenser och källor</a><a onClick={closeMenu} href="/digital-egenkontroll-livsmedel">Appen</a><button className="home-theme-toggle" type="button" onClick={toggleTheme} aria-label={themeLabel}><span aria-hidden="true">{theme === 'light' ? '◐' : '◑'}</span> {themeLabel}</button><button type="button" onClick={onLogin}>Logga in</button><button className="ds-button ds-button--primary" type="button" onClick={onStartTrial}>Kom igång</button></nav></div></div> : null}
     <main id="main-content">
       <section className="home-hero"><div className="home-shell home-hero__grid"><div><p className="home-kicker">Egenkontroll för små livsmedelsverksamheter</p><h1>Få koll på det som ska göras. Varje dag.</h1><p className="home-lead">Min Egenkontroll hjälper restauranger, caféer, bagerier, butiker och foodtrucks att förstå, dokumentera och följa upp egenkontrollen.</p><div className="home-actions"><a className="ds-button ds-button--primary" href="#hjalp">Hitta rätt hjälp</a><button className="ds-button ds-button--secondary" type="button" onClick={onStartTrial}>Kom igång med appen</button></div><p className="home-note">Kunskap när du behöver förstå. Appen när arbetet återkommer.</p></div><AppProof /></div></section>
-      <section className="home-paths" aria-labelledby="paths-title"><div className="home-shell"><p className="home-kicker">Vart vill du härnäst?</p><h2 id="paths-title">Välj den hjälp som passar ditt nästa steg.</h2><div>{paths.map((path) => <a href={path.href} key={path.title}><span>{path.label}</span><strong>{path.title}</strong><p>{path.copy}</p><b>Öppna →</b></a>)}</div></div></section>
       <section className="home-search" id="hjalp"><div className="home-shell"><div><p className="home-kicker">Hitta rätt utan omvägar</p><h2>Vad vill du ha hjälp med idag?</h2><p>Sök i vägledning, mallar och checklistor.</p></div><form className="home-search-form" action="/sok" method="get" role="search"><label htmlFor="homepage-search">Sök i Min Egenkontroll</label><div><TextField id="homepage-search" name="q" type="search" placeholder="Till exempel: kontrollplan för café" required /><Button type="submit">Sök</Button></div></form></div></section>
+      <section className="home-paths" aria-labelledby="paths-title"><div className="home-shell"><p className="home-kicker">Vart vill du härnäst?</p><h2 id="paths-title">Välj den hjälp som passar ditt nästa steg.</h2><div>{paths.map((path) => <a href={path.href} key={path.title}><span>{path.label}</span><strong>{path.title}</strong><p>{path.copy}</p><b>Öppna →</b></a>)}</div></div></section>
       <section className="home-questions"><div className="home-shell"><p className="home-kicker">Frågor att börja med</p><div>{['Hur kommer jag igång med en kontrollplan?', 'Vilket underlag behöver jag för en faroanalys?', 'Hur följer jag upp en avvikelse?'].map((question, index) => <a href={index === 0 ? '/seo/kontrollplan.html' : index === 1 ? '/faroanalys-livsmedel' : '/avvikelser-korrigerande-atgarder-livsmedel'} key={question}><small>Plats för verifierad sökfråga</small><strong>{question}</strong></a>)}</div></div></section>
       <section className="home-resources"><div className="home-shell"><div className="home-section-head"><div><p className="home-kicker">Utvalt för HACCP-piloten</p><h2>Rätt sorts hjälp, utan en hel katalog.</h2></div><LinkButton href="/kunskapsbank" variant="ghost">Till kunskapsbanken →</LinkButton></div><div className="home-resource-list">{resources.map((resource) => <a href={resource.href} key={resource.title}><span>{resource.type}</span><strong>{resource.title}</strong><p>{resource.copy}</p></a>)}</div></div></section>
       <section className="home-business"><div className="home-shell"><div><p className="home-kicker">För din vardag</p><h2>Börja med verksamheten du faktiskt driver.</h2><p>Välj en ingång som leder till rätt rutin, resurs eller arbetsflöde.</p></div><nav aria-label="Verksamhetsvägar">{businesses.map((business) => <a href={business.href} key={business.title}><strong>{business.title}</strong><span>{business.copy}</span></a>)}</nav></div></section>
