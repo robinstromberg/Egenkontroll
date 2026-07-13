@@ -1,4 +1,5 @@
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { Alert } from './ui/Alert';
 
 export function OnlineOnlyBanner() {
   const isOnline = useOnlineStatus();
@@ -6,9 +7,8 @@ export function OnlineOnlyBanner() {
   if (isOnline) return null;
 
   return (
-    <aside className="online-only-banner" role="status" aria-live="polite">
-      <strong>Internet saknas</strong>
-      <span>Appen kräver internet för att spara kontroller. Vänta med att spara tills anslutningen är tillbaka.</span>
-    </aside>
+    <Alert className="online-only-banner" tone="warning" title="Internet saknas" live="polite">
+      Appen kräver internet för att spara kontroller. Vänta med att spara tills anslutningen är tillbaka.
+    </Alert>
   );
 }
