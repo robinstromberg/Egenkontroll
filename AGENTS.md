@@ -51,6 +51,16 @@ Produkten ska kännas trygg, snabb och begriplig för användare utan teknisk ba
 - Lista alltid den nya eller uppdaterade leveransen samt de relevanta tidigare källorna. Förlita dig inte på att chattkontexten är komplett.
 - En sammanfattning i slutsvaret ersätter inte källorna. Uppmana ChatGPT att läsa dem innan beslut eller nästa uppgift rekommenderas.
 
+## Product Decision Process
+
+- Determine whether the task is primarily strategic or technical.
+- Strategic work should be completed before implementation begins.
+- Keep GitHub Issues implementation-focused.
+- Prefer small, reviewable changes.
+- One implementation → one review → one polish → merge.
+- Avoid speculative implementation and unnecessary abstractions.
+- Reuse the design system whenever possible.
+
 ## Användning av subagents
 
 - Använd inte subagents för små, lokala eller tydligt avgränsade ändringar.
