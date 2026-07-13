@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /login
 Disallow: /signup
+Disallow: /utveckling/
 
 Sitemap: https://minegenkontroll.se/sitemap.xml
