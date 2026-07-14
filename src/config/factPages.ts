@@ -153,7 +153,7 @@ export const kontrollplanFactPage: FactPageContent = {
     { href: '/faroanalys-livsmedel', title: 'Faroanalys', copy: 'Identifiera och bedöm faror i den egna hanteringen.' },
     { href: '/kritiska-gransvarden-livsmedel', title: 'Kritiska gränsvärden', copy: 'Läs om hur gränser och övervakning hör ihop i HACCP-arbetet.' },
   ] },
-  sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/haccp-sma-livsmedelsforetag', title: 'Sätt kontrollplanen i ett sammanhang', copy: 'Gå tillbaka till HACCP-navet för att se hur faroanalys, kontroll, avvikelser och verifiering hänger ihop.', linkLabel: 'Till HACCP och riskstyrning' },
+  sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/avvikelser-korrigerande-atgarder-livsmedel', title: 'Nästa steg: hantera avvikelser', copy: 'När kontrollerna är planerade behöver det vara tydligt vad som händer när en kritisk gräns eller rutin inte uppfylls.', linkLabel: 'Till avvikelser och åtgärder' },
   appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera löpande arbete i appen', copy: 'Min Egenkontroll kan stötta återkommande kontroller, avvikelser och historik när rutinerna ska följas upp.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },
 };
 
@@ -223,7 +223,80 @@ export const kritiskaGransvardenFactPage: FactPageContent = {
     { href: '/haccp-sma-livsmedelsforetag', title: 'HACCP och riskstyrning', copy: 'Se hur faroanalys, styrning och uppföljning hänger ihop.' },
     { href: '/faroanalys-livsmedel', title: 'Faroanalys', copy: 'Identifiera vilka faror som behöver styras i den egna hanteringen.' },
     { href: '/kontrollplan-livsmedel', title: 'Kontrollplan', copy: 'Samla kontrollpunkter, ansvar och uppföljning i ett praktiskt underlag.' },
+    { href: '/avvikelser-korrigerande-atgarder-livsmedel', title: 'Avvikelser och korrigerande åtgärder', copy: 'Agera när en kritisk gräns eller rutin inte uppfylls.' },
   ] },
   sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/kontrollplan-livsmedel', title: 'Nästa steg: samla kontrollen', copy: 'När gränser och övervakning är tydliga kan kontrollplanen hjälpa till att samla ansvar, uppföljning och åtgärder.', linkLabel: 'Till kontrollplanen' },
   appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera löpande arbete i appen', copy: 'Min Egenkontroll kan stötta återkommande kontroller, avvikelser och historik när rutinerna ska följas upp.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },
+};
+
+export const avvikelserFactPage: FactPageContent = {
+  title: 'Avvikelser och korrigerande åtgärder | Min Egenkontroll',
+  description: 'Förstå hur avvikelser, korrigerande åtgärder och uppföljning hänger ihop i en liten livsmedelsverksamhet.',
+  canonicalPath: '/avvikelser-korrigerande-atgarder-livsmedel',
+  breadcrumb: [
+    { label: 'Kunskap', href: '/kunskapsbank' },
+    { label: 'HACCP och riskstyrning', href: '/haccp-sma-livsmedelsforetag' },
+    { label: 'Avvikelser och korrigerande åtgärder' },
+  ],
+  eyebrow: 'Avvikelser och åtgärder',
+  heading: 'Avvikelser och korrigerande åtgärder i livsmedelsverksamheten',
+  shortAnswer: 'En avvikelse är ett tecken på att en kritisk gräns eller en egen rutin inte har följts som avsett. En korrigerande åtgärd är det planerade agerandet för att hantera berörd produkt, återställa processen och minska risken att problemet återkommer. Uppföljningen visar om åtgärderna fungerade.',
+  tableOfContentsTitle: 'På den här sidan',
+  definition: {
+    title: 'Avvikelse, korrigerande åtgärd och uppföljning',
+    paragraphs: [
+      'I HACCP-arbetet ska korrigerande åtgärder vara planerade för varje kritisk styrpunkt, så att de kan vidtas direkt när övervakningen visar ett avsteg från en kritisk gräns. Åtgärderna kan gälla både livsmedlet och processen.',
+      'I den löpande verksamheten används ordet avvikelse ofta också när en egen rutin inte fungerar som avsett. Oavsett vad som har brustit behöver verksamheten bedöma situationen, agera på det som berörs och följa upp att arbetssättet fungerar igen.',
+    ],
+  },
+  workflow: { eyebrow: 'Praktisk arbetsgång', title: 'Så kan du hantera en avvikelse', steps: [
+    { title: 'Upptäck och avgränsa', copy: 'Notera vilket processteg eller vilken rutin som inte fungerar som avsett. Bedöm vad som berörs och om processen behöver stoppas eller säkras.' },
+    { title: 'Hantera berörd produkt', copy: 'Säkerställ att livsmedel som kan vara berörda inte går vidare innan verksamheten har gjort den bedömning och hantering som situationen kräver.' },
+    { title: 'Återställ processen', copy: 'Genomför den planerade korrigerande åtgärden så att den kritiska styrpunkten eller rutinen åter fungerar som avsett.' },
+    { title: 'Bedöm orsaken', copy: 'Undersök vad som bidrog till avvikelsen. Syftet är att välja en rimlig åtgärd som minskar risken att samma problem upprepas.' },
+    { title: 'Följ upp och dokumentera', copy: 'Kontrollera att åtgärderna fungerade och spara den information som behövs för att kunna följa händelsen och arbetssättet över tid.' },
+  ] },
+  example: {
+    eyebrow: 'Illustrativt exempel – måste anpassas',
+    title: 'Exempel: en avvikelse i ett kontrollsteg',
+    introduction: 'Exemplet visar en möjlig struktur för hantering och uppföljning. Det är inte en myndighetsrutin och verksamheten behöver anpassa sitt agerande till den faktiska faran, produkten och processen.',
+    fields: [
+      { label: 'Processteg eller kontroll', value: 'En planerad kontroll visar att verksamhetens kritiska gräns eller egen rutin inte är uppfylld.' },
+      { label: 'Avvikelse', value: 'Kontrollen dokumenteras som ett avsteg från det arbetssätt som verksamheten har fastställt.' },
+      { label: 'Omedelbar åtgärd', value: 'Ansvarig säkrar situationen och vidtar den åtgärd som verksamheten har planerat för att få processen under kontroll.' },
+      { label: 'Berörd produkt', value: 'Berörda livsmedel hålls åtskilda eller stoppas från nästa steg medan verksamheten bedömer fortsatt hantering.' },
+      { label: 'Orsaksbedömning', value: 'Verksamheten går igenom vad som kan ha orsakat avsteget, till exempel hur rutin, utrustning eller genomförande fungerade.' },
+      { label: 'Uppföljning', value: 'Ansvarig kontrollerar att processen fungerar igen och att den valda åtgärden minskar risken för upprepning.' },
+    ],
+    noteLabel: 'Viktigt:',
+    note: 'Exemplet är en praktisk illustration. Det anger inte en generell åtgärd eller en färdig bedömning av berörd produkt.',
+  },
+  mistakes: { title: 'Vanliga fallgropar', items: [
+    { title: 'Endast felet rättas till', copy: 'Att återställa processen kan vara nödvändigt direkt, men verksamheten behöver också bedöma vad som hänt med berörd produkt och varför avvikelsen uppstod.' },
+    { title: 'Berörd produkt går vidare utan bedömning', copy: 'När ett kritiskt gränsvärde inte uppfylls behöver det vara tydligt hur verksamheten säkerställer att berört livsmedel inte går vidare innan situationen har hanterats.' },
+    { title: 'Åtgärden är inte planerad i förväg', copy: 'För kritiska styrpunkter ska korrigerande åtgärder vara förberedda så att de kan genomföras när övervakningen visar ett avsteg.' },
+    { title: 'Ingen uppföljning görs', copy: 'Utan uppföljning blir det svårt att veta om processen verkligen är återställd och om orsaken har hanterats.' },
+  ] },
+  faq: { title: 'Frågor och svar', items: [
+    { question: 'Vad är skillnaden mellan en avvikelse och en korrigerande åtgärd?', answer: 'Avvikelsen beskriver att något inte har fungerat som avsett. Den korrigerande åtgärden beskriver vad verksamheten gör som svar på avvikelsen, bland annat för att hantera produkt och process.' },
+    { question: 'Behöver korrigerande åtgärder planeras i förväg?', answer: 'För varje kritisk styrpunkt ska korrigerande åtgärder planeras så att de kan vidtas direkt när övervakningen visar ett avsteg från det kritiska gränsvärdet.' },
+    { question: 'Vad innebär uppföljning efter en avvikelse?', answer: 'Uppföljningen kontrollerar att processen fungerar igen och ger underlag för att bedöma om åtgärden och orsaksbedömningen har varit tillräckliga.' },
+  ] },
+  sourceSectionTitle: 'Källor och faktakontroll',
+  source: {
+    label: 'Livsmedelsverkets Kontrollwiki: HACCP',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-14',
+    limitation: 'Vägledningen är inte bindande och ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
+  },
+  additionalSources: [{ label: 'Livsmedelsverkets Kontrollwiki: HACCP-baserade förfaranden', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/247/k-haccp-baserade-forfaranden' }],
+  relatedLinks: { title: 'Fördjupa nästa steg', links: [
+    { href: '/haccp-sma-livsmedelsforetag', title: 'HACCP och riskstyrning', copy: 'Se hur delarna hänger ihop i ett förebyggande arbetssätt.' },
+    { href: '/faroanalys-livsmedel', title: 'Faroanalys', copy: 'Identifiera vilka faror och kontrollåtgärder som är relevanta.' },
+    { href: '/kontrollplan-livsmedel', title: 'Kontrollplan', copy: 'Samla kontroller, ansvar och uppföljning i det löpande arbetet.' },
+    { href: '/kritiska-gransvarden-livsmedel', title: 'Kritiska gränsvärden', copy: 'Förstå hur gränser, övervakning och avsteg hänger ihop.' },
+  ] },
+  sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/haccp-sma-livsmedelsforetag', title: 'Sätt åtgärderna i ett HACCP-sammanhang', copy: 'Gå till HACCP-navet för att se hur faroanalys, styrning och uppföljning hänger ihop.', linkLabel: 'Till HACCP och riskstyrning' },
+  appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera återkommande arbete i appen', copy: 'Min Egenkontroll kan stötta löpande kontroller, avvikelser och historik när arbetssättet ska följas upp.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },
 };
