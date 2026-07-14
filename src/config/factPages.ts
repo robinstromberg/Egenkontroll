@@ -14,6 +14,8 @@ export type FactPageContent = {
   faq: { title: string; items: readonly { question: string; answer: string }[] };
   sourceSectionTitle: string;
   source: { label: string; url: string; type: 'myndighetsvägledning'; factCheckedAt: string; limitation: string };
+  additionalSources?: readonly { label: string; url: string }[];
+  relatedLinks?: { title: string; links: readonly { href: string; title: string; copy: string }[] };
   sequentialNextStep: { eyebrow: string; href: string; title: string; copy: string; linkLabel: string };
   appBridge: { eyebrow: string; title: string; copy: string; href: string; linkLabel: string };
 };
@@ -80,6 +82,77 @@ export const faroanalysFactPage: FactPageContent = {
     factCheckedAt: '2026-07-14',
     limitation: 'Faktaunderlaget bygger på Livsmedelsverkets vägledning. Vägledningen är inte bindande och Min Egenkontroll ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
   },
-  sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/seo/kontrollplan.html', title: 'Nästa steg: planera kontroller', copy: 'När farorna är bedömda kan kontrollplanen hjälpa dig att samla kontrollpunkter, ansvar och uppföljning.', linkLabel: 'Till kontrollplanen' },
+  sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/kontrollplan-livsmedel', title: 'Nästa steg: planera kontroller', copy: 'När farorna är bedömda kan kontrollplanen hjälpa dig att samla kontrollpunkter, ansvar och uppföljning.', linkLabel: 'Till kontrollplanen' },
   appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera löpande arbete i appen', copy: 'Min Egenkontroll kan stötta återkommande kontroller, avvikelser och historik när verksamheten vill dokumentera sitt löpande arbete.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },
+};
+
+export const kontrollplanFactPage: FactPageContent = {
+  title: 'Kontrollplan för livsmedelsföretag | Min Egenkontroll',
+  description: 'Förstå hur en kontrollplan kan samla rutiner, ansvar, uppföljning och dokumentation i en liten livsmedelsverksamhet.',
+  canonicalPath: '/kontrollplan-livsmedel',
+  breadcrumb: [
+    { label: 'Kunskap', href: '/kunskapsbank' },
+    { label: 'HACCP och riskstyrning', href: '/haccp-sma-livsmedelsforetag' },
+    { label: 'Kontrollplan' },
+  ],
+  eyebrow: 'Kontrollplan',
+  heading: 'Kontrollplan för livsmedelsföretag',
+  shortAnswer: 'En kontrollplan gör det lättare att samla vad som behöver följas upp i den egna verksamheten, vem som ansvarar och hur resultat eller avvikelser tas om hand. Den behöver anpassas till verksamhetens faktiska risker och arbetssätt.',
+  tableOfContentsTitle: 'På den här sidan',
+  definition: {
+    title: 'Vad är en kontrollplan?',
+    paragraphs: [
+      'I den egna verksamheten kan en kontrollplan vara ett praktiskt sätt att samla rutiner och kontroller som hjälper till att hålla livsmedel säkra. Den kan koppla ihop faroanalys, grundförutsättningar, övervakning, åtgärder och uppföljning.',
+      'Planen är inte en färdig myndighetsmall som passar alla. Livsmedelsverkets vägledning beskriver att HACCP-baserade förfaranden och dokumentation ska anpassas till verksamhetens storlek och art, samtidigt som relevanta faror behöver kunna styras och följas upp.',
+    ],
+  },
+  workflow: { eyebrow: 'Praktisk arbetsgång', title: 'Så kan du bygga upp en användbar kontrollplan', steps: [
+    { title: 'Utgå från den egna hanteringen', copy: 'Beskriv de rutiner och processteg som faktiskt finns i verksamheten. Använd faroanalysen och de grundförutsättningar som redan gäller som utgångspunkt.' },
+    { title: 'Välj vad som behöver följas upp', copy: 'Gör det tydligt vilka kontroller som hör till respektive rutin eller betydande fara. Om ett steg kräver övervakning behöver arbetssättet fungera i vardagen.' },
+    { title: 'Sätt ansvar och tillfälle', copy: 'Ange vem som gör kontrollen och när eller i vilken situation den ska göras. Anpassa upplägget så att det går att följa även när tempot är högt.' },
+    { title: 'Beskriv vad som händer vid avvikelse', copy: 'Koppla kontrollen till en relevant åtgärd när något inte fungerar som avsett. Bedömningen och åtgärden behöver passa den aktuella verksamheten och situationen.' },
+    { title: 'Följ upp och uppdatera', copy: 'Gå igenom om rutinerna fungerar, och se över planen när verksamheten eller förutsättningarna ändras. Spara den dokumentation som behövs för att kunna följa arbetet.' },
+  ] },
+  example: {
+    eyebrow: 'Illustrativt exempel – måste anpassas',
+    title: 'Exempel: en punkt i en enkel kontrollplan',
+    introduction: 'Exemplet visar hur en verksamhet skulle kunna strukturera en kontrollpunkt. Det är inte ett myndighetskrav, ett gränsvärde eller en färdig kontrollplan.',
+    fields: [
+      { label: 'Område', value: 'Rengöring av en arbetsyta som används vid hantering av ätfärdiga livsmedel.' },
+      { label: 'Vad verksamheten följer upp', value: 'Att den egna rengöringsrutinen har följts och att arbetsytan är i det skick verksamheten har bestämt.' },
+      { label: 'Ansvar', value: 'Den person som har utsetts i verksamhetens egen rutin.' },
+      { label: 'När', value: 'Vid det tillfälle som verksamheten själv har bestämt utifrån sin hantering.' },
+      { label: 'Om något inte fungerar', value: 'Verksamheten stoppar eller rättar till det som behövs, dokumenterar när det är relevant och ser över om rutinen behöver ändras.' },
+      { label: 'Uppföljning', value: 'Ansvarig går regelbundet igenom om rutinen och åtgärderna fungerar i praktiken.' },
+    ],
+    noteLabel: 'Viktigt:',
+    note: 'Valet av kontrollpunkt, ansvar, frekvens och åtgärd är illustrativa antaganden. De måste bedömas mot den egna verksamheten, dess faroanalys och tillämpliga krav.',
+  },
+  mistakes: { title: 'Vanliga fallgropar', items: [
+    { title: 'Planen är kopierad men inte anpassad', copy: 'Ett färdigt underlag kan vara ett stöd, men behöver spegla den egna verksamhetens hantering, risker och rutiner.' },
+    { title: 'Kontrollen går inte att utföra i vardagen', copy: 'En plan hjälper först när den är begriplig för dem som ska använda den och passar verksamhetens faktiska arbetssätt.' },
+    { title: 'Avvikelser saknar nästa steg', copy: 'Det behöver vara tydligt hur verksamheten reagerar när en kontroll visar att något inte fungerar som avsett.' },
+    { title: 'Planen uppdateras inte', copy: 'Förändringar i råvaror, processer, utrustning eller hantering kan innebära att riskbedömning och rutiner behöver ses över.' },
+  ] },
+  faq: { title: 'Frågor och svar', items: [
+    { question: 'Är en kontrollplan samma sak som en faroanalys?', answer: 'Nej. Faroanalysen hjälper till att identifiera och bedöma faror. Kontrollplanen kan vara ett praktiskt sätt att samla hur relevanta rutiner och kontroller ska genomföras och följas upp.' },
+    { question: 'Måste alla kontroller dokumenteras på samma sätt?', answer: 'Nej. Livsmedelsverkets vägledning beskriver att dokumentation och journaler ska anpassas till verksamhetens storlek och art, men vara tillräckliga för att visa att de HACCP-baserade förfarandena finns och upprätthålls.' },
+    { question: 'När behöver kontrollplanen ses över?', answer: 'När den inte längre speglar hur verksamheten fungerar, eller när en förändring kan påverka risker, rutiner eller kontrollåtgärder. Vilken uppföljning som behövs beror på den egna verksamheten.' },
+  ] },
+  sourceSectionTitle: 'Källor och faktakontroll',
+  source: {
+    label: 'Livsmedelsverkets Kontrollwiki: HACCP',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-14',
+    limitation: 'Vägledningen är inte bindande och ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
+  },
+  additionalSources: [{ label: 'Livsmedelsverkets Kontrollwiki: HACCP-baserade förfaranden', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/247/k-haccp-baserade-forfaranden' }],
+  relatedLinks: { title: 'Fördjupa nästa steg', links: [
+    { href: '/haccp-sma-livsmedelsforetag', title: 'HACCP och riskstyrning', copy: 'Se hur arbetskedjan hänger ihop för små livsmedelsverksamheter.' },
+    { href: '/faroanalys-livsmedel', title: 'Faroanalys', copy: 'Identifiera och bedöm faror i den egna hanteringen.' },
+    { href: '/seo/kritiska-gransvarden.html', title: 'Kritiska gränsvärden', copy: 'Läs om hur gränser och övervakning hör ihop i HACCP-arbetet.' },
+  ] },
+  sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/haccp-sma-livsmedelsforetag', title: 'Sätt kontrollplanen i ett sammanhang', copy: 'Gå tillbaka till HACCP-navet för att se hur faroanalys, kontroll, avvikelser och verifiering hänger ihop.', linkLabel: 'Till HACCP och riskstyrning' },
+  appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera löpande arbete i appen', copy: 'Min Egenkontroll kan stötta återkommande kontroller, avvikelser och historik när rutinerna ska följas upp.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },
 };
