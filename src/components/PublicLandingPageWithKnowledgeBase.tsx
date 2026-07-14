@@ -1,6 +1,7 @@
 import { Homepage } from './Homepage';
 import { HaccpTopicHub } from './HaccpTopicHub';
-import { FaroanalysFactPage } from './FactPage';
+import { FactPage } from './FactPage';
+import { faroanalysFactPage } from '../config/factPages';
 import { KnowledgeBasePage } from './KnowledgeBasePage';
 import { SearchResultsPage } from './SearchResultsPage';
 import { SeoLandingPage, getSeoPageSlugFromPath } from './SeoLandingPage';
@@ -15,7 +16,7 @@ export function PublicLandingPage(props: PublicLandingPageProps) {
   if (normalizedPath === '/kunskapsbank') return <KnowledgeBasePage />;
   if (normalizedPath === '/sok') return <SearchResultsPage />;
   if (normalizedPath === '/haccp-sma-livsmedelsforetag') return <HaccpTopicHub {...props} />;
-  if (normalizedPath === '/faroanalys-livsmedel') return <FaroanalysFactPage {...props} />;
+  if (normalizedPath === '/faroanalys-livsmedel') return <FactPage content={faroanalysFactPage} {...props} />;
   const seoPage = getSeoPageSlugFromPath(window.location.pathname);
   if (seoPage) return <SeoLandingPage page={seoPage} />;
   return <Homepage {...props} />;
