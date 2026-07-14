@@ -105,6 +105,25 @@ Service role-nycklar får aldrig in i frontend, repo, issues eller logs. Secrets
 - Vid borttagning eller sammanslagning ska omdirigering planeras när en relevant ersättningssida finns.
 - Massproduktion av nya sidor ska inte gå före beslut om informationsstruktur, sidtyper och kvalitetsnivå.
 
+## Arbetsgång för SEO-, GEO- och kunskapsinnehåll
+
+När en ny faktasida, artikel, FAQ eller ett nytt ämneskluster tas fram ska följande arbetsgång användas:
+
+1. Utgå från ett verifierat sökbehov, en dokumenterad användarfråga eller en tydlig del av ett beslutat ämneskluster. Kontrollera först att frågan inte redan besvaras tillräckligt på en befintlig sida.
+2. Definiera en primär fråga och sökintention för sidan. När en närliggande fråga kan besvaras självständigt ska den normalt få en egen sida i stället för att göra den första sidan onödigt bred.
+3. Hitta den mest precisa relevanta primärkällan. För sakfrågor som behandlas i Livsmedelsverkets vägledning ska Kontrollwiki användas som förstahandskälla: https://kontrollwiki.livsmedelsverket.se/. Följ vidare till den konkreta artikeln eller underkategorin som faktiskt stöder svaret; hänvisa inte enbart till startsidan.
+4. Komplettera vid behov med Livsmedelsverket, EUR-Lex, svensk lagstiftning eller annan ansvarig myndighets primärmaterial. Kontrollwiki är inte en ersättning för själva rättsakten när lagtexten behöver kontrolleras.
+5. Skilj tydligt mellan bindande regler, myndighetsvägledning och Min Egenkontrolls praktiska förklaring eller exempel.
+6. Skriv med egna ord. Kopiera inte källtext. Ge ett kort, självständigt svar nära toppen och fördjupa endast med den information som behövs för den avgränsade frågan.
+7. Använd tydliga definitioner, frågebaserade mellanrubriker, konkreta steg, relevanta småföretagsexempel och tydliga gränsdragningar där svaret beror på verksamhetens risker eller förutsättningar.
+8. Länka direkt till de källsidor som använts och ange källtyp, faktakontrolldatum och relevanta begränsningar. Varje väsentligt sakpåstående ska kunna spåras till en källa.
+9. Länka sidan till rätt ämnesnav och till ett begränsat antal närliggande frågor med förklarad relation. Undvik duplicerat innehåll och flera sidor som konkurrerar om samma sökintention.
+10. Leverera hela svaret och den praktiska nyttan före appbudskap. Appen får därefter visas som ett naturligt nästa steg när den löser ett konkret återkommande arbetsbehov.
+
+Målet är en konsekvent kedja:
+
+**verifierad fråga → avgränsad sida → exakt primärkälla → lättbegripligt svar → tydlig internlänkning → relevant nästa steg**
+
 ## Datamodell och säkerhet
 
 Den centrala modellen är organisationsbaserad. Data ska alltid kopplas till rätt `organization_id` och skyddas av RLS. Viktiga områden:
