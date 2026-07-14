@@ -399,6 +399,7 @@ export function getSeoPageSlugFromPath(pathname: string): SeoPageSlug | null {
   return normalizedPath in seoPages ? (normalizedPath as SeoPageSlug) : null;
 }
 
+
 type SeoLandingPageProps = {
   page: SeoPageSlug;
 };

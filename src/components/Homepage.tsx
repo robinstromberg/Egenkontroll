@@ -1,19 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { Button, LinkButton } from './ui/Button';
 import { TextField } from './ui/TextField';
-import { brandAssets } from '../config/assets';
 import { getPublicResource } from '../config/publicResources';
+import { PublicSiteShell } from './PublicSiteShell';
 import './Homepage.css';
 
 type HomepageProps = { onStartTrial: () => void; onLogin: () => void };
-type Theme = 'light' | 'dark';
-const homepageThemeKey = 'egenkontroll:homepage-theme';
-
-function readHomepageTheme(): Theme {
-  const saved = window.localStorage.getItem(homepageThemeKey);
-  if (saved === 'light' || saved === 'dark') return saved;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
 
 const paths = [
   { label: 'Appen', title: 'Gör dagens kontroller', copy: 'För återkommande arbete, avvikelser och historik.', href: '/digital-egenkontroll-livsmedel' },
@@ -64,41 +56,8 @@ function AppProof() {
 }
 
 export function Homepage({ onStartTrial, onLogin }: HomepageProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<Theme>(readHomepageTheme);
-  const menuButton = useRef<HTMLButtonElement>(null);
-  const menuPanel = useRef<HTMLDivElement>(null);
   useEffect(() => { setHomepageMeta(); }, []);
-  useEffect(() => {
-    if (!menuOpen) return;
-    const panel = menuPanel.current; const first = panel?.querySelector<HTMLElement>('a, button');
-    first?.focus();
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') { setMenuOpen(false); menuButton.current?.focus(); return; }
-      if (event.key !== 'Tab' || !panel) return;
-      const focusable = Array.from(panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'));
-      const firstFocusable = focusable[0]; const lastFocusable = focusable[focusable.length - 1];
-      if (!firstFocusable || !lastFocusable) return;
-      if (event.shiftKey && document.activeElement === firstFocusable) { event.preventDefault(); lastFocusable.focus(); }
-      if (!event.shiftKey && document.activeElement === lastFocusable) { event.preventDefault(); firstFocusable.focus(); }
-    }
-    window.addEventListener('keydown', onKeyDown); return () => window.removeEventListener('keydown', onKeyDown);
-  }, [menuOpen]);
-  const closeMenu = () => { setMenuOpen(false); menuButton.current?.focus(); };
-  const toggleTheme = () => setTheme((current) => {
-    const next = current === 'light' ? 'dark' : 'light';
-    window.localStorage.setItem(homepageThemeKey, next);
-    return next;
-  });
-  const themeLabel = theme === 'light' ? 'Aktivera mörkt läge' : 'Aktivera ljust läge';
-  return <div className="home-page" data-theme={theme}>
-    <a className="home-skip" href="#main-content">Hoppa till innehållet</a>
-    <header className="home-header"><div className="home-shell home-header__inner">
-      <a className="home-brand" href="/"><img src={brandAssets.icon} alt="" /><span>Min Egenkontroll</span></a>
-      <nav className="home-nav" aria-label="Huvudnavigation"><a href="/kunskapsbank">Kunskap</a><a href="/seo/kontrollplan.html">Mallar och checklistor</a><a href="/faroanalys-livsmedel">Verktyg</a><a href="/seo/utbildning-livsmedelshygien-personal.html">Utbildning</a><a href="/seo/kallor-och-faktagranskning.html">Referenser och källor</a><a href="/digital-egenkontroll-livsmedel">Appen</a></nav>
-      <div className="home-header__actions"><button className="home-theme-toggle" type="button" onClick={toggleTheme} aria-label={themeLabel} title={themeLabel}><span aria-hidden="true">{theme === 'light' ? '◐' : '◑'}</span><span className="home-theme-toggle__text">{theme === 'light' ? 'Mörkt' : 'Ljust'}</span></button><button className="home-login" type="button" onClick={onLogin}>Logga in</button><button className="ds-button ds-button--primary" type="button" onClick={onStartTrial}>Kom igång</button><button ref={menuButton} className="home-menu-button" type="button" aria-controls="home-menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>Meny</button></div>
-    </div></header>
-    {menuOpen ? <div className="home-menu-backdrop"><div className="home-menu" id="home-menu" ref={menuPanel} role="dialog" aria-modal="true" aria-label="Huvudmeny"><div><strong>Min Egenkontroll</strong><button type="button" onClick={closeMenu}>Stäng</button></div><nav><a onClick={closeMenu} href="/kunskapsbank">Kunskap</a><a onClick={closeMenu} href="/seo/kontrollplan.html">Mallar och checklistor</a><a onClick={closeMenu} href="/faroanalys-livsmedel">Verktyg</a><a onClick={closeMenu} href="/seo/utbildning-livsmedelshygien-personal.html">Utbildning</a><a onClick={closeMenu} href="/seo/kallor-och-faktagranskning.html">Referenser och källor</a><a onClick={closeMenu} href="/digital-egenkontroll-livsmedel">Appen</a><button className="home-theme-toggle" type="button" onClick={toggleTheme} aria-label={themeLabel}><span aria-hidden="true">{theme === 'light' ? '◐' : '◑'}</span> {themeLabel}</button><button type="button" onClick={onLogin}>Logga in</button><button className="ds-button ds-button--primary" type="button" onClick={onStartTrial}>Kom igång</button></nav></div></div> : null}
+  return <PublicSiteShell onLogin={onLogin} onStartTrial={onStartTrial}>
     <main id="main-content">
       <section className="home-hero"><div className="home-shell home-hero__grid"><div><p className="home-kicker">Egenkontroll för små livsmedelsverksamheter</p><h1>Få koll på det som ska göras. Varje dag.</h1><p className="home-lead">Min Egenkontroll hjälper restauranger, caféer, bagerier, butiker och foodtrucks att förstå, dokumentera och följa upp egenkontrollen.</p><div className="home-actions"><a className="ds-button ds-button--primary" href="#hjalp">Hitta rätt hjälp</a><button className="ds-button ds-button--secondary" type="button" onClick={onStartTrial}>Kom igång med appen</button></div><p className="home-note">Kunskap när du behöver förstå. Appen när arbetet återkommer.</p></div><AppProof /></div></section>
       <section className="home-search" id="hjalp"><div className="home-shell"><div><p className="home-kicker">Hitta rätt utan omvägar</p><h2>Vad vill du ha hjälp med idag?</h2><p>Sök i vägledning, mallar och checklistor.</p></div><form className="home-search-form" action="/sok" method="get" role="search"><label htmlFor="homepage-search">Sök i Min Egenkontroll</label><div><TextField id="homepage-search" name="q" type="search" placeholder="Till exempel: kontrollplan för café" required /><Button type="submit">Sök</Button></div></form></div></section>
@@ -110,6 +69,5 @@ export function Homepage({ onStartTrial, onLogin }: HomepageProps) {
       <section className="home-trust"><div className="home-shell"><div><p className="home-kicker">Förtroende i praktiken</p><h2>Praktisk hjälp, tydliga källor och dokumentation som går att följa upp.</h2></div><p>Vi skiljer på regel, myndighetsvägledning och praktiskt exempel, så att det blir lättare att veta vad som gäller och vad du kan göra härnäst.</p><LinkButton href="/seo/kallor-och-faktagranskning.html" variant="ghost">Så arbetar vi med källor →</LinkButton></div></section>
       <section className="home-ending"><div className="home-shell"><div><p className="home-kicker">Nästa steg</p><h2>Börja där du behöver det mest.</h2></div><div className="home-actions"><button className="ds-button ds-button--primary" type="button" onClick={onStartTrial}>Kom igång med appen</button><LinkButton href="/kunskapsbank" variant="secondary">Hitta rätt hjälp</LinkButton></div></div></section>
     </main>
-    <footer className="home-footer"><div className="home-shell"><span>© 2026 Min Egenkontroll</span><nav><a href="/kunskapsbank">Kunskap</a><a href="/seo/kontrollplan.html">Mallar</a><a href="/faroanalys-livsmedel">Verktyg</a><a href="/digital-egenkontroll-livsmedel">Appen</a><a href="/integritetspolicy">Integritet</a><a href="/anvandarvillkor">Villkor</a></nav></div></footer>
-  </div>;
+  </PublicSiteShell>;
 }
