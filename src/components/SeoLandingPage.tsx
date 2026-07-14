@@ -14,7 +14,7 @@ export type SeoPageSlug =
   | 'verifiering-egenkontroll-livsmedel'
   | 'spara-sparbarhetsuppgifter-livsmedel';
 
-type SeoPageContent = {
+export type SeoPageContent = {
   slug: SeoPageSlug;
   title: string;
   description: string;
@@ -397,6 +397,10 @@ function setCanonical(url: string) {
 export function getSeoPageSlugFromPath(pathname: string): SeoPageSlug | null {
   const normalizedPath = pathname.replace(/^\/+|\/+$/g, '');
   return normalizedPath in seoPages ? (normalizedPath as SeoPageSlug) : null;
+}
+
+export function getSeoPageContent(slug: SeoPageSlug): SeoPageContent {
+  return seoPages[slug];
 }
 
 type SeoLandingPageProps = {
