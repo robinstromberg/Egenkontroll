@@ -9,7 +9,7 @@ export type FactPageContent = {
   tableOfContentsTitle: string;
   definition: { title: string; paragraphs: readonly string[] };
   workflow: { eyebrow: string; title: string; steps: readonly { title: string; copy: string }[] };
-  example: { eyebrow: string; title: string; introduction: string; steps: readonly string[]; noteLabel: string; note: string };
+  example: { eyebrow: string; title: string; introduction: string; fields: readonly { label: string; value: string }[]; noteLabel: string; note: string };
   mistakes: { title: string; items: readonly { title: string; copy: string }[] };
   faq: { title: string; items: readonly { question: string; answer: string }[] };
   sourceSectionTitle: string;
@@ -46,17 +46,20 @@ export const faroanalysFactPage: FactPageContent = {
     { title: 'Bestäm hur faran styrs', copy: 'Beskriv kontrollåtgärden som håller faran under kontroll och koppla den till den rutin, kontrollpunkt eller det arbetssätt som passar verksamheten.' },
   ] },
   example: {
-    eyebrow: 'Exempel, inte färdigt svar',
-    title: 'Exempel för en liten verksamhet',
-    introduction: 'En mindre lunchservering går igenom steget där mat hanteras före servering. Exemplet visar hur resonemanget kan börja – det är inte en färdig faroanalys eller ett generellt svar för alla verksamheter.',
-    steps: [
-      'Beskriv vad som hanteras i steget och hur länge maten står framme.',
-      'Fundera på vilka biologiska, kemiska eller fysikaliska faror som kan vara relevanta i just den hanteringen.',
-      'Bedöm om någon fara behöver särskild styrning och vilken rutin som i så fall kan minska risken.',
-      'Skriv ner resonemanget på en nivå som gör att verksamheten kan förklara hur faran hålls under kontroll.',
+    eyebrow: 'Illustrativt exempel – måste anpassas',
+    title: 'Exempel: skivning av ätfärdiga livsmedel',
+    introduction: 'En liten verksamhet använder en skärmaskin för ätfärdiga livsmedel. Nedan visas hur ett första faroanalysutkast kan se ut. Bedömningen är illustrativ och måste anpassas till den faktiska verksamheten.',
+    fields: [
+      { label: 'Processteg', value: 'Skivning av ätfärdiga livsmedel i skärmaskin.' },
+      { label: 'Identifierad fara', value: 'Listeria monocytogenes – biologisk fara.' },
+      { label: 'Varför faran är relevant', value: 'Skärmaskinen kommer i kontakt med ätfärdiga livsmedel. Kontrollwiki använder just detta processteg som exempel där rengöring behöver styra listeriafaran.' },
+      { label: 'Exempelbedömning', value: 'Verksamheten bedömer att faran behöver styras om rengöringen inte fungerar. Detta är verksamhetens illustrativa bedömning, inte ett generellt myndighetsbeslut.' },
+      { label: 'Kontrollåtgärd', value: 'Noggrann rengöring av skärmaskinen.' },
+      { label: 'Kontroll/uppföljning', value: 'Särskild kontroll av att rengöringen har utförts.' },
+      { label: 'Slutsats i exemplet', value: 'Faran behöver hanteras i verksamhetens faroanalys. Om åtgärden ska klassas som grundförutsättning, styrbar grundförutsättning eller på annat sätt måste avgöras utifrån den egna processen och riskbedömningen.' },
     ],
-    noteLabel: 'Att tänka på:',
-    note: 'Förutsättningar, råvaror och arbetssätt avgör vad som är relevant. Anpassa alltid analysen till den egna verksamheten.',
+    noteLabel: 'Avslutande not:',
+    note: 'Exemplet visar strukturen i ett resonemang. Det anger inget generellt gränsvärde och är inte en färdig eller myndighetsgodkänd faroanalys.',
   },
   mistakes: { title: 'Vanliga fel och gränsdragningar', items: [
     { title: 'En generell analys lämnas oanpassad', copy: 'Färdiga underlag kan vara ett stöd, men de behöver spegla den egna processen och de faror som faktiskt kan uppstå där.' },

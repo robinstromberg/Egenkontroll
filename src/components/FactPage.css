@@ -23,7 +23,10 @@
 .fact-page__steps span { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; color: var(--ds-action-on-primary); background: var(--ds-action-primary); font-weight: 800; }
 .fact-page__steps p, .fact-page__mistakes p, .fact-page__faq p { margin-bottom: 0; }
 .fact-page__example { background: var(--ds-status-neutral-bg); }
-.fact-page__example ol { display: grid; gap: 8px; padding-left: 1.3rem; }
+.fact-page__example-fields { display: grid; gap: 0; margin: 24px 0; }
+.fact-page__example-fields div { display: grid; gap: 6px; padding: 14px 0; border-top: 1px solid var(--ds-border); }
+.fact-page__example-fields dt { color: var(--ds-text); font-weight: 800; }
+.fact-page__example-fields dd { margin: 0; color: var(--ds-text-secondary); line-height: 1.65; }
 .fact-page__note { padding: 14px; border-left: 4px solid var(--ds-status-neutral-border); background: var(--ds-surface); }
 .fact-page__mistakes, .fact-page__faq { display: grid; gap: 14px; margin-top: 26px; }
 .fact-page__mistakes article, .fact-page__faq article { padding-top: 16px; border-top: 1px solid var(--ds-border); }
