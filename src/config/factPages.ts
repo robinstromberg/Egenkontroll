@@ -156,3 +156,74 @@ export const kontrollplanFactPage: FactPageContent = {
   sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/haccp-sma-livsmedelsforetag', title: 'Sätt kontrollplanen i ett sammanhang', copy: 'Gå tillbaka till HACCP-navet för att se hur faroanalys, kontroll, avvikelser och verifiering hänger ihop.', linkLabel: 'Till HACCP och riskstyrning' },
   appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera löpande arbete i appen', copy: 'Min Egenkontroll kan stötta återkommande kontroller, avvikelser och historik när rutinerna ska följas upp.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },
 };
+
+export const kritiskaGransvardenFactPage: FactPageContent = {
+  title: 'Kritiska gränsvärden för livsmedelsföretag | Min Egenkontroll',
+  description: 'Förstå kritiska gränsvärden i HACCP: när de används, hur de följs upp och vad som behöver hända vid en avvikelse.',
+  canonicalPath: '/kritiska-gransvarden-livsmedel',
+  breadcrumb: [
+    { label: 'Kunskap', href: '/kunskapsbank' },
+    { label: 'HACCP och riskstyrning', href: '/haccp-sma-livsmedelsforetag' },
+    { label: 'Kritiska gränsvärden' },
+  ],
+  eyebrow: 'Kritiska gränsvärden',
+  heading: 'Kritiska gränsvärden i livsmedelsverksamheten',
+  shortAnswer: 'Ett kritiskt gränsvärde är en mätbar eller observerbar gräns vid en kritisk styrpunkt. Den visar om processen är under kontroll och skiljer en acceptabel nivå från en oacceptabel nivå. Gränsen behöver passa den fara och den process som verksamheten faktiskt styr.',
+  tableOfContentsTitle: 'På den här sidan',
+  definition: {
+    title: 'Vad är ett kritiskt gränsvärde?',
+    paragraphs: [
+      'Kritiska gränsvärden används i HACCP-arbetet när en kritisk styrpunkt har identifierats. De hjälper verksamheten att avgöra om den kontrollåtgärd som styr en betydande fara fungerar som avsett.',
+      'Ett kritiskt gränsvärde är inte automatiskt samma sak som ett gränsvärde i lagstiftning eller ett generellt riktvärde. Vilken parameter som följs och var gränsen sätts behöver bygga på den egna faroanalysen, processen och det underlag som är relevant för verksamheten.',
+    ],
+  },
+  workflow: { eyebrow: 'Praktisk arbetsgång', title: 'Så hänger gräns, övervakning och åtgärd ihop', steps: [
+    { title: 'Börja med faroanalysen', copy: 'Kritiska gränsvärden hör till kritiska styrpunkter. Utgå från den fara som behöver styras och den kontrollåtgärd som ska hålla faran under kontroll.' },
+    { title: 'Välj en relevant styrparameter', copy: 'Parametern behöver kunna visa om processen fungerar. Den kan vara mätbar eller observerbar, beroende på vad som faktiskt styrs.' },
+    { title: 'Fastställ gränsen för den egna processen', copy: 'Använd underlag som är relevant för produkten och processen. Ett värde eller villkor från ett annat sammanhang är inte automatiskt rätt för den egna verksamheten.' },
+    { title: 'Bestäm hur den övervakas', copy: 'Beskriv vad som kontrolleras, hur kontrollen görs, vem som ansvarar och när den ska ske så att ett avsteg kan upptäckas i tid.' },
+    { title: 'Koppla till korrigerande åtgärder', copy: 'Det ska vara klart vad verksamheten gör om gränsen inte uppfylls, både för berörd produkt och för att återställa processen.' },
+  ] },
+  example: {
+    eyebrow: 'Illustrativt exempel – måste anpassas',
+    title: 'Exempel: en kritisk gräns utan angivet tal',
+    introduction: 'En verksamhet har, utifrån sin egen faroanalys, identifierat ett processteg som en kritisk styrpunkt. Exemplet visar strukturen i ett underlag och anger inget myndighetsvärde eller färdigt gränsvärde.',
+    fields: [
+      { label: 'Kritisk styrpunkt', value: 'Ett processteg där verksamheten behöver styra en identifierad fara.' },
+      { label: 'Styrparameter', value: 'En parameter som verksamheten har bedömt visar att kontrollåtgärden fungerar.' },
+      { label: 'Kritisk gräns', value: 'Den gräns som verksamheten har fastställt för just sin process med stöd av relevant underlag.' },
+      { label: 'Övervakning', value: 'En planerad kontroll av parametern med tydligt ansvar och tillfälle.' },
+      { label: 'Vid avsteg', value: 'Verksamheten säkrar berörd produkt, återställer processen och undersöker orsaken enligt sin egen rutin.' },
+      { label: 'Uppföljning', value: 'Ansvarig kontrollerar att övervakningen och åtgärderna fungerar över tid.' },
+    ],
+    noteLabel: 'Viktigt:',
+    note: 'Exemplet är en praktisk illustration. Det innehåller inte ett generellt gränsvärde och ersätter inte verksamhetens egen bedömning, relevant lagstiftning eller kontrollmyndighetens bedömning.',
+  },
+  mistakes: { title: 'Vanliga fallgropar', items: [
+    { title: 'Ett lagstadgat gränsvärde används utan gränsdragning', copy: 'Gränsvärden i lagstiftning och kritiska gränser i HACCP kan ha olika funktioner. Kontrollera vilket underlag som är relevant för den aktuella faran och processen.' },
+    { title: 'En gräns kopieras från en annan verksamhet', copy: 'En generell mall eller ett exempel kan vara ett stöd, men behöver bedömas mot den egna produktens, utrustningens och processens förutsättningar.' },
+    { title: 'Övervakning saknar åtgärd vid avsteg', copy: 'En kontroll hjälper inte om det är oklart vad som händer när gränsen inte uppfylls. Åtgärden behöver omfatta både produkt och process när det är relevant.' },
+    { title: 'En vanlig rutin kallas kritisk styrpunkt utan bedömning', copy: 'Kritiska gränsvärden används där faroanalysen har visat att en kritisk styrpunkt behövs. Alla rutiner är inte kritiska styrpunkter.' },
+  ] },
+  faq: { title: 'Frågor och svar', items: [
+    { question: 'Måste ett kritiskt gränsvärde alltid vara ett tal?', answer: 'Nej. Livsmedelsverkets vägledning beskriver att kritiska gränser kan vara mätbara eller observerbara. Det avgörande är att de kan visa om den kritiska styrpunkten är under kontroll.' },
+    { question: 'Är ett kritiskt gränsvärde samma sak som ett gränsvärde i lagstiftningen?', answer: 'Inte nödvändigtvis. Ett kritiskt gränsvärde är en del av verksamhetens HACCP-baserade styrning, medan gränsvärden i lagstiftning kan ha en annan funktion. Bedömningen behöver göras i rätt sammanhang.' },
+    { question: 'Vad gör jag när en kritisk gräns inte uppfylls?', answer: 'Det bör framgå av verksamhetens planerade korrigerande åtgärder. Livsmedelsverkets vägledning lyfter både att processen ska återställas och att berörd produkt ska hanteras så att den inte går vidare när den inte uppfyller kraven.' },
+  ] },
+  sourceSectionTitle: 'Källor och faktakontroll',
+  source: {
+    label: 'Livsmedelsverkets Kontrollwiki: HACCP',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-14',
+    limitation: 'Vägledningen är inte bindande och ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
+  },
+  additionalSources: [{ label: 'Livsmedelsverkets Kontrollwiki: HACCP-baserade förfaranden', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/247/k-haccp-baserade-forfaranden' }],
+  relatedLinks: { title: 'Fördjupa nästa steg', links: [
+    { href: '/haccp-sma-livsmedelsforetag', title: 'HACCP och riskstyrning', copy: 'Se hur faroanalys, styrning och uppföljning hänger ihop.' },
+    { href: '/faroanalys-livsmedel', title: 'Faroanalys', copy: 'Identifiera vilka faror som behöver styras i den egna hanteringen.' },
+    { href: '/kontrollplan-livsmedel', title: 'Kontrollplan', copy: 'Samla kontrollpunkter, ansvar och uppföljning i ett praktiskt underlag.' },
+  ] },
+  sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/kontrollplan-livsmedel', title: 'Nästa steg: samla kontrollen', copy: 'När gränser och övervakning är tydliga kan kontrollplanen hjälpa till att samla ansvar, uppföljning och åtgärder.', linkLabel: 'Till kontrollplanen' },
+  appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera löpande arbete i appen', copy: 'Min Egenkontroll kan stötta återkommande kontroller, avvikelser och historik när rutinerna ska följas upp.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },
+};
