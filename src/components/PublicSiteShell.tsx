@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { brandAssets } from '../config/assets';
+import './PublicSiteShell.css';
 
 type Props = { children: ReactNode; onStartTrial: () => void; onLogin: () => void; className?: string };
 type Theme = 'light' | 'dark';
