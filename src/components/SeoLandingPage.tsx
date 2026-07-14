@@ -14,7 +14,7 @@ export type SeoPageSlug =
   | 'verifiering-egenkontroll-livsmedel'
   | 'spara-sparbarhetsuppgifter-livsmedel';
 
-export type SeoPageContent = {
+type SeoPageContent = {
   slug: SeoPageSlug;
   title: string;
   description: string;
@@ -399,9 +399,6 @@ export function getSeoPageSlugFromPath(pathname: string): SeoPageSlug | null {
   return normalizedPath in seoPages ? (normalizedPath as SeoPageSlug) : null;
 }
 
-export function getSeoPageContent(slug: SeoPageSlug): SeoPageContent {
-  return seoPages[slug];
-}
 
 type SeoLandingPageProps = {
   page: SeoPageSlug;
