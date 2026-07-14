@@ -151,7 +151,7 @@ export const kontrollplanFactPage: FactPageContent = {
   relatedLinks: { title: 'Fördjupa nästa steg', links: [
     { href: '/haccp-sma-livsmedelsforetag', title: 'HACCP och riskstyrning', copy: 'Se hur arbetskedjan hänger ihop för små livsmedelsverksamheter.' },
     { href: '/faroanalys-livsmedel', title: 'Faroanalys', copy: 'Identifiera och bedöm faror i den egna hanteringen.' },
-    { href: '/seo/kritiska-gransvarden.html', title: 'Kritiska gränsvärden', copy: 'Läs om hur gränser och övervakning hör ihop i HACCP-arbetet.' },
+    { href: '/kritiska-gransvarden-livsmedel', title: 'Kritiska gränsvärden', copy: 'Läs om hur gränser och övervakning hör ihop i HACCP-arbetet.' },
   ] },
   sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/haccp-sma-livsmedelsforetag', title: 'Sätt kontrollplanen i ett sammanhang', copy: 'Gå tillbaka till HACCP-navet för att se hur faroanalys, kontroll, avvikelser och verifiering hänger ihop.', linkLabel: 'Till HACCP och riskstyrning' },
   appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera löpande arbete i appen', copy: 'Min Egenkontroll kan stötta återkommande kontroller, avvikelser och historik när rutinerna ska följas upp.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },
