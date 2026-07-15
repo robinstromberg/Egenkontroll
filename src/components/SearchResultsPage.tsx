@@ -36,7 +36,7 @@ export function SearchResultsPage() {
         <div><TextField id="site-search" name="q" type="search" defaultValue={query} /><Button type="submit">Sök</Button></div>
       </form>
       <SearchSummary query={query} results={matches} />
-      {matches.length ? <div className="home-resource-list">{matches.map((resource) => <a href={resource.href} key={resource.href}><span>{resource.group}</span><strong>{resource.title}</strong><p>{resource.copy}</p></a>)}</div> : null}
+      {matches.length ? <div className="home-resource-list">{matches.map((resource) => <a href={resource.href} key={resource.href}><span>{resource.resourceType} · {resource.group}</span><strong>{resource.title}</strong><p>{resource.copy}</p></a>)}</div> : null}
       {!query ? <section className="home-empty"><h2>Börja med en sökning</h2><p>Du kan också bläddra bland alla befintliga resurser i kunskapsbanken.</p><LinkButton href="/kunskapsbank" variant="secondary">Öppna kunskapsbanken</LinkButton></section> : null}
       {query && !matches.length ? <section className="home-empty"><h2>Vi hittade ingen direkt träff.</h2><p>Prova en annan formulering eller börja i kunskapsbanken.</p><LinkButton href="/kunskapsbank" variant="secondary">Öppna kunskapsbanken</LinkButton></section> : null}
     </div>

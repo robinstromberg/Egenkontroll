@@ -19,7 +19,12 @@
 .haccp-knowledge small { color: var(--ds-action-primary); font-weight: 800; }
 .haccp-practical { display: grid; gap: 24px; }
 .haccp-practical p, .haccp-flex p, .haccp-faq p, .haccp-source p, .haccp-app p { max-width: 720px; color: var(--ds-text-secondary); line-height: 1.6; }
-.haccp-practical aside { padding: 20px; border: 1px solid var(--ds-border); background: var(--ds-surface-subtle); }
+.haccp-practical__resources { display: grid; gap: 12px; }
+.haccp-practical__resources a { display: grid; gap: 6px; padding: 20px; border: 1px solid var(--ds-border); color: inherit; background: var(--ds-surface-subtle); text-decoration: none; }
+.haccp-practical__resources a:hover { border-color: var(--ds-border-strong); background: var(--ds-surface); }
+.haccp-practical__resources small { color: var(--ds-action-primary); font-weight: 800; }
+.haccp-practical__resources strong { font-size: 1.1rem; }
+.haccp-practical__resources p { margin: 0; }
 .haccp-faq { display: grid; gap: 20px; }
 .haccp-faq article { max-width: 760px; border-top: 1px solid var(--ds-border); }
 .haccp-faq h3 { margin: 18px 0 0; }
