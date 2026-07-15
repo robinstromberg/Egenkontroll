@@ -28,7 +28,7 @@ export const publicResourceGroups: readonly PublicResourceGroup[] = [
   group('Egenkontroll i vardagen', 'Kom igång och få ordning på dokumentationen', 'Guider för mindre livsmedelsverksamheter som vill förstå vad som behöver göras och hålla arbetet enkelt.', [
     { title: 'Digital egenkontroll för livsmedel', copy: 'Samla kontroller, avvikelser och historik digitalt.', href: '/digital-egenkontroll-livsmedel' },
     { title: 'Egenkontroll för restaurang', copy: 'Planera restaurangens temperaturkontroller, rengöring, allergenrutiner, varumottagning och dokumentation.', href: '/egenkontroll-restaurang', resourceType: 'Guide' },
-    { title: 'Egenkontroll för café och bageri', copy: 'Återkommande kontroller utan onödig administration.', href: '/egenkontroll-cafe' },
+    { title: 'Egenkontroll för café och bageri', copy: 'Planera temperaturkontroller, rengöring, allergenrutiner, råvarumottagning, märkning och dokumentation.', href: '/egenkontroll-cafe', resourceType: 'Guide' },
     { title: 'Dokumentation och journalföring', copy: 'Vad som kan behöva dokumenteras och hur omfattningen kan anpassas.', href: '/dokumentation-egenkontroll-livsmedel', resourceType: 'Faktasida' },
     { title: 'Källor och faktagranskning', copy: 'Så skiljer vi på regler, myndighetsvägledning och våra praktiska förklaringar.', href: '/seo/kallor-och-faktagranskning.html' },
   ]),
