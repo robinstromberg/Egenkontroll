@@ -95,10 +95,10 @@ export const publicResourceGroups: readonly PublicResourceGroup[] = [
   group('HACCP och riskstyrning', 'Förstå faror, gränser och uppföljning', 'Centrala delar av HACCP för mindre livsmedelsföretag.', [
     { title: 'HACCP för små livsmedelsföretag', copy: 'Flexibilitet, risker och dokumentation.', href: '/haccp-sma-livsmedelsforetag' },
     { title: 'Faroanalys', copy: 'Identifiera relevanta faror i den faktiska verksamheten.', href: '/faroanalys-livsmedel' },
-    { title: 'Kritiska gränsvärden', copy: 'Tydliga gränser mellan acceptabelt och oacceptabelt.', href: '/seo/kritiska-gransvarden.html' },
+    { title: 'Kritiska gränsvärden', copy: 'Tydliga gränser mellan acceptabelt och oacceptabelt.', href: '/kritiska-gransvarden-livsmedel' },
     { title: 'Avvikelser och korrigerande åtgärder', copy: 'Vad som behöver hända när en kontroll avviker.', href: '/avvikelser-korrigerande-atgarder-livsmedel' },
-    { title: 'Verifiering', copy: 'Kontrollera att rutiner och åtgärder faktiskt fungerar.', href: '/verifiering-egenkontroll-livsmedel' },
-    { title: 'Kontrollplan', copy: 'Planera kontrollpunkter, ansvar och uppföljning.', href: '/seo/kontrollplan.html' },
+    { title: 'Verifiering', copy: 'Kontrollera att rutiner och åtgärder faktiskt fungerar.', href: '/verifiering-haccp-livsmedel' },
+    { title: 'Kontrollplan', copy: 'Planera kontrollpunkter, ansvar och uppföljning.', href: '/kontrollplan-livsmedel' },
     { title: 'Mall för kontrollplan', copy: 'Fyll i processteg, kontroller, ansvar, uppföljning och avvikelsehantering digitalt eller på papper.', href: '/mall-kontrollplan-livsmedel', resourceType: 'Mall' },
     { title: 'Verktyg för faroanalys', copy: 'Bygg ett eget arbetsutkast med processteg, möjliga faror, kontrollåtgärder och egna bedömningar.', href: '/verktyg-faroanalys-livsmedel', resourceType: 'Verktyg' },
   ]),
