@@ -2,6 +2,8 @@ import { Homepage } from './Homepage';
 import { HaccpTopicHub } from './HaccpTopicHub';
 import { FactPage } from './FactPage';
 import { avvikelserFactPage, faroanalysFactPage, kontrollplanFactPage, kritiskaGransvardenFactPage, verifieringHaccpFactPage } from '../config/factPages';
+import { TemplatePage } from './TemplatePage';
+import { controlPlanTemplatePage } from '../config/templatePages';
 import { KnowledgeBasePage } from './KnowledgeBasePage';
 import { SearchResultsPage } from './SearchResultsPage';
 import { SeoLandingPage, getSeoPageSlugFromPath } from './SeoLandingPage';
@@ -21,6 +23,7 @@ export function PublicLandingPage(props: PublicLandingPageProps) {
   if (normalizedPath === '/kritiska-gransvarden-livsmedel') return <FactPage content={kritiskaGransvardenFactPage} {...props} />;
   if (normalizedPath === '/avvikelser-korrigerande-atgarder-livsmedel') return <FactPage content={avvikelserFactPage} {...props} />;
   if (normalizedPath === '/verifiering-haccp-livsmedel') return <FactPage content={verifieringHaccpFactPage} {...props} />;
+  if (normalizedPath === '/mall-kontrollplan-livsmedel') return <TemplatePage content={controlPlanTemplatePage} {...props} />;
   const seoPage = getSeoPageSlugFromPath(window.location.pathname);
   if (seoPage) return <SeoLandingPage page={seoPage} />;
   return <Homepage {...props} />;
