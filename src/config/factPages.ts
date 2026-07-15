@@ -82,6 +82,9 @@ export const faroanalysFactPage: FactPageContent = {
     factCheckedAt: '2026-07-14',
     limitation: 'Faktaunderlaget bygger på Livsmedelsverkets vägledning. Vägledningen är inte bindande och Min Egenkontroll ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
   },
+  relatedLinks: { title: 'Arbeta vidare med din faroanalys', links: [
+    { href: '/verktyg-faroanalys-livsmedel', title: 'Bygg ett eget utkast i faroanalysverktyget', copy: 'Strukturera processteg, möjliga faror, kontrollåtgärder och dina egna bedömningar.' },
+  ] },
   sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/kontrollplan-livsmedel', title: 'Nästa steg: planera kontroller', copy: 'När farorna är bedömda kan kontrollplanen hjälpa dig att samla kontrollpunkter, ansvar och uppföljning.', linkLabel: 'Till kontrollplanen' },
   appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera löpande arbete i appen', copy: 'Min Egenkontroll kan stötta återkommande kontroller, avvikelser och historik när verksamheten vill dokumentera sitt löpande arbete.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },
 };
@@ -152,6 +155,7 @@ export const kontrollplanFactPage: FactPageContent = {
     { href: '/haccp-sma-livsmedelsforetag', title: 'HACCP och riskstyrning', copy: 'Se hur arbetskedjan hänger ihop för små livsmedelsverksamheter.' },
     { href: '/faroanalys-livsmedel', title: 'Faroanalys', copy: 'Identifiera och bedöm faror i den egna hanteringen.' },
     { href: '/kritiska-gransvarden-livsmedel', title: 'Kritiska gränsvärden', copy: 'Läs om hur gränser och övervakning hör ihop i HACCP-arbetet.' },
+    { href: '/mall-kontrollplan-livsmedel', title: 'Fyll i kontrollplansmallen', copy: 'Använd ett utskriftsvänligt arbetsunderlag för kontroller, ansvar, uppföljning och avvikelser.' },
   ] },
   sequentialNextStep: { eyebrow: 'Fortsätt i arbetsordning', href: '/avvikelser-korrigerande-atgarder-livsmedel', title: 'Nästa steg: hantera avvikelser', copy: 'När kontrollerna är planerade behöver det vara tydligt vad som händer när en kritisk gräns eller rutin inte uppfylls.', linkLabel: 'Till avvikelser och åtgärder' },
   appBridge: { eyebrow: 'När arbetet återkommer', title: 'Dokumentera löpande arbete i appen', copy: 'Min Egenkontroll kan stötta återkommande kontroller, avvikelser och historik när rutinerna ska följas upp.', href: '/digital-egenkontroll-livsmedel', linkLabel: 'Se hur appen fungerar' },

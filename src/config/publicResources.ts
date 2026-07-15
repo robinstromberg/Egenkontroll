@@ -3,24 +3,24 @@ export type PublicResource = {
   copy: string;
   href: string;
   group: string;
-  resourceType: 'Guide';
+  resourceType: 'Guide' | 'Faktasida' | 'Mall' | 'Verktyg';
 };
 
 export type PublicResourceGroup = {
   eyebrow: string;
   title: string;
   intro: string;
-  guides: readonly PublicResource[];
+  resources: readonly PublicResource[];
 };
 
-type ResourceDefinition = Omit<PublicResource, 'group' | 'resourceType'>;
+type ResourceDefinition = Omit<PublicResource, 'group' | 'resourceType'> & Pick<Partial<PublicResource>, 'resourceType'>;
 
-function group(eyebrow: string, title: string, intro: string, guides: readonly ResourceDefinition[]): PublicResourceGroup {
+function group(eyebrow: string, title: string, intro: string, resources: readonly ResourceDefinition[]): PublicResourceGroup {
   return {
     eyebrow,
     title,
     intro,
-    guides: guides.map((guide) => ({ ...guide, group: eyebrow, resourceType: 'Guide' })),
+    resources: resources.map((resource) => ({ ...resource, group: eyebrow, resourceType: resource.resourceType ?? 'Guide' })),
   };
 }
 
@@ -29,7 +29,7 @@ export const publicResourceGroups: readonly PublicResourceGroup[] = [
     { title: 'Digital egenkontroll för livsmedel', copy: 'Samla kontroller, avvikelser och historik digitalt.', href: '/digital-egenkontroll-livsmedel' },
     { title: 'Egenkontroll för restaurang', copy: 'Temperaturer, städning, varumottagning och dagliga kontroller.', href: '/egenkontroll-restaurang' },
     { title: 'Egenkontroll för café och bageri', copy: 'Återkommande kontroller utan onödig administration.', href: '/egenkontroll-cafe' },
-    { title: 'Dokumentation och journalföring', copy: 'Vad som kan behöva dokumenteras och hur omfattningen kan anpassas.', href: '/dokumentation-egenkontroll-livsmedel' },
+    { title: 'Dokumentation och journalföring', copy: 'Vad som kan behöva dokumenteras och hur omfattningen kan anpassas.', href: '/dokumentation-egenkontroll-livsmedel', resourceType: 'Faktasida' },
     { title: 'Källor och faktagranskning', copy: 'Så skiljer vi på regler, myndighetsvägledning och våra praktiska förklaringar.', href: '/seo/kallor-och-faktagranskning.html' },
   ]),
   group('Hygien och daglig drift', 'Rutiner som behöver fungera varje dag', 'Personal, rengöring, skadedjur och allergeninformation.', [
@@ -99,6 +99,8 @@ export const publicResourceGroups: readonly PublicResourceGroup[] = [
     { title: 'Avvikelser och korrigerande åtgärder', copy: 'Vad som behöver hända när en kontroll avviker.', href: '/avvikelser-korrigerande-atgarder-livsmedel' },
     { title: 'Verifiering', copy: 'Kontrollera att rutiner och åtgärder faktiskt fungerar.', href: '/verifiering-egenkontroll-livsmedel' },
     { title: 'Kontrollplan', copy: 'Planera kontrollpunkter, ansvar och uppföljning.', href: '/seo/kontrollplan.html' },
+    { title: 'Mall för kontrollplan', copy: 'Fyll i processteg, kontroller, ansvar, uppföljning och avvikelsehantering digitalt eller på papper.', href: '/mall-kontrollplan-livsmedel', resourceType: 'Mall' },
+    { title: 'Verktyg för faroanalys', copy: 'Bygg ett eget arbetsutkast med processteg, möjliga faror, kontrollåtgärder och egna bedömningar.', href: '/verktyg-faroanalys-livsmedel', resourceType: 'Verktyg' },
   ]),
   group('Spårbarhet', 'Hitta rätt uppgifter när ett livsmedel måste följas', 'Leverantörer, mottagare, interna flöden, partier, återkallanden och lagringstid.', [
     { title: 'Spårbarhet för livsmedelsföretag', copy: 'Ett steg bakåt, ett steg framåt och användbara underlag.', href: '/sparbarhet-livsmedel' },
@@ -110,7 +112,7 @@ export const publicResourceGroups: readonly PublicResourceGroup[] = [
   ]),
 ];
 
-export const publicResources = publicResourceGroups.flatMap((resourceGroup) => resourceGroup.guides);
+export const publicResources = publicResourceGroups.flatMap((resourceGroup) => resourceGroup.resources);
 
 export function getPublicResource(href: string): PublicResource | undefined {
   return publicResources.find((resource) => resource.href === href);
@@ -148,12 +150,14 @@ export function searchPublicResources(query: string) {
         const titleMatch = matchesTerm(resource.title, term);
         const descriptionMatch = matchesTerm(resource.copy, term);
         const groupMatch = matchesTerm(resource.group, term);
-        if (!titleMatch && !descriptionMatch && !groupMatch) continue;
+        const typeMatch = matchesTerm(resource.resourceType, term);
+        if (!titleMatch && !descriptionMatch && !groupMatch && !typeMatch) continue;
         matchedTerms += 1;
         if (titleMatch) score += 12;
         if (normalize(resource.title).startsWith(term)) score += 4;
         if (descriptionMatch) score += 4;
         if (groupMatch) score += 2;
+        if (typeMatch) score += 2;
       }
       return { resource, index, matchedTerms, score };
     })
