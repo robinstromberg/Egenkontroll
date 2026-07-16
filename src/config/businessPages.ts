@@ -111,3 +111,87 @@ export const restaurantBusinessPage: BusinessPageContent = {
     linkLabel: 'Se hur appen fungerar',
   },
 };
+
+export const cafeBusinessPage: BusinessPageContent = {
+  title: 'Egenkontroll för café och bageri – planera rätt kontroller | Min Egenkontroll',
+  description: 'Få överblick över egenkontroll för café och bageri: temperatur, förvaring, rengöring, allergener, råvarumottagning, märkning, spårbarhet, avvikelser, dokumentation och HACCP.',
+  canonicalPath: '/egenkontroll-cafe',
+  breadcrumb: [
+    { label: 'Kunskap', href: '/kunskapsbank' },
+    { label: 'Egenkontroll för café och bageri' },
+  ],
+  eyebrow: 'För caféer och bagerier',
+  heading: 'Egenkontroll för café och bageri – utgå från sortimentet och arbetssättet',
+  shortAnswer: 'Egenkontrollen ska hjälpa caféet eller bageriet att planera, genomföra, dokumentera och följa upp relevanta kontroller. Utgå från det faktiska sortimentet, råvarorna och processerna – exempelvis bakning, beredning, nedkylning, exponering, servering och förpackning – i stället för att använda en generell checklista utan anpassning.',
+  controlAreas: {
+    eyebrow: 'Vanliga kontrollområden',
+    title: 'Skapa överblick från råvara till försäljning',
+    introduction: 'Områdena är vanliga utgångspunkter. Vilka kontroller som behövs, hur de utförs och hur ofta de följs upp beror på verksamhetens faktiska sortiment, processer och risker.',
+    items: [
+      { title: 'Temperatur, nedkylning och förvaring', copy: 'Kartlägg kyl- och frysförvaring, temperaturkänsliga råvaror och fyllningar samt nedkylning och annan temperaturstyrning som faktiskt förekommer.', href: '/seo/temperaturkontroll-livsmedel.html', linkLabel: 'Läs om temperaturkontroll' },
+      { title: 'Rengöring och personlig hygien', copy: 'Planera rengöring av arbetsytor, redskap, maskiner och annan utrustning och gör relevanta hygienrutiner begripliga för personalen.', href: '/seo/rengoring-livsmedelsverksamhet.html', linkLabel: 'Läs om rengöring' },
+      { title: 'Allergener och information till kunden', copy: 'Håll information om recept, ingrediensbyten och allergener aktuell och minska risken för oavsiktlig allergenkontamination i hanteringen.', href: '/seo/allergeninformation-restaurang.html', linkLabel: 'Läs om allergeninformation' },
+      { title: 'Råvarumottagning och lagring', copy: 'Följ upp relevanta leveranser, emballage och förvaringsförhållanden och ordna råvarorna så att separering och rotation fungerar.', href: '/seo/varumottagning-livsmedel.html', linkLabel: 'Läs om varumottagning' },
+      { title: 'Märkning och hållbarhet', copy: 'Säkerställ att den information, datummärkning och förvaring som behövs för de egna produkterna hanteras utifrån hur de säljs och förpackas.', href: '/seo/datummarkning-livsmedel.html', linkLabel: 'Läs om datummärkning' },
+      { title: 'Spårbarhet, avvikelser och dokumentation', copy: 'Ordna leverantörs- och produktunderlag och bestäm hur avvikelser dokumenteras, åtgärdas och följs upp i det löpande arbetet.', href: '/sparbarhet-livsmedel', linkLabel: 'Läs om spårbarhet' },
+    ],
+  },
+  workflow: {
+    eyebrow: 'Rekommenderad arbetsordning',
+    title: 'Gå från sortiment och processer till ett arbetssätt som går att följa',
+    introduction: 'Arbetsordningen knyter ihop analys, planering, dokumentation och uppföljning utan att mallar eller verktyg fattar beslut åt verksamheten.',
+    steps: [
+      { title: 'Beskriv vad verksamheten faktiskt gör', copy: 'Gå igenom råvaror, recept, mottagning, förvaring, bakning, beredning, nedkylning, exponering, servering och förpackning som förekommer.' },
+      { title: 'Identifiera faror och kontrollåtgärder', copy: 'Bedöm vilka faror som är relevanta i de egna processerna och hur de kan förebyggas, elimineras eller reduceras.', href: '/haccp-sma-livsmedelsforetag', linkLabel: 'Förstå HACCP-arbetet' },
+      { title: 'Planera ansvar och kontroller', copy: 'Beskriv vad som ska göras, av vem, hur resultatet följs upp och vad som händer när något avviker.', href: '/kontrollplan-livsmedel', linkLabel: 'Läs om kontrollplanen' },
+      { title: 'Genomför och dokumentera', copy: 'Gör kontrollerna användbara i vardagen och spara det underlag som behövs för uppföljning.', href: '/dokumentation-egenkontroll-livsmedel', linkLabel: 'Förstå dokumentationen' },
+      { title: 'Följ upp och förbättra', copy: 'Använd avvikelser, observationer och dokumentation för att bedöma om rutinerna fungerar och behöver ändras.', href: '/avvikelser-korrigerande-atgarder-livsmedel', linkLabel: 'Läs om avvikelser' },
+    ],
+  },
+  practicalResources: {
+    eyebrow: 'Praktiska resurser',
+    title: 'Arbeta vidare med verksamhetens eget underlag',
+    introduction: 'Läs vägledningen och använd sedan mallen eller verktyget för att strukturera verksamhetens egna uppgifter och bedömningar.',
+    hrefs: ['/haccp-sma-livsmedelsforetag', '/verktyg-faroanalys-livsmedel', '/mall-kontrollplan-livsmedel', '/dokumentation-egenkontroll-livsmedel'],
+  },
+  mistakes: {
+    eyebrow: 'Vanliga misstag',
+    title: 'Undvik underlag som inte följer det faktiska arbetet',
+    items: [
+      { title: 'En generell lista kopieras utan anpassning', copy: 'Egenkontrollen behöver spegla caféets eller bageriets egna råvaror, recept, produkter, processer, lokaler och arbetssätt.' },
+      { title: 'Recept och allergeninformation hamnar ur synk', copy: 'Bestäm hur ändrade ingredienser, ersättningsvaror och tillfälligt sortiment förs in i informationen som personal och kunder använder.' },
+      { title: 'Resultat sparas men avvikelser följs inte upp', copy: 'Bestäm vem som reagerar på ett avvikande resultat och hur både berörd produkt och bakomliggande arbetssätt tas om hand.' },
+    ],
+  },
+  faq: {
+    title: 'Frågor om egenkontroll för café och bageri',
+    items: [
+      { question: 'Behöver alla caféer och bagerier ha samma kontroller?', answer: 'Nej. Upplägget behöver anpassas efter verksamhetens sortiment, storlek, processer och risker. Kontrollområdena på sidan är en startpunkt, inte en universell checklista.' },
+      { question: 'Finns det temperatur- eller nedkylningsgränser som gäller för allt?', answer: 'Nej. Relevanta gränser och arbetssätt beror bland annat på livsmedlet, processen och vilken fara som ska styras. Sidan fastställer därför inga generella värden.' },
+      { question: 'Vad behöver ändras när sortimentet ändras?', answer: 'Bedöm om nya råvaror, recept, allergener eller processer medför andra faror eller kontrollbehov och håll berörd information, rutiner och dokumentation aktuell.' },
+      { question: 'Kan en mall eller ett verktyg avgöra vad verksamheten måste göra?', answer: 'Nej. Mallar och verktyg kan strukturera arbetet, men verksamheten ansvarar för sina bedömningar och för att underlaget stämmer med den faktiska hanteringen.' },
+    ],
+  },
+  sources: {
+    title: 'Källor och faktakontroll',
+    type: 'Myndighetsvägledning',
+    factCheckedAt: '2026-07-15',
+    links: [
+      { label: 'Livsmedelsverkets Kontrollwiki: Temperatur', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/349/temperatur' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Rengöring', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/346/rengoring' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Allergeninformation', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/39/allergeninformation' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Hantering och förvaring', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/342/hantering-och-forvaring' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Datummärkning', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/41/datummarkning' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Spårbarhet', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/741/sparbarhet' },
+      { label: 'Livsmedelsverkets Kontrollwiki: HACCP', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp' },
+    ],
+    limitation: 'Myndighetsvägledningen beskriver principer för bland annat hygien, temperatur, information, spårbarhet och HACCP. Sidans urval och arbetsordning är Min Egenkontrolls praktiska förklaring och ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
+  },
+  appBridge: {
+    eyebrow: 'När arbetet återkommer i vardagen',
+    title: 'Gör de planerade kontrollerna enklare att genomföra',
+    copy: 'När caféet eller bageriet har bestämt vad som ska kontrolleras kan Min Egenkontroll hjälpa personalen att dokumentera kontroller, avvikelser och historik i det löpande arbetet.',
+    href: '/digital-egenkontroll-livsmedel',
+    linkLabel: 'Se hur appen fungerar',
+  },
+};
