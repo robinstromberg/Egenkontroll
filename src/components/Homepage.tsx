@@ -10,22 +10,21 @@ type HomepageProps = { onStartTrial: () => void; onLogin: () => void };
 const paths = [
   { label: 'Appen', title: 'Gör dagens kontroller', copy: 'För återkommande arbete, avvikelser och historik.', href: '/digital-egenkontroll-livsmedel' },
   { label: 'Kunskap', title: 'Förstå vad som krävs', copy: 'Guider och tydliga svar för din verksamhet.', href: '/kunskapsbank' },
-  { label: 'Mallar och checklistor', title: 'Få ett underlag att använda', copy: 'Börja med kontrollplanen och anpassa den.', href: '/seo/kontrollplan.html' },
-  { label: 'Verktyg', title: 'Börja med en faroanalys', copy: 'Läs guiden medan verktygskandidaten utvecklas.', href: '/faroanalys-livsmedel' },
+  { label: 'Mallar och checklistor', title: 'Få ett underlag att använda', copy: 'Börja med kontrollplanen och anpassa den.', href: '/mall-kontrollplan-livsmedel' },
+  { label: 'Verktyg', title: 'Börja med en faroanalys', copy: 'Bygg ett eget utkast med verksamhetens processteg och bedömningar.', href: '/verktyg-faroanalys-livsmedel' },
 ];
 
 const resources = [
   { type: 'Ämnesnav', href: '/haccp-sma-livsmedelsforetag' },
   { type: 'Guide', href: '/faroanalys-livsmedel' },
-  { type: 'Resurskandidat', href: '/seo/kontrollplan.html' },
+  { type: 'Mall', href: '/mall-kontrollplan-livsmedel' },
+  { type: 'Verktyg', href: '/verktyg-faroanalys-livsmedel' },
 ].map((card) => ({ ...getPublicResource(card.href)!, type: card.type }));
-
-const upcomingResource = { type: 'På väg', title: 'Faroanalysverktyg', copy: 'Ett framtida verktyg med synliga antaganden och metod.', href: '/faroanalys-livsmedel' };
 
 const businesses = [
   { title: 'Restaurang', copy: 'Kök, service och daglig drift.', href: '/egenkontroll-restaurang' },
   { title: 'Café och bageri', copy: 'Förvaring, hygien och produktion.', href: '/egenkontroll-cafe' },
-  { title: 'Foodtruck', copy: 'Enkla rutiner för en rörlig vardag.', href: '/seo/varumottagning-livsmedel.html' },
+  { title: 'Foodtruck', copy: 'Enkla rutiner för en rörlig vardag.', href: '/egenkontroll-kiosk-foodtruck' },
   { title: 'Butik', copy: 'Mottagning, märkning och spårbarhet.', href: '/seo/varumottagning-livsmedel.html' },
 ];
 
@@ -62,8 +61,8 @@ export function Homepage({ onStartTrial, onLogin }: HomepageProps) {
       <section className="home-hero"><div className="home-shell home-hero__grid"><div><p className="home-kicker">Egenkontroll för små livsmedelsverksamheter</p><h1>Få koll på det som ska göras. Varje dag.</h1><p className="home-lead">Min Egenkontroll hjälper restauranger, caféer, bagerier, butiker och foodtrucks att förstå, dokumentera och följa upp egenkontrollen.</p><div className="home-actions"><a className="ds-button ds-button--primary" href="#hjalp">Hitta rätt hjälp</a><button className="ds-button ds-button--secondary" type="button" onClick={onStartTrial}>Kom igång med appen</button></div><p className="home-note">Kunskap när du behöver förstå. Appen när arbetet återkommer.</p></div><AppProof /></div></section>
       <section className="home-search" id="hjalp"><div className="home-shell"><div><p className="home-kicker">Hitta rätt utan omvägar</p><h2>Vad vill du ha hjälp med idag?</h2><p>Sök i vägledning, mallar och checklistor.</p></div><form className="home-search-form" action="/sok" method="get" role="search"><label htmlFor="homepage-search">Sök i Min Egenkontroll</label><div><TextField id="homepage-search" name="q" type="search" placeholder="Till exempel: kontrollplan för café" required /><Button type="submit">Sök</Button></div></form></div></section>
       <section className="home-paths" aria-labelledby="paths-title"><div className="home-shell"><p className="home-kicker">Vart vill du härnäst?</p><h2 id="paths-title">Välj den hjälp som passar ditt nästa steg.</h2><div>{paths.map((path) => <a href={path.href} key={path.title}><span>{path.label}</span><strong>{path.title}</strong><p>{path.copy}</p><b>Öppna →</b></a>)}</div></div></section>
-      <section className="home-questions"><div className="home-shell"><p className="home-kicker">Frågor att börja med</p><div>{['Hur kommer jag igång med en kontrollplan?', 'Vilket underlag behöver jag för en faroanalys?', 'Hur följer jag upp en avvikelse?'].map((question, index) => <a href={index === 0 ? '/seo/kontrollplan.html' : index === 1 ? '/faroanalys-livsmedel' : '/avvikelser-korrigerande-atgarder-livsmedel'} key={question}><small>Plats för verifierad sökfråga</small><strong>{question}</strong></a>)}</div></div></section>
-      <section className="home-resources"><div className="home-shell"><div className="home-section-head"><div><p className="home-kicker">Utvalt för HACCP-piloten</p><h2>Rätt sorts hjälp, utan en hel katalog.</h2></div><LinkButton href="/kunskapsbank" variant="ghost">Till kunskapsbanken →</LinkButton></div><div className="home-resource-list">{[...resources, upcomingResource].map((resource) => <a href={resource.href} key={`${resource.type}-${resource.title}`}><span>{resource.type}</span><strong>{resource.title}</strong><p>{resource.copy}</p></a>)}</div></div></section>
+      <section className="home-questions"><div className="home-shell"><p className="home-kicker">Frågor att börja med</p><div>{['Hur kommer jag igång med en kontrollplan?', 'Vilket underlag behöver jag för en faroanalys?', 'Hur följer jag upp en avvikelse?'].map((question, index) => <a href={index === 0 ? '/kontrollplan-livsmedel' : index === 1 ? '/faroanalys-livsmedel' : '/avvikelser-korrigerande-atgarder-livsmedel'} key={question}><small>Plats för verifierad sökfråga</small><strong>{question}</strong></a>)}</div></div></section>
+      <section className="home-resources"><div className="home-shell"><div className="home-section-head"><div><p className="home-kicker">Utvalt för HACCP-piloten</p><h2>Rätt sorts hjälp, utan en hel katalog.</h2></div><LinkButton href="/kunskapsbank" variant="ghost">Till kunskapsbanken →</LinkButton></div><div className="home-resource-list">{resources.map((resource) => <a href={resource.href} key={`${resource.type}-${resource.title}`}><span>{resource.type}</span><strong>{resource.title}</strong><p>{resource.copy}</p></a>)}</div></div></section>
       <section className="home-business"><div className="home-shell"><div><p className="home-kicker">För din vardag</p><h2>Börja med verksamheten du faktiskt driver.</h2><p>Välj en ingång som leder till rätt rutin, resurs eller arbetsflöde.</p></div><nav aria-label="Verksamhetsvägar">{businesses.map((business) => <a href={business.href} key={business.title}><strong>{business.title}</strong><span>{business.copy}</span></a>)}</nav></div></section>
       <section className="home-how"><div className="home-shell"><div className="home-section-head"><div><p className="home-kicker">När arbetet återkommer</p><h2>Så stöttar appen vardagen.</h2></div><LinkButton href="/digital-egenkontroll-livsmedel" variant="secondary">Se hur appen fungerar</LinkButton></div><ol><li><b>01</b><h3>Planera</h3><p>Se vad som ska göras och när.</p></li><li><b>02</b><h3>Dokumentera</h3><p>Gör kontrollen där arbetet sker.</p></li><li><b>03</b><h3>Följ upp</h3><p>Hitta avvikelse, åtgärd och historik.</p></li></ol></div></section>
       <section className="home-trust"><div className="home-shell"><div><p className="home-kicker">Förtroende i praktiken</p><h2>Praktisk hjälp, tydliga källor och dokumentation som går att följa upp.</h2></div><p>Vi skiljer på regel, myndighetsvägledning och praktiskt exempel, så att det blir lättare att veta vad som gäller och vad du kan göra härnäst.</p><LinkButton href="/seo/kallor-och-faktagranskning.html" variant="ghost">Så arbetar vi med källor →</LinkButton></div></section>

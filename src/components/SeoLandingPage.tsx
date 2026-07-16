@@ -14,6 +14,8 @@ export type SeoPageSlug =
   | 'verifiering-egenkontroll-livsmedel'
   | 'spara-sparbarhetsuppgifter-livsmedel';
 
+type RelatedPageSlug = SeoPageSlug | 'verifiering-haccp-livsmedel';
+
 type SeoPageContent = {
   slug: SeoPageSlug;
   title: string;
@@ -30,7 +32,7 @@ type SeoPageContent = {
   sourceLabel?: string;
   sourceUrl?: string;
   sourceNote?: string;
-  relatedSlugs?: SeoPageSlug[];
+  relatedSlugs?: RelatedPageSlug[];
 };
 
 const siteUrl = 'https://minegenkontroll.se';
@@ -62,7 +64,7 @@ const seoPages: Record<SeoPageSlug, SeoPageContent> = {
       ['Kan verksamheten anpassa kontrollerna?', 'Ja. Kontrolltyper och kontrollpunkter kan anpassas efter hur verksamheten faktiskt arbetar.'],
       ['Kan dokumentationen visas vid kontroll?', 'Ja. Historik och dokumentation kan samlas och delas via en tidsbegränsad läslänk.'],
     ],
-    relatedSlugs: ['haccp-sma-livsmedelsforetag', 'avvikelser-korrigerande-atgarder-livsmedel', 'verifiering-egenkontroll-livsmedel', 'dokumentation-egenkontroll-livsmedel', 'sparbarhet-livsmedel', 'faroanalys-livsmedel'],
+    relatedSlugs: ['haccp-sma-livsmedelsforetag', 'avvikelser-korrigerande-atgarder-livsmedel', 'verifiering-haccp-livsmedel', 'dokumentation-egenkontroll-livsmedel', 'sparbarhet-livsmedel', 'faroanalys-livsmedel'],
   },
   'egenkontroll-restaurang': {
     slug: 'egenkontroll-restaurang',
@@ -143,7 +145,7 @@ const seoPages: Record<SeoPageSlug, SeoPageContent> = {
     sourceLabel: 'Livsmedelsverkets Kontrollwiki: HACCP, princip 7 – Dokumentation och journaler',
     sourceUrl: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp#princip-7-dokumentation-och-journaler',
     sourceNote: livsmedelsverketSourceNote,
-    relatedSlugs: ['haccp-sma-livsmedelsforetag', 'faroanalys-livsmedel', 'avvikelser-korrigerande-atgarder-livsmedel', 'verifiering-egenkontroll-livsmedel', 'digital-egenkontroll-livsmedel', 'sparbarhet-livsmedel'],
+    relatedSlugs: ['haccp-sma-livsmedelsforetag', 'faroanalys-livsmedel', 'avvikelser-korrigerande-atgarder-livsmedel', 'verifiering-haccp-livsmedel', 'digital-egenkontroll-livsmedel', 'sparbarhet-livsmedel'],
   },
   'sparbarhet-livsmedel': {
     slug: 'sparbarhet-livsmedel',
@@ -201,7 +203,7 @@ const seoPages: Record<SeoPageSlug, SeoPageContent> = {
     sourceLabel: 'Livsmedelsverkets Kontrollwiki: HACCP och flexibilitet kring HACCP',
     sourceUrl: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp',
     sourceNote: livsmedelsverketSourceNote,
-    relatedSlugs: ['faroanalys-livsmedel', 'avvikelser-korrigerande-atgarder-livsmedel', 'verifiering-egenkontroll-livsmedel', 'dokumentation-egenkontroll-livsmedel', 'digital-egenkontroll-livsmedel', 'sparbarhet-livsmedel'],
+    relatedSlugs: ['faroanalys-livsmedel', 'avvikelser-korrigerande-atgarder-livsmedel', 'verifiering-haccp-livsmedel', 'dokumentation-egenkontroll-livsmedel', 'digital-egenkontroll-livsmedel', 'sparbarhet-livsmedel'],
   },
   'faroanalys-livsmedel': {
     slug: 'faroanalys-livsmedel',
@@ -230,7 +232,7 @@ const seoPages: Record<SeoPageSlug, SeoPageContent> = {
     sourceLabel: 'Livsmedelsverkets Kontrollwiki: HACCP, princip 1 – Identifiera relevanta faror',
     sourceUrl: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp',
     sourceNote: livsmedelsverketSourceNote,
-    relatedSlugs: ['haccp-sma-livsmedelsforetag', 'avvikelser-korrigerande-atgarder-livsmedel', 'verifiering-egenkontroll-livsmedel', 'dokumentation-egenkontroll-livsmedel', 'digital-egenkontroll-livsmedel', 'sparbarhet-livsmedel'],
+    relatedSlugs: ['haccp-sma-livsmedelsforetag', 'avvikelser-korrigerande-atgarder-livsmedel', 'verifiering-haccp-livsmedel', 'dokumentation-egenkontroll-livsmedel', 'digital-egenkontroll-livsmedel', 'sparbarhet-livsmedel'],
   },
   'avvikelser-korrigerande-atgarder-livsmedel': {
     slug: 'avvikelser-korrigerande-atgarder-livsmedel',
@@ -259,7 +261,7 @@ const seoPages: Record<SeoPageSlug, SeoPageContent> = {
     sourceLabel: 'Livsmedelsverkets Kontrollwiki: HACCP, princip 5 – Fastställa korrigerande åtgärder',
     sourceUrl: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp',
     sourceNote: livsmedelsverketSourceNote,
-    relatedSlugs: ['haccp-sma-livsmedelsforetag', 'verifiering-egenkontroll-livsmedel', 'dokumentation-egenkontroll-livsmedel', 'faroanalys-livsmedel', 'digital-egenkontroll-livsmedel', 'sparbarhet-livsmedel'],
+    relatedSlugs: ['haccp-sma-livsmedelsforetag', 'verifiering-haccp-livsmedel', 'dokumentation-egenkontroll-livsmedel', 'faroanalys-livsmedel', 'digital-egenkontroll-livsmedel', 'sparbarhet-livsmedel'],
   },
   'verifiering-egenkontroll-livsmedel': {
     slug: 'verifiering-egenkontroll-livsmedel',
@@ -321,7 +323,7 @@ const seoPages: Record<SeoPageSlug, SeoPageContent> = {
   },
 };
 
-const guideLinks: Record<SeoPageSlug, { title: string; copy: string }> = {
+const guideLinks: Record<RelatedPageSlug, { title: string; copy: string }> = {
   'digital-egenkontroll-livsmedel': {
     title: 'Digital egenkontroll för livsmedel',
     copy: 'Se hur kontroller, avvikelser och historik kan samlas digitalt.',
@@ -356,6 +358,10 @@ const guideLinks: Record<SeoPageSlug, { title: string; copy: string }> = {
   },
   'verifiering-egenkontroll-livsmedel': {
     title: 'Verifiering av egenkontrollen',
+    copy: 'Se hur verksamheten kan kontrollera att rutiner och uppföljning verkligen fungerar.',
+  },
+  'verifiering-haccp-livsmedel': {
+    title: 'Verifiering av HACCP-baserade förfaranden',
     copy: 'Se hur verksamheten kan kontrollera att rutiner och uppföljning verkligen fungerar.',
   },
   'spara-sparbarhetsuppgifter-livsmedel': {
