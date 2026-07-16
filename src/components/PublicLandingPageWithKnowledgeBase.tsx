@@ -7,7 +7,7 @@ import { controlPlanTemplatePage } from '../config/templatePages';
 import { HazardAnalysisToolPage } from './HazardAnalysisToolPage';
 import { hazardAnalysisToolContent } from '../config/toolPages';
 import { BusinessPage } from './BusinessPage';
-import { cafeBusinessPage, restaurantBusinessPage } from '../config/businessPages';
+import { cafeBusinessPage, kioskFoodtruckBusinessPage, restaurantBusinessPage } from '../config/businessPages';
 import { KnowledgeBasePage } from './KnowledgeBasePage';
 import { SearchResultsPage } from './SearchResultsPage';
 import { SeoLandingPage, getSeoPageSlugFromPath } from './SeoLandingPage';
@@ -32,6 +32,7 @@ export function PublicLandingPage(props: PublicLandingPageProps) {
   if (normalizedPath === '/verktyg-faroanalys-livsmedel') return <HazardAnalysisToolPage content={hazardAnalysisToolContent} {...props} />;
   if (normalizedPath === '/egenkontroll-restaurang') return <BusinessPage content={restaurantBusinessPage} {...props} />;
   if (normalizedPath === '/egenkontroll-cafe') return <BusinessPage content={cafeBusinessPage} {...props} />;
+  if (normalizedPath === '/egenkontroll-kiosk-foodtruck') return <BusinessPage content={kioskFoodtruckBusinessPage} {...props} />;
   const seoPage = getSeoPageSlugFromPath(window.location.pathname);
   if (seoPage) return <SeoLandingPage page={seoPage} />;
   return <Homepage {...props} />;
