@@ -195,3 +195,88 @@ export const cafeBusinessPage: BusinessPageContent = {
     linkLabel: 'Se hur appen fungerar',
   },
 };
+
+export const kioskFoodtruckBusinessPage: BusinessPageContent = {
+  title: 'Egenkontroll för kiosk och foodtruck – planera rätt kontroller | Min Egenkontroll',
+  description: 'Få överblick över egenkontroll för kiosk och foodtruck: transport, temperatur, vatten, rengöring, allergener, varumottagning, spårbarhet, avvikelser, dokumentation och HACCP.',
+  canonicalPath: '/egenkontroll-kiosk-foodtruck',
+  breadcrumb: [
+    { label: 'Kunskap', href: '/kunskapsbank' },
+    { label: 'Egenkontroll för kiosk och foodtruck' },
+  ],
+  eyebrow: 'För kiosker och foodtrucks',
+  heading: 'Egenkontroll för kiosk och foodtruck – utgå från flödet på plats',
+  shortAnswer: 'Egenkontrollen ska hjälpa kiosken eller foodtrucken att planera, genomföra, dokumentera och följa upp relevanta kontroller. Utgå från det faktiska sortimentet, transporterna, utrustningen, vattenförsörjningen och arbetsmomenten på varje försäljningsplats – inte från en generell checklista utan anpassning.',
+  controlAreas: {
+    eyebrow: 'Vanliga kontrollområden',
+    title: 'Skapa överblick från lastning till servering',
+    introduction: 'Områdena är vanliga utgångspunkter. Vilka kontroller som behövs, hur de utförs och hur ofta de följs upp beror på verksamhetens sortiment, hantering, utrustning och risker.',
+    items: [
+      { title: 'Transport, mottagning och förvaring', copy: 'Kartlägg hur råvaror och färdiga produkter tas emot, lastas, transporteras, separeras och förvaras före och under försäljningen.', href: '/seo/hantering-och-forvaring-livsmedel.html', linkLabel: 'Läs om hantering och förvaring' },
+      { title: 'Temperatur och tidsstyrda moment', copy: 'Planera uppföljningen av kylning, frysning, tillagning, varmhållning och andra temperaturstyrda moment som faktiskt förekommer.', href: '/seo/temperaturkontroll-livsmedel.html', linkLabel: 'Läs om temperaturkontroll' },
+      { title: 'Vattenförsörjning och handhygien', copy: 'Beskriv var vattnet kommer från, vad det används till och hur handhygien och arbetet hanteras om tillgången eller kvaliteten förändras.', href: '/seo/vatten-i-livsmedelsverksamhet.html', linkLabel: 'Läs om vattenförsörjning' },
+      { title: 'Rengöring på begränsad yta', copy: 'Planera rengöring av arbetsytor, redskap, behållare och utrustning så att rena och använda delar kan hanteras tydligt även när utrymmet är litet.', href: '/seo/rengoring-livsmedelsverksamhet.html', linkLabel: 'Läs om rengöring' },
+      { title: 'Allergener och information till kunden', copy: 'Håll information om ingredienser, ersättningsvaror och allergener aktuell och gör den tillgänglig för personalen vid varje försäljningsplats.', href: '/seo/allergeninformation-restaurang.html', linkLabel: 'Läs om allergeninformation' },
+      { title: 'Spårbarhet, avvikelser och dokumentation', copy: 'Ordna leverantörs- och produktunderlag och bestäm hur avbrott, avvikande resultat och vidtagna åtgärder dokumenteras och följs upp.', href: '/sparbarhet-livsmedel', linkLabel: 'Läs om spårbarhet' },
+    ],
+  },
+  workflow: {
+    eyebrow: 'Rekommenderad arbetsordning',
+    title: 'Gå från dagens flöde till kontroller som fungerar på plats',
+    introduction: 'Arbetsordningen knyter ihop analys, planering, dokumentation och uppföljning utan att mallar eller verktyg fattar beslut åt verksamheten.',
+    steps: [
+      { title: 'Beskriv verksamhetens faktiska flöde', copy: 'Gå igenom inköp, lastning, transport, uppställning, förvaring, beredning, tillagning, servering, rengöring och stängning som förekommer.' },
+      { title: 'Identifiera faror och kontrollåtgärder', copy: 'Bedöm vilka faror som är relevanta i de egna processerna och hur de kan förebyggas, elimineras eller reduceras.', href: '/haccp-sma-livsmedelsforetag', linkLabel: 'Förstå HACCP-arbetet' },
+      { title: 'Planera ansvar och kontroller', copy: 'Beskriv vad som ska göras, av vem, hur resultatet följs upp och vad som händer när något avviker.', href: '/kontrollplan-livsmedel', linkLabel: 'Läs om kontrollplanen' },
+      { title: 'Genomför och dokumentera', copy: 'Gör kontrollerna användbara under arbetsdagen och spara det underlag som behövs för uppföljning.', href: '/dokumentation-egenkontroll-livsmedel', linkLabel: 'Förstå dokumentationen' },
+      { title: 'Följ upp och förbättra', copy: 'Använd avvikelser, observationer och dokumentation för att bedöma om rutinerna fungerar på olika platser och behöver ändras.', href: '/avvikelser-korrigerande-atgarder-livsmedel', linkLabel: 'Läs om avvikelser' },
+    ],
+  },
+  practicalResources: {
+    eyebrow: 'Praktiska resurser',
+    title: 'Arbeta vidare med verksamhetens eget underlag',
+    introduction: 'Läs vägledningen och använd sedan mallen eller verktyget för att strukturera verksamhetens egna uppgifter och bedömningar.',
+    hrefs: ['/haccp-sma-livsmedelsforetag', '/verktyg-faroanalys-livsmedel', '/mall-kontrollplan-livsmedel', '/dokumentation-egenkontroll-livsmedel'],
+  },
+  mistakes: {
+    eyebrow: 'Vanliga misstag',
+    title: 'Undvik rutiner som inte följer arbetsdagen',
+    items: [
+      { title: 'En stationär verksamhets lista kopieras rakt av', copy: 'Egenkontrollen behöver spegla kioskens eller foodtruckens egna transporter, försäljningsplatser, resurser, utrustning och arbetssätt.' },
+      { title: 'Försörjningsavbrott saknar en plan', copy: 'Bestäm hur personalen ska upptäcka och hantera förändringar i exempelvis el, kyla eller vatten utan att på förhand anta samma åtgärd i alla situationer.' },
+      { title: 'Resultat sparas men avvikelser följs inte upp', copy: 'Bestäm vem som reagerar på ett avvikande resultat och hur både berörda livsmedel och bakomliggande arbetssätt tas om hand.' },
+    ],
+  },
+  faq: {
+    title: 'Frågor om egenkontroll för kiosk och foodtruck',
+    items: [
+      { question: 'Behöver alla kiosker och foodtrucks ha samma kontroller?', answer: 'Nej. Upplägget behöver anpassas efter sortiment, processer, utrustning, försäljningsplatser och risker. Kontrollområdena på sidan är en startpunkt, inte en universell checklista.' },
+      { question: 'Finns det ett temperaturvärde som gäller för all hantering?', answer: 'Nej. Relevanta gränser och arbetssätt beror bland annat på livsmedlet, processen och vilken fara som ska styras. Sidan fastställer därför inga generella temperaturgränser.' },
+      { question: 'Vad behöver ses över när försäljningsplatsen ändras?', answer: 'Bedöm om platsens förutsättningar för transport, uppställning, el, vatten, förvaring, rengöring och avfall påverkar faror, kontrollbehov eller rutiner.' },
+      { question: 'Kan en mall eller ett verktyg avgöra vad verksamheten måste göra?', answer: 'Nej. Mallar och verktyg kan strukturera arbetet, men verksamheten ansvarar för sina bedömningar och för att underlaget stämmer med den faktiska hanteringen.' },
+    ],
+  },
+  sources: {
+    title: 'Källor och faktakontroll',
+    type: 'Myndighetsvägledning',
+    factCheckedAt: '2026-07-16',
+    links: [
+      { label: 'Livsmedelsverkets Kontrollwiki: Hantering och förvaring', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/342/hantering-och-forvaring' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Temperatur', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/349/temperatur' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Vattenförsörjning', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/352/vattenforsorjning' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Rengöring', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/346/rengoring' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Allergeninformation', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/39/allergeninformation' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Lokaler och utrustning', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/343/lokaler-och-utrustning' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Spårbarhet', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/741/sparbarhet' },
+      { label: 'Livsmedelsverkets Kontrollwiki: HACCP', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp' },
+    ],
+    limitation: 'Myndighetsvägledningen beskriver principer för bland annat hygien, hantering, temperatur, vatten, lokaler, information, spårbarhet och HACCP. Sidans urval och arbetsordning är Min Egenkontrolls praktiska förklaring och ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
+  },
+  appBridge: {
+    eyebrow: 'När arbetet följer med mellan platser',
+    title: 'Gör de planerade kontrollerna enklare att genomföra',
+    copy: 'När kiosken eller foodtrucken har bestämt vad som ska kontrolleras kan Min Egenkontroll hjälpa personalen att dokumentera kontroller, avvikelser och historik i det löpande arbetet.',
+    href: '/digital-egenkontroll-livsmedel',
+    linkLabel: 'Se hur appen fungerar',
+  },
+};
