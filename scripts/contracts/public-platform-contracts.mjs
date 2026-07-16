@@ -78,23 +78,24 @@ function publicUrl(relativePath) {
 }
 
 export async function collectPublicContracts(repoRoot) {
-  const dispatcher = await read(repoRoot, 'src/components/PublicLandingPageWithKnowledgeBase.tsx');
-  const app = await read(repoRoot, 'src/App.tsx');
-  const seoLanding = await read(repoRoot, 'src/components/SeoLandingPage.tsx');
-  const publicResources = await read(repoRoot, 'src/config/publicResources.ts');
-  const sitemap = await read(repoRoot, 'public/sitemap.xml');
+  const appRoot = path.join(repoRoot, 'apps', 'app');
+  const dispatcher = await read(appRoot, 'src/components/PublicLandingPageWithKnowledgeBase.tsx');
+  const app = await read(appRoot, 'src/App.tsx');
+  const seoLanding = await read(appRoot, 'src/components/SeoLandingPage.tsx');
+  const publicResources = await read(appRoot, 'src/config/publicResources.ts');
+  const sitemap = await read(appRoot, 'public/sitemap.xml');
   const envExample = await read(repoRoot, '.env.example');
-  const indexHtml = await read(repoRoot, 'index.html');
-  const manifestSource = await read(repoRoot, 'public/manifest.webmanifest');
+  const indexHtml = await read(appRoot, 'index.html');
+  const manifestSource = await read(appRoot, 'public/manifest.webmanifest');
   const manifest = JSON.parse(manifestSource);
-  const mainSource = await read(repoRoot, 'src/main.tsx');
+  const mainSource = await read(appRoot, 'src/main.tsx');
 
   const dispatcherRoutes = matches(dispatcher, /normalizedPath === '([^']+)'/g);
   const appPublicRoutes = matches(app, /window\.location\.pathname === '([^']+)'/g)
     .filter((route) => route !== '/utveckling/designsystem');
   const seoRoutes = matches(seoLanding, /slug: '([^']+)'/g).map((slug) => `/${slug}`);
   const activeSeoRoutes = seoRoutes.filter((route) => !dispatcherRoutes.includes(route));
-  const seoFiles = await listFiles(repoRoot, 'public/seo', (file) => file.endsWith('.html'));
+  const seoFiles = await listFiles(appRoot, 'public/seo', (file) => file.endsWith('.html'));
   const staticSeoRoutes = seoFiles.map(publicUrl);
 
   const canonicalConfigFiles = [
@@ -105,7 +106,7 @@ export async function collectPublicContracts(repoRoot) {
   ];
   const configuredCanonicals = [];
   for (const file of canonicalConfigFiles) {
-    configuredCanonicals.push(...matches(await read(repoRoot, file), /canonicalPath: '([^']+)'/g));
+    configuredCanonicals.push(...matches(await read(appRoot, file), /canonicalPath: '([^']+)'/g));
   }
 
   const canonicalComponentFiles = [
@@ -116,22 +117,22 @@ export async function collectPublicContracts(repoRoot) {
   ];
   const componentCanonicals = [];
   for (const file of canonicalComponentFiles) {
-    const source = await read(repoRoot, file);
+    const source = await read(appRoot, file);
     componentCanonicals.push(...matches(source, /canonical\.href\s*=\s*'(https:\/\/minegenkontroll\.se[^']*)'/g)
       .map(sameOriginPath));
   }
 
   const staticCanonicals = [];
   for (const file of seoFiles) {
-    const source = await read(repoRoot, file);
+    const source = await read(appRoot, file);
     staticCanonicals.push(...matches(source, /<link\s+rel="canonical"\s+href="([^"]+)"/g)
       .map(sameOriginPath));
   }
 
-  const apiFiles = await listFiles(repoRoot, 'api', (file) => file.endsWith('.js'));
+  const apiFiles = await listFiles(appRoot, 'api', (file) => file.endsWith('.js'));
   const apiPaths = apiFiles.map((file) => publicUrl(file).replace(/\.js$/, ''));
-  const sourceFiles = await listFiles(repoRoot, 'src', (file) => /\.(ts|tsx)$/.test(file));
-  const sourceContents = await Promise.all(sourceFiles.map((file) => read(repoRoot, file)));
+  const sourceFiles = await listFiles(appRoot, 'src', (file) => /\.(ts|tsx)$/.test(file));
+  const sourceContents = await Promise.all(sourceFiles.map((file) => read(appRoot, file)));
   const combinedSource = sourceContents.join('\n');
   const apiClientPaths = matches(combinedSource, /(?:window\.)?fetch\(\s*['"](\/api\/[^'"]+)['"]/g);
   const clientEnvVars = matches(combinedSource, /import\.meta\.env\.(VITE_[A-Z0-9_]+)/g);
@@ -140,7 +141,7 @@ export async function collectPublicContracts(repoRoot) {
     /\b(SUPABASE_(?:SERVICE_ROLE_KEY|SECRET_KEY)|RESEND_(?:API_KEY|FROM_EMAIL))\b/g,
   );
 
-  const apiSources = await Promise.all(apiFiles.map((file) => read(repoRoot, file)));
+  const apiSources = await Promise.all(apiFiles.map((file) => read(appRoot, file)));
   const combinedApiSource = apiSources.join('\n');
   const serverEnvVars = [
     ...matches(combinedApiSource, /process\.env\.([A-Z][A-Z0-9_]+)/g),
@@ -149,12 +150,12 @@ export async function collectPublicContracts(repoRoot) {
   ];
 
   const brandAssets = await listFiles(
-    repoRoot,
+    appRoot,
     'public/brand',
     (file) => /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(file),
   );
   const pwaOnboardingAssets = await listFiles(
-    repoRoot,
+    appRoot,
     'public/pwa-onboarding',
     (file) => /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(file),
   );
@@ -174,7 +175,7 @@ export async function collectPublicContracts(repoRoot) {
     manifestSource,
     mainSource,
     await read(repoRoot, 'packages/brand/src/index.ts'),
-    ...await Promise.all(seoFiles.map((file) => read(repoRoot, file))),
+    ...await Promise.all(seoFiles.map((file) => read(appRoot, file))),
   ].join('\n');
   const assetReferences = matches(
     assetReferenceSources,

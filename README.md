@@ -16,6 +16,8 @@ Nuvarande tekniska struktur är ännu inte den långsiktiga målstrukturen. Stö
 - Vercel
 - Supabase för auth, databas och storage
 
+Produktionsappen ligger i npm-workspacen `apps/app`. Delade brand- och designsystempaket ligger i `packages/`. Kommandona nedan körs fortsatt från reporoten och delegerar till app-workspacen när det är relevant.
+
 ## Kom igång lokalt
 
 ```bash

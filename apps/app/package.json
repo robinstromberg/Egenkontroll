@@ -1,0 +1,35 @@
+{
+  "name": "@min-egenkontroll/app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "brand:sync": "node ../../scripts/sync-brand-assets.mjs",
+    "dev": "vite",
+    "predev": "npm run brand:sync",
+    "build": "tsc -b && vite build",
+    "prebuild": "npm run brand:sync",
+    "contracts": "node ../../scripts/check-public-contracts.mjs && node --test ../../scripts/contracts/public-platform-contracts.test.mjs",
+    "precontracts": "npm run brand:sync",
+    "contracts:update": "node ../../scripts/check-public-contracts.mjs --update",
+    "precontracts:update": "npm run brand:sync",
+    "lint": "eslint . --config ../../eslint.config.js",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "dependencies": {
+    "@min-egenkontroll/brand": "*",
+    "@min-egenkontroll/design-system": "*",
+    "@supabase/supabase-js": "2.49.4",
+    "qrcode.react": "^4.2.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.2",
+    "@types/react-dom": "19.0.2",
+    "@vitejs/plugin-react": "4.3.4",
+    "typescript": "5.7.2",
+    "vite": "6.0.7"
+  }
+}

@@ -2,6 +2,7 @@ import console from 'node:console';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath, URL } from 'node:url';
 import {
   baselineFromSnapshot,
   collectPublicContracts,
@@ -9,7 +10,7 @@ import {
   validatePublicContracts,
 } from './contracts/public-platform-contracts.mjs';
 
-const repoRoot = process.cwd();
+const repoRoot = fileURLToPath(new URL('../', import.meta.url));
 const baselinePath = path.join(repoRoot, 'scripts/contracts/public-platform-baseline.json');
 const updateBaseline = process.argv.includes('--update');
 const printSnapshot = process.argv.includes('--print');

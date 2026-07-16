@@ -1,7 +1,7 @@
 node_modules
 .DS_Store
-dist
-/public/brand/
+**/dist
+/apps/app/public/brand/
 *.tsbuildinfo
 vite.config.d.ts
 vite.config.js
