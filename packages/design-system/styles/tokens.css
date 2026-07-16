@@ -15,6 +15,9 @@
   --ds-action-on-primary: #ffffff;
   --ds-action-secondary: #edf1eb;
   --ds-action-secondary-hover: #e1e8df;
+  --ds-highlight-surface: #f0e7cb;
+  --ds-highlight-text: #4f3c0d;
+  --ds-highlight-border: #ceb979;
   --ds-focus: #006fdd;
   --ds-status-success-fg: #145c40;
   --ds-status-success-bg: #e6f5eb;
@@ -67,6 +70,9 @@
   --ds-action-on-primary: #082518;
   --ds-action-secondary: #25342b;
   --ds-action-secondary-hover: #314238;
+  --ds-highlight-surface: #4e3b05;
+  --ds-highlight-text: #ffe49a;
+  --ds-highlight-border: #c8a234;
   --ds-focus: #91c5ff;
   --ds-status-success-fg: #c2f5d1;
   --ds-status-success-bg: #163f2b;
@@ -102,6 +108,9 @@
     --ds-action-on-primary: #082518;
     --ds-action-secondary: #25342b;
     --ds-action-secondary-hover: #314238;
+    --ds-highlight-surface: #4e3b05;
+    --ds-highlight-text: #ffe49a;
+    --ds-highlight-border: #c8a234;
     --ds-focus: #91c5ff;
     --ds-status-success-fg: #c2f5d1;
     --ds-status-success-bg: #163f2b;
