@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "contracts": "node scripts/check-public-contracts.mjs && node --test scripts/contracts/public-platform-contracts.test.mjs",
+    "contracts:update": "node scripts/check-public-contracts.mjs --update",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false"
