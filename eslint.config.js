@@ -4,7 +4,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', '*.tsbuildinfo', 'vite.config.d.ts', 'vite.config.js'] },
+  { ignores: ['**/dist', '**/*.tsbuildinfo', '**/vite.config.d.ts', '**/vite.config.js'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -27,7 +27,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['api/**/*.js'],
+    files: ['api/**/*.js', 'apps/app/api/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       globals: {
@@ -38,7 +38,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['public/**/*.js'],
+    files: ['public/**/*.js', 'apps/app/public/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       globals: {

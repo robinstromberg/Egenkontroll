@@ -26,11 +26,11 @@ jobs:
       - name: Public platform contracts
         run: npm run contracts
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: App workspace typecheck
+        run: npm run typecheck --workspace @min-egenkontroll/app
 
       - name: Lint
         run: npm run lint
 
-      - name: Build
-        run: npm run build
+      - name: App workspace build
+        run: npm run build --workspace @min-egenkontroll/app
