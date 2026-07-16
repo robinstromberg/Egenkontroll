@@ -280,3 +280,88 @@ export const kioskFoodtruckBusinessPage: BusinessPageContent = {
     linkLabel: 'Se hur appen fungerar',
   },
 };
+
+export const cateringBusinessPage: BusinessPageContent = {
+  title: 'Egenkontroll för catering – planera hela kedjan | Min Egenkontroll',
+  description: 'Få överblick över egenkontroll för catering: planering, varumottagning, förberedelse, förvaring, transport, servering, allergener, rengöring, spårbarhet, avvikelser, dokumentation och HACCP.',
+  canonicalPath: '/egenkontroll-catering',
+  breadcrumb: [
+    { label: 'Kunskap', href: '/kunskapsbank' },
+    { label: 'Egenkontroll för catering' },
+  ],
+  eyebrow: 'För cateringverksamheter',
+  heading: 'Egenkontroll för catering – håll ihop arbetet från beställning till servering',
+  shortAnswer: 'Egenkontrollen ska hjälpa cateringverksamheten att planera, genomföra, dokumentera och följa upp relevanta kontroller genom hela uppdraget. Utgå från den faktiska menyn, förberedelsen, förvaringen, transporten, serveringsplatsen och ansvarsfördelningen – inte från en generell checklista utan anpassning.',
+  controlAreas: {
+    eyebrow: 'Vanliga kontrollområden',
+    title: 'Skapa överblick över hela cateringkedjan',
+    introduction: 'Områdena är vanliga utgångspunkter. Vilka kontroller som behövs, hur de utförs och hur ofta de följs upp beror på uppdraget, livsmedlen, processerna och riskerna.',
+    items: [
+      { title: 'Beställning, meny och allergeninformation', copy: 'Fånga upp menyval, specialkost, ingrediensbyten och allergeninformation tidigt och håll underlaget aktuellt när beställningen ändras.', href: '/seo/allergeninformation-restaurang.html', linkLabel: 'Läs om allergeninformation' },
+      { title: 'Varumottagning och förberedelse', copy: 'Planera mottagning och inlagring av råvaror och beskriv de berednings- och tillagningsmoment som faktiskt ingår i uppdraget.', href: '/seo/varumottagning-livsmedel.html', linkLabel: 'Läs om varumottagning' },
+      { title: 'Förvaring och temperaturstyrda processer', copy: 'Kartlägg kylning, frysning, tillagning, nedkylning, varmhållning och andra temperaturstyrda moment som förekommer före och under uppdraget.', href: '/seo/temperaturkontroll-livsmedel.html', linkLabel: 'Läs om temperaturkontroll' },
+      { title: 'Transport och överlämning', copy: 'Beskriv hur maten skyddas och hålls under kontrollerade förhållanden under lastning, transport, lossning och överlämning på plats.', href: '/seo/transport-av-livsmedel.html', linkLabel: 'Läs om transport av livsmedel' },
+      { title: 'Servering på plats', copy: 'Planera uppställning, separering, serveringsutrustning och hantering så att de risker som finns på den aktuella platsen kan följas upp.', href: '/seo/hantering-och-forvaring-livsmedel.html', linkLabel: 'Läs om hantering och förvaring' },
+      { title: 'Rengöring och returflöde', copy: 'Gör det tydligt hur rena redskap och behållare hålls åtskilda från använda samt vad som rengörs på plats och efter återkomst.', href: '/seo/rengoring-livsmedelsverksamhet.html', linkLabel: 'Läs om rengöring' },
+      { title: 'Spårbarhet, avvikelser och dokumentation', copy: 'Ordna beställnings-, leverantörs- och produktunderlag och bestäm hur avvikande resultat, åtgärder och överlämningar dokumenteras och följs upp.', href: '/sparbarhet-livsmedel', linkLabel: 'Läs om spårbarhet' },
+    ],
+  },
+  workflow: {
+    eyebrow: 'Rekommenderad arbetsordning',
+    title: 'Gå från uppdragets förutsättningar till ett arbetssätt som håller hela vägen',
+    introduction: 'Arbetsordningen knyter ihop analys, planering, överlämningar och uppföljning utan att mallar eller verktyg fattar beslut åt verksamheten.',
+    steps: [
+      { title: 'Beskriv uppdraget och hela flödet', copy: 'Gå igenom beställning, meny, inköp, mottagning, förberedelse, förvaring, lastning, transport, servering, retur och rengöring som ingår.' },
+      { title: 'Identifiera faror och kontrollåtgärder', copy: 'Bedöm vilka faror som är relevanta i varje del av det egna flödet och hur de kan förebyggas, elimineras eller reduceras.', href: '/haccp-sma-livsmedelsforetag', linkLabel: 'Förstå HACCP-arbetet' },
+      { title: 'Planera ansvar och kontroller', copy: 'Beskriv vad som ska göras, av vem, var kontrollen sker och vad som händer när något avviker.', href: '/kontrollplan-livsmedel', linkLabel: 'Läs om kontrollplanen' },
+      { title: 'Genomför, lämna över och dokumentera', copy: 'Gör kontroller och instruktioner användbara för kök, transport och servering och spara det underlag som behövs för uppföljning.', href: '/dokumentation-egenkontroll-livsmedel', linkLabel: 'Förstå dokumentationen' },
+      { title: 'Följ upp efter uppdraget', copy: 'Använd avvikelser, observationer och dokumentation för att bedöma om rutiner och överlämningar fungerade och behöver ändras.', href: '/avvikelser-korrigerande-atgarder-livsmedel', linkLabel: 'Läs om avvikelser' },
+    ],
+  },
+  practicalResources: {
+    eyebrow: 'Praktiska resurser',
+    title: 'Arbeta vidare med verksamhetens eget underlag',
+    introduction: 'Läs vägledningen och använd sedan mallen eller verktyget för att strukturera verksamhetens egna uppgifter och bedömningar.',
+    hrefs: ['/haccp-sma-livsmedelsforetag', '/verktyg-faroanalys-livsmedel', '/mall-kontrollplan-livsmedel', '/dokumentation-egenkontroll-livsmedel'],
+  },
+  mistakes: {
+    eyebrow: 'Vanliga misstag',
+    title: 'Undvik glapp mellan kök, transport och servering',
+    items: [
+      { title: 'Planeringen slutar vid köksdörren', copy: 'Egenkontrollen behöver även omfatta lastning, transport, överlämning, uppställning, servering och retur när de ingår i uppdraget.' },
+      { title: 'Ändringar når inte allergeninformationen', copy: 'Bestäm hur ändrad meny, ersättningsvaror och sena beställningsändringar förs vidare till dem som förbereder och serverar maten.' },
+      { title: 'Resultat sparas men avvikelser följs inte upp', copy: 'Bestäm vem som reagerar på ett avvikande resultat och hur både berörda livsmedel och bakomliggande arbetssätt tas om hand.' },
+    ],
+  },
+  faq: {
+    title: 'Frågor om egenkontroll för catering',
+    items: [
+      { question: 'Behöver alla cateringuppdrag ha samma kontroller?', answer: 'Nej. Upplägget behöver anpassas efter menyn, processerna, transporten, serveringsplatsen och riskerna. Kontrollområdena på sidan är en startpunkt, inte en universell checklista.' },
+      { question: 'Finns det ett temperaturvärde som gäller för all transport och servering?', answer: 'Nej. Relevanta gränser och arbetssätt beror bland annat på livsmedlet, processen och vilken fara som ska styras. Sidan fastställer därför inga generella temperaturgränser.' },
+      { question: 'Hur undviker man glapp mellan kök, transport och servering?', answer: 'Beskriv vem som utför varje kontroll, vilket underlag som följer med och hur avvikande resultat lämnas över och hanteras. Upplägget behöver anpassas till det faktiska uppdraget.' },
+      { question: 'Kan en mall eller ett verktyg avgöra vad verksamheten måste göra?', answer: 'Nej. Mallar och verktyg kan strukturera arbetet, men verksamheten ansvarar för sina bedömningar och för att underlaget stämmer med den faktiska hanteringen.' },
+    ],
+  },
+  sources: {
+    title: 'Källor och faktakontroll',
+    type: 'Myndighetsvägledning',
+    factCheckedAt: '2026-07-16',
+    links: [
+      { label: 'Livsmedelsverkets Kontrollwiki: Hantering och förvaring', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/342/hantering-och-forvaring' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Transport', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/350/transport' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Temperatur', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/349/temperatur' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Rengöring', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/346/rengoring' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Allergeninformation', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/39/allergeninformation' },
+      { label: 'Livsmedelsverkets Kontrollwiki: Spårbarhet', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/741/sparbarhet' },
+      { label: 'Livsmedelsverkets Kontrollwiki: HACCP', url: 'https://kontrollwiki.livsmedelsverket.se/artikel/476/haccp' },
+    ],
+    limitation: 'Myndighetsvägledningen beskriver principer för bland annat hygien, hantering, transport, temperatur, information, spårbarhet och HACCP. Sidans urval och arbetsordning är Min Egenkontrolls praktiska förklaring och ersätter inte verksamhetens egen bedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
+  },
+  appBridge: {
+    eyebrow: 'När flera steg behöver hänga ihop',
+    title: 'Gör de planerade kontrollerna enklare att genomföra',
+    copy: 'När cateringverksamheten har bestämt vad som ska kontrolleras kan Min Egenkontroll hjälpa personalen att dokumentera kontroller, avvikelser och historik genom det löpande arbetet.',
+    href: '/digital-egenkontroll-livsmedel',
+    linkLabel: 'Se hur appen fungerar',
+  },
+};
