@@ -29,8 +29,20 @@ jobs:
       - name: App workspace typecheck
         run: npm run typecheck --workspace @min-egenkontroll/app
 
-      - name: Lint
+      - name: Web workspace typecheck
+        run: npm run typecheck --workspace @min-egenkontroll/web
+
+      - name: App workspace lint
+        run: npm run lint --workspace @min-egenkontroll/app
+
+      - name: Web workspace lint
+        run: npm run lint --workspace @min-egenkontroll/web
+
+      - name: Repository lint
         run: npm run lint
 
       - name: App workspace build
         run: npm run build --workspace @min-egenkontroll/app
+
+      - name: Web workspace build
+        run: npm run build --workspace @min-egenkontroll/web

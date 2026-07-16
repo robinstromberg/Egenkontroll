@@ -1,7 +1,9 @@
 node_modules
 .DS_Store
 **/dist
+**/.astro
 /apps/app/public/brand/
+/apps/web/public/brand/
 *.tsbuildinfo
 vite.config.d.ts
 vite.config.js

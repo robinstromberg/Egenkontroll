@@ -1,0 +1,13 @@
+---
+import type { GetStaticPaths } from 'astro';
+import PageRenderer from '../components/PageRenderer.astro';
+import PublicLayout from '../layouts/PublicLayout.astro';
+import { webModernRoutes, type WebRoute } from '../config/routes';
+
+export const getStaticPaths = (() => webModernRoutes
+  .filter((route) => route.path !== '/')
+  .map((route) => ({ params: { path: route.path.slice(1) }, props: { route } }))) satisfies GetStaticPaths;
+
+const { route } = Astro.props as { route: WebRoute };
+---
+<PublicLayout route={route}><PageRenderer route={route} /></PublicLayout>

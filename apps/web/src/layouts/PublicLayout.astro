@@ -1,0 +1,69 @@
+---
+import { brandAssets } from '@min-egenkontroll/brand';
+import { PublicHeader } from '../components/PublicHeader';
+import type { WebRoute } from '../config/routes';
+import { siteOrigin } from '../config/routes';
+import '@min-egenkontroll/design-system/tokens.css';
+import '@min-egenkontroll/design-system/base.css';
+import '../styles/global.css';
+import '../components/PublicSiteShell.css';
+
+type Props = { route: WebRoute };
+const { route } = Astro.props;
+const canonicalUrl = route.canonicalPath ? `${siteOrigin}${route.canonicalPath}` : null;
+const socialUrl = canonicalUrl ?? `${siteOrigin}/`;
+const shellClass = ['home-page', route.shellClass].filter(Boolean).join(' ');
+const homepageStructuredData = route.path === '/' ? {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'WebSite', '@id': `${siteOrigin}/#website`, url: `${siteOrigin}/`, name: 'Min Egenkontroll', inLanguage: 'sv-SE' },
+    { '@type': 'Organization', '@id': `${siteOrigin}/#organization`, name: 'Min Egenkontroll', url: `${siteOrigin}/`, logo: `${siteOrigin}${brandAssets.logo}` },
+    { '@type': 'SoftwareApplication', '@id': `${siteOrigin}/#software`, name: 'Min Egenkontroll', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', url: `${siteOrigin}/`, description: 'Svensk webbapp för digital egenkontroll i livsmedelsverksamheter. Appen hjälper verksamheter dokumentera kontroller, avvikelser, historik och delning från mobilen.', inLanguage: 'sv-SE', isAccessibleForFree: true, offers: { '@type': 'Offer', category: 'Förhandslansering', availability: 'https://schema.org/PreOrder', url: `${siteOrigin}/` }, publisher: { '@id': `${siteOrigin}/#organization` } },
+  ],
+} : null;
+---
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={route.description} />
+    <meta name="robots" content={route.robots} />
+    <meta name="theme-color" content="#5b46e1" />
+    <meta property="og:title" content={route.title} />
+    <meta property="og:description" content={route.description} />
+    <meta property="og:image" content={`${siteOrigin}${brandAssets.openGraph}`} />
+    <meta property="og:image:width" content="1731" />
+    <meta property="og:image:height" content="909" />
+    <meta property="og:image:alt" content="Min Egenkontroll - digital egenkontroll för livsmedelsverksamheter" />
+    <meta property="og:url" content={socialUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="sv_SE" />
+    <meta property="og:site_name" content="Min Egenkontroll" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={route.title} />
+    <meta name="twitter:description" content={route.description} />
+    <meta name="twitter:image" content={`${siteOrigin}${brandAssets.openGraph}`} />
+    <meta name="twitter:image:alt" content="Min Egenkontroll - digital egenkontroll för livsmedelsverksamheter" />
+    <link rel="icon" type="image/png" href={brandAssets.icon} />
+    {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
+    {homepageStructuredData ? <script is:inline type="application/ld+json" set:html={JSON.stringify(homepageStructuredData)} /> : null}
+    <title>{route.title}</title>
+  </head>
+  <body>
+    {route.shell === 'modern' ? <div class={shellClass} data-public-site-root data-theme="light">
+      <script is:inline>
+        (() => {
+          const key = 'egenkontroll:homepage-theme';
+          const saved = localStorage.getItem(key);
+          const theme = saved === 'light' || saved === 'dark' ? saved : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.currentScript?.parentElement?.setAttribute('data-theme', theme);
+        })();
+      </script>
+      <a class="home-skip" href="#main-content">Hoppa till innehållet</a>
+      <PublicHeader client:load />
+      <slot />
+      <footer class="home-footer"><div class="home-shell"><span>© 2026 Min Egenkontroll</span><nav><a href="/kunskapsbank">Kunskap</a><a href="/mall-kontrollplan-livsmedel">Mallar</a><a href="/verktyg-faroanalys-livsmedel">Verktyg</a><a href="/digital-egenkontroll-livsmedel">Appen</a><a href="/integritetspolicy">Integritet</a><a href="/anvandarvillkor">Villkor</a></nav></div></footer>
+    </div> : <slot />}
+  </body>
+</html>

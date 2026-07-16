@@ -10,19 +10,25 @@ Nuvarande tekniska struktur är ännu inte den långsiktiga målstrukturen. Stö
 
 ## Teknisk grund
 
-- React
+- Astro och React
 - TypeScript
 - Vite
 - Vercel
 - Supabase för auth, databas och storage
 
-Produktionsappen ligger i npm-workspacen `apps/app`. Delade brand- och designsystempaket ligger i `packages/`. Kommandona nedan körs fortsatt från reporoten och delegerar till app-workspacen när det är relevant.
+Produktionsappen ligger i npm-workspacen `apps/app`. Den statiskt byggda publika shadow-webben ligger i `apps/web`, medan delade brand- och designsystempaket ligger i `packages/`. Kommandona nedan körs fortsatt från reporoten och verifierar både app- och webbworkspacen när det är relevant.
 
 ## Kom igång lokalt
 
 ```bash
 npm install
 npm run dev
+```
+
+Den publika Astro-webben startas separat med:
+
+```bash
+npm run dev:web
 ```
 
 För lokal miljö, kopiera `.env.example` till `.env.local` och fyll i Supabase-värden när de ska användas.

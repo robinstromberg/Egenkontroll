@@ -1,0 +1,9 @@
+---
+import PageRenderer from '../components/PageRenderer.astro';
+import PublicLayout from '../layouts/PublicLayout.astro';
+import { webModernRoutes } from '../config/routes';
+
+const route = webModernRoutes.find((candidate) => candidate.path === '/');
+if (!route) throw new Error('Startsidan saknas i Astro-registret.');
+---
+<PublicLayout route={route}><PageRenderer route={route} /></PublicLayout>

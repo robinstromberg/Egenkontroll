@@ -1,0 +1,61 @@
+---
+import type { WebRoute } from '../config/routes';
+import { Homepage } from './Homepage';
+import { KnowledgeBasePage } from './KnowledgeBasePage';
+import { SearchResultsPage } from './SearchResultsPage';
+import { HaccpTopicHub } from './HaccpTopicHub';
+import { FactPage } from './FactPage';
+import { TemplatePage } from './TemplatePage';
+import { HazardAnalysisToolPage } from './HazardAnalysisToolPage';
+import { BusinessPage } from './BusinessPage';
+import { SeoLandingPage, getSeoPageSlugFromPath } from './SeoLandingPage';
+import { PrivacyPolicyPage } from './PrivacyPolicyPage';
+import { TermsPage } from './TermsPage';
+import {
+  avvikelserFactPage,
+  dokumentationEgenkontrollFactPage,
+  faroanalysFactPage,
+  kontrollplanFactPage,
+  kritiskaGransvardenFactPage,
+  verifieringHaccpFactPage,
+} from '../config/factPages';
+import { controlPlanTemplatePage } from '../config/templatePages';
+import { hazardAnalysisToolContent } from '../config/toolPages';
+import {
+  cafeBusinessPage,
+  cateringBusinessPage,
+  kioskFoodtruckBusinessPage,
+  restaurantBusinessPage,
+} from '../config/businessPages';
+
+type Props = { route: WebRoute };
+const { route } = Astro.props;
+const factPages = {
+  '/faroanalys-livsmedel': faroanalysFactPage,
+  '/kontrollplan-livsmedel': kontrollplanFactPage,
+  '/kritiska-gransvarden-livsmedel': kritiskaGransvardenFactPage,
+  '/avvikelser-korrigerande-atgarder-livsmedel': avvikelserFactPage,
+  '/verifiering-haccp-livsmedel': verifieringHaccpFactPage,
+  '/dokumentation-egenkontroll-livsmedel': dokumentationEgenkontrollFactPage,
+} as const;
+const businessPages = {
+  '/egenkontroll-restaurang': restaurantBusinessPage,
+  '/egenkontroll-cafe': cafeBusinessPage,
+  '/egenkontroll-kiosk-foodtruck': kioskFoodtruckBusinessPage,
+  '/egenkontroll-catering': cateringBusinessPage,
+} as const;
+const factContent = route.page === 'fact-page' ? factPages[route.path as keyof typeof factPages] : null;
+const businessContent = route.page === 'business-page' ? businessPages[route.path as keyof typeof businessPages] : null;
+const seoPage = route.page === 'seo-landing' ? getSeoPageSlugFromPath(route.path) : null;
+---
+{route.page === 'home' ? <Homepage /> : null}
+{route.page === 'knowledge-base' ? <KnowledgeBasePage /> : null}
+{route.page === 'search' ? <SearchResultsPage client:load /> : null}
+{route.page === 'haccp-hub' ? <HaccpTopicHub /> : null}
+{factContent ? <FactPage content={factContent} /> : null}
+{route.page === 'template-page' ? <TemplatePage content={controlPlanTemplatePage} client:load /> : null}
+{route.page === 'hazard-tool' ? <HazardAnalysisToolPage content={hazardAnalysisToolContent} client:load /> : null}
+{businessContent ? <BusinessPage content={businessContent} /> : null}
+{seoPage ? <SeoLandingPage page={seoPage} /> : null}
+{route.page === 'privacy' ? <PrivacyPolicyPage /> : null}
+{route.page === 'terms' ? <TermsPage /> : null}

@@ -5,15 +5,21 @@ import { fileURLToPath, URL } from 'node:url';
 
 const repoRoot = fileURLToPath(new URL('../', import.meta.url));
 const sourceDirectory = path.join(repoRoot, 'packages', 'brand', 'assets');
-const publicDirectory = path.join(repoRoot, 'apps', 'app', 'public', 'brand');
-const relativeTarget = path.relative(repoRoot, publicDirectory).replaceAll('\\', '/');
+const publicDirectories = [
+  path.join(repoRoot, 'apps', 'app', 'public', 'brand'),
+  path.join(repoRoot, 'apps', 'web', 'public', 'brand'),
+];
+const expectedTargets = new Set(['apps/app/public/brand', 'apps/web/public/brand']);
 
-if (relativeTarget !== 'apps/app/public/brand') {
-  throw new Error(`Vägrar synka brandassets till oväntad sökväg: ${publicDirectory}`);
+for (const publicDirectory of publicDirectories) {
+  const relativeTarget = path.relative(repoRoot, publicDirectory).replaceAll('\\', '/');
+  if (!expectedTargets.has(relativeTarget)) {
+    throw new Error(`Vägrar synka brandassets till oväntad sökväg: ${publicDirectory}`);
+  }
+
+  await rm(publicDirectory, { force: true, recursive: true });
+  await mkdir(publicDirectory, { recursive: true });
+  await cp(sourceDirectory, publicDirectory, { recursive: true });
 }
 
-await rm(publicDirectory, { force: true, recursive: true });
-await mkdir(publicDirectory, { recursive: true });
-await cp(sourceDirectory, publicDirectory, { recursive: true });
-
-console.log('Synkade packages/brand/assets till apps/app/public/brand.');
+console.log('Synkade packages/brand/assets till apps/app/public/brand och apps/web/public/brand.');
