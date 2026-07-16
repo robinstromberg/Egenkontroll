@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { brandAssets } from '../config/assets';
+import { brandAssets } from '@min-egenkontroll/brand';
 import './PublicLandingPage.css';
 
 export type SeoPageSlug =

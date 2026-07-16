@@ -1,0 +1,18 @@
+{
+  "name": "@min-egenkontroll/brand",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "assets",
+    "src",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./assets/*": "./assets/*"
+  }
+}

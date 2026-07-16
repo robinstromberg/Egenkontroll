@@ -1,4 +1,4 @@
-import { brandAssets } from '../config/assets';
+import { brandAssets } from '@min-egenkontroll/brand';
 import { getControlRunDetail, listHistoryRuns } from './historyService';
 import type { HistoryFilters } from './historyService';
 

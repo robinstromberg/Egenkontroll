@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { HazardAnalysisToolContent } from '../config/toolPages';
 import type { HazardDraft, HazardType, ProcessStepDraft, UserAssessment } from '../types/publicTools';
 import { PublicSiteShell } from './PublicSiteShell';
-import { Button, LinkButton } from './ui/Button';
+import { Button, LinkButton } from '@min-egenkontroll/design-system';
 import './HazardAnalysisToolPage.css';
 
 const siteUrl = 'https://minegenkontroll.se';

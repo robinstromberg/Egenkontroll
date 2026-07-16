@@ -1,10 +1,5 @@
 import type { ControlCategory } from '../types/database';
 
-export const brandAssets = {
-  logo: '/brand/min-egenkontroll-logo2.png',
-  icon: '/brand/min-egenkontroll-icon.png',
-};
-
 const uiIconBase = '/ui-icons';
 
 export const appUiIcons = {

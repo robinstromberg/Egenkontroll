@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { TemplateFieldDefinition, TemplatePageContent } from '../config/templatePages';
 import { PublicSiteShell } from './PublicSiteShell';
-import { Button, LinkButton } from './ui/Button';
+import { Button, LinkButton } from '@min-egenkontroll/design-system';
 import './TemplatePage.css';
 
 const siteUrl = 'https://minegenkontroll.se';

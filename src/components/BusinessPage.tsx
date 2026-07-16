@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import type { BusinessPageContent } from '../config/businessPages';
 import { getPublicResource, type PublicResource } from '../config/publicResources';
 import { PublicSiteShell } from './PublicSiteShell';
-import { LinkButton } from './ui/Button';
+import { LinkButton } from '@min-egenkontroll/design-system';
 import './BusinessPage.css';
 
 const siteUrl = 'https://minegenkontroll.se';

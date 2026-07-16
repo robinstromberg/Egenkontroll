@@ -1,4 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
+import { brandAssets } from '@min-egenkontroll/brand';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppBottomNav } from './components/AppBottomNav';
 import type { AppView } from './components/AppBottomNav';
@@ -12,7 +13,6 @@ import { PasswordSetupPanel } from './components/PasswordSetupPanel';
 import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { PublicLandingPage } from './components/PublicLandingPage';
 import { TermsPage } from './components/TermsPage';
-import { brandAssets } from './config/assets';
 import { getCurrentSession, signOut } from './services/authService';
 import { ensureProfile, listOrganizationContexts } from './services/organizationService';
 import type { OrganizationContext } from './services/organizationService';
