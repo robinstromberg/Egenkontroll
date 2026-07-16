@@ -5,7 +5,7 @@
   font-family: var(--ds-font-sans);
 }
 .home-page *, .home-page *::before, .home-page *::after { box-sizing: border-box; }
-.home-page a { color: inherit; }
+.home-page a:not(.ds-button) { color: inherit; }
 .home-shell { width: min(1160px, calc(100% - 32px)); margin: 0 auto; }
 .home-skip { position: fixed; z-index: 20; top: 8px; left: 8px; padding: 10px; color: var(--ds-text-on-inverse); background: var(--ds-surface-inverse); transform: translateY(-150%); }
 .home-skip:focus { transform: translateY(0); }
