@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { brandAssets } from '@min-egenkontroll/brand';
 import { ActionButton } from './ui/ActionButton';
 import { AssetIcon } from './ui/AssetIcon';
-import { brandAssets, readControlTypeIcon } from '../config/assets';
+import { readControlTypeIcon } from '../config/assets';
 import {
   createSharedAttachmentSignedUrl,
   logSharedExport,

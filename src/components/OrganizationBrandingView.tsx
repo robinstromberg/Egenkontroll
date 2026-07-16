@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
+import { brandAssets } from '@min-egenkontroll/brand';
 import { ActionButton } from './ui/ActionButton';
 import { BackButton } from './ui/BackButton';
-import { brandAssets } from '../config/assets';
 import type { Organization } from '../types/database';
 import { updateOrganizationBranding } from '../services/organizationService';
 import './OrganizationBrandingView.css';

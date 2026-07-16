@@ -5,8 +5,9 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { DesignSystemShowcase } from './components/DesignSystemShowcase';
 import { setupGlobalErrorReporting } from './lib/errorReporting';
 import { setupPwaInstallPromptListener } from './services/pwaInstallPrompt';
+import '@min-egenkontroll/design-system/tokens.css';
 import './styles/global.css';
-import './components/ui/designSystem.css';
+import '@min-egenkontroll/design-system/base.css';
 
 const rootElement = document.getElementById('root');
 

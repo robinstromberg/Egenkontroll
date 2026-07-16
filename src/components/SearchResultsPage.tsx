@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import { LinkButton, Button } from './ui/Button';
-import { TextField } from './ui/TextField';
+import { Button, LinkButton, TextField } from '@min-egenkontroll/design-system';
 import { searchPublicResources, type PublicResource } from '../config/publicResources';
 import './Homepage.css';
 

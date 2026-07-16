@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { haccpTopicContent as content } from '../config/haccpTopicContent';
 import { getPublicResource } from '../config/publicResources';
 import { PublicSiteShell } from './PublicSiteShell';
-import { LinkButton } from './ui/Button';
+import { LinkButton } from '@min-egenkontroll/design-system';
 import './HaccpTopicHub.css';
 
 const resources = [['/faroanalys-livsmedel', 'Identifiera faror', 'Faktasida'], ['/kritiska-gransvarden-livsmedel', 'Sätt gränser', 'Guide'], ['/kontrollplan-livsmedel', 'Planera kontroller', 'Praktisk resurs'], ['/avvikelser-korrigerande-atgarder-livsmedel', 'Hantera avvikelser', 'Faktasida'], ['/verifiering-haccp-livsmedel', 'Verifiera arbetet', 'Faktasida'], ['/dokumentation-egenkontroll-livsmedel', 'Dokumentera', 'Faktasida']] as const;

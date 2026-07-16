@@ -1,5 +1,5 @@
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
-import { Alert } from './ui/Alert';
+import { Alert } from '@min-egenkontroll/design-system';
 
 export function OnlineOnlyBanner() {
   const isOnline = useOnlineStatus();

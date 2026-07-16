@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { FactPageContent } from '../config/factPages';
 import { PublicSiteShell } from './PublicSiteShell';
-import { LinkButton } from './ui/Button';
+import { LinkButton } from '@min-egenkontroll/design-system';
 import './FactPage.css';
 
 const siteUrl = 'https://minegenkontroll.se';

@@ -1,10 +1,6 @@
 import { useState } from 'react';
-import { Alert } from './ui/Alert';
-import { Badge } from './ui/Badge';
-import { Button, LinkButton } from './ui/Button';
-import { Card } from './ui/Card';
-import { Field } from './ui/Field';
-import { SearchField, TextField } from './ui/TextField';
+import { Alert, Badge, Button, Card, Field, LinkButton, SearchField, TextField } from '@min-egenkontroll/design-system';
+import './DesignSystemShowcase.css';
 
 type Theme = 'light' | 'dark';
 

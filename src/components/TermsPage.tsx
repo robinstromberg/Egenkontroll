@@ -1,5 +1,5 @@
 import './PublicLandingPage.css';
-import { brandAssets } from '../config/assets';
+import { brandAssets } from '@min-egenkontroll/brand';
 
 export function TermsPage() {
   return (

@@ -173,7 +173,7 @@ export async function collectPublicContracts(repoRoot) {
     indexHtml,
     manifestSource,
     mainSource,
-    await read(repoRoot, 'src/config/assets.ts'),
+    await read(repoRoot, 'packages/brand/src/index.ts'),
     ...await Promise.all(seoFiles.map((file) => read(repoRoot, file))),
   ].join('\n');
   const assetReferences = matches(
