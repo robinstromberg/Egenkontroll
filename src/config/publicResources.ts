@@ -30,6 +30,7 @@ export const publicResourceGroups: readonly PublicResourceGroup[] = [
     { title: 'Egenkontroll för restaurang', copy: 'Planera restaurangens temperaturkontroller, rengöring, allergenrutiner, varumottagning och dokumentation.', href: '/egenkontroll-restaurang', resourceType: 'Guide' },
     { title: 'Egenkontroll för café och bageri', copy: 'Planera temperaturkontroller, rengöring, allergenrutiner, råvarumottagning, märkning och dokumentation.', href: '/egenkontroll-cafe', resourceType: 'Guide' },
     { title: 'Egenkontroll för kiosk och foodtruck', copy: 'Planera transport, temperatur, vatten, rengöring, allergenrutiner och dokumentation för verksamhet på begränsad yta.', href: '/egenkontroll-kiosk-foodtruck', resourceType: 'Guide' },
+    { title: 'Egenkontroll för catering', copy: 'Planera varumottagning, förberedelse, förvaring, transport, servering, allergenrutiner och dokumentation.', href: '/egenkontroll-catering', resourceType: 'Guide' },
     { title: 'Dokumentation och journalföring', copy: 'Vad som kan behöva dokumenteras och hur omfattningen kan anpassas.', href: '/dokumentation-egenkontroll-livsmedel', resourceType: 'Faktasida' },
     { title: 'Källor och faktagranskning', copy: 'Så skiljer vi på regler, myndighetsvägledning och våra praktiska förklaringar.', href: '/seo/kallor-och-faktagranskning.html' },
   ]),
