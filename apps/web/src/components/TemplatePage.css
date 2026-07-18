@@ -1,9 +1,9 @@
 .template-page { min-width: 0; }
-.template-page__shell { width: min(100% - 32px, 1080px); margin: 0 auto; }
+.template-page__shell { }
 .template-page__breadcrumb { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); padding: var(--ds-space-5) 0; color: var(--ds-text-secondary); font-size: var(--ds-font-size-sm); }
 .template-page__breadcrumb a { color: var(--ds-text-secondary); text-decoration: underline; text-underline-offset: 3px; }
 .template-page__breadcrumb a::after { content: '/'; margin-left: var(--ds-space-2); color: var(--ds-border-strong); }
-.template-page__intro { display: grid; gap: var(--ds-space-4); padding: var(--ds-space-6) 0 var(--ds-space-7); border-bottom: 1px solid var(--ds-border); }
+.template-page__intro { padding: var(--ds-space-6) 0 var(--ds-space-7); border-bottom: 1px solid var(--ds-border); }
 .template-page__eyebrow, .template-page__print-brand { margin: 0; color: var(--ds-action-primary); font-size: var(--ds-font-size-sm); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .template-page h1, .template-page h2 { margin: 0; color: var(--ds-text); letter-spacing: -.03em; line-height: 1.08; text-wrap: balance; }
 .template-page h1 { max-width: 850px; font-size: clamp(2.5rem, 7vw, 4.5rem); }
@@ -18,7 +18,7 @@
 .template-page__document-header { display: grid; gap: var(--ds-space-2); padding-bottom: var(--ds-space-5); border-bottom: 2px solid var(--ds-text); }
 .template-page__document-header p { margin: 0; }
 .template-page__print-brand { display: none; }
-.template-page__document-fields, .template-page__entry-fields { display: grid; gap: var(--ds-space-4); }
+.template-page__document-fields, .template-page__entry-fields { display: grid; gap: var(--ds-form-gap); }
 .template-page__entries { display: grid; gap: var(--ds-space-5); }
 .template-page__entry { min-width: 0; margin: 0; padding: var(--ds-space-5); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); }
 .template-page__entry legend { padding: 0 var(--ds-space-2); color: var(--ds-text); font-size: var(--ds-font-size-lg); font-weight: 800; }
@@ -59,7 +59,6 @@
 }
 
 @media (max-width: 560px) {
-  .template-page__shell { width: min(100% - 24px, 1080px); }
   .template-page__intro-actions .ds-button, .template-page__document-actions .ds-button { width: 100%; }
   .template-page__entry { padding: var(--ds-space-4); }
 }

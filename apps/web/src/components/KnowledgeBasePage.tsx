@@ -5,13 +5,13 @@ import './KnowledgeBasePage.css';
 
 export function KnowledgeBasePage() {
   return <PublicSiteShell>
-    <main className="knowledge-base__shell" id="main-content">
+    <main className="knowledge-base__shell ds-page-shell ds-content" id="main-content">
       <nav className="knowledge-base__breadcrumb" aria-label="Brödsmulor"><a href="/">Startsida</a><span aria-hidden="true">/</span><span aria-current="page">Kunskapsbank</span></nav>
 
-      <header className="knowledge-base__intro">
+      <header className="knowledge-base__intro ds-content-intro">
         <p className="knowledge-base__eyebrow">Kunskapsbank</p>
-        <h1>Egenkontroll och livsmedelssäkerhet – enkelt förklarat</h1>
-        <p className="knowledge-base__lead">Praktiska guider för mindre livsmedelsföretag. Fakta bygger på myndigheters vägledning, länkar till underlaget och visar när innehållet faktakontrollerades.</p>
+        <h1 className="ds-content-heading">Egenkontroll och livsmedelssäkerhet – enkelt förklarat</h1>
+        <p className="knowledge-base__lead ds-content-prose">Praktiska guider för mindre livsmedelsföretag. Fakta bygger på myndigheters vägledning, länkar till underlaget och visar när innehållet faktakontrollerades.</p>
         <div className="knowledge-base__actions">
           <LinkButton href="/digital-egenkontroll-livsmedel" variant="primary">Börja med digital egenkontroll</LinkButton>
           <LinkButton href="/seo/kallor-och-faktagranskning.html" variant="secondary">Så granskar vi innehållet</LinkButton>

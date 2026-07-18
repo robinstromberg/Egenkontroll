@@ -42,13 +42,13 @@ export function BusinessPage({ content }: BusinessPageProps) {
   useEffect(() => { setPageMetadata(content); }, [content]);
 
   return <PublicSiteShell>
-    <main className="business-page__shell" id="main-content">
+    <main className="business-page__shell ds-page-shell ds-content" id="main-content">
       <nav className="business-page__breadcrumb" aria-label="Brödsmulor">{content.breadcrumb.map((item) => item.href ? <a href={item.href} key={item.label}>{item.label}</a> : <span aria-current="page" key={item.label}>{item.label}</span>)}</nav>
 
-      <header className="business-page__intro">
+      <header className="business-page__intro ds-content-intro">
         <p className="business-page__eyebrow">{content.eyebrow}</p>
-        <h1>{content.heading}</h1>
-        <p className="business-page__answer">{content.shortAnswer}</p>
+        <h1 className="ds-content-heading">{content.heading}</h1>
+        <p className="business-page__answer ds-content-prose">{content.shortAnswer}</p>
       </header>
 
       <section className="business-page__areas">

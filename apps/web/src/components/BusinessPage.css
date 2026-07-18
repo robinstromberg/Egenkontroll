@@ -1,9 +1,9 @@
 .business-page { min-width: 0; }
-.business-page__shell { width: min(100% - 32px, 1120px); margin: 0 auto; }
+.business-page__shell { }
 .business-page__breadcrumb { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); padding: var(--ds-space-5) 0; color: var(--ds-text-secondary); font-size: var(--ds-font-size-sm); }
 .business-page__breadcrumb a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .business-page__breadcrumb a::after { content: '/'; margin-left: var(--ds-space-2); color: var(--ds-border-strong); }
-.business-page__intro, .business-page__areas, .business-page__workflow, .business-page__resources, .business-page__mistakes, .business-page__faq, .business-page__sources, .business-page__app { padding: clamp(var(--ds-space-7), 8vw, 6rem) 0; border-bottom: 1px solid var(--ds-border); }
+.business-page__intro, .business-page__areas, .business-page__workflow, .business-page__resources, .business-page__mistakes, .business-page__faq, .business-page__sources, .business-page__app { padding: var(--ds-content-section-space) 0; border-bottom: 1px solid var(--ds-border); }
 .business-page__eyebrow { margin: 0 0 var(--ds-space-3); color: var(--ds-action-primary); font-size: var(--ds-font-size-sm); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .business-page h1, .business-page h2, .business-page h3 { margin: 0; color: var(--ds-text); line-height: var(--ds-line-height-tight); text-wrap: balance; }
 .business-page h1 { max-width: 900px; font-size: clamp(2.5rem, 7vw, 4.8rem); letter-spacing: -.04em; }
@@ -45,7 +45,6 @@
 }
 
 @media (max-width: 560px) {
-  .business-page__shell { width: min(100% - 24px, 1120px); }
   .business-page__workflow li { padding: var(--ds-space-4); }
   .business-page__sources dl div { grid-template-columns: 1fr; }
 }

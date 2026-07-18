@@ -12,9 +12,9 @@ function setMeta() { document.title = content.title; for (const [selector, value
 
 export function HaccpTopicHub() {
   useEffect(() => { setMeta(); }, []);
-  return <PublicSiteShell><main className="haccp-shell" id="main-content">
+  return <PublicSiteShell><main className="haccp-shell ds-page-shell ds-content" id="main-content">
     <nav className="haccp-breadcrumb" aria-label="Brödsmulor"><a href="/kunskapsbank">Kunskap</a><span aria-hidden="true">/</span><span>HACCP och riskstyrning</span></nav>
-    <section className="haccp-intro"><p className="haccp-kicker">HACCP och riskstyrning</p><h1>{content.heading}</h1><p>{content.intro}</p><p>För små livsmedelsverksamheter handlar arbetet om att förstå de egna förutsättningarna och välja kontroller som faktiskt behövs.</p></section>
+    <section className="haccp-intro ds-content-intro"><p className="haccp-kicker">HACCP och riskstyrning</p><h1 className="ds-content-heading">{content.heading}</h1><p className="ds-content-prose">{content.intro}</p><p className="ds-content-prose">För små livsmedelsverksamheter handlar arbetet om att förstå de egna förutsättningarna och välja kontroller som faktiskt behövs.</p></section>
     <section className="haccp-start"><h2>Börja här utifrån det du behöver</h2><div><a href="#arbetskedja"><strong>Förstå grunderna</strong><span>Se hur delarna hänger ihop.</span></a><a href="/faroanalys-livsmedel"><strong>Förbättra en faroanalys</strong><span>Identifiera relevanta faror.</span></a><a href="/kontrollplan-livsmedel"><strong>Planera kontroller</strong><span>Samla kontrollpunkter och ansvar.</span></a><a href="/avvikelser-korrigerande-atgarder-livsmedel"><strong>Följ upp avvikelser</strong><span>Återställ och förebygg.</span></a></div></section>
     <section className="haccp-chain" id="arbetskedja"><p className="haccp-kicker">HACCP-arbetskedjan</p><h2>Arbeta i en begriplig ordning</h2><ol>{steps.map((step, index) => <li key={step}><b>{index + 1}</b><span>{step}</span></li>)}</ol></section>
     <section className="haccp-knowledge"><p className="haccp-kicker">Kunskap och resurser</p><h2>Välj nästa relevanta steg</h2><div>{resources.map(([href, role, type]) => { const resource = getPublicResource(href)!; return <a href={href} key={href}><small>{type} · {role}</small><strong>{resource.title}</strong><p>{resource.copy}</p></a>; })}</div></section>

@@ -46,6 +46,14 @@
   --ds-space-5: 1.5rem;
   --ds-space-6: 2rem;
   --ds-space-7: 3rem;
+  --ds-page-gutter: clamp(0.75rem, 3vw, 2rem);
+  --ds-page-max-inline: 72.5rem;
+  --ds-prose-max-inline: 48rem;
+  --ds-heading-max-inline: 58rem;
+  --ds-intro-max-inline: 52rem;
+  --ds-content-section-space: clamp(2.5rem, 7vw, 4.75rem);
+  --ds-content-gap: var(--ds-space-4);
+  --ds-form-gap: var(--ds-space-4);
   --ds-radius-sm: 0.25rem;
   --ds-radius-md: 0.5rem;
   --ds-radius-lg: 0.75rem;

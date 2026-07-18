@@ -12,9 +12,9 @@ type FactPageProps = { content: FactPageContent };
 
 export function FactPage({ content }: FactPageProps) {
   useEffect(() => { setPageMetadata(content); }, [content]);
-  return <PublicSiteShell><main className="fact-page__shell" id="main-content">
+  return <PublicSiteShell><main className="fact-page__shell ds-page-shell ds-page-shell--prose ds-content" id="main-content">
     <nav className="fact-page__breadcrumb" aria-label="Brödsmulor">{content.breadcrumb.map((item) => item.href ? <a href={item.href} key={item.label}>{item.label}</a> : <span key={item.label} aria-current="page">{item.label}</span>)}</nav>
-    <article className="fact-page__article"><header className="fact-page__intro"><p className="fact-page__eyebrow">{content.eyebrow}</p><h1>{content.heading}</h1><p className="fact-page__answer">{content.shortAnswer}</p></header>
+    <article className="fact-page__article"><header className="fact-page__intro ds-content-intro"><p className="fact-page__eyebrow">{content.eyebrow}</p><h1 className="ds-content-heading">{content.heading}</h1><p className="fact-page__answer ds-content-prose">{content.shortAnswer}</p></header>
       <nav className="fact-page__toc" aria-label="Innehåll på sidan"><h2>{content.tableOfContentsTitle}</h2><ol><li><a href="#definition">{content.definition.title}</a></li><li><a href="#arbetsgang">{content.workflow.title}</a></li><li><a href="#exempel">{content.example.title}</a></li><li><a href="#vanliga-fel">{content.mistakes.title}</a></li><li><a href="#fragor">{content.faq.title}</a></li><li><a href="#kalla">{content.sourceSectionTitle}</a></li></ol></nav>
       <section id="definition"><h2>{content.definition.title}</h2>{content.definition.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</section>
       <section id="arbetsgang"><p className="fact-page__eyebrow">{content.workflow.eyebrow}</p><h2>{content.workflow.title}</h2><ol className="fact-page__steps">{content.workflow.steps.map((step, index) => <li key={step.title}><span>{index + 1}</span><div><h3>{step.title}</h3><p>{step.copy}</p></div></li>)}</ol></section>

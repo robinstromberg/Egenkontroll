@@ -68,12 +68,12 @@ export function TemplatePage({ content }: TemplatePageProps) {
   }
 
   return <PublicSiteShell>
-    <main className="template-page__shell" id="main-content">
+    <main className="template-page__shell ds-page-shell ds-content" id="main-content">
       <nav className="template-page__breadcrumb" aria-label="Brödsmulor">{content.breadcrumb.map((item) => item.href ? <a href={item.href} key={item.label}>{item.label}</a> : <span aria-current="page" key={item.label}>{item.label}</span>)}</nav>
-      <header className="template-page__intro">
+      <header className="template-page__intro ds-content-intro">
         <p className="template-page__eyebrow">{content.eyebrow}</p>
-        <h1>{content.heading}</h1>
-        <p className="template-page__lead">{content.introduction}</p>
+        <h1 className="ds-content-heading">{content.heading}</h1>
+        <p className="template-page__lead ds-content-prose">{content.introduction}</p>
         <p className="template-page__adaptation"><strong>Anpassa innan användning:</strong> {content.adaptationNote}</p>
         <div className="template-page__intro-actions">
           <Button onClick={() => window.print()}>Skriv ut eller spara PDF</Button>
@@ -92,14 +92,14 @@ export function TemplatePage({ content }: TemplatePageProps) {
           <h2>{content.documentTitle}</h2>
           <p>{content.documentDescription}</p>
         </header>
-        <div className="template-page__document-fields">
+        <div className="template-page__document-fields ds-form-stack">
           {content.documentFields.map((field) => <EditableField field={field} idPrefix="document" key={field.id} onChange={(value) => setDocumentValues((current) => ({ ...current, [field.id]: value }))} value={documentValues[field.id]} />)}
         </div>
 
         <div className="template-page__entries">
           {entries.map((entry, index) => <fieldset className="template-page__entry" key={entry.id}>
             <legend>{content.entryTitle} {index + 1}</legend>
-            <div className="template-page__entry-fields">
+            <div className="template-page__entry-fields ds-form-stack">
               {content.entryFields.map((field) => <EditableField field={field} idPrefix={`entry-${entry.id}`} key={field.id} onChange={(value) => updateEntry(entry.id, field.id, value)} value={entry.values[field.id]} />)}
             </div>
             {entries.length > 1 && <Button aria-label={`Ta bort kontrollpunkt ${index + 1}`} className="template-page__remove" onClick={() => removeEntry(entry.id)} variant="ghost">Ta bort kontrollpunkt</Button>}
