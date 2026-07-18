@@ -5,7 +5,7 @@ import './KnowledgeBasePage.css';
 
 export function KnowledgeBasePage() {
   return <PublicSiteShell>
-    <main className="knowledge-base__shell ds-page-shell ds-content" id="main-content">
+    <main className="knowledge-base__shell ds-content" id="main-content"><div className="ds-page-shell">
       <nav className="knowledge-base__breadcrumb" aria-label="Brödsmulor"><a href="/">Startsida</a><span aria-hidden="true">/</span><span aria-current="page">Kunskapsbank</span></nav>
 
       <header className="knowledge-base__intro ds-content-intro">
@@ -16,9 +16,9 @@ export function KnowledgeBasePage() {
           <LinkButton href="/digital-egenkontroll-livsmedel" variant="primary">Börja med digital egenkontroll</LinkButton>
           <LinkButton href="/seo/kallor-och-faktagranskning.html" variant="secondary">Så granskar vi innehållet</LinkButton>
         </div>
-      </header>
+      </header></div>
 
-      {publicResourceGroups.map((group) => <section className="knowledge-base__group" key={group.title}>
+      {publicResourceGroups.map((group) => <section className="knowledge-base__group ds-full-bleed-section" key={group.title}><div className="ds-full-bleed-section__inner">
         <div className="knowledge-base__group-heading">
           <p className="knowledge-base__eyebrow">{group.eyebrow}</p>
           <h2>{group.title}</h2>
@@ -28,13 +28,13 @@ export function KnowledgeBasePage() {
           <small>{resource.resourceType}</small>
           <h3>{resource.title}</h3>
           <p>{resource.copy}</p>
-        </a>)}</div>
+        </a>)}</div></div>
       </section>)}
 
-      <section className="knowledge-base__app">
+      <section className="knowledge-base__app ds-full-bleed-section"><div className="ds-full-bleed-section__inner">
         <p className="knowledge-base__eyebrow">Från kunskap till vardag</p>
         <h2>Samla kontroller, avvikelser och historik på ett ställe.</h2>
-        <LinkButton href="/signup" variant="ghost">Gå med i förhandslanseringen</LinkButton>
+        <LinkButton href="/signup" variant="ghost">Gå med i förhandslanseringen</LinkButton></div>
       </section>
     </main>
   </PublicSiteShell>;

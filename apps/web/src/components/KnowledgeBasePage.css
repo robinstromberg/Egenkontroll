@@ -1,7 +1,7 @@
 .knowledge-base__shell { }
 .knowledge-base__breadcrumb { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); padding: var(--ds-space-5) 0; color: var(--ds-text-secondary); font-size: var(--ds-font-size-sm); }
 .knowledge-base__breadcrumb a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
-.knowledge-base__intro, .knowledge-base__group, .knowledge-base__app { padding: var(--ds-content-section-space) 0; border-bottom: 1px solid var(--ds-border); }
+.knowledge-base__intro, .knowledge-base__group, .knowledge-base__app { padding-block: var(--ds-content-section-space); border-bottom: 1px solid var(--ds-border); }
 .knowledge-base__eyebrow { margin: 0; color: var(--ds-action-primary); font-size: var(--ds-font-size-sm); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .knowledge-base__shell h1, .knowledge-base__shell h2, .knowledge-base__shell h3 { margin: 0; color: var(--ds-text); line-height: var(--ds-line-height-tight); text-wrap: balance; }
 .knowledge-base__shell h1 { max-width: 900px; font-size: clamp(2.5rem, 7vw, 4.8rem); letter-spacing: -.04em; }
@@ -19,7 +19,7 @@
 .knowledge-base__resources a:hover { border-color: var(--ds-border-strong); background: var(--ds-action-secondary-hover); }
 .knowledge-base__resources small { color: var(--ds-action-primary); font-weight: 800; text-transform: uppercase; }
 .knowledge-base__resources p { margin: 0; }
-.knowledge-base__app { margin: var(--ds-space-7) 0; padding-inline: clamp(var(--ds-space-4), 4vw, var(--ds-space-7)); color: var(--ds-text-on-inverse); background: var(--ds-surface-inverse); }
+.knowledge-base__app { margin-block: var(--ds-space-7); color: var(--ds-text-on-inverse); background: var(--ds-surface-inverse); }
 .knowledge-base__app h2, .knowledge-base__app p, .knowledge-base__app .knowledge-base__eyebrow { color: var(--ds-text-on-inverse); }
 .knowledge-base__app .ds-button--ghost { border-color: var(--ds-text-on-inverse); color: var(--ds-text-on-inverse); }
 .knowledge-base__app .ds-button--ghost:hover { color: var(--ds-action-on-primary); background: var(--ds-action-primary); }
