@@ -2,7 +2,9 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertWebRouteRegistry, webModernRoutes, webRouteRegistry, webStaticSeoRoutes } from './routes';
+import { assertWebRouteRegistry, webModernRoutes, webRedirects, webRouteRegistry, webStaticSeoRoutes } from './routes';
+import vercelConfig from '../../vercel';
+import { appRedirects, productionAppOrigin } from './appUrls';
 
 const webRoot = fileURLToPath(new URL('../..', import.meta.url));
 const appRoot = path.resolve(webRoot, '..', 'app');
@@ -24,10 +26,17 @@ function sourceFiles(directory: string): string[] {
 
 assertWebRouteRegistry();
 const errors: string[] = [];
+const expectedVercelRedirects = appRedirects.map(({ source, destination }) => ({ source, destination, permanent: true }));
+if (JSON.stringify(vercelConfig.redirects) !== JSON.stringify(expectedVercelRedirects)) {
+  errors.push(`Vercel-redirects avviker från det typade registret för ${productionAppOrigin}.`);
+}
 for (const file of sourceFiles(path.join(webRoot, 'src'))) {
   if (file.endsWith(`${path.sep}config${path.sep}check-routes.ts`)) continue;
   const source = readFileSync(file, 'utf8');
   const relativePath = path.relative(webRoot, file).replaceAll('\\', '/');
+  if (relativePath !== 'src/config/appUrls.ts' && source.includes(productionAppOrigin)) {
+    errors.push(`${relativePath} duplicerar produktionens app-origin.`);
+  }
   for (const [label, pattern] of forbidden) {
     if (pattern.test(source)) errors.push(`${relativePath} innehåller förbjuden webbgräns: ${label}`);
   }
@@ -60,4 +69,4 @@ for (const relativePath of byteIdenticalFiles) {
 
 if (errors.length > 0) throw new Error(`Webbgränsen är inte ren:\n- ${errors.join('\n- ')}`);
 
-console.log(`Astro-routekontrakt godkänt: ${webRouteRegistry.length} routes, ${webModernRoutes.length} moderna routes, ${webStaticSeoRoutes.length} statiska legacy-sidor och 55 ursprungliga SEO-rutter.`);
+console.log(`Astro-routekontrakt godkänt: ${webRouteRegistry.length} routes, ${webRedirects.length} redirects, ${webModernRoutes.length} moderna routes, ${webStaticSeoRoutes.length} statiska legacy-sidor och 55 ursprungliga SEO-rutter.`);

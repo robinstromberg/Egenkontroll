@@ -7,9 +7,12 @@
     "brand:sync": "node ../../scripts/sync-brand-assets.mjs",
     "dev": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "predev": "npm run brand:sync",
-    "build": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro build && tsx scripts/finalize-html-routes.ts && tsx scripts/verify-build.ts",
+    "build": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro build && tsx scripts/finalize-html-routes.ts && tsx scripts/verify-build.ts && npm run links:check",
     "prebuild": "npm run brand:sync && npm run routes:check",
     "lint": "eslint . --config ../../eslint.config.js",
+    "links:check": "tsx scripts/check-links.ts",
+    "links:test": "tsx --test scripts/link-contract.test.ts",
+    "deploy:smoke": "tsx scripts/deploy-smoke.ts",
     "preview": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "routes:check": "tsx src/config/check-routes.ts",
     "typecheck": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro check"
@@ -28,6 +31,7 @@
     "@types/react": "19.0.2",
     "@types/react-dom": "19.0.2",
     "cross-env": "7.0.3",
+    "parse5": "^7.3.0",
     "tsx": "4.20.6",
     "typescript": "5.7.2"
   }

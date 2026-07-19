@@ -23,6 +23,7 @@ import {
 import { controlPlanTemplatePage } from './templatePages';
 import { hazardAnalysisToolContent } from './toolPages';
 import { haccpTopicContent } from './haccpTopicContent';
+import { appRedirects } from './appUrls';
 
 const siteOrigin = 'https://minegenkontroll.se';
 const seoDirectory = new URL('../../public/seo/', import.meta.url);
@@ -171,7 +172,7 @@ const staticSeoRoutes: WebRoute[] = readdirSync(seoDirectory)
     } satisfies WebRoute;
   });
 
-export const appOwnedCompatibilityRoutes = ['/login', '/signup'] as const;
+export const webRedirects = appRedirects;
 export const webRouteRegistry = [...modernRoutes, ...staticSeoRoutes] as const satisfies readonly WebRoute[];
 export const webModernRoutes = modernRoutes as readonly WebRoute[];
 export const webStaticSeoRoutes = staticSeoRoutes as readonly WebRoute[];
@@ -199,10 +200,16 @@ export function validateWebRouteRegistry(): string[] {
   const errors: string[] = [];
   const paths = webRouteRegistry.map((route) => route.path);
   const canonicals = webRouteRegistry.flatMap((route) => route.canonicalPath ? [route.canonicalPath] : []);
-  const expectedPaths = baseline.publicRoutes.filter((path) => !appOwnedCompatibilityRoutes.includes(path as typeof appOwnedCompatibilityRoutes[number]));
+  const redirectSources = webRedirects.map((redirect) => redirect.source);
+  const expectedPaths = baseline.publicRoutes.filter((path) => !redirectSources.includes(path as typeof redirectSources[number]));
   const expectedSeoPaths = baseline.publicRoutes.filter((path) => /^\/seo\/[^/]+\.html$/.test(path));
 
   for (const path of duplicates(paths)) errors.push(`Duplicerad Astro-route: ${path}`);
+  for (const path of duplicates(redirectSources)) errors.push(`Duplicerad redirect: ${path}`);
+  for (const path of redirectSources) if (paths.includes(path)) errors.push(`Redirect får inte också vara Astro-route: ${path}`);
+  for (const redirect of webRedirects) {
+    if (redirect.statusCode !== 308) errors.push(`Redirect måste vara permanent 308: ${redirect.source}`);
+  }
   for (const path of duplicates(canonicals)) errors.push(`Duplicerad Astro-canonical: ${path}`);
   for (const route of webRouteRegistry) {
     if (!route.path.startsWith('/')) errors.push(`Route måste börja med /: ${route.path}`);
@@ -219,6 +226,7 @@ export function validateWebRouteRegistry(): string[] {
   }
 
   compareSets('publik webbroute', paths, expectedPaths, errors);
+  compareSets('publik route eller redirect', [...paths, ...redirectSources], baseline.publicRoutes, errors);
   compareSets('canonical path', canonicals, baseline.canonicalPaths, errors);
   compareSets('sitemap-path', webSitemapRoutes.map((route) => route.path), baseline.sitemapPaths, errors);
   compareSets('ursprunglig SEO-route', webOriginalSeoRoutes.map((route) => route.path), expectedSeoPaths, errors);

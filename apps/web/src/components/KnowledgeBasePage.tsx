@@ -1,5 +1,6 @@
 import { LinkButton } from '@min-egenkontroll/design-system';
 import { publicResourceGroups } from '../config/publicResources';
+import { appUrls } from '../config/appUrls';
 import { PublicSiteShell } from './PublicSiteShell';
 import './KnowledgeBasePage.css';
 
@@ -34,7 +35,7 @@ export function KnowledgeBasePage() {
       <section className="knowledge-base__app ds-full-bleed-section"><div className="ds-full-bleed-section__inner">
         <p className="knowledge-base__eyebrow">Från kunskap till vardag</p>
         <h2>Samla kontroller, avvikelser och historik på ett ställe.</h2>
-        <LinkButton href="/signup" variant="ghost">Gå med i förhandslanseringen</LinkButton></div>
+        <LinkButton href={appUrls.signup} variant="ghost">Gå med i förhandslanseringen</LinkButton></div>
       </section>
     </main>
   </PublicSiteShell>;
