@@ -1,13 +1,13 @@
 .haccp-page { min-height: 100vh; color: var(--ds-text); background: var(--ds-canvas); font-family: var(--ds-font-sans); }
 .haccp-page * { box-sizing: border-box; }
-.haccp-shell { width: min(1120px, calc(100% - 32px)); margin: auto; }
+.haccp-shell { }
 .haccp-breadcrumb { display: flex; gap: 8px; padding-top: 28px; color: var(--ds-text-secondary); font-size: .9rem; }
 .haccp-breadcrumb a { color: inherit; }
-.haccp-intro, .haccp-start, .haccp-chain, .haccp-knowledge, .haccp-practical, .haccp-flex, .haccp-faq, .haccp-source, .haccp-app, .haccp-related { padding: clamp(42px, 6vw, 76px) 0; border-bottom: 1px solid var(--ds-border); }
+.haccp-intro, .haccp-start, .haccp-chain, .haccp-knowledge, .haccp-practical, .haccp-flex, .haccp-faq, .haccp-source, .haccp-app, .haccp-related { padding-block: var(--ds-content-section-space); border-bottom: 1px solid var(--ds-border); }
 .haccp-kicker { margin: 0 0 10px; color: var(--ds-action-primary); font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .haccp-intro h1, .haccp-page h2 { margin: 0; letter-spacing: -.03em; line-height: 1.05; }
-.haccp-intro h1 { max-width: 760px; font-size: clamp(2.6rem, 6vw, 4.6rem); }
-.haccp-intro p { max-width: 720px; color: var(--ds-text-secondary); font-size: 1.1rem; line-height: 1.6; }
+.haccp-intro h1 { font-size: clamp(2.6rem, 6vw, 4.6rem); }
+.haccp-intro p { color: var(--ds-text-secondary); font-size: 1.1rem; line-height: 1.6; }
 .haccp-start > div, .haccp-knowledge > div { display: grid; gap: 12px; margin-top: 24px; }
 .haccp-start a, .haccp-knowledge a { display: grid; gap: 5px; padding: 16px 0; border-top: 1px solid var(--ds-border); color: inherit; text-decoration: none; }
 .haccp-start strong, .haccp-knowledge strong { font-size: 1.18rem; }

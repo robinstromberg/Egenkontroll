@@ -1,6 +1,27 @@
 .ds-button,
 .ds-text-field { font: inherit; }
 
+.ds-page-shell,
+.ds-full-bleed-section__inner {
+  width: min(calc(100% - (2 * var(--ds-page-gutter))), var(--ds-page-max-inline));
+  margin-inline: auto;
+}
+
+.ds-page-shell--prose { --ds-page-max-inline: var(--ds-prose-max-inline); }
+.ds-full-bleed-section { width: 100%; }
+.ds-full-bleed-section__inner { min-width: 0; }
+
+.ds-content { min-width: 0; }
+.ds-content :where(h1, h2, h3, p, li, dt, dd, a, button, label, legend, small, span) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ds-content-heading { max-width: var(--ds-heading-max-inline); text-wrap: balance; }
+.ds-content-intro { display: grid; max-width: var(--ds-intro-max-inline); gap: var(--ds-content-gap); }
+.ds-content-intro > :where(h1, h2, h3, p) { margin: 0; }
+.ds-content-prose { max-width: var(--ds-prose-max-inline); }
+.ds-form-stack { display: grid; gap: var(--ds-form-gap); }
+
 .ds-button {
   display: inline-flex;
   min-width: 44px;

@@ -99,12 +99,12 @@ export function HazardAnalysisToolPage({ content }: HazardAnalysisToolPageProps)
   const typeOptions = content.hazardTypes.map(({ value, label }) => ({ value, label }));
 
   return <PublicSiteShell>
-    <main className="hazard-tool__shell" id="main-content">
+    <main className="hazard-tool__shell ds-page-shell ds-content" id="main-content">
       <nav className="hazard-tool__breadcrumb" aria-label="Brödsmulor">{content.breadcrumb.map((item) => item.href ? <a href={item.href} key={item.label}>{item.label}</a> : <span aria-current="page" key={item.label}>{item.label}</span>)}</nav>
-      <header className="hazard-tool__intro">
+      <header className="hazard-tool__intro ds-content-intro">
         <p className="hazard-tool__eyebrow">{content.eyebrow}</p>
-        <h1>{content.heading}</h1>
-        <p className="hazard-tool__lead">{content.introduction}</p>
+        <h1 className="ds-content-heading">{content.heading}</h1>
+        <p className="hazard-tool__lead ds-content-prose">{content.introduction}</p>
         <p className="hazard-tool__responsibility"><strong>Viktigt om din bedömning:</strong> {content.responsibilityNotice}</p>
         <p className="hazard-tool__session-note">Uppgifterna sparas inte till ett konto. Skriv ut eller spara som PDF innan du lämnar sidan.</p>
       </header>
@@ -125,7 +125,7 @@ export function HazardAnalysisToolPage({ content }: HazardAnalysisToolPageProps)
           {processSteps.map((step, processIndex) => <fieldset className="hazard-tool__process" key={step.id}>
             <legend>{content.processStepTitle} {processIndex + 1}</legend>
             <p className="hazard-tool__section-help">{content.processStepHelp}</p>
-            <div className="hazard-tool__process-fields">
+            <div className="hazard-tool__process-fields ds-form-stack">
               <TextField id={`process-${step.id}-name`} label="Namn på processteget" onChange={(value) => updateProcessStep(step.id, 'name', value)} placeholder="Exempel: ett steg i verksamhetens eget flöde" value={step.name} />
               <TextField id={`process-${step.id}-description`} label="Vad händer i processteget?" multiline onChange={(value) => updateProcessStep(step.id, 'description', value)} placeholder="Beskriv råvaror, hantering och andra relevanta förutsättningar" value={step.description} />
             </div>
@@ -134,7 +134,7 @@ export function HazardAnalysisToolPage({ content }: HazardAnalysisToolPageProps)
               {step.hazards.map((hazard, hazardIndex) => <fieldset className="hazard-tool__hazard" key={hazard.id}>
                 <legend>{content.hazardTitle} {hazardIndex + 1}</legend>
                 <p className="hazard-tool__section-help">{content.hazardHelp}</p>
-                <div className="hazard-tool__hazard-fields">
+                <div className="hazard-tool__hazard-fields ds-form-stack">
                   <TextField id={`hazard-${hazard.id}-name`} label="Beskriv den möjliga faran" onChange={(value) => updateHazard(step.id, hazard.id, 'name', value)} placeholder="Beskriv faran med den detaljnivå som behövs" value={hazard.name} />
                   <SelectField help="Kategorierna kommer från myndighetsvägledningen. Du väljer själv vad som passar faran." id={`hazard-${hazard.id}-type`} label="Typ av fara" onChange={(value) => updateHazard(step.id, hazard.id, 'type', value as HazardType)} options={typeOptions} value={hazard.type} />
                   <TextField help="Beskriv med egna ord. Verktyget sätter inget poängvärde." id={`hazard-${hazard.id}-likelihood`} label="Hur sannolik bedömer du att faran är?" multiline onChange={(value) => updateHazard(step.id, hazard.id, 'likelihood', value)} placeholder="Beskriv vad som påverkar sannolikheten i detta steg" value={hazard.likelihood} />

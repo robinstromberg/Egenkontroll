@@ -6,7 +6,7 @@
 }
 .home-page *, .home-page *::before, .home-page *::after { box-sizing: border-box; }
 .home-page a:not(.ds-button) { color: inherit; }
-.home-shell { width: min(1160px, calc(100% - 32px)); margin: 0 auto; }
+.home-shell { width: min(calc(100% - (2 * var(--ds-page-gutter))), var(--ds-page-max-inline)); margin: 0 auto; }
 .home-skip { position: fixed; z-index: 20; top: 8px; left: 8px; padding: 10px; color: var(--ds-text-on-inverse); background: var(--ds-surface-inverse); transform: translateY(-150%); }
 .home-skip:focus { transform: translateY(0); }
 .home-header { border-bottom: 1px solid var(--ds-border); background: var(--ds-canvas); }
