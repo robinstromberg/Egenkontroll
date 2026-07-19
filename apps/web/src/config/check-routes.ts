@@ -60,4 +60,4 @@ for (const relativePath of byteIdenticalFiles) {
 
 if (errors.length > 0) throw new Error(`Webbgränsen är inte ren:\n- ${errors.join('\n- ')}`);
 
-console.log(`Astro-routekontrakt godkänt: ${webRouteRegistry.length} routes, ${webModernRoutes.length} moderna routes, ${webStaticSeoRoutes.length} statiska SEO-sidor och 75 canonicals.`);
+console.log(`Astro-routekontrakt godkänt: ${webRouteRegistry.length} routes, ${webModernRoutes.length} moderna routes, ${webStaticSeoRoutes.length} statiska legacy-sidor och 55 ursprungliga SEO-rutter.`);

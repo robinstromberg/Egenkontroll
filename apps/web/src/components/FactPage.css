@@ -25,6 +25,18 @@
 .fact-page__toc ol { display: grid; gap: 8px; margin: 16px 0 0; padding-left: 1.3rem; }
 .fact-page__toc a, .fact-page__source a { color: inherit; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; }
 .fact-page__article > section > p:first-of-type { margin-top: 20px; }
+.fact-page__content-block { position: relative; }
+.fact-page__content-block--fact-box,
+.fact-page__content-block--classified { margin-block: var(--ds-content-section-space); padding: clamp(1.25rem, 5vw, 2.5rem); border: 1px solid var(--ds-border); border-left-width: 5px; }
+.fact-page__content-block--fact-box { border-left-color: var(--ds-action-primary); background: var(--ds-surface-subtle); }
+.fact-page__content-block--requirement { border-left-color: var(--ds-action-primary); background: var(--ds-surface); }
+.fact-page__content-block--guidance { border-left-color: var(--ds-status-neutral-border); background: var(--ds-status-neutral-bg); }
+.fact-page__content-block--example { border-left-color: var(--ds-status-warning-border); background: var(--ds-status-warning-bg); }
+.fact-page__content-block > p:last-child,
+.fact-page__content-block > ul:last-child { margin-bottom: 0; }
+.fact-page__content-block ul { display: grid; gap: 10px; padding-left: 1.25rem; }
+.fact-page__content-block > .fact-page__classification { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: var(--ds-text); font-size: var(--ds-font-size-sm); font-weight: 800; }
+.fact-page__classification span { display: inline-grid; width: 30px; height: 30px; place-items: center; border: 1px solid currentColor; border-radius: 50%; color: var(--ds-text); background: var(--ds-surface); }
 .fact-page__steps { display: grid; gap: 14px; margin: 28px 0 0; padding: 0; list-style: none; }
 .fact-page__steps li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start; padding: 18px; border-left: 4px solid var(--ds-action-primary); background: var(--ds-surface-subtle); }
 .fact-page__steps span { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; color: var(--ds-action-on-primary); background: var(--ds-action-primary); font-weight: 800; }

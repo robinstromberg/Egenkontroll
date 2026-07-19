@@ -21,6 +21,34 @@ const homepageStructuredData = route.path === '/' ? {
     { '@type': 'SoftwareApplication', '@id': `${siteOrigin}/#software`, name: 'Min Egenkontroll', applicationCategory: 'BusinessApplication', operatingSystem: 'Web', url: `${siteOrigin}/`, description: 'Svensk webbapp för digital egenkontroll i livsmedelsverksamheter. Appen hjälper verksamheter dokumentera kontroller, avvikelser, historik och delning från mobilen.', inLanguage: 'sv-SE', isAccessibleForFree: true, offers: { '@type': 'Offer', category: 'Förhandslansering', availability: 'https://schema.org/PreOrder', url: `${siteOrigin}/` }, publisher: { '@id': `${siteOrigin}/#organization` } },
   ],
 } : null;
+const articleStructuredData = route.structuredData?.kind === 'article' ? {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      '@id': `${canonicalUrl}#article`,
+      headline: route.title,
+      description: route.description,
+      url: canonicalUrl,
+      mainEntityOfPage: canonicalUrl,
+      inLanguage: 'sv-SE',
+      citation: route.structuredData.citation,
+      author: { '@id': `${siteOrigin}/#organization` },
+      publisher: { '@id': `${siteOrigin}/#organization` },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${canonicalUrl}#breadcrumb`,
+      itemListElement: route.structuredData.breadcrumb.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.label,
+        item: item.href ? `${siteOrigin}${item.href}` : canonicalUrl,
+      })),
+    },
+    { '@type': 'Organization', '@id': `${siteOrigin}/#organization`, name: 'Min Egenkontroll', url: `${siteOrigin}/`, logo: `${siteOrigin}${brandAssets.logo}` },
+  ],
+} : null;
 ---
 <!doctype html>
 <html lang="sv">
@@ -37,7 +65,7 @@ const homepageStructuredData = route.path === '/' ? {
     <meta property="og:image:height" content="909" />
     <meta property="og:image:alt" content="Min Egenkontroll - digital egenkontroll för livsmedelsverksamheter" />
     <meta property="og:url" content={socialUrl} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={route.structuredData?.kind === 'article' ? 'article' : 'website'} />
     <meta property="og:locale" content="sv_SE" />
     <meta property="og:site_name" content="Min Egenkontroll" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -48,6 +76,7 @@ const homepageStructuredData = route.path === '/' ? {
     <link rel="icon" type="image/png" href={brandAssets.icon} />
     {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
     {homepageStructuredData ? <script is:inline type="application/ld+json" set:html={JSON.stringify(homepageStructuredData)} /> : null}
+    {articleStructuredData ? <script is:inline type="application/ld+json" set:html={JSON.stringify(articleStructuredData)} /> : null}
     <title>{route.title}</title>
   </head>
   <body>

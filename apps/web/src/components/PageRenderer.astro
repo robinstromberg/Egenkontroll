@@ -19,6 +19,7 @@ import {
   kritiskaGransvardenFactPage,
   verifieringHaccpFactPage,
 } from '../config/factPages';
+import { migratedKnowledgeArticleByPath } from '../config/migratedKnowledgeArticles';
 import { controlPlanTemplatePage } from '../config/templatePages';
 import { hazardAnalysisToolContent } from '../config/toolPages';
 import {
@@ -44,7 +45,9 @@ const businessPages = {
   '/egenkontroll-kiosk-foodtruck': kioskFoodtruckBusinessPage,
   '/egenkontroll-catering': cateringBusinessPage,
 } as const;
-const factContent = route.page === 'fact-page' ? factPages[route.path as keyof typeof factPages] : null;
+const factContent = route.page === 'fact-page'
+  ? factPages[route.path as keyof typeof factPages] ?? migratedKnowledgeArticleByPath.get(route.path)
+  : null;
 const businessContent = route.page === 'business-page' ? businessPages[route.path as keyof typeof businessPages] : null;
 const seoPage = route.page === 'seo-landing' ? getSeoPageSlugFromPath(route.path) : null;
 ---
