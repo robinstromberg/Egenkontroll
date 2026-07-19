@@ -1,5 +1,6 @@
 import './PublicLandingPage.css';
 import { brandAssets } from '@min-egenkontroll/brand';
+import { appUrls } from '../config/appUrls';
 
 export function PrivacyPolicyPage() {
   return (
@@ -10,7 +11,7 @@ export function PrivacyPolicyPage() {
         </a>
         <div className="public-nav-actions">
           <a href="/">Till startsidan</a>
-          <a href="/login">Logga in</a>
+          <a href={appUrls.login}>Logga in</a>
         </div>
       </nav>
 

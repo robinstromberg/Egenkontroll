@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { brandAssets } from '@min-egenkontroll/brand';
+import { appUrls } from '../config/appUrls';
 
 type Theme = 'light' | 'dark';
 
@@ -91,8 +92,8 @@ export function PublicHeader() {
             <span aria-hidden="true">{theme === 'light' ? '◐' : '◑'}</span>
             <span className="home-theme-toggle__text">{theme === 'light' ? 'Mörkt' : 'Ljust'}</span>
           </button>
-          <a className="home-login" href="/login">Logga in</a>
-          <a className="ds-button ds-button--primary" href="/signup">Kom igång</a>
+          <a className="home-login" href={appUrls.login}>Logga in</a>
+          <a className="ds-button ds-button--primary" href={appUrls.signup}>Kom igång</a>
           <button ref={menuButton} className="home-menu-button" type="button" aria-controls="home-menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)}>Meny</button>
         </div>
       </div>
@@ -103,8 +104,8 @@ export function PublicHeader() {
         <nav>
           {links.map(([href, label]) => <a href={href} onClick={closeMenu} key={href}>{label}</a>)}
           <button className="home-theme-toggle" type="button" onClick={toggleTheme} aria-label={themeLabel}>{themeLabel}</button>
-          <a href="/login" onClick={closeMenu}>Logga in</a>
-          <a className="ds-button ds-button--primary" href="/signup" onClick={closeMenu}>Kom igång</a>
+          <a href={appUrls.login} onClick={closeMenu}>Logga in</a>
+          <a className="ds-button ds-button--primary" href={appUrls.signup} onClick={closeMenu}>Kom igång</a>
         </nav>
       </div>
     </div> : null}

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brandAssets } from '@min-egenkontroll/brand';
 import { migratedKnowledgeArticles } from '../src/config/migratedKnowledgeArticles';
-import { siteOrigin, webMigratedKnowledgeArticleRoutes, webModernRoutes, webOriginalSeoRoutes, webSitemapRoutes, webStaticSeoRoutes } from '../src/config/routes';
+import { siteOrigin, webMigratedKnowledgeArticleRoutes, webModernRoutes, webOriginalSeoRoutes, webRedirects, webSitemapRoutes, webStaticSeoRoutes } from '../src/config/routes';
 
 const webRoot = fileURLToPath(new URL('..', import.meta.url));
 const distRoot = path.join(webRoot, 'dist');
@@ -117,8 +117,9 @@ for (const asset of [...Object.values(brandAssets), '/robots.txt', '/seo-guides.
   if (!existsSync(output)) errors.push(`Publik webbasset saknas: ${asset}`);
 }
 if (!existsSync(path.join(distRoot, '404.html'))) errors.push('Byggd 404.html saknas.');
-if (existsSync(path.join(distRoot, 'login', 'index.html'))) errors.push('/login får inte byggas i web-workspacen.');
-if (existsSync(path.join(distRoot, 'signup', 'index.html'))) errors.push('/signup får inte byggas i web-workspacen.');
+for (const redirect of webRedirects) {
+  if (existsSync(builtFile(redirect.source))) errors.push(`${redirect.source} är en redirect och får inte byggas i web-workspacen.`);
+}
 
 if (errors.length > 0) throw new Error(`Astro-output bryter byggkontraktet:\n- ${errors.join('\n- ')}`);
 console.log(`Astro-output verifierad: ${webModernRoutes.length} moderna routes, ${webStaticSeoRoutes.length} byte-identiska legacy-sidor, 55 ursprungliga SEO-rutter, ${webSitemapRoutes.length} sitemap-URL:er och 404.`);

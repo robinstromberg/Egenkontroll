@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { brandAssets } from '@min-egenkontroll/brand';
+import { appUrls } from '../config/appUrls';
 import './PublicLandingPage.css';
 
 export type SeoPageSlug =
@@ -433,7 +434,7 @@ export function SeoLandingPage({ page }: SeoLandingPageProps) {
         </a>
         <div className="public-nav-actions">
           <a href="/#how">Så fungerar det</a>
-          <a href="/signup">Gå med</a>
+          <a href={appUrls.signup}>Gå med</a>
         </div>
       </nav>
 
@@ -443,7 +444,7 @@ export function SeoLandingPage({ page }: SeoLandingPageProps) {
           <h1>{content.heading}</h1>
           <p className="public-copy">{content.intro}</p>
           <div className="public-hero-actions">
-            <a className="public-primary" href="/signup">Gå med i förhandslanseringen</a>
+            <a className="public-primary" href={appUrls.signup}>Gå med i förhandslanseringen</a>
             <a className="public-secondary" href="/">Se Min Egenkontroll</a>
           </div>
         </div>
@@ -517,7 +518,7 @@ export function SeoLandingPage({ page }: SeoLandingPageProps) {
       <section className="public-cta">
         <p className="public-eyebrow">Förhandslansering</p>
         <h2>Prova Min Egenkontroll kostnadsfritt under utvecklingsperioden.</h2>
-        <a className="public-primary" href="/signup">Gå med i förhandslanseringen</a>
+        <a className="public-primary" href={appUrls.signup}>Gå med i förhandslanseringen</a>
       </section>
 
       <footer className="public-footer">
