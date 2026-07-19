@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertWebRouteRegistry, webModernRoutes, webRedirects, webRouteRegistry, webStaticSeoRoutes } from './routes';
-import vercelConfig from '../../vercel';
+import { config as vercelConfig } from '../../vercel';
 import { appRedirects, productionAppOrigin } from './appUrls';
 
 const webRoot = fileURLToPath(new URL('../..', import.meta.url));
