@@ -1,0 +1,14 @@
+---
+import type { GetStaticPaths } from 'astro';
+import PageRenderer from '../../components/PageRenderer.astro';
+import PublicLayout from '../../layouts/PublicLayout.astro';
+import { webMigratedKnowledgeArticleRoutes, type WebRoute } from '../../config/routes';
+
+export const getStaticPaths = (() => webMigratedKnowledgeArticleRoutes.map((route) => ({
+  params: { article: route.path.slice('/seo/'.length) },
+  props: { route },
+}))) satisfies GetStaticPaths;
+
+const { route } = Astro.props as { route: WebRoute };
+---
+<PublicLayout route={route}><PageRenderer route={route} /></PublicLayout>

@@ -1,11 +1,11 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { webModernRoutes } from '../src/config/routes';
+import { webMigratedKnowledgeArticleRoutes } from '../src/config/routes';
 
 const webRoot = fileURLToPath(new URL('..', import.meta.url));
 const distRoot = path.join(webRoot, 'dist');
-const htmlRoutes = webModernRoutes.filter((route) => route.path.endsWith('.html'));
+const htmlRoutes = webMigratedKnowledgeArticleRoutes;
 
 for (const route of htmlRoutes) {
   const target = path.resolve(distRoot, ...route.path.slice(1).split('/'));

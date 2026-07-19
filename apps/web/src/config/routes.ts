@@ -10,7 +10,7 @@ import {
   type FactPageContent,
 } from './factPages';
 import {
-  personalHygieneArticle,
+  migratedKnowledgeArticles,
   type MigratedKnowledgeArticleContent,
 } from './migratedKnowledgeArticles';
 import {
@@ -113,6 +113,10 @@ function businessPageRoute(content: BusinessPageContent, source: string): WebRou
   });
 }
 
+export const webMigratedKnowledgeArticleRoutes = migratedKnowledgeArticles.map((article) =>
+  factPageRoute(article, 'src/config/migratedKnowledgeArticles.ts'),
+);
+
 const modernRoutes: WebRoute[] = [
   modernRoute({ path: '/', canonicalPath: '/', canonicalPolicy: 'required', ...homepageMetadata, robots: 'index, follow', page: 'home', shell: 'modern', source: 'src/components/Homepage.tsx' }),
   modernRoute({ path: '/kunskapsbank', canonicalPath: '/kunskapsbank', canonicalPolicy: 'required', title: 'Kunskapsbank om egenkontroll och livsmedelssäkerhet | Min Egenkontroll', description: 'Guider om egenkontroll, hygien, lokaler, märkning, livsmedelsinformation, temperatur, datummärkning, HACCP och spårbarhet för livsmedelsföretag.', robots: 'index, follow', page: 'knowledge-base', shell: 'modern', source: 'src/components/KnowledgeBasePage.tsx' }),
@@ -124,7 +128,7 @@ const modernRoutes: WebRoute[] = [
   factPageRoute(avvikelserFactPage, 'src/config/factPages.ts#avvikelserFactPage'),
   factPageRoute(verifieringHaccpFactPage, 'src/config/factPages.ts#verifieringHaccpFactPage'),
   factPageRoute(dokumentationEgenkontrollFactPage, 'src/config/factPages.ts#dokumentationEgenkontrollFactPage'),
-  factPageRoute(personalHygieneArticle, 'src/config/migratedKnowledgeArticles.ts#personalHygieneArticle'),
+  ...webMigratedKnowledgeArticleRoutes,
   modernRoute({ path: controlPlanTemplatePage.canonicalPath, canonicalPath: controlPlanTemplatePage.canonicalPath, canonicalPolicy: 'required', title: controlPlanTemplatePage.title, description: controlPlanTemplatePage.description, robots: 'index, follow', page: 'template-page', shell: 'modern', shellClass: 'template-page', source: 'src/config/templatePages.ts#controlPlanTemplatePage' }),
   modernRoute({ path: hazardAnalysisToolContent.canonicalPath, canonicalPath: hazardAnalysisToolContent.canonicalPath, canonicalPolicy: 'required', title: hazardAnalysisToolContent.title, description: hazardAnalysisToolContent.description, robots: 'index, follow', page: 'hazard-tool', shell: 'modern', shellClass: 'hazard-tool', source: 'src/config/toolPages.ts#hazardAnalysisToolContent' }),
   businessPageRoute(restaurantBusinessPage, 'src/config/businessPages.ts#restaurantBusinessPage'),
@@ -206,6 +210,12 @@ export function validateWebRouteRegistry(): string[] {
     if (!route.description.trim()) errors.push(`Route saknar description: ${route.path}`);
     if (route.canonicalPolicy === 'required' && !route.canonicalPath) errors.push(`Route saknar canonical: ${route.path}`);
     if (route.canonicalPath && route.canonicalPath !== route.path) errors.push(`Canonical avviker från route: ${route.path} -> ${route.canonicalPath}`);
+  }
+
+  for (const article of migratedKnowledgeArticles) {
+    const matches = webModernRoutes.filter((route) => route.path === article.canonicalPath);
+    if (matches.length !== 1) errors.push(`Migrerad artikel ska ha exakt en modern route: ${article.canonicalPath} (${matches.length})`);
+    else if (matches[0].page !== 'fact-page') errors.push(`Migrerad artikel använder inte fact-page: ${article.canonicalPath}`);
   }
 
   compareSets('publik webbroute', paths, expectedPaths, errors);

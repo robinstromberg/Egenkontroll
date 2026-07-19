@@ -41,7 +41,7 @@ export type MigratedKnowledgeArticleContent = {
   appBridge: { eyebrow: string; title: string; copy: string; href: string; linkLabel: string };
 };
 
-export const personalHygieneArticle: MigratedKnowledgeArticleContent = {
+const personalHygieneArticle: MigratedKnowledgeArticleContent = {
   title: 'Personlig hygien i livsmedelsverksamhet | Min Egenkontroll',
   description: 'Vad personlig hygien innebär i en livsmedelsverksamhet: renlighet, skyddskläder, rutiner vid sjukdom och praktiska kontrollfrågor.',
   canonicalPath: '/seo/personlig-hygien-livsmedel.html',
@@ -128,3 +128,21 @@ export const personalHygieneArticle: MigratedKnowledgeArticleContent = {
     linkLabel: 'Se hur appen fungerar',
   },
 };
+
+export const migratedKnowledgeArticles = [
+  personalHygieneArticle,
+] as const satisfies readonly MigratedKnowledgeArticleContent[];
+
+export const migratedKnowledgeArticleByPath = new Map<string, MigratedKnowledgeArticleContent>(
+  migratedKnowledgeArticles.map((article) => [article.canonicalPath, article]),
+);
+
+if (migratedKnowledgeArticleByPath.size !== migratedKnowledgeArticles.length) {
+  throw new Error('Migrerade kunskapsartiklar innehåller duplicerade canonical-paths.');
+}
+
+for (const article of migratedKnowledgeArticles) {
+  if (!/^\/seo\/[^/]+\.html$/.test(article.canonicalPath)) {
+    throw new Error(`Migrerad kunskapsartikel måste använda /seo/<fil>.html: ${article.canonicalPath}`);
+  }
+}

@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brandAssets } from '@min-egenkontroll/brand';
-import { siteOrigin, webModernRoutes, webOriginalSeoRoutes, webSitemapRoutes, webStaticSeoRoutes } from '../src/config/routes';
+import { migratedKnowledgeArticles } from '../src/config/migratedKnowledgeArticles';
+import { siteOrigin, webMigratedKnowledgeArticleRoutes, webModernRoutes, webOriginalSeoRoutes, webSitemapRoutes, webStaticSeoRoutes } from '../src/config/routes';
 
 const webRoot = fileURLToPath(new URL('..', import.meta.url));
 const distRoot = path.join(webRoot, 'dist');
@@ -79,6 +80,27 @@ for (const route of webStaticSeoRoutes) {
 const originalSeoOutputs = webOriginalSeoRoutes.map((route) => builtFile(route.path));
 if (new Set(originalSeoOutputs).size !== 55) errors.push('De 55 ursprungliga SEO-rutterna byggs inte till exakt 55 unika filer.');
 for (const output of originalSeoOutputs) if (!existsSync(output)) errors.push(`Ursprunglig SEO-output saknas: ${path.relative(webRoot, output)}`);
+
+const migratedArticleOutputs = migratedKnowledgeArticles.map((article) => builtFile(article.canonicalPath));
+if (new Set(migratedArticleOutputs).size !== migratedKnowledgeArticles.length) {
+  errors.push('Migrerade kunskapsartiklar byggs inte till unika output-paths.');
+}
+for (const article of migratedKnowledgeArticles) {
+  const routeMatches = webMigratedKnowledgeArticleRoutes.filter((route) => route.path === article.canonicalPath);
+  if (routeMatches.length !== 1) {
+    errors.push(`Migrerad artikel saknar exakt en modern route: ${article.canonicalPath} (${routeMatches.length})`);
+    continue;
+  }
+  const [route] = routeMatches;
+  if (route.page !== 'fact-page' || route.canonicalPath !== article.canonicalPath || route.title !== article.title || route.description !== article.description || route.structuredData?.citation !== article.source.url) {
+    errors.push(`Migrerad artikel och modern route avviker: ${article.canonicalPath}`);
+  }
+  const output = builtFile(article.canonicalPath);
+  const directoryOutput = path.join(output, 'index.html');
+  const outputVariants = [output, directoryOutput].filter((candidate) => existsSync(candidate));
+  if (outputVariants.length !== 1) errors.push(`Migrerad artikel ska ha exakt en byggd output: ${article.canonicalPath} (${outputVariants.length})`);
+  else if (outputVariants[0] !== output || !statSync(output).isFile()) errors.push(`Migrerad artikel byggdes inte som faktisk .html-fil: ${article.canonicalPath}`);
+}
 
 const sitemapFile = path.join(distRoot, 'sitemap.xml');
 if (!existsSync(sitemapFile)) {
