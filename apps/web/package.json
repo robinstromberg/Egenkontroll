@@ -7,7 +7,7 @@
     "brand:sync": "node ../../scripts/sync-brand-assets.mjs",
     "dev": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "predev": "npm run brand:sync",
-    "build": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro build && tsx scripts/verify-build.ts",
+    "build": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro build && tsx scripts/finalize-html-routes.ts && tsx scripts/verify-build.ts",
     "prebuild": "npm run brand:sync && npm run routes:check",
     "lint": "eslint . --config ../../eslint.config.js",
     "preview": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro preview",

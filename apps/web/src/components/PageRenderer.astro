@@ -19,6 +19,7 @@ import {
   kritiskaGransvardenFactPage,
   verifieringHaccpFactPage,
 } from '../config/factPages';
+import { personalHygieneArticle } from '../config/migratedKnowledgeArticles';
 import { controlPlanTemplatePage } from '../config/templatePages';
 import { hazardAnalysisToolContent } from '../config/toolPages';
 import {
@@ -37,6 +38,7 @@ const factPages = {
   '/avvikelser-korrigerande-atgarder-livsmedel': avvikelserFactPage,
   '/verifiering-haccp-livsmedel': verifieringHaccpFactPage,
   '/dokumentation-egenkontroll-livsmedel': dokumentationEgenkontrollFactPage,
+  '/seo/personlig-hygien-livsmedel.html': personalHygieneArticle,
 } as const;
 const businessPages = {
   '/egenkontroll-restaurang': restaurantBusinessPage,

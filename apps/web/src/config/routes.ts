@@ -10,6 +10,10 @@ import {
   type FactPageContent,
 } from './factPages';
 import {
+  personalHygieneArticle,
+  type MigratedKnowledgeArticleContent,
+} from './migratedKnowledgeArticles';
+import {
   cafeBusinessPage,
   cateringBusinessPage,
   kioskFoodtruckBusinessPage,
@@ -56,6 +60,11 @@ export type WebRoute = {
   shellClass?: string;
   source: string;
   inSitemap: boolean;
+  structuredData?: {
+    kind: 'article';
+    citation: string;
+    breadcrumb: readonly { label: string; href?: string }[];
+  };
 };
 
 const baseline = JSON.parse(readFileSync(baselineUrl, 'utf8')) as Baseline;
@@ -70,11 +79,9 @@ function modernRoute(route: Omit<WebRoute, 'inSitemap'>): WebRoute {
   return { ...route, inSitemap: sitemapPaths.has(route.path) };
 }
 
-function contentRoute(
-  page: 'fact-page' | 'business-page',
-  content: FactPageContent | BusinessPageContent,
+function factPageRoute(
+  content: FactPageContent | MigratedKnowledgeArticleContent,
   source: string,
-  shellClass: string,
 ): WebRoute {
   return modernRoute({
     path: content.canonicalPath,
@@ -83,9 +90,25 @@ function contentRoute(
     title: content.title,
     description: content.description,
     robots: 'index, follow',
-    page,
+    page: 'fact-page',
     shell: 'modern',
-    shellClass,
+    shellClass: 'fact-page',
+    source,
+    structuredData: { kind: 'article', citation: content.source.url, breadcrumb: content.breadcrumb },
+  });
+}
+
+function businessPageRoute(content: BusinessPageContent, source: string): WebRoute {
+  return modernRoute({
+    path: content.canonicalPath,
+    canonicalPath: content.canonicalPath,
+    canonicalPolicy: 'required',
+    title: content.title,
+    description: content.description,
+    robots: 'index, follow',
+    page: 'business-page',
+    shell: 'modern',
+    shellClass: 'business-page',
     source,
   });
 }
@@ -95,18 +118,19 @@ const modernRoutes: WebRoute[] = [
   modernRoute({ path: '/kunskapsbank', canonicalPath: '/kunskapsbank', canonicalPolicy: 'required', title: 'Kunskapsbank om egenkontroll och livsmedelssäkerhet | Min Egenkontroll', description: 'Guider om egenkontroll, hygien, lokaler, märkning, livsmedelsinformation, temperatur, datummärkning, HACCP och spårbarhet för livsmedelsföretag.', robots: 'index, follow', page: 'knowledge-base', shell: 'modern', source: 'src/components/KnowledgeBasePage.tsx' }),
   modernRoute({ path: '/sok', canonicalPath: '/sok', canonicalPolicy: 'required', title: 'Sök i Min Egenkontroll', description: 'Sök bland vägledning och resurser från Min Egenkontroll.', robots: 'noindex, follow', page: 'search', shell: 'legacy', source: 'src/components/SearchResultsPage.tsx' }),
   modernRoute({ path: '/haccp-sma-livsmedelsforetag', canonicalPath: '/haccp-sma-livsmedelsforetag', canonicalPolicy: 'required', title: haccpTopicContent.title, description: haccpTopicContent.description, robots: 'index, follow', page: 'haccp-hub', shell: 'modern', shellClass: 'haccp-page', source: 'src/config/haccpTopicContent.ts' }),
-  contentRoute('fact-page', faroanalysFactPage, 'src/config/factPages.ts#faroanalysFactPage', 'fact-page'),
-  contentRoute('fact-page', kontrollplanFactPage, 'src/config/factPages.ts#kontrollplanFactPage', 'fact-page'),
-  contentRoute('fact-page', kritiskaGransvardenFactPage, 'src/config/factPages.ts#kritiskaGransvardenFactPage', 'fact-page'),
-  contentRoute('fact-page', avvikelserFactPage, 'src/config/factPages.ts#avvikelserFactPage', 'fact-page'),
-  contentRoute('fact-page', verifieringHaccpFactPage, 'src/config/factPages.ts#verifieringHaccpFactPage', 'fact-page'),
-  contentRoute('fact-page', dokumentationEgenkontrollFactPage, 'src/config/factPages.ts#dokumentationEgenkontrollFactPage', 'fact-page'),
+  factPageRoute(faroanalysFactPage, 'src/config/factPages.ts#faroanalysFactPage'),
+  factPageRoute(kontrollplanFactPage, 'src/config/factPages.ts#kontrollplanFactPage'),
+  factPageRoute(kritiskaGransvardenFactPage, 'src/config/factPages.ts#kritiskaGransvardenFactPage'),
+  factPageRoute(avvikelserFactPage, 'src/config/factPages.ts#avvikelserFactPage'),
+  factPageRoute(verifieringHaccpFactPage, 'src/config/factPages.ts#verifieringHaccpFactPage'),
+  factPageRoute(dokumentationEgenkontrollFactPage, 'src/config/factPages.ts#dokumentationEgenkontrollFactPage'),
+  factPageRoute(personalHygieneArticle, 'src/config/migratedKnowledgeArticles.ts#personalHygieneArticle'),
   modernRoute({ path: controlPlanTemplatePage.canonicalPath, canonicalPath: controlPlanTemplatePage.canonicalPath, canonicalPolicy: 'required', title: controlPlanTemplatePage.title, description: controlPlanTemplatePage.description, robots: 'index, follow', page: 'template-page', shell: 'modern', shellClass: 'template-page', source: 'src/config/templatePages.ts#controlPlanTemplatePage' }),
   modernRoute({ path: hazardAnalysisToolContent.canonicalPath, canonicalPath: hazardAnalysisToolContent.canonicalPath, canonicalPolicy: 'required', title: hazardAnalysisToolContent.title, description: hazardAnalysisToolContent.description, robots: 'index, follow', page: 'hazard-tool', shell: 'modern', shellClass: 'hazard-tool', source: 'src/config/toolPages.ts#hazardAnalysisToolContent' }),
-  contentRoute('business-page', restaurantBusinessPage, 'src/config/businessPages.ts#restaurantBusinessPage', 'business-page'),
-  contentRoute('business-page', cafeBusinessPage, 'src/config/businessPages.ts#cafeBusinessPage', 'business-page'),
-  contentRoute('business-page', kioskFoodtruckBusinessPage, 'src/config/businessPages.ts#kioskFoodtruckBusinessPage', 'business-page'),
-  contentRoute('business-page', cateringBusinessPage, 'src/config/businessPages.ts#cateringBusinessPage', 'business-page'),
+  businessPageRoute(restaurantBusinessPage, 'src/config/businessPages.ts#restaurantBusinessPage'),
+  businessPageRoute(cafeBusinessPage, 'src/config/businessPages.ts#cafeBusinessPage'),
+  businessPageRoute(kioskFoodtruckBusinessPage, 'src/config/businessPages.ts#kioskFoodtruckBusinessPage'),
+  businessPageRoute(cateringBusinessPage, 'src/config/businessPages.ts#cateringBusinessPage'),
   modernRoute({ path: '/digital-egenkontroll-livsmedel', canonicalPath: '/digital-egenkontroll-livsmedel', canonicalPolicy: 'required', title: 'Digital egenkontroll för livsmedelsverksamheter | Min Egenkontroll', description: 'Samla temperaturkontroller, städning, datummärkning, varumottagning, spårbarhet och avvikelser digitalt i mobilen.', robots: 'index, follow', page: 'seo-landing', shell: 'legacy', source: 'src/components/SeoLandingPage.tsx#digital-egenkontroll-livsmedel' }),
   modernRoute({ path: '/sparbarhet-livsmedel', canonicalPath: '/sparbarhet-livsmedel', canonicalPolicy: 'required', title: 'Spårbarhet för livsmedelsföretag – vad behöver sparas? | Min Egenkontroll', description: 'Läs vad spårbarhet innebär för restaurang, café och andra livsmedelsföretag: leverantörer, mottagare, leveranser och dokumentation.', robots: 'index, follow', page: 'seo-landing', shell: 'legacy', source: 'src/components/SeoLandingPage.tsx#sparbarhet-livsmedel' }),
   modernRoute({ path: '/verifiering-egenkontroll-livsmedel', canonicalPath: '/verifiering-egenkontroll-livsmedel', canonicalPolicy: 'required', title: 'Verifiering av egenkontrollen – fungerar rutinerna? | Min Egenkontroll', description: 'Vad betyder verifiering i HACCP och egenkontroll? Läs hur verksamheten kan kontrollera att övervakning, journaler och korrigerande åtgärder fungerar.', robots: 'index, follow', page: 'seo-landing', shell: 'legacy', source: 'src/components/SeoLandingPage.tsx#verifiering-egenkontroll-livsmedel' }),
@@ -147,6 +171,7 @@ export const appOwnedCompatibilityRoutes = ['/login', '/signup'] as const;
 export const webRouteRegistry = [...modernRoutes, ...staticSeoRoutes] as const satisfies readonly WebRoute[];
 export const webModernRoutes = modernRoutes as readonly WebRoute[];
 export const webStaticSeoRoutes = staticSeoRoutes as readonly WebRoute[];
+export const webOriginalSeoRoutes = webRouteRegistry.filter((route) => /^\/seo\/[^/]+\.html$/.test(route.path));
 export const webSitemapRoutes = webRouteRegistry.filter((route) => route.inSitemap);
 
 function duplicates(values: readonly string[]): string[] {
@@ -171,6 +196,7 @@ export function validateWebRouteRegistry(): string[] {
   const paths = webRouteRegistry.map((route) => route.path);
   const canonicals = webRouteRegistry.flatMap((route) => route.canonicalPath ? [route.canonicalPath] : []);
   const expectedPaths = baseline.publicRoutes.filter((path) => !appOwnedCompatibilityRoutes.includes(path as typeof appOwnedCompatibilityRoutes[number]));
+  const expectedSeoPaths = baseline.publicRoutes.filter((path) => /^\/seo\/[^/]+\.html$/.test(path));
 
   for (const path of duplicates(paths)) errors.push(`Duplicerad Astro-route: ${path}`);
   for (const path of duplicates(canonicals)) errors.push(`Duplicerad Astro-canonical: ${path}`);
@@ -185,7 +211,8 @@ export function validateWebRouteRegistry(): string[] {
   compareSets('publik webbroute', paths, expectedPaths, errors);
   compareSets('canonical path', canonicals, baseline.canonicalPaths, errors);
   compareSets('sitemap-path', webSitemapRoutes.map((route) => route.path), baseline.sitemapPaths, errors);
-  if (webStaticSeoRoutes.length !== 55) errors.push(`Förväntade 55 statiska SEO-sidor men hittade ${webStaticSeoRoutes.length}.`);
+  compareSets('ursprunglig SEO-route', webOriginalSeoRoutes.map((route) => route.path), expectedSeoPaths, errors);
+  if (webOriginalSeoRoutes.length !== 55) errors.push(`Förväntade 55 ursprungliga SEO-rutter men hittade ${webOriginalSeoRoutes.length}.`);
   return errors;
 }
 
