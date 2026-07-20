@@ -15,12 +15,15 @@
     "precontracts:update": "npm run brand:sync",
     "lint": "eslint . --config ../../eslint.config.js",
     "preview": "vite preview",
+    "reports:fixtures": "node scripts/render-inspector-report-fixtures.mjs",
+    "reports:test": "node --test src/reports/inspectorReportDocument.test.js src/reports/inspectorReportPdf.test.js",
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
     "@min-egenkontroll/brand": "*",
     "@min-egenkontroll/design-system": "*",
     "@supabase/supabase-js": "2.49.4",
+    "pdfkit": "^0.19.1",
     "qrcode.react": "^4.2.0",
     "react": "19.0.0",
     "react-dom": "19.0.0"

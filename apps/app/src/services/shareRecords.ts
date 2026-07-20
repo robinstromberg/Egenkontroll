@@ -220,8 +220,10 @@ export async function sendSharedReportEmail(input: {
   controlTypeNames: string[];
   deviationFilter?: string;
   deviationFilterLabel?: string;
+  searchQuery?: string;
   sort?: string;
   sortLabel?: string;
+  visibleRunIds: string[];
   summaryUrl: string;
 }): Promise<void> {
   const response = await fetch('/api/send-inspector-report', {
@@ -237,8 +239,10 @@ export async function sendSharedReportEmail(input: {
       controlTypeNames: input.controlTypeNames,
       deviationFilter: input.deviationFilter,
       deviationFilterLabel: input.deviationFilterLabel,
+      searchQuery: input.searchQuery,
       sort: input.sort,
       sortLabel: input.sortLabel,
+      visibleRunIds: input.visibleRunIds,
       summaryUrl: input.summaryUrl,
     }),
   });

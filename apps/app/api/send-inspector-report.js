@@ -1,8 +1,13 @@
 /* global console */
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import {
+  buildInspectorReportDocument,
+  isReportImageAttachment,
+  selectInspectorReportRuns,
+} from '../src/reports/inspectorReportDocument.js';
+import { buildInspectorReportPdf } from '../src/reports/inspectorReportPdf.js';
 
-const MAX_LINES_PER_PAGE = 38;
 const ATTACHMENT_LINK_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7;
 const FALLBACK_SUPABASE_URL = 'https://eapjywbgxtudqjrlueep.supabase.co';
 const FALLBACK_SUPABASE_PUBLISHABLE_KEY = ['sb', 'publishable', 'YsqN7EM6XP7U750bZyqVZw', 'Gi4p5SYg'].join('_');
@@ -83,177 +88,6 @@ function readSupabasePublishableKey() {
   return readEnv('SUPABASE_ANON_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY') || FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 }
 
-function normalizeText(value) {
-  return String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/°/g, 'deg')
-    .replace(/[·–—]/g, '-')
-    .replace(/[^\x20-\x7E]/g, '')
-    .trim();
-}
-
-function pdfEscape(value) {
-  return normalizeText(value).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
-}
-
-function readBrandColor(value) {
-  const text = String(value ?? '').trim();
-  if (!/^#[0-9A-Fa-f]{6}$/.test(text)) {
-    return [0.36, 0.27, 0.88];
-  }
-
-  return [
-    Number.parseInt(text.slice(1, 3), 16) / 255,
-    Number.parseInt(text.slice(3, 5), 16) / 255,
-    Number.parseInt(text.slice(5, 7), 16) / 255,
-  ];
-}
-
-function readItemValue(item) {
-  if (item.value_text) return item.value_text;
-  if (item.value_number !== null && item.value_number !== undefined) return String(item.value_number);
-  if (item.value_boolean !== null && item.value_boolean !== undefined) return item.value_boolean ? 'Ja' : 'Nej';
-  if (item.value_date) return item.value_date;
-  if (item.value_json && Object.keys(item.value_json).length > 0) return JSON.stringify(item.value_json);
-  return 'Ej angivet';
-}
-
-function readSnapshotName(snapshot, fallback) {
-  return snapshot && typeof snapshot.name === 'string' ? snapshot.name : fallback;
-}
-
-function readFieldLabel(snapshot) {
-  return snapshot && typeof snapshot.label === 'string' ? snapshot.label : 'Falt';
-}
-
-function countOpenDeviations(run) {
-  return (run.deviations || []).filter((deviation) => deviation.status !== 'resolved').length;
-}
-
-function countResolvedDeviations(run) {
-  return (run.deviations || []).filter((deviation) => deviation.status === 'resolved').length;
-}
-
-function countAllDeviations(run) {
-  return (run.deviations || []).length;
-}
-
-function uniqueNonEmpty(values) {
-  return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
-}
-
-function readRunStatusLabel(run) {
-  const hasItemDeviation = (run.items || []).some((item) => item.deviation_detected);
-  if (countOpenDeviations(run) > 0 || hasItemDeviation || run.status === 'completed_with_deviation') return 'Avvikelse';
-  if (run.status === 'completed') return 'OK';
-  return run.status || 'Registrerad';
-}
-
-function readReportCellLabel(item) {
-  const objectName = readSnapshotName(item.object_snapshot, 'Kontrollpunkt');
-  const fieldLabel = readFieldLabel(item.field_snapshot);
-  return fieldLabel === 'Status' ? objectName : `${objectName} - ${fieldLabel}`;
-}
-
-function readRunValueSummary(run) {
-  const valuesByLabel = new Map();
-
-  for (const item of run.items || []) {
-    const label = readReportCellLabel(item);
-    const values = valuesByLabel.get(label) || [];
-    values.push(readItemValue(item));
-    valuesByLabel.set(label, values);
-  }
-
-  return [...valuesByLabel.entries()].map(([label, values]) => `${label}: ${uniqueNonEmpty(values).join(', ')}`);
-}
-
-function readRunDeviationSummary(run) {
-  return uniqueNonEmpty([
-    ...(run.items || [])
-      .filter((item) => item.deviation_detected)
-      .map((item) => item.deviation_reason || 'Avvikelse'),
-    ...(run.deviations || []).map((deviation) => deviation.description),
-  ]).join('; ');
-}
-
-function readRunActionSummary(run) {
-  return uniqueNonEmpty([
-    ...(run.items || []).map((item) => item.action_text),
-    ...(run.deviations || []).map((deviation) => deviation.action_text),
-  ]).join('; ');
-}
-
-function matchesDeviationFilter(run, filter) {
-  const openCount = countOpenDeviations(run);
-  const resolvedCount = countResolvedDeviations(run);
-
-  if (filter === 'with-open') return openCount > 0;
-  if (filter === 'with-resolved') return resolvedCount > 0 && openCount === 0;
-  if (filter === 'without') return (run.deviations || []).length === 0;
-  return true;
-}
-
-function sortRuns(runs, sortKey) {
-  return [...runs].sort((first, second) => {
-    if (sortKey === 'performed-asc') {
-      return new Date(first.performed_at).getTime() - new Date(second.performed_at).getTime();
-    }
-
-    if (sortKey === 'control-type') {
-      return String(first.control_type_name || '').localeCompare(String(second.control_type_name || ''), 'sv-SE');
-    }
-
-    if (sortKey === 'deviation-status') {
-      return countOpenDeviations(second) - countOpenDeviations(first)
-        || countResolvedDeviations(second) - countResolvedDeviations(first)
-        || new Date(second.performed_at).getTime() - new Date(first.performed_at).getTime();
-    }
-
-    return new Date(second.performed_at).getTime() - new Date(first.performed_at).getTime();
-  });
-}
-
-function formatPercent(part, total) {
-  if (!total) return '0%';
-  return `${Math.round((part / total) * 100)}%`;
-}
-
-function wrapLine(line, width = 96) {
-  const clean = normalizeText(line);
-  if (clean.length <= width) return [clean];
-
-  const words = clean.split(/\s+/);
-  const lines = [];
-  let current = '';
-
-  for (const word of words) {
-    if (word.length > width) {
-      if (current) {
-        lines.push(current);
-        current = '';
-      }
-
-      for (let index = 0; index < word.length; index += width) {
-        lines.push(word.slice(index, index + width));
-      }
-      continue;
-    }
-
-    const next = current ? `${current} ${word}` : word;
-    if (next.length > width && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = next;
-    }
-  }
-
-  if (current) lines.push(current);
-  return lines;
-}
-
 function readServiceRoleKey() {
   return readEnv('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY');
 }
@@ -326,146 +160,37 @@ async function addSignedAttachmentLinks(runs) {
   }));
 }
 
-function buildReportLines(runs, input) {
-  const documentedDays = new Set(runs.map((run) => String(run.performed_at).slice(0, 10))).size;
-  const itemCount = runs.reduce((sum, run) => sum + (run.items || []).length, 0);
-  const openDeviations = runs.reduce((sum, run) => sum + countOpenDeviations(run), 0);
-  const resolvedDeviations = runs.reduce((sum, run) => sum + countResolvedDeviations(run), 0);
-  const allDeviations = runs.reduce((sum, run) => sum + countAllDeviations(run), 0);
-  const generatedAt = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' });
-  const lines = [
-    'Egenkontroll - inspektorsrapport',
-    `Period: ${input.periodStart} - ${input.periodEnd}`,
-    `Skapad: ${generatedAt}`,
-    `Kontrolltyper: ${(input.controlTypeNames || []).join(', ') || 'Valda kontrolltyper'}`,
-    input.deviationFilterLabel ? `Avvikelsefilter: ${input.deviationFilterLabel}` : '',
-    input.sortLabel ? `Sortering: ${input.sortLabel}` : '',
-    '',
-    'Sammanfattning',
-    `Kontroller i urval: ${runs.length}`,
-    `Dokumenterade dagar: ${documentedDays}`,
-    `Kontrollpunkter: ${itemCount}`,
-    `Oppna avvikelser: ${openDeviations}`,
-    `Atgardade avvikelser: ${resolvedDeviations}`,
-    `Atgardsgrad: ${formatPercent(resolvedDeviations, allDeviations)}`,
-    '',
-    'Utforda kontroller',
-  ];
-
-  for (const run of runs) {
-    const valueSummary = readRunValueSummary(run);
-    const visibleValues = valueSummary.slice(0, 12);
-    const hiddenValueCount = valueSummary.length - visibleValues.length;
-    const hiddenText = hiddenValueCount > 0 ? ` | +${hiddenValueCount} falt till` : '';
-    const deviationSummary = readRunDeviationSummary(run);
-    const actionSummary = readRunActionSummary(run);
-
-    lines.push('');
-    lines.push(`${new Date(run.performed_at).toLocaleString('sv-SE')} - ${run.control_type_name} - ${readRunStatusLabel(run)}`);
-    lines.push(...wrapLine(`Varden: ${visibleValues.join(' | ') || 'Inga falt registrerade'}${hiddenText}`));
-    if (deviationSummary) lines.push(...wrapLine(`Avvikelse: ${deviationSummary}`));
-    if (actionSummary) lines.push(...wrapLine(`Atgard: ${actionSummary}`));
-  }
-
-  lines.push('', 'Avvikelser');
-  const deviations = runs.flatMap((run) => (run.deviations || []).map((deviation) => ({ run, deviation })));
-  if (deviations.length === 0) {
-    lines.push('Inga avvikelser i urvalet.');
-  } else {
-    for (const { run, deviation } of deviations) {
-      const resolved = deviation.resolved_at ? ` Lost: ${new Date(deviation.resolved_at).toLocaleString('sv-SE')}` : '';
-      const followUp = deviation.follow_up_comment ? ` Uppfoljning: ${deviation.follow_up_comment}` : '';
-      lines.push(...wrapLine(`${new Date(run.performed_at).toLocaleString('sv-SE')} - ${run.control_type_name} - ${deviation.status} ${deviation.severity}: ${deviation.description}. Atgard: ${deviation.action_text}.${followUp}${resolved}`));
-    }
-  }
-
-  lines.push('', 'Bilagor');
-  const attachments = runs.flatMap((run) => (run.attachments || []).map((attachment) => ({ run, attachment })));
-  if (attachments.length === 0) {
-    lines.push('Inga bilagor i urvalet.');
-  } else {
-    for (const { run, attachment } of attachments) {
-      lines.push(...wrapLine(`${new Date(run.performed_at).toLocaleString('sv-SE')} - ${run.control_type_name} - ${attachment.file_name || 'Bilaga'}`));
-      if (attachment.signed_url) {
-        lines.push(...wrapLine(`Saker lank (giltig 7 dagar): ${attachment.signed_url}`));
-      }
-    }
-  }
-
-  return lines;
+function isSupportedPdfImage(buffer) {
+  return buffer.length >= 4 && (
+    (buffer[0] === 0xff && buffer[1] === 0xd8)
+    || (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47)
+  );
 }
 
-function buildPdf(lines, options = {}) {
-  const companyName = options.companyName || 'Verksamhet';
-  const brandColor = readBrandColor();
-  const initials = 'ME';
-  const pages = [];
-  for (let index = 0; index < lines.length; index += MAX_LINES_PER_PAGE) {
-    pages.push(lines.slice(index, index + MAX_LINES_PER_PAGE));
-  }
+export async function resolveEmailAttachmentStates(runs, fetchImplementation = fetch) {
+  const pairs = runs.flatMap((run) => (run.attachments || [])
+    .filter(isReportImageAttachment)
+    .map((attachment) => ({ run, attachment })));
 
-  const objects = [];
-  const addObject = (content) => {
-    objects.push(content);
-    return objects.length;
-  };
+  return Promise.all(pairs.map(async ({ attachment }) => {
+    if (!attachment.signed_url) {
+      return { attachmentId: attachment.id, status: 'omitted', reason: 'Bilden kunde inte hämtas.' };
+    }
 
-  const catalogId = addObject('');
-  const pagesId = addObject('');
-  const fontId = addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
-  const pageIds = [];
-
-  for (const [pageIndex, pageLines] of pages.entries()) {
-    const footer = `Sida ${pageIndex + 1} av ${pages.length}`;
-      const stream = [
-        'q',
-      `${brandColor.map((part) => part.toFixed(3)).join(' ')} rg`,
-      '50 782 38 38 re f',
-      'Q',
-      'BT',
-      '/F1 14 Tf',
-      '1 1 1 rg',
-      `59 796 Td (${pdfEscape(initials)}) Tj`,
-      'ET',
-      'BT',
-      '/F1 14 Tf',
-      '0.09 0.13 0.20 rg',
-      `100 806 Td (${pdfEscape(companyName)}) Tj`,
-      '0 -16 Td (Min Egenkontroll - inspektorsrapport) Tj',
-      'ET',
-      'BT',
-      '/F1 10 Tf',
-      '0.09 0.13 0.20 rg',
-      '50 748 Td',
-      ...pageLines.map((line, index) => `${index === 0 ? '' : '0 -14 Td ' }(${pdfEscape(line)}) Tj`),
-      'ET',
-      'BT',
-      '/F1 8 Tf',
-      `50 34 Td (${pdfEscape(footer)}) Tj`,
-      'ET',
-    ].join('\n');
-    const contentId = addObject(`<< /Length ${Buffer.byteLength(stream, 'ascii')} >>\nstream\n${stream}\nendstream`);
-    const pageId = addObject(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 612 842] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentId} 0 R >>`);
-    pageIds.push(pageId);
-  }
-
-  objects[catalogId - 1] = `<< /Type /Catalog /Pages ${pagesId} 0 R >>`;
-  objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(' ')}] /Count ${pageIds.length} >>`;
-
-  let pdf = '%PDF-1.4\n';
-  const offsets = [0];
-  objects.forEach((content, index) => {
-    offsets.push(Buffer.byteLength(pdf, 'ascii'));
-    pdf += `${index + 1} 0 obj\n${content}\nendobj\n`;
-  });
-  const xrefOffset = Buffer.byteLength(pdf, 'ascii');
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  for (let index = 1; index < offsets.length; index += 1) {
-    pdf += `${String(offsets[index]).padStart(10, '0')} 00000 n \n`;
-  }
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-  return Buffer.from(pdf, 'ascii');
+    try {
+      const result = await fetchImplementation(attachment.signed_url);
+      if (!result.ok) {
+        return { attachmentId: attachment.id, status: 'omitted', reason: 'Bilden kunde inte hämtas.' };
+      }
+      const source = Buffer.from(await result.arrayBuffer());
+      if (!isSupportedPdfImage(source)) {
+        return { attachmentId: attachment.id, status: 'omitted', reason: 'Bildformatet stöds inte i PDF-filen.' };
+      }
+      return { attachmentId: attachment.id, status: 'included', source };
+    } catch {
+      return { attachmentId: attachment.id, status: 'omitted', reason: 'Bilden kunde inte hämtas.' };
+    }
+  }));
 }
 
 async function callSupabaseRpc(name, body) {
@@ -562,10 +287,17 @@ export default async function handler(request, response) {
     });
     const deviationFilter = typeof input.deviationFilter === 'string' ? input.deviationFilter : 'all';
     const sort = typeof input.sort === 'string' ? input.sort : 'performed-desc';
-    const visibleRuns = sortRuns(
-      runs.filter((run) => matchesDeviationFilter(run, deviationFilter)),
+    const selection = selectInspectorReportRuns(runs, {
+      visibleRunIds: input.visibleRunIds,
+      deviationFilter,
+      searchQuery: input.searchQuery,
       sort,
-    );
+    });
+    const visibleRuns = selection.runs;
+
+    if (selection.missingRunIds.length > 0) {
+      return jsonResponse(response, 409, { error: 'Urvalet har ändrats. Ladda om rapporten och försök igen.' });
+    }
 
     if (visibleRuns.length === 0) {
       return jsonResponse(response, 404, { error: 'Inga kontroller matchar urvalet.' });
@@ -573,8 +305,14 @@ export default async function handler(request, response) {
 
     const runsWithAttachmentLinks = await addSignedAttachmentLinks(visibleRuns);
     const companyName = input.companyName || input.organizationName || runsWithAttachmentLinks[0]?.organization_name || 'Verksamhet';
-    const lines = buildReportLines(runsWithAttachmentLinks, input);
-    const pdf = buildPdf(lines, { companyName });
+    const attachmentStates = await resolveEmailAttachmentStates(runsWithAttachmentLinks);
+    const report = buildInspectorReportDocument(runsWithAttachmentLinks, {
+      ...input,
+      companyName,
+      deviationFilter,
+      sort,
+    }, attachmentStates);
+    const pdf = await buildInspectorReportPdf(report);
     const subject = `Egenkontroll ${input.periodStart} - ${input.periodEnd}`;
     const text = [
       'Hej,',
@@ -583,6 +321,9 @@ export default async function handler(request, response) {
       '',
       `Period: ${input.periodStart} - ${input.periodEnd}`,
       `Kontroller: ${visibleRuns.length}`,
+      report.omittedAttachments.length
+        ? `${report.omittedAttachments.length} ${report.omittedAttachments.length === 1 ? 'bildbilaga kunde' : 'bildbilagor kunde'} inte tas med i PDF-filen och är markerad i rapporten.`
+        : '',
       input.summaryUrl ? `Länk: ${input.summaryUrl}` : '',
     ].filter(Boolean).join('\n');
 
@@ -603,10 +344,15 @@ export default async function handler(request, response) {
         control_type_ids: Array.isArray(input.controlTypeIds) ? input.controlTypeIds : [],
         control_type_names: Array.isArray(input.controlTypeNames) ? input.controlTypeNames : [],
         deviation_filter: deviationFilter,
+        search_query: typeof input.searchQuery === 'string' ? input.searchQuery : '',
         sort,
         delivery: 'email',
         recipient: email,
         run_count: visibleRuns.length,
+        item_count: report.summary.metrics[2].value,
+        open_deviations: report.summary.metrics[3].value,
+        resolved_deviations: report.summary.metrics[4].value,
+        omitted_attachment_count: report.omittedAttachments.length,
       },
     }).catch(() => null);
 
