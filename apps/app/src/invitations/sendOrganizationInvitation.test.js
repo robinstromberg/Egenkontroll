@@ -1,0 +1,351 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {
+  InvitationHttpError,
+  buildInvitationEmail,
+  buildInvitationIdempotencyKey,
+  createOrganizationInvitationHandler,
+  resolveSupabasePublicConfig,
+  sendInvitationWithResend,
+  verifySupabaseAccessToken,
+} from '../../api/send-organization-invitation.js';
+
+const invitationId = '11111111-1111-4111-8111-111111111111';
+const organizationId = '22222222-2222-4222-8222-222222222222';
+const userId = '33333333-3333-4333-8333-333333333333';
+const firstAttemptId = '44444444-4444-4444-8444-444444444444';
+const secondAttemptId = '55555555-5555-4555-8555-555555555555';
+const futureExpiry = '2099-07-28T12:00:00.000Z';
+
+function createFakeResponse() {
+  const finishListeners = [];
+  return {
+    statusCode: 200,
+    headers: {},
+    body: '',
+    setHeader(name, value) {
+      this.headers[name] = value;
+    },
+    once(event, listener) {
+      if (event === 'finish') finishListeners.push(listener);
+    },
+    end(body) {
+      this.body = body;
+      for (const listener of finishListeners) listener();
+    },
+  };
+}
+
+function createFakeClient(options = {}) {
+  const invitation = options.invitation === null ? null : {
+    id: invitationId,
+    organization_id: organizationId,
+    email: 'person@example.com',
+    role: 'staff',
+    status: options.invitationStatus || 'pending',
+    expires_at: options.expiresAt || futureExpiry,
+  };
+  const rows = {
+    organization_invitations: invitation,
+    organization_memberships: options.membership === null ? null : {
+      role: options.membershipRole || 'owner',
+      status: 'active',
+    },
+    organizations: { name: 'Testköket' },
+  };
+  const calls = [];
+
+  return {
+    calls,
+    from(table) {
+      const query = {
+        select() {
+          calls.push({ table, operation: 'select' });
+          return query;
+        },
+        eq(column, value) {
+          calls.push({ table, operation: 'eq', column, value });
+          return query;
+        },
+        maybeSingle: async () => ({ data: rows[table], error: null }),
+      };
+      return query;
+    },
+  };
+}
+
+async function callHandler({
+  client = createFakeClient(),
+  sendEmail,
+  attemptId = firstAttemptId,
+  verifyAccessToken = async () => ({ id: userId }),
+}) {
+  const request = {
+    method: 'POST',
+    headers: { authorization: 'Bearer test-access-token', 'x-request-id': 'request-1' },
+    body: { invitationId, attemptId },
+  };
+  const response = createFakeResponse();
+  const handler = createOrganizationInvitationHandler({
+    verifyAccessToken,
+    createCallerClient: () => client,
+    sendEmail,
+    logEvent: () => undefined,
+  });
+  await handler(request, response);
+  return { client, response, payload: JSON.parse(response.body) };
+}
+
+test('invitation email contains exact app link and escapes dynamic HTML', () => {
+  const invitation = {
+    id: invitationId,
+    email: 'person@example.com',
+    role: 'admin',
+    expiresAt: futureExpiry,
+    organizationName: '<Test & kök>',
+  };
+  const email = buildInvitationEmail(invitation);
+
+  assert.equal(email.invitationUrl, `https://app.minegenkontroll.se/login?invitation=${invitationId}`);
+  assert.match(email.text, /administratör/);
+  assert.match(email.text, /Logga in eller skapa ett konto/);
+  assert.match(email.html, /&lt;Test &amp; kök&gt;/);
+  assert.doesNotMatch(email.html, /<Test & kök>/);
+});
+
+test('same send attempt deduplicates while an explicit resend gets a new key', async () => {
+  const sameAttemptKey = buildInvitationIdempotencyKey(invitationId, firstAttemptId);
+  assert.equal(sameAttemptKey, buildInvitationIdempotencyKey(invitationId, firstAttemptId));
+  assert.notEqual(sameAttemptKey, buildInvitationIdempotencyKey(invitationId, secondAttemptId));
+
+  const sentKeys = [];
+  const sendEmail = async (input) => {
+    sentKeys.push(input.idempotencyKey);
+    return { id: `provider-${sentKeys.length}` };
+  };
+  await callHandler({ sendEmail, attemptId: firstAttemptId });
+  await callHandler({ sendEmail, attemptId: secondAttemptId });
+
+  assert.deepEqual(sentKeys, [
+    `organization-invitation/${invitationId}/${firstAttemptId}`,
+    `organization-invitation/${invitationId}/${secondAttemptId}`,
+  ]);
+});
+
+test('Supabase Auth verification separates publishable key from user bearer token', async () => {
+  let captured;
+  const user = await verifySupabaseAccessToken('user-access-token', {
+    environment: {
+      SUPABASE_URL: 'https://runtime.supabase.test',
+      SUPABASE_ANON_KEY: 'runtime-publishable-key',
+    },
+    fetchImplementation: async (url, options) => {
+      captured = { url, options };
+      return { ok: true, status: 200, json: async () => ({ id: userId }) };
+    },
+  });
+
+  assert.deepEqual(user, { id: userId });
+  assert.equal(captured.url, 'https://runtime.supabase.test/auth/v1/user');
+  assert.equal(captured.options.method, 'GET');
+  assert.equal(captured.options.headers.apikey, 'runtime-publishable-key');
+  assert.equal(captured.options.headers.authorization, 'Bearer user-access-token');
+  assert.notEqual(captured.options.headers.authorization, 'Bearer runtime-publishable-key');
+});
+
+test('invalid user token returns 401 before database or email access', async () => {
+  let providerCalls = 0;
+  const client = createFakeClient();
+  const { response, payload } = await callHandler({
+    client,
+    verifyAccessToken: () => verifySupabaseAccessToken('invalid-access-token', {
+      environment: {
+        SUPABASE_URL: 'https://runtime.supabase.test',
+        SUPABASE_ANON_KEY: 'runtime-publishable-key',
+      },
+      fetchImplementation: async () => ({
+        ok: false,
+        status: 401,
+        json: async () => ({ message: 'invalid token' }),
+      }),
+    }),
+    sendEmail: async () => { providerCalls += 1; },
+  });
+
+  assert.equal(response.statusCode, 401);
+  assert.match(payload.error, /session är ogiltig/);
+  assert.equal(client.calls.length, 0);
+  assert.equal(providerCalls, 0);
+});
+
+test('handler uses public fallbacks for Auth and RLS-scoped caller client when runtime env is missing', async () => {
+  let capturedAuthRequest;
+  let capturedClientConfig;
+  const request = {
+    method: 'POST',
+    headers: { authorization: 'Bearer test-access-token', 'x-request-id': 'request-fallback' },
+    body: { invitationId, attemptId: firstAttemptId },
+  };
+  const response = createFakeResponse();
+  const handler = createOrganizationInvitationHandler({
+    environment: {},
+    authFetchImplementation: async (url, options) => {
+      capturedAuthRequest = { url, options };
+      return { ok: true, status: 200, json: async () => ({ id: userId }) };
+    },
+    createClientImplementation: (supabaseUrl, publishableKey, options) => {
+      capturedClientConfig = { supabaseUrl, publishableKey, options };
+      return createFakeClient();
+    },
+    sendEmail: async () => ({ id: 'provider-id' }),
+    logEvent: () => undefined,
+  });
+
+  await handler(request, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(capturedAuthRequest.url, 'https://eapjywbgxtudqjrlueep.supabase.co/auth/v1/user');
+  assert.equal(capturedAuthRequest.options.headers.apikey, 'sb_publishable_YsqN7EM6XP7U750bZyqVZw_Gi4p5SYg');
+  assert.equal(capturedAuthRequest.options.headers.authorization, 'Bearer test-access-token');
+  assert.equal(capturedClientConfig.supabaseUrl, 'https://eapjywbgxtudqjrlueep.supabase.co');
+  assert.equal(capturedClientConfig.publishableKey, 'sb_publishable_YsqN7EM6XP7U750bZyqVZw_Gi4p5SYg');
+  assert.equal(capturedClientConfig.options.global.headers.authorization, 'Bearer test-access-token');
+});
+
+test('runtime Supabase env takes precedence over public fallbacks', () => {
+  assert.deepEqual(resolveSupabasePublicConfig({
+    SUPABASE_URL: 'https://runtime.supabase.test',
+    VITE_SUPABASE_URL: 'https://vite.supabase.test',
+    SUPABASE_ANON_KEY: 'runtime-publishable-key',
+    VITE_SUPABASE_PUBLISHABLE_KEY: 'vite-publishable-key',
+  }), {
+    supabaseUrl: 'https://runtime.supabase.test',
+    publishableKey: 'runtime-publishable-key',
+  });
+  assert.deepEqual(resolveSupabasePublicConfig({
+    VITE_SUPABASE_URL: 'https://vite.supabase.test',
+    VITE_SUPABASE_PUBLISHABLE_KEY: 'vite-publishable-key',
+  }), {
+    supabaseUrl: 'https://vite.supabase.test',
+    publishableKey: 'vite-publishable-key',
+  });
+});
+
+test('Resend request uses an idempotency key and the API key never enters the body', async () => {
+  let captured;
+  const result = await sendInvitationWithResend({
+    to: 'person@example.com',
+    subject: 'Inbjudan',
+    text: 'Text',
+    html: '<p>Text</p>',
+    idempotencyKey: 'organization-invitation/fingerprint',
+  }, {
+    apiKey: 'server-secret-test-key',
+    from: 'Min Egenkontroll <support@minegenkontroll.se>',
+    fetchImplementation: async (url, options) => {
+      captured = { url, options };
+      return { ok: true, status: 200, json: async () => ({ id: 'provider-id' }) };
+    },
+  });
+
+  assert.equal(result.id, 'provider-id');
+  assert.equal(captured.url, 'https://api.resend.com/emails');
+  assert.equal(captured.options.headers['idempotency-key'], 'organization-invitation/fingerprint');
+  assert.equal(JSON.parse(captured.options.body).to[0], 'person@example.com');
+  assert.doesNotMatch(captured.options.body, /server-secret-test-key/);
+});
+
+test('Resend 409 errors distinguish concurrent from invalid idempotent requests', async () => {
+  const input = {
+    to: 'person@example.com',
+    subject: 'Inbjudan',
+    text: 'Text',
+    html: '<p>Text</p>',
+    idempotencyKey: `organization-invitation/${invitationId}/${firstAttemptId}`,
+  };
+  const optionsFor = (name) => ({
+    apiKey: 'server-secret-test-key',
+    from: 'Min Egenkontroll <support@minegenkontroll.se>',
+    fetchImplementation: async () => ({ ok: false, status: 409, json: async () => ({ name }) }),
+  });
+
+  await assert.rejects(
+    sendInvitationWithResend(input, optionsFor('concurrent_idempotent_requests')),
+    (error) => error instanceof InvitationHttpError
+      && error.code === 'concurrent_idempotent_requests'
+      && /behandlas redan/.test(error.publicMessage),
+  );
+  await assert.rejects(
+    sendInvitationWithResend(input, optionsFor('invalid_idempotent_request')),
+    (error) => error instanceof InvitationHttpError
+      && error.code === 'invalid_idempotent_request'
+      && /starta ett nytt utskick/.test(error.publicMessage),
+  );
+});
+
+test('only an active owner or admin can send an invitation', async () => {
+  let providerCalls = 0;
+  const { response, payload } = await callHandler({
+    client: createFakeClient({ membershipRole: 'staff' }),
+    sendEmail: async () => { providerCalls += 1; },
+  });
+
+  assert.equal(response.statusCode, 403);
+  assert.match(payload.error, /saknar behörighet/);
+  assert.equal(providerCalls, 0);
+});
+
+test('verified user id is used in the RLS-scoped membership query', async () => {
+  const client = createFakeClient();
+  const { response } = await callHandler({
+    client,
+    sendEmail: async () => ({ id: 'provider-id' }),
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.ok(client.calls.some((call) => (
+    call.table === 'organization_memberships'
+    && call.operation === 'eq'
+    && call.column === 'user_id'
+    && call.value === userId
+  )));
+});
+
+test('provider failure is not reported as success and remains retryable', async () => {
+  let attempts = 0;
+  const idempotencyKeys = [];
+  const failure = await callHandler({
+    sendEmail: async (input) => {
+      attempts += 1;
+      idempotencyKeys.push(input.idempotencyKey);
+      throw new InvitationHttpError(502, 'Mejlet kunde inte skickas. Inbjudan ligger kvar och kan skickas igen.');
+    },
+  });
+  assert.equal(failure.response.statusCode, 502);
+  assert.equal(failure.payload.sent, undefined);
+  assert.match(failure.payload.error, /kan skickas igen/);
+
+  const retry = await callHandler({
+    sendEmail: async (input) => {
+      attempts += 1;
+      idempotencyKeys.push(input.idempotencyKey);
+      return { id: 'provider-id' };
+    },
+  });
+  assert.equal(retry.response.statusCode, 200);
+  assert.equal(retry.payload.sent, true);
+  assert.equal(attempts, 2);
+  assert.equal(idempotencyKeys[0], idempotencyKeys[1]);
+});
+
+test('an expired pending invitation cannot be emailed', async () => {
+  let providerCalls = 0;
+  const { response, payload } = await callHandler({
+    client: createFakeClient({ expiresAt: '2020-01-01T00:00:00.000Z' }),
+    sendEmail: async () => { providerCalls += 1; },
+  });
+
+  assert.equal(response.statusCode, 409);
+  assert.match(payload.error, /gått ut/);
+  assert.equal(providerCalls, 0);
+});

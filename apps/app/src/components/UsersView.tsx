@@ -7,6 +7,7 @@ import {
   listOrganizationMembers,
   renewOrganizationInvitation,
   revokeOrganizationInvitation,
+  sendOrganizationInvitationEmail,
 } from '../services/organizationService';
 import type { OrganizationInvitationSummary, OrganizationMemberSummary } from '../services/organizationService';
 import type { OrganizationRole } from '../types/database';
@@ -47,6 +48,7 @@ export function UsersView({ organizationId, userId, canManage, onBack }: UsersVi
   const [inviteRole, setInviteRole] = useState<Exclude<OrganizationRole, 'owner'>>('staff');
   const [loading, setLoading] = useState(true);
   const [savingInvitation, setSavingInvitation] = useState(false);
+  const [sendingInvitationId, setSendingInvitationId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -94,20 +96,36 @@ export function UsersView({ organizationId, userId, canManage, onBack }: UsersVi
       setSavingInvitation(true);
       setMessage('');
       setSuccessMessage('');
-      await createOrganizationInvitation({
+      const invitation = await createOrganizationInvitation({
         organizationId,
         email: inviteEmail,
         role: inviteRole,
         invitedBy: userId,
       });
+      await sendOrganizationInvitationEmail(invitation.id);
       setInviteEmail('');
       setInviteRole('staff');
       await refreshInvitations();
-      setSuccessMessage('Inbjudan skapades.');
+      setSuccessMessage('Inbjudan skickad.');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Kunde inte skapa inbjudan.');
+      await refreshInvitations().catch(() => undefined);
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skicka inbjudan.');
     } finally {
       setSavingInvitation(false);
+    }
+  }
+
+  async function handleSendInvitation(invitationId: string) {
+    try {
+      setSendingInvitationId(invitationId);
+      setMessage('');
+      setSuccessMessage('');
+      await sendOrganizationInvitationEmail(invitationId);
+      setSuccessMessage('Inbjudan skickad.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Kunde inte skicka inbjudan.');
+    } finally {
+      setSendingInvitationId(null);
     }
   }
 
@@ -191,7 +209,7 @@ export function UsersView({ organizationId, userId, canManage, onBack }: UsersVi
           <form className="menu-destination-panel invitation-form" onSubmit={handleCreateInvitation}>
             <h4>Bjud in användare</h4>
             <p className="muted-copy">
-              Skapa inbjudan med rätt roll och kopiera sedan länken till personen som ska gå med.
+              Skicka en inbjudan med rätt roll. Du kan även kopiera länken efteråt.
             </p>
             <label>
               <span>E-postadress</span>
@@ -215,8 +233,8 @@ export function UsersView({ organizationId, userId, canManage, onBack }: UsersVi
                 <option value="admin">Admin - kan hantera struktur och inbjudningar</option>
               </select>
             </label>
-            <ActionButton type="submit" disabled={savingInvitation || !inviteEmail.trim()}>
-              {savingInvitation ? 'Skapar...' : 'Skapa inbjudan'}
+            <ActionButton type="submit" disabled={savingInvitation || Boolean(sendingInvitationId) || !inviteEmail.trim()}>
+              {savingInvitation ? 'Skickar...' : 'Skicka inbjudan'}
             </ActionButton>
           </form>
 
@@ -242,6 +260,13 @@ export function UsersView({ organizationId, userId, canManage, onBack }: UsersVi
                     </span>
                     {invitation.status === 'pending' ? (
                       <span className="invitation-actions">
+                        <button
+                          type="button"
+                          disabled={Boolean(sendingInvitationId)}
+                          onClick={() => handleSendInvitation(invitation.id)}
+                        >
+                          {sendingInvitationId === invitation.id ? 'Skickar...' : 'Skicka igen'}
+                        </button>
                         <button type="button" onClick={() => handleCopyInvitationLink(invitation.id)}>
                           Kopiera länk
                         </button>
