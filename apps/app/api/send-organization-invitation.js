@@ -76,18 +76,66 @@ export function resolveSupabasePublicConfig(environment = process.env) {
   };
 }
 
+function requireSupabasePublicConfig(environment) {
+  const config = resolveSupabasePublicConfig(environment);
+  if (!config.supabaseUrl || !config.publishableKey) {
+    throw new InvitationHttpError(503, 'Inbjudningstjänsten är inte konfigurerad. Försök igen senare.');
+  }
+  return config;
+}
+
 export function createSupabaseCallerClient(accessToken, options = {}) {
   const environment = options.environment ?? process.env;
   const createClientImplementation = options.createClientImplementation || createClient;
-  const { supabaseUrl, publishableKey } = resolveSupabasePublicConfig(environment);
-  if (!supabaseUrl || !publishableKey) {
-    throw new InvitationHttpError(503, 'Inbjudningstjänsten är inte konfigurerad. Försök igen senare.');
-  }
+  const { supabaseUrl, publishableKey } = requireSupabasePublicConfig(environment);
 
   return createClientImplementation(supabaseUrl, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { headers: { authorization: `Bearer ${accessToken}` } },
   });
+}
+
+export async function verifySupabaseAccessToken(accessToken, options = {}) {
+  const environment = options.environment ?? process.env;
+  const fetchImplementation = options.fetchImplementation || fetch;
+  const { supabaseUrl, publishableKey } = requireSupabasePublicConfig(environment);
+
+  let result;
+  try {
+    result = await fetchImplementation(`${supabaseUrl}/auth/v1/user`, {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        apikey: publishableKey,
+        authorization: `Bearer ${accessToken}`,
+      },
+    });
+  } catch (error) {
+    throw new InvitationHttpError(
+      502,
+      'Din session kunde inte verifieras. Försök igen.',
+      error instanceof Error ? error.message : 'Supabase Auth request failed.',
+    );
+  }
+
+  const payload = await result.json().catch(() => ({}));
+  const userId = typeof payload?.id === 'string' ? payload.id : '';
+  if (!result.ok || !UUID_PATTERN.test(userId)) {
+    if (result.status === 401 || result.status === 403) {
+      throw new InvitationHttpError(
+        401,
+        'Din session är ogiltig. Logga in igen.',
+        `Supabase Auth rejected the access token with status ${result.status}.`,
+      );
+    }
+    throw new InvitationHttpError(
+      502,
+      'Din session kunde inte verifieras. Försök igen.',
+      `Supabase Auth returned an invalid response with status ${result.status}.`,
+    );
+  }
+
+  return { id: userId };
 }
 
 export function escapeInvitationHtml(value) {
@@ -203,11 +251,7 @@ export async function sendInvitationWithResend(input, options = {}) {
   return payload;
 }
 
-async function loadAuthorizedInvitation(client, accessToken, invitationId) {
-  const { data: authData, error: authError } = await client.auth.getUser(accessToken);
-  const user = authData?.user;
-  if (authError || !user) throw new InvitationHttpError(401, 'Din session är ogiltig. Logga in igen.');
-
+async function loadAuthorizedInvitation(client, userId, invitationId) {
   const { data: invitation, error: invitationError } = await client
     .from('organization_invitations')
     .select('id, organization_id, email, role, status, expires_at')
@@ -220,7 +264,7 @@ async function loadAuthorizedInvitation(client, accessToken, invitationId) {
     .from('organization_memberships')
     .select('role, status')
     .eq('organization_id', invitation.organization_id)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .eq('status', 'active')
     .maybeSingle();
   if (membershipError) throw new Error('Kunde inte verifiera behörigheten.');
@@ -249,6 +293,13 @@ async function loadAuthorizedInvitation(client, accessToken, invitationId) {
 }
 
 export function createOrganizationInvitationHandler(dependencies = {}) {
+  const verifyAccessToken = dependencies.verifyAccessToken || ((accessToken) => verifySupabaseAccessToken(
+    accessToken,
+    {
+      environment: dependencies.environment,
+      fetchImplementation: dependencies.authFetchImplementation,
+    },
+  ));
   const createCallerClient = dependencies.createCallerClient || ((accessToken) => createSupabaseCallerClient(
     accessToken,
     {
@@ -278,8 +329,9 @@ export function createOrganizationInvitationHandler(dependencies = {}) {
     if (!accessToken) return jsonResponse(response, 401, { error: 'Logga in för att skicka inbjudan.', requestId });
 
     try {
+      const user = await verifyAccessToken(accessToken);
       const client = createCallerClient(accessToken);
-      const invitation = await loadAuthorizedInvitation(client, accessToken, invitationId);
+      const invitation = await loadAuthorizedInvitation(client, user.id, invitationId);
       const email = buildInvitationEmail(invitation);
       const sendResult = await sendEmail({
         to: invitation.email,
