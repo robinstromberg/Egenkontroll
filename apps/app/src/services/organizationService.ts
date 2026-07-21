@@ -3,23 +3,20 @@ import type { BillingPlan } from '../config/subscription';
 import { createTrialWindow } from '../config/subscription';
 import { supabase } from '../lib/supabaseClient';
 import { getCurrentSession } from './authService';
+import { buildUserScopedOrganizationContexts } from './organizationContext';
+import type { MembershipWithOrganization, OrganizationContext } from './organizationContext';
 import { cloneInactiveDefaultTemplatesToOrganization, cloneTemplatesToOrganization } from './templateService';
 import type {
   InvitationStatus,
   OrganizationInvitation,
   OrganizationMembership,
   Organization,
-  Profile,
   OrganizationRole,
 } from '../types/database';
 
 export type BusinessType = NonNullable<Organization['business_type']>;
 
-export type OrganizationContext = {
-  membership: OrganizationMembership;
-  organization: Organization;
-  profile: Profile | null;
-};
+export type { OrganizationContext } from './organizationContext';
 
 export type OrganizationMemberSummary = {
   id: string;
@@ -35,10 +32,6 @@ export type OrganizationInvitationSummary = Pick<
   OrganizationInvitation,
   'id' | 'organization_id' | 'email' | 'role' | 'status' | 'invited_by' | 'accepted_by' | 'accepted_at' | 'expires_at' | 'created_at' | 'updated_at'
 >;
-
-type MembershipWithOrganization = OrganizationMembership & {
-  organizations: Organization | null;
-};
 
 const invitationSendAttemptIds = new Map<string, string>();
 const sendAttemptUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -105,46 +98,40 @@ export async function ensureProfile(user: User): Promise<void> {
 }
 
 export async function listOrganizationContexts(): Promise<OrganizationContext[]> {
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError) {
+    throw authError;
+  }
+
+  const currentUserId = authData.user?.id;
+  if (!currentUserId) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from('organization_memberships')
     .select('*, organizations(*)')
     .eq('status', 'active')
+    .eq('user_id', currentUserId)
     .order('created_at', { ascending: true });
 
   if (error) {
     throw error;
   }
 
-  const memberships = ((data ?? []) as MembershipWithOrganization[])
-    .filter((row) => row.organizations)
-    .map((row) => ({
-      membership: {
-        id: row.id,
-        organization_id: row.organization_id,
-        user_id: row.user_id,
-        role: row.role,
-        status: row.status,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      },
-      organization: row.organizations as Organization,
-    }));
+  const memberships = (data ?? []) as MembershipWithOrganization[];
 
   if (memberships.length === 0) {
     return [];
   }
 
-  const userId = memberships[0].membership.user_id;
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, full_name, email, created_at, updated_at')
-    .eq('id', userId)
+    .eq('id', currentUserId)
     .maybeSingle();
 
-  return memberships.map((context) => ({
-    ...context,
-    profile: (profile ?? null) as Profile | null,
-  }));
+  return buildUserScopedOrganizationContexts(memberships, profile ?? null, currentUserId);
 }
 
 export async function createFirstOrganization(

@@ -14,6 +14,7 @@ import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
 import { PublicLandingPage } from './components/PublicLandingPage';
 import { TermsPage } from './components/TermsPage';
 import { getCurrentSession, signOut } from './services/authService';
+import { canApplyOrganizationContexts } from './services/organizationContext';
 import { ensureProfile, listOrganizationContexts } from './services/organizationService';
 import type { OrganizationContext } from './services/organizationService';
 import { trackProductEvent } from './services/productEventService';
@@ -106,9 +107,13 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const loggedSessionKeys = useRef(new Set<string>());
+  const authenticatedUserId = useRef<string | null>(null);
 
-  const loadOrganizationContext = useCallback(async () => {
+  const loadOrganizationContext = useCallback(async (expectedUserId: string) => {
     const contexts = await listOrganizationContexts();
+    if (!canApplyOrganizationContexts(contexts, expectedUserId, authenticatedUserId.current)) {
+      return;
+    }
     setOrganizationContexts(contexts);
   }, []);
 
@@ -119,10 +124,11 @@ function App() {
     try {
       const currentSession = await getCurrentSession();
       setSession(currentSession);
+      authenticatedUserId.current = currentSession?.user.id ?? null;
 
       if (currentSession?.user) {
         await ensureProfile(currentSession.user);
-        await loadOrganizationContext();
+        await loadOrganizationContext(currentSession.user.id);
       } else {
         setOrganizationContexts([]);
       }
@@ -144,8 +150,9 @@ function App() {
       }
 
       setSession(nextSession);
+      authenticatedUserId.current = nextSession?.user.id ?? null;
       if (nextSession?.user) {
-        void ensureProfile(nextSession.user).then(loadOrganizationContext);
+        void ensureProfile(nextSession.user).then(() => loadOrganizationContext(nextSession.user.id));
       } else {
         setOrganizationContexts([]);
       }
@@ -188,6 +195,7 @@ function App() {
   async function handleSignOut() {
     await signOut();
     setSession(null);
+    authenticatedUserId.current = null;
     setOrganizationContexts([]);
     setActiveOrganizationId(null);
     setActiveView('today');
@@ -213,7 +221,9 @@ function App() {
       userId: session?.user.id,
       organizationId,
     });
-    await loadOrganizationContext();
+    if (session?.user) {
+      await loadOrganizationContext(session.user.id);
+    }
     setActiveView('today');
   }
 
@@ -338,7 +348,7 @@ function App() {
             onSignOut={handleSignOut}
           />
         ) : (
-          <OrganizationSetup user={session.user} onCreated={loadOrganizationContext} />
+          <OrganizationSetup user={session.user} onCreated={() => loadOrganizationContext(session.user.id)} />
         )}
       </main>
       {showNavigation ? <AppBottomNav activeView={activeView} onChangeView={setActiveView} /> : null}

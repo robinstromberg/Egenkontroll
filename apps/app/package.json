@@ -15,6 +15,7 @@
     "precontracts:update": "npm run brand:sync",
     "lint": "eslint . --config ../../eslint.config.js",
     "invitations:test": "node --test src/invitations/sendOrganizationInvitation.test.js",
+    "organization-contexts:test": "tsx --test src/services/organizationContext.test.ts",
     "preview": "vite preview",
     "reports:fixtures": "node scripts/render-inspector-report-fixtures.mjs",
     "reports:test": "node --test src/reports/inspectorReportDocument.test.js src/reports/inspectorReportPdf.test.js",
