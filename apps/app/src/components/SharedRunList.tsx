@@ -11,6 +11,8 @@ import {
   sendSharedReportEmail,
 } from '../services/shareRecords';
 import type { SharedAttachment, SharedControlTypeOption, SharedExportType, SharedRun, SharedRunItem } from '../services/shareRecords';
+import { buildInspectorReportDocument } from '../reports/inspectorReportDocument.js';
+import type { AttachmentState } from '../reports/inspectorReportDocument.js';
 
 type DeviationFilter = 'all' | 'with-open' | 'with-resolved' | 'without';
 type SortKey = 'performed-desc' | 'performed-asc' | 'control-type' | 'deviation-status';
@@ -34,25 +36,11 @@ type DocumentationRow = {
   run: SharedRun;
   item: SharedRunItem | null;
 };
-type ReportValueColumn = {
-  key: string;
-  label: string;
-};
-type ReportValueCell = ReportValueColumn & {
-  value: string;
-  deviation: string;
-  action: string;
-};
 type SharedAttachmentPreview = {
   attachment: SharedAttachment;
   run: SharedRun;
   signedUrl: string;
 };
-type PrintableAttachmentImage = SharedAttachmentPreview & {
-  reference: string;
-};
-
-const MAX_REPORT_VALUE_COLUMNS = 10;
 
 const categoryMeta: Record<string, { icon: string; className: string; fallback: string }> = {
   temperature: { icon: readControlTypeIcon({ category: 'temperature' }), className: 'temperature', fallback: '°C' },
@@ -138,10 +126,6 @@ function isImageAttachment(attachment: SharedAttachment): boolean {
   return /\.(avif|gif|jpe?g|png|webp)$/i.test(attachment.file_name ?? '');
 }
 
-function readAttachmentReference(index: number): string {
-  return `Bilaga ${String.fromCharCode(65 + index)}`;
-}
-
 function readCategoryMeta(category: string | null | undefined) {
   return categoryMeta[category ?? ''] ?? categoryMeta.custom;
 }
@@ -198,138 +182,8 @@ function uniqueNonEmpty(values: Array<string | null | undefined>): string[] {
   return [...new Set(values.map((value) => value?.trim()).filter(Boolean) as string[])];
 }
 
-function readRunStatusLabel(run: SharedRun): string {
-  const hasItemDeviation = run.items.some((item) => item.deviation_detected);
-  if (countOpenDeviations(run) > 0 || hasItemDeviation || run.status === 'completed_with_deviation') return 'Avvikelse';
-  if (run.status === 'completed') return 'OK';
-  return run.status;
-}
-
 function readRunPerformerName(run: SharedRun): string {
   return run.performer_name?.trim() || 'Okänd användare';
-}
-
-function readReportCellLabel(item: SharedRunItem): string {
-  const objectLabel = readSnapshotLabel(item.object_snapshot, 'Kontrollpunkt');
-  const fieldLabel = readFieldLabel(item.field_snapshot);
-  return fieldLabel === 'Status' ? objectLabel : `${objectLabel} · ${fieldLabel}`;
-}
-
-function readReportValueCells(run: SharedRun): ReportValueCell[] {
-  const cellByKey = new Map<string, ReportValueCell>();
-
-  for (const item of run.items) {
-    const label = readReportCellLabel(item);
-    const existing = cellByKey.get(label);
-    const value = readItemValue(item);
-    const deviation = item.deviation_detected ? item.deviation_reason ?? 'Avvikelse' : '';
-    const action = item.action_text ?? '';
-
-    if (existing) {
-      existing.value = uniqueNonEmpty([existing.value, value]).join('; ');
-      existing.deviation = uniqueNonEmpty([existing.deviation, deviation]).join('; ');
-      existing.action = uniqueNonEmpty([existing.action, action]).join('; ');
-    } else {
-      cellByKey.set(label, { key: label, label, value, deviation, action });
-    }
-  }
-
-  return [...cellByKey.values()];
-}
-
-function readRunDeviationSummary(run: SharedRun): string {
-  return uniqueNonEmpty([
-    ...run.items.filter((item) => item.deviation_detected).map((item) => item.deviation_reason ?? 'Avvikelse'),
-    ...run.deviations.map((deviation) => deviation.description),
-  ]).join('; ');
-}
-
-function readRunActionSummary(run: SharedRun): string {
-  return uniqueNonEmpty([
-    ...run.items.map((item) => item.action_text),
-    ...run.deviations.map((deviation) => deviation.action_text),
-  ]).join('; ');
-}
-
-function buildReportValueColumns(runs: SharedRun[]): ReportValueColumn[] {
-  const columns = new Map<string, ReportValueColumn>();
-
-  for (const run of runs) {
-    for (const cell of readReportValueCells(run)) {
-      if (!columns.has(cell.key)) columns.set(cell.key, { key: cell.key, label: cell.label });
-    }
-  }
-
-  return [...columns.values()];
-}
-
-function buildPerformedControlTables(runs: SharedRun[]): string {
-  const groups = new Map<string, SharedRun[]>();
-
-  for (const run of runs) {
-    const groupKey = run.control_type_id || run.control_type_name;
-    groups.set(groupKey, [...(groups.get(groupKey) ?? []), run]);
-  }
-
-  return [...groups.values()].map((groupRuns) => {
-    const firstRun = groupRuns[0];
-    const categoryClass = readCategoryMeta(firstRun.control_type_category).className;
-    const routineSummary = readRunRoutineSummary(firstRun);
-    const columns = buildReportValueColumns(groupRuns);
-    const visibleColumns = columns.slice(0, MAX_REPORT_VALUE_COLUMNS);
-    const overflowColumns = columns.slice(MAX_REPORT_VALUE_COLUMNS);
-    const hasOverflow = overflowColumns.length > 0;
-    const columnHeaders = visibleColumns.map((column) => `<th>${escapeHtml(column.label)}</th>`).join('');
-    const rows = groupRuns.map((run) => {
-      const cells = readReportValueCells(run);
-      const cellByKey = new Map(cells.map((cell) => [cell.key, cell]));
-      const overflowText = overflowColumns
-        .map((column) => {
-          const cell = cellByKey.get(column.key);
-          return cell ? `${column.label}: ${cell.value}` : '';
-        })
-        .filter(Boolean)
-        .join('; ');
-      const valueCells = visibleColumns
-        .map((column) => `<td>${escapeHtml(cellByKey.get(column.key)?.value ?? '')}</td>`)
-        .join('');
-      const tone = readDeviationTone(run);
-      const deviationSummary = readRunDeviationSummary(run) || readDeviationLabel(run);
-
-      return `
-        <tr class="report-row report-row-${escapeHtml(categoryClass)} report-row-${escapeHtml(tone)}">
-          <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
-          <td>${escapeHtml(readRunPerformerName(run))}</td>
-          ${valueCells || '<td>Registrerad</td>'}
-          ${hasOverflow ? `<td>${escapeHtml(overflowText)}</td>` : ''}
-          <td>${escapeHtml(readRunStatusLabel(run))}</td>
-          <td>${escapeHtml(deviationSummary)}</td>
-          <td>${escapeHtml(readRunActionSummary(run))}</td>
-        </tr>
-      `;
-    }).join('');
-
-    return `
-      <h3>${escapeHtml(firstRun.control_type_name)}</h3>
-      ${routineSummary ? `<p class="routine"><strong>Rutin/instruktion:</strong> ${escapeHtml(routineSummary)}</p>` : ''}
-      <div class="report-table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Datum</th>
-              <th>Utförd av</th>
-              ${columnHeaders || '<th>Registrering</th>'}
-              ${hasOverflow ? '<th>Övrigt</th>' : ''}
-              <th>Status</th>
-              <th>Avvikelse</th>
-              <th>Åtgärd</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    `;
-  }).join('');
 }
 
 function matchesDeviationFilter(run: SharedRun, filter: DeviationFilter): boolean {
@@ -467,45 +321,82 @@ function isValidEmail(value: string): boolean {
 function buildPrintReportHtml(
   runs: SharedRun[],
   summary: SharedReportSummary,
-  attachmentImages: PrintableAttachmentImage[] = [],
+  attachmentStates: AttachmentState[] = [],
 ): string {
   const brandColor = '#5b46e1';
   const brandMark = `<img class="brand-mark" src="${escapeHtml(absoluteAssetUrl(brandAssets.icon))}" alt="" />`;
-  const performedControlTables = buildPerformedControlTables(runs);
-  const attachmentImageReferenceById = new Map(
-    attachmentImages.map((image) => [image.attachment.id, image.reference]),
-  );
-  const deviationRows = runs.flatMap((run) => run.deviations.map((deviation) => `
+  const report = buildInspectorReportDocument(runs, {
+    companyName: summary.companyName,
+    periodStart: summary.periodStart,
+    periodEnd: summary.periodEnd,
+    controlTypes: summary.controlTypes,
+    deviationFilterLabel: summary.deviationFilter,
+    search: summary.search,
+    sortLabel: summary.sort,
+    generatedAt: summary.generatedAt,
+  }, attachmentStates);
+  const performedControlTables = report.controlGroups.map((group) => {
+    const headers = group.columns.map((column) => `<th>${escapeHtml(column.label)}</th>`).join('');
+    const rows = group.rows.map((row) => `
+      <tr class="report-row report-row-${escapeHtml(group.category)} report-row-${escapeHtml(row.tone)}">
+        <td>${escapeHtml(row.performedAt)}</td>
+        <td>${escapeHtml(row.performer)}</td>
+        ${row.values.map((value) => `<td>${escapeHtml(value)}</td>`).join('')}
+        ${group.hasOverflow ? `<td>${escapeHtml(row.overflow)}</td>` : ''}
+        <td>${escapeHtml(row.status)}</td>
+        <td>${escapeHtml(row.deviation)}</td>
+        <td>${escapeHtml(row.action)}</td>
+      </tr>
+    `).join('');
+
+    return `
+      <h3>${escapeHtml(group.name)}</h3>
+      ${group.routine ? `<p class="routine"><strong>Rutin/instruktion:</strong> ${escapeHtml(group.routine)}</p>` : ''}
+      <div class="report-table-wrap">
+        <table>
+          <thead><tr><th>Datum</th><th>Utförd av</th>${headers}${group.hasOverflow ? '<th>Övrigt</th>' : ''}<th>Status</th><th>Avvikelse</th><th>Åtgärd</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
+  const deviationRows = report.deviations.map((deviation) => `
     <tr>
-      <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
-      <td>${escapeHtml(readRunPerformerName(run))}</td>
-      <td>${escapeHtml(run.control_type_name)}</td>
+      <td>${escapeHtml(deviation.performedAt)}</td>
+      <td>${escapeHtml(deviation.performer)}</td>
+      <td>${escapeHtml(deviation.controlType)}</td>
       <td>${escapeHtml(deviation.status)}</td>
       <td>${escapeHtml(deviation.severity)}</td>
       <td>${escapeHtml(deviation.description)}</td>
-      <td>${escapeHtml(deviation.action_text)}</td>
-      <td>${escapeHtml(deviation.resolved_at ? formatDateTime(deviation.resolved_at) : '')}</td>
+      <td>${escapeHtml(deviation.action)}</td>
+      <td>${escapeHtml(deviation.resolvedAt)}</td>
     </tr>
-  `)).join('');
+  `).join('');
 
-  const attachmentRows = runs.flatMap((run) => run.attachments.map((attachment) => `
+  const attachmentRows = report.attachments.map((attachment) => `
     <tr>
-      <td>${escapeHtml(formatDateTime(run.performed_at))}</td>
-      <td>${escapeHtml(readRunPerformerName(run))}</td>
-      <td>${escapeHtml(run.control_type_name)}</td>
-      <td>${escapeHtml(attachment.file_name ?? 'Bilaga')}</td>
-      <td>${escapeHtml(attachmentImageReferenceById.get(attachment.id) ?? '')}</td>
-      <td>${escapeHtml(attachment.created_at ? formatDateTime(attachment.created_at) : '')}</td>
+      <td>${escapeHtml(attachment.performedAt)}</td>
+      <td>${escapeHtml(attachment.performer)}</td>
+      <td>${escapeHtml(attachment.controlType)}</td>
+      <td>${escapeHtml(attachment.fileName)}</td>
+      <td>${escapeHtml(attachment.reference)}</td>
+      <td>${escapeHtml(attachment.createdAt)}</td>
     </tr>
-  `)).join('');
-  const attachmentImageSections = attachmentImages.map((image) => `
+  `).join('');
+  const attachmentImageSections = report.attachmentImages.map((image) => `
     <section class="attachment-appendix-card">
       <h3>${escapeHtml(image.reference)}</h3>
-      <p>${escapeHtml(image.run.control_type_name)} - ${escapeHtml(formatDateTime(image.run.performed_at))}</p>
-      <p>${escapeHtml(image.attachment.file_name ?? 'Bilaga')}</p>
-      <img src="${escapeHtml(image.signedUrl)}" alt="${escapeHtml(image.attachment.file_name ?? image.reference)}" />
+      <p>${escapeHtml(image.controlType)} - ${escapeHtml(image.performedAt)}</p>
+      <p>${escapeHtml(image.fileName)}</p>
+      <img src="${escapeHtml(String(image.source))}" alt="${escapeHtml(image.fileName || image.reference)}" />
     </section>
   `).join('');
+  const omittedAttachmentWarning = report.omittedAttachments.length ? `
+    <section class="attachment-warning">
+      <h3>Några bildbilagor kunde inte tas med</h3>
+      <ul>${report.omittedAttachments.map((attachment) => `<li>${escapeHtml(attachment.reference)}: ${escapeHtml(attachment.fileName)} – ${escapeHtml(attachment.reason)}</li>`).join('')}</ul>
+    </section>
+  ` : '';
 
   return `
     <!doctype html>
@@ -535,6 +426,9 @@ function buildPrintReportHtml(
           .attachment-appendix-card h3 { margin: 0 0 8px; color: ${escapeHtml(brandColor)}; }
           .attachment-appendix-card p { margin: 0 0 6px; color: #4f5b73; }
           .attachment-appendix-card img { display: block; width: 100%; max-height: 620px; margin-top: 12px; border-radius: 10px; object-fit: contain; background: #f6f7fb; }
+          .attachment-warning { border: 1px solid #d97706; border-radius: 12px; background: #fff8e8; margin: 0 0 24px; padding: 12px; }
+          .attachment-warning h3 { margin: 0 0 8px; }
+          .attachment-warning ul { margin: 0; padding-left: 20px; }
           .report-row-temperature td:first-child { border-left: 5px solid #059669; }
           .report-row-checklist td:first-child { border-left: 5px solid #2563eb; }
           .report-row-receiving td:first-child { border-left: 5px solid #d97706; }
@@ -563,11 +457,7 @@ function buildPrintReportHtml(
           <p><strong>Sortering:</strong> ${escapeHtml(summary.sort)}</p>
         </section>
         <div class="summary">
-          <div class="metric"><strong>${summary.runCount}</strong> kontroller</div>
-          <div class="metric"><strong>${summary.documentedDays}</strong> dokumenterade dagar</div>
-          <div class="metric"><strong>${summary.itemCount}</strong> kontrollpunkter</div>
-          <div class="metric"><strong>${summary.openDeviations}</strong> öppna avvikelser</div>
-          <div class="metric"><strong>${summary.resolvedDeviations}</strong> åtgärdade avvikelser</div>
+          ${report.summary.metrics.map((metric) => `<div class="metric"><strong>${escapeHtml(metric.value)}</strong> ${escapeHtml(metric.label)}</div>`).join('')}
         </div>
 
         <h2>Utförda kontroller</h2>
@@ -603,7 +493,8 @@ function buildPrintReportHtml(
           </thead>
           <tbody>${attachmentRows || '<tr><td colspan="6">Inga bilagor i urvalet.</td></tr>'}</tbody>
         </table>
-        ${attachmentImages.length ? `
+        ${omittedAttachmentWarning}
+        ${report.attachmentImages.length ? `
           <section class="attachment-appendix">
             <h2>Bildbilagor</h2>
             ${attachmentImageSections}
@@ -631,10 +522,10 @@ function writePrintReport(
   printWindow: Window,
   runs: SharedRun[],
   summary: SharedReportSummary,
-  attachmentImages: PrintableAttachmentImage[] = [],
+  attachmentStates: AttachmentState[] = [],
 ): void {
   printWindow.document.open();
-  printWindow.document.write(buildPrintReportHtml(runs, summary, attachmentImages));
+  printWindow.document.write(buildPrintReportHtml(runs, summary, attachmentStates));
   printWindow.document.close();
 }
 
@@ -741,27 +632,21 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
     }
   }
 
-  async function createPrintableAttachmentImages(sourceRuns: SharedRun[]): Promise<PrintableAttachmentImage[]> {
+  async function createPrintableAttachmentStates(sourceRuns: SharedRun[]): Promise<AttachmentState[]> {
     const imagePairs = sourceRuns.flatMap((run) => (
       run.attachments
         .filter(isImageAttachment)
         .map((attachment) => ({ run, attachment }))
     ));
 
-    const signedImages = await Promise.all(
-      imagePairs.map(async ({ run, attachment }, index) => {
+    return Promise.all(imagePairs.map(async ({ attachment }) => {
+      try {
         const signed = await createSharedAttachmentSignedUrl(shareKey, attachment.id);
-
-        return {
-          attachment,
-          run,
-          signedUrl: signed.signedUrl,
-          reference: readAttachmentReference(index),
-        };
-      }),
-    );
-
-    return signedImages;
+        return { attachmentId: attachment.id, status: 'included' as const, source: signed.signedUrl };
+      } catch {
+        return { attachmentId: attachment.id, status: 'omitted' as const, reason: 'Bilden kunde inte hämtas.' };
+      }
+    }));
   }
 
   const visibleRuns = sortRuns(
@@ -834,10 +719,14 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
 
     try {
       setMessage('');
-      const attachmentImages = await createPrintableAttachmentImages(visibleRuns);
-      writePrintReport(printWindow, visibleRuns, reportSummary, attachmentImages);
+      const attachmentStates = await createPrintableAttachmentStates(visibleRuns);
+      writePrintReport(printWindow, visibleRuns, reportSummary, attachmentStates);
 
       await recordExport('pdf');
+      const omittedCount = attachmentStates.filter((state) => state.status === 'omitted').length;
+      if (omittedCount > 0) {
+        setMessage(`Rapporten skapades, men ${omittedCount} ${omittedCount === 1 ? 'bildbilaga' : 'bildbilagor'} kunde inte tas med.`);
+      }
     } catch (error) {
       printWindow.close();
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa PDF-vyn.');
@@ -864,8 +753,10 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
         controlTypeNames: selectedControlTypeNames,
         deviationFilter,
         deviationFilterLabel: deviationFilterLabels[deviationFilter],
+        searchQuery: searchQuery.trim(),
         sort: sortKey,
         sortLabel: sortLabels[sortKey],
+        visibleRunIds: visibleRuns.map((run) => run.run_id),
         summaryUrl: window.location.href,
       });
       setMessage('Rapporten skickades.');
