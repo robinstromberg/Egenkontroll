@@ -7,10 +7,12 @@ import {
   createOrganizationInvitationHandler,
   resolveSupabasePublicConfig,
   sendInvitationWithResend,
+  verifySupabaseAccessToken,
 } from '../../api/send-organization-invitation.js';
 
 const invitationId = '11111111-1111-4111-8111-111111111111';
 const organizationId = '22222222-2222-4222-8222-222222222222';
+const userId = '33333333-3333-4333-8333-333333333333';
 const firstAttemptId = '44444444-4444-4444-8444-444444444444';
 const secondAttemptId = '55555555-5555-4555-8555-555555555555';
 const futureExpiry = '2099-07-28T12:00:00.000Z';
@@ -51,17 +53,20 @@ function createFakeClient(options = {}) {
     },
     organizations: { name: 'Testköket' },
   };
+  const calls = [];
 
   return {
-    auth: {
-      getUser: async () => options.authenticated === false
-        ? { data: { user: null }, error: new Error('invalid') }
-        : { data: { user: { id: '33333333-3333-4333-8333-333333333333' } }, error: null },
-    },
+    calls,
     from(table) {
       const query = {
-        select() { return query; },
-        eq() { return query; },
+        select() {
+          calls.push({ table, operation: 'select' });
+          return query;
+        },
+        eq(column, value) {
+          calls.push({ table, operation: 'eq', column, value });
+          return query;
+        },
         maybeSingle: async () => ({ data: rows[table], error: null }),
       };
       return query;
@@ -69,7 +74,12 @@ function createFakeClient(options = {}) {
   };
 }
 
-async function callHandler({ client = createFakeClient(), sendEmail, attemptId = firstAttemptId }) {
+async function callHandler({
+  client = createFakeClient(),
+  sendEmail,
+  attemptId = firstAttemptId,
+  verifyAccessToken = async () => ({ id: userId }),
+}) {
   const request = {
     method: 'POST',
     headers: { authorization: 'Bearer test-access-token', 'x-request-id': 'request-1' },
@@ -77,12 +87,13 @@ async function callHandler({ client = createFakeClient(), sendEmail, attemptId =
   };
   const response = createFakeResponse();
   const handler = createOrganizationInvitationHandler({
+    verifyAccessToken,
     createCallerClient: () => client,
     sendEmail,
     logEvent: () => undefined,
   });
   await handler(request, response);
-  return { response, payload: JSON.parse(response.body) };
+  return { client, response, payload: JSON.parse(response.body) };
 }
 
 test('invitation email contains exact app link and escapes dynamic HTML', () => {
@@ -100,7 +111,6 @@ test('invitation email contains exact app link and escapes dynamic HTML', () => 
   assert.match(email.text, /Logga in eller skapa ett konto/);
   assert.match(email.html, /&lt;Test &amp; kök&gt;/);
   assert.doesNotMatch(email.html, /<Test & kök>/);
-
 });
 
 test('same send attempt deduplicates while an explicit resend gets a new key', async () => {
@@ -122,8 +132,55 @@ test('same send attempt deduplicates while an explicit resend gets a new key', a
   ]);
 });
 
-test('handler creates its caller client from public fallbacks when runtime env is missing', async () => {
-  let capturedConfig;
+test('Supabase Auth verification separates publishable key from user bearer token', async () => {
+  let captured;
+  const user = await verifySupabaseAccessToken('user-access-token', {
+    environment: {
+      SUPABASE_URL: 'https://runtime.supabase.test',
+      SUPABASE_ANON_KEY: 'runtime-publishable-key',
+    },
+    fetchImplementation: async (url, options) => {
+      captured = { url, options };
+      return { ok: true, status: 200, json: async () => ({ id: userId }) };
+    },
+  });
+
+  assert.deepEqual(user, { id: userId });
+  assert.equal(captured.url, 'https://runtime.supabase.test/auth/v1/user');
+  assert.equal(captured.options.method, 'GET');
+  assert.equal(captured.options.headers.apikey, 'runtime-publishable-key');
+  assert.equal(captured.options.headers.authorization, 'Bearer user-access-token');
+  assert.notEqual(captured.options.headers.authorization, 'Bearer runtime-publishable-key');
+});
+
+test('invalid user token returns 401 before database or email access', async () => {
+  let providerCalls = 0;
+  const client = createFakeClient();
+  const { response, payload } = await callHandler({
+    client,
+    verifyAccessToken: () => verifySupabaseAccessToken('invalid-access-token', {
+      environment: {
+        SUPABASE_URL: 'https://runtime.supabase.test',
+        SUPABASE_ANON_KEY: 'runtime-publishable-key',
+      },
+      fetchImplementation: async () => ({
+        ok: false,
+        status: 401,
+        json: async () => ({ message: 'invalid token' }),
+      }),
+    }),
+    sendEmail: async () => { providerCalls += 1; },
+  });
+
+  assert.equal(response.statusCode, 401);
+  assert.match(payload.error, /session är ogiltig/);
+  assert.equal(client.calls.length, 0);
+  assert.equal(providerCalls, 0);
+});
+
+test('handler uses public fallbacks for Auth and RLS-scoped caller client when runtime env is missing', async () => {
+  let capturedAuthRequest;
+  let capturedClientConfig;
   const request = {
     method: 'POST',
     headers: { authorization: 'Bearer test-access-token', 'x-request-id': 'request-fallback' },
@@ -132,8 +189,12 @@ test('handler creates its caller client from public fallbacks when runtime env i
   const response = createFakeResponse();
   const handler = createOrganizationInvitationHandler({
     environment: {},
+    authFetchImplementation: async (url, options) => {
+      capturedAuthRequest = { url, options };
+      return { ok: true, status: 200, json: async () => ({ id: userId }) };
+    },
     createClientImplementation: (supabaseUrl, publishableKey, options) => {
-      capturedConfig = { supabaseUrl, publishableKey, options };
+      capturedClientConfig = { supabaseUrl, publishableKey, options };
       return createFakeClient();
     },
     sendEmail: async () => ({ id: 'provider-id' }),
@@ -143,9 +204,12 @@ test('handler creates its caller client from public fallbacks when runtime env i
   await handler(request, response);
 
   assert.equal(response.statusCode, 200);
-  assert.equal(capturedConfig.supabaseUrl, 'https://eapjywbgxtudqjrlueep.supabase.co');
-  assert.equal(capturedConfig.publishableKey, 'sb_publishable_YsqN7EM6XP7U750bZyqVZw_Gi4p5SYg');
-  assert.equal(capturedConfig.options.global.headers.authorization, 'Bearer test-access-token');
+  assert.equal(capturedAuthRequest.url, 'https://eapjywbgxtudqjrlueep.supabase.co/auth/v1/user');
+  assert.equal(capturedAuthRequest.options.headers.apikey, 'sb_publishable_YsqN7EM6XP7U750bZyqVZw_Gi4p5SYg');
+  assert.equal(capturedAuthRequest.options.headers.authorization, 'Bearer test-access-token');
+  assert.equal(capturedClientConfig.supabaseUrl, 'https://eapjywbgxtudqjrlueep.supabase.co');
+  assert.equal(capturedClientConfig.publishableKey, 'sb_publishable_YsqN7EM6XP7U750bZyqVZw_Gi4p5SYg');
+  assert.equal(capturedClientConfig.options.global.headers.authorization, 'Bearer test-access-token');
 });
 
 test('runtime Supabase env takes precedence over public fallbacks', () => {
@@ -229,6 +293,22 @@ test('only an active owner or admin can send an invitation', async () => {
   assert.equal(response.statusCode, 403);
   assert.match(payload.error, /saknar behörighet/);
   assert.equal(providerCalls, 0);
+});
+
+test('verified user id is used in the RLS-scoped membership query', async () => {
+  const client = createFakeClient();
+  const { response } = await callHandler({
+    client,
+    sendEmail: async () => ({ id: 'provider-id' }),
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.ok(client.calls.some((call) => (
+    call.table === 'organization_memberships'
+    && call.operation === 'eq'
+    && call.column === 'user_id'
+    && call.value === userId
+  )));
 });
 
 test('provider failure is not reported as success and remains retryable', async () => {
