@@ -300,11 +300,13 @@
   "apiPaths": [
     "/api/client-error",
     "/api/send-inspector-report",
+    "/api/send-organization-invitation",
     "/api/shared-attachment-url"
   ],
   "apiClientPaths": [
     "/api/client-error",
     "/api/send-inspector-report",
+    "/api/send-organization-invitation",
     "/api/shared-attachment-url"
   ],
   "clientEnvVars": [

@@ -2,6 +2,7 @@ import type { User } from '@supabase/supabase-js';
 import type { BillingPlan } from '../config/subscription';
 import { createTrialWindow } from '../config/subscription';
 import { supabase } from '../lib/supabaseClient';
+import { getCurrentSession } from './authService';
 import { cloneInactiveDefaultTemplatesToOrganization, cloneTemplatesToOrganization } from './templateService';
 import type {
   InvitationStatus,
@@ -234,21 +235,75 @@ export async function createOrganizationInvitation(input: {
   email: string;
   role: Exclude<OrganizationRole, 'owner'>;
   invitedBy: string;
-}): Promise<void> {
+}): Promise<OrganizationInvitationSummary> {
   const email = input.email.trim().toLowerCase();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-  const { error } = await supabase.from('organization_invitations').insert({
-    organization_id: input.organizationId,
-    email,
-    role: input.role,
-    status: 'pending' satisfies InvitationStatus,
-    invited_by: input.invitedBy,
-    expires_at: expiresAt,
-  });
+  const readPendingInvitation = async () => {
+    const { data, error } = await supabase
+      .from('organization_invitations')
+      .select('id, organization_id, email, role, status, invited_by, accepted_by, accepted_at, expires_at, created_at, updated_at')
+      .eq('organization_id', input.organizationId)
+      .eq('email', email)
+      .eq('status', 'pending')
+      .maybeSingle();
+
+    if (error) throw error;
+    return data as OrganizationInvitationSummary | null;
+  };
+
+  const reusePendingInvitation = (invitation: OrganizationInvitationSummary) => {
+    if (invitation.role !== input.role) {
+      throw new Error('Det finns redan en väntande inbjudan med en annan roll. Återkalla den först.');
+    }
+    if (new Date(invitation.expires_at).getTime() <= Date.now()) {
+      throw new Error('Den väntande inbjudan har gått ut. Förläng den innan du skickar igen.');
+    }
+    return invitation;
+  };
+
+  const existingInvitation = await readPendingInvitation();
+  if (existingInvitation) return reusePendingInvitation(existingInvitation);
+
+  const { data, error } = await supabase
+    .from('organization_invitations')
+    .insert({
+      organization_id: input.organizationId,
+      email,
+      role: input.role,
+      status: 'pending' satisfies InvitationStatus,
+      invited_by: input.invitedBy,
+      expires_at: expiresAt,
+    })
+    .select('id, organization_id, email, role, status, invited_by, accepted_by, accepted_at, expires_at, created_at, updated_at')
+    .single();
 
   if (error) {
+    if (error.code === '23505') {
+      const racedInvitation = await readPendingInvitation();
+      if (racedInvitation) return reusePendingInvitation(racedInvitation);
+    }
     throw error;
+  }
+
+  return data as OrganizationInvitationSummary;
+}
+
+export async function sendOrganizationInvitationEmail(invitationId: string): Promise<void> {
+  const session = await getCurrentSession();
+  if (!session?.access_token) throw new Error('Logga in för att skicka inbjudan.');
+
+  const response = await fetch('/api/send-organization-invitation', {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${session.access_token}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ invitationId }),
+  });
+  const payload = await response.json().catch(() => ({})) as { error?: string };
+  if (!response.ok) {
+    throw new Error(payload.error || 'Inbjudan kunde inte skickas. Försök igen senare.');
   }
 }
 
