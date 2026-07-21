@@ -160,9 +160,10 @@ export default async function handler(request, response) {
     const now = new Date();
     const { data: shareLink, error: shareLinkError } = await serviceClient
       .from('share_links')
-      .select('id, organization_id, valid_until, period_start, period_end, included_control_type_ids, status')
+      .select('id, organization_id, valid_from, valid_until, period_start, period_end, included_control_type_ids, status')
       .eq('token_hash', hashShareToken(rawToken))
       .eq('status', 'active')
+      .lte('valid_from', now.toISOString())
       .gt('valid_until', now.toISOString())
       .single();
 

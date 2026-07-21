@@ -55,14 +55,23 @@ insert into public.control_runs (
   performed_at,
   notes
 )
-values (
-  'cccccccc-cccc-4ccc-8ccc-cccccccccc31',
-  'cccccccc-cccc-4ccc-8ccc-cccccccccc01',
-  'cccccccc-cccc-4ccc-8ccc-cccccccccc11',
-  'completed',
-  now(),
-  'Inspector smoke run'
-);
+values
+  (
+    'cccccccc-cccc-4ccc-8ccc-cccccccccc31',
+    'cccccccc-cccc-4ccc-8ccc-cccccccccc01',
+    'cccccccc-cccc-4ccc-8ccc-cccccccccc11',
+    'completed',
+    now(),
+    'Inspector smoke run'
+  ),
+  (
+    'cccccccc-cccc-4ccc-8ccc-cccccccccc32',
+    'cccccccc-cccc-4ccc-8ccc-cccccccccc01',
+    'cccccccc-cccc-4ccc-8ccc-cccccccccc11',
+    'completed',
+    now() - interval '1 year',
+    'Older inspector smoke run'
+  );
 
 insert into public.control_run_items (
   id,
@@ -128,8 +137,8 @@ values
     encode(extensions.digest('inspector-smoke-active-token', 'sha256'), 'hex'),
     now() - interval '1 minute',
     now() + interval '1 hour',
-    current_date - 1,
-    current_date + 1,
+    date '1900-01-01',
+    date '9999-12-31',
     array['cccccccc-cccc-4ccc-8ccc-cccccccccc11']::uuid[],
     'active'
   ),
@@ -139,8 +148,8 @@ values
     encode(extensions.digest('inspector-smoke-expired-token', 'sha256'), 'hex'),
     now() - interval '2 hours',
     now() - interval '1 hour',
-    current_date - 1,
-    current_date + 1,
+    date '1900-01-01',
+    date '9999-12-31',
     array['cccccccc-cccc-4ccc-8ccc-cccccccccc11']::uuid[],
     'active'
   );
@@ -152,7 +161,29 @@ do $$
 declare
   row_count int;
   shared_row record;
+  context_row record;
 begin
+  begin
+    perform *
+    from public.create_temporary_inspector_share_link('cccccccc-cccc-4ccc-8ccc-cccccccccc01');
+    raise exception 'Inspector smoke failure: anonymous inspector created a share link';
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+
+  select *
+  into context_row
+  from public.get_shared_inspector_context('inspector-smoke-active-token');
+
+  if context_row.organization_name <> 'Inspector Smoke Org' then
+    raise exception 'Inspector smoke failure: context organization_name was %, expected Inspector Smoke Org', context_row.organization_name;
+  end if;
+
+  if context_row.valid_until is null then
+    raise exception 'Inspector smoke failure: context did not expose link validity';
+  end if;
+
   select count(*)
   into row_count
   from public.get_shared_control_runs(
@@ -164,6 +195,19 @@ begin
 
   if row_count <> 1 then
     raise exception 'Inspector smoke failure: active token returned % rows, expected 1', row_count;
+  end if;
+
+  select count(*)
+  into row_count
+  from public.get_shared_control_runs(
+    'inspector-smoke-active-token',
+    current_date - 400,
+    current_date + 1,
+    array[]::uuid[]
+  );
+
+  if row_count <> 2 then
+    raise exception 'Inspector smoke failure: short-lived link returned % rows across older selected documentation, expected 2', row_count;
   end if;
 
   select *
@@ -211,6 +255,14 @@ begin
 
   if row_count <> 0 then
     raise exception 'Inspector smoke failure: expired token returned % rows, expected 0', row_count;
+  end if;
+
+  select count(*)
+  into row_count
+  from public.get_shared_inspector_context('inspector-smoke-expired-token');
+
+  if row_count <> 0 then
+    raise exception 'Inspector smoke failure: expired token returned inspector context';
   end if;
 
   select count(*)

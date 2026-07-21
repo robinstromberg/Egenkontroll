@@ -48,12 +48,19 @@ values
   );
 
 insert into public.organizations (id, name, subscription_status, created_by)
-values (
-  'dddddddd-dddd-4ddd-8ddd-dddddddddd11',
-  'Admin Staff Smoke Org',
-  'trial',
-  'dddddddd-dddd-4ddd-8ddd-dddddddddd01'
-);
+values
+  (
+    'dddddddd-dddd-4ddd-8ddd-dddddddddd11',
+    'Admin Staff Smoke Org',
+    'trial',
+    'dddddddd-dddd-4ddd-8ddd-dddddddddd01'
+  ),
+  (
+    'dddddddd-dddd-4ddd-8ddd-dddddddddd12',
+    'Other Admin Staff Smoke Org',
+    'trial',
+    'dddddddd-dddd-4ddd-8ddd-dddddddddd01'
+  );
 
 insert into public.organization_memberships (organization_id, user_id, role, status)
 values
@@ -141,6 +148,11 @@ values (
 );
 
 do $$
+declare
+  first_share record;
+  second_share record;
+  affected_count int;
+  visible_count int;
 begin
   begin
     insert into public.control_types (
@@ -190,11 +202,166 @@ begin
       'active'
     );
 
-    raise exception 'Permission failure: staff created a share link';
+    raise exception 'Permission failure: staff bypassed the temporary inspector RPC';
   exception
     when insufficient_privilege or with_check_option_violation then
       null;
   end;
+
+  select *
+  into first_share
+  from public.create_temporary_inspector_share_link('dddddddd-dddd-4ddd-8ddd-dddddddddd11');
+
+  select *
+  into second_share
+  from public.create_temporary_inspector_share_link('dddddddd-dddd-4ddd-8ddd-dddddddddd11');
+
+  if first_share.raw_token !~ '^[0-9a-f]{48}$' then
+    raise exception 'Permission failure: temporary inspector token has unexpected format';
+  end if;
+
+  if first_share.raw_token = second_share.raw_token then
+    raise exception 'Permission failure: temporary inspector tokens were reused';
+  end if;
+
+  if first_share.valid_until < statement_timestamp() + interval '6 days 23 hours 59 minutes'
+    or first_share.valid_until > statement_timestamp() + interval '7 days 1 minute' then
+    raise exception 'Permission failure: temporary inspector link does not expire after seven days';
+  end if;
+
+  begin
+    perform *
+    from public.create_temporary_inspector_share_link('dddddddd-dddd-4ddd-8ddd-dddddddddd12');
+    raise exception 'Permission failure: staff created a link for another organization';
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+
+  select count(*)
+  into visible_count
+  from public.share_links
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11';
+
+  if visible_count <> 0 then
+    raise exception 'Permission failure: staff can list share links';
+  end if;
+
+  update public.share_links
+  set status = 'revoked'
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11';
+  get diagnostics affected_count = row_count;
+  if affected_count <> 0 then
+    raise exception 'Permission failure: staff updated share links';
+  end if;
+
+  delete from public.share_links
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11';
+  get diagnostics affected_count = row_count;
+  if affected_count <> 0 then
+    raise exception 'Permission failure: staff deleted share links';
+  end if;
+
+  raise notice 'Active staff temporary inspector sharing checks passed.';
+end $$;
+
+reset role;
+
+do $$
+declare
+  stored_count int;
+  invalid_scope_count int;
+begin
+  select count(*)
+  into stored_count
+  from public.share_links
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11'
+    and created_by = 'dddddddd-dddd-4ddd-8ddd-dddddddddd02';
+
+  if stored_count <> 2 then
+    raise exception 'Permission failure: expected 2 staff-created links, found %', stored_count;
+  end if;
+
+  select count(*)
+  into invalid_scope_count
+  from public.share_links
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11'
+    and created_by = 'dddddddd-dddd-4ddd-8ddd-dddddddddd02'
+    and (
+      token_hash !~ '^[0-9a-f]{64}$'
+      or valid_until <> valid_from + interval '7 days'
+      or period_start <> date '1900-01-01'
+      or period_end <> date '9999-12-31'
+      or cardinality(included_control_type_ids) <> 0
+      or status <> 'active'
+    );
+
+  if invalid_scope_count <> 0 then
+    raise exception 'Permission failure: staff-created link escaped the server-defined scope';
+  end if;
+end $$;
+
+update public.organization_memberships
+set status = 'disabled'
+where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11'
+  and user_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd02';
+
+select set_config('request.jwt.claim.sub', 'dddddddd-dddd-4ddd-8ddd-dddddddddd02', true);
+set local role authenticated;
+
+do $$
+begin
+  begin
+    perform *
+    from public.create_temporary_inspector_share_link('dddddddd-dddd-4ddd-8ddd-dddddddddd11');
+    raise exception 'Permission failure: disabled staff created a temporary inspector link';
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+end $$;
+
+reset role;
+
+update public.organization_memberships
+set status = 'active'
+where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11'
+  and user_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd02';
+
+select set_config('request.jwt.claim.sub', 'dddddddd-dddd-4ddd-8ddd-dddddddddd01', true);
+set local role authenticated;
+
+insert into public.share_links (
+  organization_id,
+  token_hash,
+  valid_until,
+  period_start,
+  period_end,
+  created_by,
+  status
+)
+values (
+  'dddddddd-dddd-4ddd-8ddd-dddddddddd11',
+  encode(extensions.digest('admin-custom-share-token', 'sha256'), 'hex'),
+  now() + interval '30 days',
+  current_date - 30,
+  current_date,
+  'dddddddd-dddd-4ddd-8ddd-dddddddddd01',
+  'active'
+);
+
+do $$
+declare
+  visible_count int;
+begin
+  select count(*)
+  into visible_count
+  from public.share_links
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11';
+
+  if visible_count <> 3 then
+    raise exception 'Permission failure: owner cannot retain existing link management';
+  end if;
 
   raise notice 'Admin/staff permission smoke test passed. Rolling back test data.';
 end $$;

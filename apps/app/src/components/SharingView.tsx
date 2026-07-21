@@ -2,8 +2,9 @@ import { FormEvent, lazy, Suspense, useCallback, useEffect, useState } from 'rea
 import { ActionButton } from './ui/ActionButton';
 import { BackButton } from './ui/BackButton';
 import { trackProductEvent } from '../services/productEventService';
-import { createAccessLink, listAccessLinks, listExportLogs } from '../services/shareRecords';
+import { createAccessLink, createTemporaryInspectorAccessLink, listAccessLinks, listExportLogs } from '../services/shareRecords';
 import type { AccessRecord, ExportLogRecord } from '../services/shareRecords';
+import { readInspectorSharingCapabilities, temporaryInspectorShareCopy } from '../sharing/inspectorSharing';
 import './SharingView.css';
 
 const LocalQrCode = lazy(() => import('./LocalQrCode'));
@@ -11,6 +12,7 @@ const LocalQrCode = lazy(() => import('./LocalQrCode'));
 export type SharingViewProps = {
   organizationId: string;
   userId: string;
+  canManage: boolean;
   onBackToToday: () => void;
 };
 
@@ -27,21 +29,18 @@ function dateAfter(days: number): string {
   return value.toISOString().slice(0, 10);
 }
 
-function dateDaysAgo(days: number): string {
-  const value = new Date();
-  value.setDate(value.getDate() - days);
-  return value.toISOString().slice(0, 10);
-}
-
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function formatAccessUrl(value: string): string {
   const marker = ['s', 'hare', ''].join('/');
   const key = value.split(marker)[1];
   if (!key) return value;
   return window.location.origin + '/' + String.fromCharCode(35) + 'inspector=' + key;
+}
+
+function formatValidUntil(value: string): string {
+  const parsed = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T23:59:59`)
+    : new Date(value);
+  return new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium', timeStyle: 'short' }).format(parsed);
 }
 
 function getShareStatusText(status: string): string {
@@ -71,7 +70,8 @@ function readFilterText(filters: Record<string, unknown>): string {
   return counts ? `${period} · ${counts}` : period;
 }
 
-export function SharingView({ organizationId, userId, onBackToToday }: SharingViewProps) {
+export function SharingView({ organizationId, userId, canManage, onBackToToday }: SharingViewProps) {
+  const capabilities = readInspectorSharingCapabilities(canManage);
   const [validityPreset, setValidityPreset] = useState('7');
   const [customValidUntil, setCustomValidUntil] = useState(dateAfter(7));
   const [links, setLinks] = useState<AccessRecord[]>([]);
@@ -87,13 +87,15 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
     : dateAfter(Number(validityPreset));
 
   const refresh = useCallback(async () => {
+    if (!capabilities.canManageLinks) return;
+
     const [nextLinks, nextExportLogs] = await Promise.all([
       listAccessLinks(organizationId),
       listExportLogs(organizationId),
     ]);
     setLinks(nextLinks);
     setExportLogs(nextExportLogs);
-  }, [organizationId]);
+  }, [capabilities.canManageLinks, organizationId]);
 
   useEffect(() => {
     void refresh();
@@ -125,20 +127,12 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
   }
 
   async function handleQuickShare() {
-    const validUntil = dateAfter(7);
-
     try {
       setQuickSharing(true);
       setMessage('');
-      const url = await createAccessLink({
-        organizationId,
-        createdBy: userId,
-        validUntil,
-        periodStart: dateDaysAgo(30),
-        periodEnd: today(),
-      });
-      setLatestUrl(formatAccessUrl(url));
-      setLatestValidUntil(validUntil);
+      const access = await createTemporaryInspectorAccessLink(organizationId);
+      setLatestUrl(formatAccessUrl(access.url));
+      setLatestValidUntil(access.validUntil);
       setCopied(false);
       await refresh();
       trackProductEvent({
@@ -184,7 +178,7 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
     <section className="sharing-view" aria-labelledby="sharing-title">
       <div className="sharing-view-header">
         <div>
-          <p className="eyebrow">Delning</p>
+          <p className="eyebrow">Visa för inspektör</p>
           <h3 id="sharing-title">Inspektörslänk</h3>
           <p className="muted-copy">Skapa en tidsbegränsad läslänk. Inspektören väljer period i läsvyn.</p>
         </div>
@@ -193,16 +187,16 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
 
       <section className="quick-share-card" aria-labelledby="quick-share-title">
         <div>
-          <p className="eyebrow">Snabbdelning</p>
-          <h4 id="quick-share-title">Dela dokumentation</h4>
-          <p>Skapar en read-only länk för senaste 30 dagarna. Länken gäller i 7 dagar.</p>
+          <p className="eyebrow">{temporaryInspectorShareCopy.eyebrow}</p>
+          <h4 id="quick-share-title">{temporaryInspectorShareCopy.title}</h4>
+          <p>{temporaryInspectorShareCopy.description}</p>
         </div>
         <ActionButton type="button" onClick={handleQuickShare} disabled={quickSharing}>
-          {quickSharing ? 'Skapar...' : 'Dela dokumentation'}
+          {quickSharing ? 'Skapar...' : temporaryInspectorShareCopy.action}
         </ActionButton>
       </section>
 
-      <form className="sharing-form" onSubmit={handleSubmit}>
+      {capabilities.canManageLinks ? <form className="sharing-form" onSubmit={handleSubmit}>
         <div>
           <p className="eyebrow">Avancerat</p>
           <h4>Skapa egen läslänk</h4>
@@ -240,7 +234,7 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
         ) : null}
 
         <ActionButton type="submit">Skapa läslänk</ActionButton>
-      </form>
+      </form> : null}
 
       {message ? <p className="form-message error-message">{message}</p> : null}
 
@@ -250,7 +244,7 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
             <div>
               <p className="eyebrow">Delning skapad</p>
               <h3 id="share-modal-title">Inspektörslänk</h3>
-              <p className="muted-copy">Giltig till {latestValidUntil || selectedValidUntil}.</p>
+              <p className="muted-copy">Giltig till {formatValidUntil(latestValidUntil || selectedValidUntil)}.</p>
             </div>
             <Suspense fallback={<div className="qr-image large qr-loading" role="status">Skapar QR-kod...</div>}>
               <LocalQrCode className="qr-image large" value={latestUrl} />
@@ -276,7 +270,7 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
         </div>
       ) : null}
 
-      <div className="share-list">
+      {capabilities.canManageLinks ? <div className="share-list">
         <h4>Senaste delningar</h4>
         {links.map((link) => (
           <article className="share-row" key={link.id}>
@@ -296,9 +290,9 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
             ) : null}
           </article>
         ))}
-      </div>
+      </div> : null}
 
-      <div className="share-list">
+      {capabilities.canManageLinks ? <div className="share-list">
         <h4>Senaste exporter</h4>
         {exportLogs.length === 0 ? <p className="muted-copy">Inga exporter har loggats ännu.</p> : null}
         {exportLogs.slice(0, 8).map((log) => (
@@ -308,7 +302,7 @@ export function SharingView({ organizationId, userId, onBackToToday }: SharingVi
             <p>{readFilterText(log.filters)}</p>
           </article>
         ))}
-      </div>
+      </div> : null}
     </section>
   );
 }

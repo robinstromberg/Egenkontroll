@@ -10,6 +10,16 @@ export type AccessRecord = {
   created_at: string;
 };
 
+export type TemporaryInspectorAccess = {
+  url: string;
+  validUntil: string;
+};
+
+export type SharedInspectorContext = {
+  organization_name: string;
+  valid_until: string;
+};
+
 export type SharedRun = {
   run_id: string;
   organization_name: string;
@@ -88,6 +98,31 @@ export type SharedAttachmentSignedUrl = {
   expiresAt: string;
 };
 
+function buildInspectorUrl(secret: string): string {
+  const marker = String.fromCharCode(35) + 'inspector=';
+  return `${window.location.origin}/${marker}${secret}`;
+}
+
+export async function createTemporaryInspectorAccessLink(
+  organizationId: string,
+): Promise<TemporaryInspectorAccess> {
+  const { data, error } = await supabase.rpc('create_temporary_inspector_share_link', {
+    p_organization_id: organizationId,
+  });
+
+  if (error) throw error;
+
+  const result = (data ?? [])[0] as { raw_token?: unknown; valid_until?: unknown } | undefined;
+  if (typeof result?.raw_token !== 'string' || typeof result.valid_until !== 'string') {
+    throw new Error('Inspektörslänken kunde inte skapas.');
+  }
+
+  return {
+    url: buildInspectorUrl(result.raw_token),
+    validUntil: result.valid_until,
+  };
+}
+
 export async function createAccessLink(input: {
   organizationId: string;
   createdBy: string;
@@ -112,8 +147,7 @@ export async function createAccessLink(input: {
 
   if (error) throw error;
 
-  const marker = String.fromCharCode(35) + 'inspector=';
-  return `${window.location.origin}/${marker}${secret}`;
+  return buildInspectorUrl(secret);
 }
 
 export async function listAccessLinks(organizationId: string): Promise<AccessRecord[]> {
@@ -148,6 +182,14 @@ export async function readSharedControlTypeOptions(secret: string): Promise<Shar
   if (error) throw error;
 
   return (data ?? []) as SharedControlTypeOption[];
+}
+
+export async function readSharedInspectorContext(secret: string): Promise<SharedInspectorContext | null> {
+  const { data, error } = await supabase.rpc('get_shared_inspector_context', { raw_token: secret });
+
+  if (error) throw error;
+
+  return ((data ?? [])[0] as SharedInspectorContext | undefined) ?? null;
 }
 
 export async function readSharedRuns(
