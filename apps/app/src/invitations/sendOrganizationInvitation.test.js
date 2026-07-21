@@ -10,6 +10,8 @@ import {
 
 const invitationId = '11111111-1111-4111-8111-111111111111';
 const organizationId = '22222222-2222-4222-8222-222222222222';
+const firstAttemptId = '44444444-4444-4444-8444-444444444444';
+const secondAttemptId = '55555555-5555-4555-8555-555555555555';
 const futureExpiry = '2099-07-28T12:00:00.000Z';
 
 function createFakeResponse() {
@@ -66,11 +68,11 @@ function createFakeClient(options = {}) {
   };
 }
 
-async function callHandler({ client = createFakeClient(), sendEmail }) {
+async function callHandler({ client = createFakeClient(), sendEmail, attemptId = firstAttemptId }) {
   const request = {
     method: 'POST',
     headers: { authorization: 'Bearer test-access-token', 'x-request-id': 'request-1' },
-    body: { invitationId },
+    body: { invitationId, attemptId },
   };
   const response = createFakeResponse();
   const handler = createOrganizationInvitationHandler({
@@ -98,9 +100,25 @@ test('invitation email contains exact app link and escapes dynamic HTML', () => 
   assert.match(email.html, /&lt;Test &amp; kök&gt;/);
   assert.doesNotMatch(email.html, /<Test & kök>/);
 
-  const firstKey = buildInvitationIdempotencyKey(invitation);
-  assert.equal(firstKey, buildInvitationIdempotencyKey(invitation));
-  assert.notEqual(firstKey, buildInvitationIdempotencyKey({ ...invitation, expiresAt: '2099-07-29T12:00:00.000Z' }));
+});
+
+test('same send attempt deduplicates while an explicit resend gets a new key', async () => {
+  const sameAttemptKey = buildInvitationIdempotencyKey(invitationId, firstAttemptId);
+  assert.equal(sameAttemptKey, buildInvitationIdempotencyKey(invitationId, firstAttemptId));
+  assert.notEqual(sameAttemptKey, buildInvitationIdempotencyKey(invitationId, secondAttemptId));
+
+  const sentKeys = [];
+  const sendEmail = async (input) => {
+    sentKeys.push(input.idempotencyKey);
+    return { id: `provider-${sentKeys.length}` };
+  };
+  await callHandler({ sendEmail, attemptId: firstAttemptId });
+  await callHandler({ sendEmail, attemptId: secondAttemptId });
+
+  assert.deepEqual(sentKeys, [
+    `organization-invitation/${invitationId}/${firstAttemptId}`,
+    `organization-invitation/${invitationId}/${secondAttemptId}`,
+  ]);
 });
 
 test('Resend request uses an idempotency key and the API key never enters the body', async () => {
@@ -125,6 +143,34 @@ test('Resend request uses an idempotency key and the API key never enters the bo
   assert.equal(captured.options.headers['idempotency-key'], 'organization-invitation/fingerprint');
   assert.equal(JSON.parse(captured.options.body).to[0], 'person@example.com');
   assert.doesNotMatch(captured.options.body, /server-secret-test-key/);
+});
+
+test('Resend 409 errors distinguish concurrent from invalid idempotent requests', async () => {
+  const input = {
+    to: 'person@example.com',
+    subject: 'Inbjudan',
+    text: 'Text',
+    html: '<p>Text</p>',
+    idempotencyKey: `organization-invitation/${invitationId}/${firstAttemptId}`,
+  };
+  const optionsFor = (name) => ({
+    apiKey: 'server-secret-test-key',
+    from: 'Min Egenkontroll <support@minegenkontroll.se>',
+    fetchImplementation: async () => ({ ok: false, status: 409, json: async () => ({ name }) }),
+  });
+
+  await assert.rejects(
+    sendInvitationWithResend(input, optionsFor('concurrent_idempotent_requests')),
+    (error) => error instanceof InvitationHttpError
+      && error.code === 'concurrent_idempotent_requests'
+      && /behandlas redan/.test(error.publicMessage),
+  );
+  await assert.rejects(
+    sendInvitationWithResend(input, optionsFor('invalid_idempotent_request')),
+    (error) => error instanceof InvitationHttpError
+      && error.code === 'invalid_idempotent_request'
+      && /starta ett nytt utskick/.test(error.publicMessage),
+  );
 });
 
 test('only an active owner or admin can send an invitation', async () => {

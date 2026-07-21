@@ -40,6 +40,42 @@ type MembershipWithOrganization = OrganizationMembership & {
   organizations: Organization | null;
 };
 
+const invitationSendAttemptIds = new Map<string, string>();
+const sendAttemptUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function getInvitationSendAttemptId(invitationId: string): string {
+  const storageKey = `organization-invitation-attempt:${invitationId}`;
+  const inMemoryAttemptId = invitationSendAttemptIds.get(invitationId);
+  if (inMemoryAttemptId) return inMemoryAttemptId;
+
+  let storedAttemptId: string | null = null;
+  try {
+    storedAttemptId = window.sessionStorage.getItem(storageKey);
+  } catch {
+    // In-memory state still protects retries when storage is unavailable.
+  }
+
+  const attemptId = storedAttemptId && sendAttemptUuidPattern.test(storedAttemptId)
+    ? storedAttemptId
+    : window.crypto.randomUUID();
+  invitationSendAttemptIds.set(invitationId, attemptId);
+  try {
+    window.sessionStorage.setItem(storageKey, attemptId);
+  } catch {
+    // The attempt remains available in memory for this page session.
+  }
+  return attemptId;
+}
+
+function clearInvitationSendAttemptId(invitationId: string): void {
+  invitationSendAttemptIds.delete(invitationId);
+  try {
+    window.sessionStorage.removeItem(`organization-invitation-attempt:${invitationId}`);
+  } catch {
+    // There is no persisted attempt to clear when storage is unavailable.
+  }
+}
+
 export function canManageOrganization(role: OrganizationRole): boolean {
   return role === 'owner' || role === 'admin';
 }
@@ -293,18 +329,25 @@ export async function sendOrganizationInvitationEmail(invitationId: string): Pro
   const session = await getCurrentSession();
   if (!session?.access_token) throw new Error('Logga in för att skicka inbjudan.');
 
+  const attemptId = getInvitationSendAttemptId(invitationId);
+
   const response = await fetch('/api/send-organization-invitation', {
     method: 'POST',
     headers: {
       authorization: `Bearer ${session.access_token}`,
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ invitationId }),
+    body: JSON.stringify({ invitationId, attemptId }),
   });
-  const payload = await response.json().catch(() => ({})) as { error?: string };
+  const payload = await response.json().catch(() => ({})) as { error?: string; code?: string };
   if (!response.ok) {
+    if (payload.code === 'invalid_idempotent_request') {
+      clearInvitationSendAttemptId(invitationId);
+    }
     throw new Error(payload.error || 'Inbjudan kunde inte skickas. Försök igen senare.');
   }
+
+  clearInvitationSendAttemptId(invitationId);
 }
 
 export async function revokeOrganizationInvitation(invitationId: string): Promise<void> {

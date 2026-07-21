@@ -1,5 +1,5 @@
 /* global console */
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const ROUTE = '/api/send-organization-invitation';
@@ -7,11 +7,12 @@ const APP_ORIGIN = 'https://app.minegenkontroll.se';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class InvitationHttpError extends Error {
-  constructor(statusCode, publicMessage, internalMessage = publicMessage) {
+  constructor(statusCode, publicMessage, internalMessage = publicMessage, code = undefined) {
     super(internalMessage);
     this.name = 'InvitationHttpError';
     this.statusCode = statusCode;
     this.publicMessage = publicMessage;
+    this.code = code;
   }
 }
 
@@ -134,11 +135,8 @@ export function buildInvitationEmail(invitation) {
   return { subject: `Inbjudan till ${subjectOrganizationName} i Min Egenkontroll`, text, html, invitationUrl };
 }
 
-export function buildInvitationIdempotencyKey(invitation) {
-  const fingerprint = createHash('sha256')
-    .update([invitation.id, invitation.email, invitation.role, invitation.expiresAt].join(':'))
-    .digest('hex');
-  return `organization-invitation/${fingerprint}`;
+export function buildInvitationIdempotencyKey(invitationId, attemptId) {
+  return `organization-invitation/${invitationId}/${attemptId}`;
 }
 
 export async function sendInvitationWithResend(input, options = {}) {
@@ -170,12 +168,26 @@ export async function sendInvitationWithResend(input, options = {}) {
 
   const payload = await result.json().catch(() => ({}));
   if (!result.ok) {
-    const statusCode = result.status === 409 ? 409 : 502;
+    const providerErrorCode = typeof payload.name === 'string' ? payload.name : '';
+    if (result.status === 409 && providerErrorCode === 'concurrent_idempotent_requests') {
+      throw new InvitationHttpError(
+        409,
+        'Samma utskick behandlas redan. Vänta en stund och försök igen.',
+        'Resend is processing a concurrent idempotent request.',
+        providerErrorCode,
+      );
+    }
+    if (result.status === 409 && providerErrorCode === 'invalid_idempotent_request') {
+      throw new InvitationHttpError(
+        409,
+        'Utskicket har ändrats sedan försöket startade. Försök igen för att starta ett nytt utskick.',
+        'Resend rejected an idempotency key used with a different payload.',
+        providerErrorCode,
+      );
+    }
     throw new InvitationHttpError(
-      statusCode,
-      statusCode === 409
-        ? 'Ett utskick pågår redan. Vänta en stund och försök igen.'
-        : 'Mejlet kunde inte skickas. Inbjudan ligger kvar och kan skickas igen.',
+      502,
+      'Mejlet kunde inte skickas. Inbjudan ligger kvar och kan skickas igen.',
       `Resend rejected invitation email with status ${result.status}.`,
     );
   }
@@ -243,8 +255,9 @@ export function createOrganizationInvitationHandler(dependencies = {}) {
     }
 
     const invitationId = String(request.body?.invitationId || '').trim();
-    if (!UUID_PATTERN.test(invitationId)) {
-      return jsonResponse(response, 400, { error: 'Ett giltigt inbjudnings-id krävs.', requestId });
+    const attemptId = String(request.body?.attemptId || '').trim();
+    if (!UUID_PATTERN.test(invitationId) || !UUID_PATTERN.test(attemptId)) {
+      return jsonResponse(response, 400, { error: 'Giltiga inbjudnings- och attempt-id krävs.', requestId });
     }
     const accessToken = readBearerToken(request);
     if (!accessToken) return jsonResponse(response, 401, { error: 'Logga in för att skicka inbjudan.', requestId });
@@ -258,7 +271,7 @@ export function createOrganizationInvitationHandler(dependencies = {}) {
         subject: email.subject,
         text: email.text,
         html: email.html,
-        idempotencyKey: buildInvitationIdempotencyKey(invitation),
+        idempotencyKey: buildInvitationIdempotencyKey(invitation.id, attemptId),
       });
       logEvent('info', {
         msg: 'invitation_email_accepted',
@@ -282,7 +295,11 @@ export function createOrganizationInvitationHandler(dependencies = {}) {
         errorName: error instanceof Error ? error.name : 'UnknownError',
         errorMessage: sanitizeLogMessage(error instanceof Error ? error.message : error),
       });
-      return jsonResponse(response, statusCode, { error: publicMessage, requestId });
+      return jsonResponse(response, statusCode, {
+        error: publicMessage,
+        code: error instanceof InvitationHttpError ? error.code : undefined,
+        requestId,
+      });
     }
   };
 }
