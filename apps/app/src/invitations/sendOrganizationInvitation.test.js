@@ -5,6 +5,7 @@ import {
   buildInvitationEmail,
   buildInvitationIdempotencyKey,
   createOrganizationInvitationHandler,
+  resolveSupabasePublicConfig,
   sendInvitationWithResend,
 } from '../../api/send-organization-invitation.js';
 
@@ -119,6 +120,51 @@ test('same send attempt deduplicates while an explicit resend gets a new key', a
     `organization-invitation/${invitationId}/${firstAttemptId}`,
     `organization-invitation/${invitationId}/${secondAttemptId}`,
   ]);
+});
+
+test('handler creates its caller client from public fallbacks when runtime env is missing', async () => {
+  let capturedConfig;
+  const request = {
+    method: 'POST',
+    headers: { authorization: 'Bearer test-access-token', 'x-request-id': 'request-fallback' },
+    body: { invitationId, attemptId: firstAttemptId },
+  };
+  const response = createFakeResponse();
+  const handler = createOrganizationInvitationHandler({
+    environment: {},
+    createClientImplementation: (supabaseUrl, publishableKey, options) => {
+      capturedConfig = { supabaseUrl, publishableKey, options };
+      return createFakeClient();
+    },
+    sendEmail: async () => ({ id: 'provider-id' }),
+    logEvent: () => undefined,
+  });
+
+  await handler(request, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(capturedConfig.supabaseUrl, 'https://eapjywbgxtudqjrlueep.supabase.co');
+  assert.equal(capturedConfig.publishableKey, 'sb_publishable_YsqN7EM6XP7U750bZyqVZw_Gi4p5SYg');
+  assert.equal(capturedConfig.options.global.headers.authorization, 'Bearer test-access-token');
+});
+
+test('runtime Supabase env takes precedence over public fallbacks', () => {
+  assert.deepEqual(resolveSupabasePublicConfig({
+    SUPABASE_URL: 'https://runtime.supabase.test',
+    VITE_SUPABASE_URL: 'https://vite.supabase.test',
+    SUPABASE_ANON_KEY: 'runtime-publishable-key',
+    VITE_SUPABASE_PUBLISHABLE_KEY: 'vite-publishable-key',
+  }), {
+    supabaseUrl: 'https://runtime.supabase.test',
+    publishableKey: 'runtime-publishable-key',
+  });
+  assert.deepEqual(resolveSupabasePublicConfig({
+    VITE_SUPABASE_URL: 'https://vite.supabase.test',
+    VITE_SUPABASE_PUBLISHABLE_KEY: 'vite-publishable-key',
+  }), {
+    supabaseUrl: 'https://vite.supabase.test',
+    publishableKey: 'vite-publishable-key',
+  });
 });
 
 test('Resend request uses an idempotency key and the API key never enters the body', async () => {

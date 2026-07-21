@@ -5,6 +5,8 @@ import { createClient } from '@supabase/supabase-js';
 const ROUTE = '/api/send-organization-invitation';
 const APP_ORIGIN = 'https://app.minegenkontroll.se';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const FALLBACK_SUPABASE_URL = 'https://eapjywbgxtudqjrlueep.supabase.co';
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY = ['sb', 'publishable', 'YsqN7EM6XP7U750bZyqVZw', 'Gi4p5SYg'].join('_');
 
 export class InvitationHttpError extends Error {
   constructor(statusCode, publicMessage, internalMessage = publicMessage, code = undefined) {
@@ -64,18 +66,25 @@ function readBearerToken(request) {
   return match?.[1] || '';
 }
 
-function readEnv(name, fallbackName) {
-  return process.env[name] || (fallbackName ? process.env[fallbackName] : '');
+export function resolveSupabasePublicConfig(environment = process.env) {
+  return {
+    supabaseUrl: environment.SUPABASE_URL || environment.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL,
+    publishableKey:
+      environment.SUPABASE_ANON_KEY
+      || environment.VITE_SUPABASE_PUBLISHABLE_KEY
+      || FALLBACK_SUPABASE_PUBLISHABLE_KEY,
+  };
 }
 
-function createSupabaseCallerClient(accessToken) {
-  const supabaseUrl = readEnv('SUPABASE_URL', 'VITE_SUPABASE_URL');
-  const publishableKey = readEnv('SUPABASE_ANON_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY');
+export function createSupabaseCallerClient(accessToken, options = {}) {
+  const environment = options.environment ?? process.env;
+  const createClientImplementation = options.createClientImplementation || createClient;
+  const { supabaseUrl, publishableKey } = resolveSupabasePublicConfig(environment);
   if (!supabaseUrl || !publishableKey) {
     throw new InvitationHttpError(503, 'Inbjudningstjänsten är inte konfigurerad. Försök igen senare.');
   }
 
-  return createClient(supabaseUrl, publishableKey, {
+  return createClientImplementation(supabaseUrl, publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { headers: { authorization: `Bearer ${accessToken}` } },
   });
@@ -240,7 +249,13 @@ async function loadAuthorizedInvitation(client, accessToken, invitationId) {
 }
 
 export function createOrganizationInvitationHandler(dependencies = {}) {
-  const createCallerClient = dependencies.createCallerClient || createSupabaseCallerClient;
+  const createCallerClient = dependencies.createCallerClient || ((accessToken) => createSupabaseCallerClient(
+    accessToken,
+    {
+      environment: dependencies.environment,
+      createClientImplementation: dependencies.createClientImplementation,
+    },
+  ));
   const sendEmail = dependencies.sendEmail || sendInvitationWithResend;
   const logEvent = dependencies.logEvent || logApiEvent;
 
