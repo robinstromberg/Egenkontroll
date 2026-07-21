@@ -278,6 +278,33 @@ begin
     raise exception 'Inspector smoke failure: out-of-period filter returned % rows, expected 0', row_count;
   end if;
 
+  perform public.log_shared_export(
+    'inspector-smoke-active-token',
+    'pdf',
+    '{"delivery":"smoke","recipient":"anonymous-inspector@example.test"}'::jsonb
+  );
+
+  raise notice 'Anonymous inspector token checks passed.';
+end $$;
+
+reset role;
+
+do $$
+declare
+  export_log_count int;
+begin
+  select count(*)
+  into export_log_count
+  from public.export_logs logs
+  join public.share_links links on links.id = logs.share_link_id
+  where links.token_hash = encode(extensions.digest('inspector-smoke-active-token', 'sha256'), 'hex')
+    and logs.requested_by is null
+    and logs.filters ->> 'recipient' = 'anonymous-inspector@example.test';
+
+  if export_log_count <> 1 then
+    raise exception 'Inspector smoke failure: anonymous token logging created % rows, expected 1', export_log_count;
+  end if;
+
   raise notice 'Inspector link smoke test passed. Rolling back test data.';
 end $$;
 

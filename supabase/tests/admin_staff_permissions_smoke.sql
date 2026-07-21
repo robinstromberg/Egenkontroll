@@ -45,6 +45,19 @@ values
     '{}'::jsonb,
     now(),
     now()
+  ),
+  (
+    'dddddddd-dddd-4ddd-8ddd-dddddddddd03',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'admin-staff-admin@example.test',
+    extensions.crypt('test-admin-password', extensions.gen_salt('bf')),
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
   );
 
 insert into public.organizations (id, name, subscription_status, created_by)
@@ -65,7 +78,8 @@ values
 insert into public.organization_memberships (organization_id, user_id, role, status)
 values
   ('dddddddd-dddd-4ddd-8ddd-dddddddddd11', 'dddddddd-dddd-4ddd-8ddd-dddddddddd01', 'owner', 'active'),
-  ('dddddddd-dddd-4ddd-8ddd-dddddddddd11', 'dddddddd-dddd-4ddd-8ddd-dddddddddd02', 'staff', 'active');
+  ('dddddddd-dddd-4ddd-8ddd-dddddddddd11', 'dddddddd-dddd-4ddd-8ddd-dddddddddd02', 'staff', 'active'),
+  ('dddddddd-dddd-4ddd-8ddd-dddddddddd11', 'dddddddd-dddd-4ddd-8ddd-dddddddddd03', 'admin', 'active');
 
 insert into public.control_types (id, organization_id, name, category, frequency, active)
 values (
@@ -230,6 +244,41 @@ begin
   end if;
 
   begin
+    insert into public.export_logs (
+      organization_id,
+      export_type,
+      requested_by,
+      filters
+    )
+    values (
+      'dddddddd-dddd-4ddd-8ddd-dddddddddd11',
+      'pdf',
+      'dddddddd-dddd-4ddd-8ddd-dddddddddd02',
+      '{"recipient":"fabricated@example.test"}'::jsonb
+    );
+
+    raise exception 'Permission failure: staff fabricated an export log directly';
+  exception
+    when insufficient_privilege or with_check_option_violation then
+      null;
+  end;
+
+  perform public.log_shared_export(
+    first_share.raw_token,
+    'pdf',
+    '{"delivery":"smoke","recipient":"inspector@example.test"}'::jsonb
+  );
+
+  select count(*)
+  into visible_count
+  from public.export_logs
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11';
+
+  if visible_count <> 0 then
+    raise exception 'Permission failure: staff can read export logs';
+  end if;
+
+  begin
     perform *
     from public.create_temporary_inspector_share_link('dddddddd-dddd-4ddd-8ddd-dddddddddd12');
     raise exception 'Permission failure: staff created a link for another organization';
@@ -271,6 +320,7 @@ do $$
 declare
   stored_count int;
   invalid_scope_count int;
+  export_log_count int;
 begin
   select count(*)
   into stored_count
@@ -298,6 +348,17 @@ begin
 
   if invalid_scope_count <> 0 then
     raise exception 'Permission failure: staff-created link escaped the server-defined scope';
+  end if;
+
+  select count(*)
+  into export_log_count
+  from public.export_logs
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11'
+    and requested_by = 'dddddddd-dddd-4ddd-8ddd-dddddddddd02'
+    and filters ->> 'recipient' = 'inspector@example.test';
+
+  if export_log_count <> 1 then
+    raise exception 'Permission failure: token-based export logging created % rows, expected 1', export_log_count;
   end if;
 end $$;
 
@@ -353,7 +414,28 @@ values (
 do $$
 declare
   visible_count int;
+  export_log_count int;
 begin
+  begin
+    insert into public.export_logs (
+      organization_id,
+      export_type,
+      requested_by,
+      filters
+    )
+    values (
+      'dddddddd-dddd-4ddd-8ddd-dddddddddd11',
+      'pdf',
+      'dddddddd-dddd-4ddd-8ddd-dddddddddd01',
+      '{"recipient":"owner-fabricated@example.test"}'::jsonb
+    );
+
+    raise exception 'Permission failure: owner fabricated an export log directly';
+  exception
+    when insufficient_privilege or with_check_option_violation then
+      null;
+  end;
+
   select count(*)
   into visible_count
   from public.share_links
@@ -361,6 +443,38 @@ begin
 
   if visible_count <> 3 then
     raise exception 'Permission failure: owner cannot retain existing link management';
+  end if;
+
+  select count(*)
+  into export_log_count
+  from public.export_logs
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11'
+    and filters ->> 'recipient' = 'inspector@example.test';
+
+  if export_log_count <> 1 then
+    raise exception 'Permission failure: owner cannot read token-based export logs';
+  end if;
+
+  raise notice 'Owner export-log permission checks passed.';
+end $$;
+
+reset role;
+
+select set_config('request.jwt.claim.sub', 'dddddddd-dddd-4ddd-8ddd-dddddddddd03', true);
+set local role authenticated;
+
+do $$
+declare
+  export_log_count int;
+begin
+  select count(*)
+  into export_log_count
+  from public.export_logs
+  where organization_id = 'dddddddd-dddd-4ddd-8ddd-dddddddddd11'
+    and filters ->> 'recipient' = 'inspector@example.test';
+
+  if export_log_count <> 1 then
+    raise exception 'Permission failure: admin cannot read token-based export logs';
   end if;
 
   raise notice 'Admin/staff permission smoke test passed. Rolling back test data.';
