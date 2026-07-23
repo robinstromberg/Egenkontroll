@@ -89,6 +89,7 @@ export async function collectPublicContracts(repoRoot) {
   const manifestSource = await read(appRoot, 'public/manifest.webmanifest');
   const manifest = JSON.parse(manifestSource);
   const mainSource = await read(appRoot, 'src/main.tsx');
+  const sharedEnvironmentSource = await read(appRoot, 'config/supabaseEnvironment.js');
 
   const dispatcherRoutes = matches(dispatcher, /normalizedPath === '([^']+)'/g);
   const appPublicRoutes = matches(app, /window\.location\.pathname === '([^']+)'/g)
@@ -135,7 +136,11 @@ export async function collectPublicContracts(repoRoot) {
   const sourceContents = await Promise.all(sourceFiles.map((file) => read(appRoot, file)));
   const combinedSource = sourceContents.join('\n');
   const apiClientPaths = matches(combinedSource, /(?:window\.)?fetch\(\s*['"](\/api\/[^'"]+)['"]/g);
-  const clientEnvVars = matches(combinedSource, /import\.meta\.env\.(VITE_[A-Z0-9_]+)/g);
+  const clientEnvVars = [
+    ...matches(combinedSource, /import\.meta\.env\.(VITE_[A-Z0-9_]+)/g),
+    ...matches(sharedEnvironmentSource, /environment\.(VITE_[A-Z0-9_]+)/g),
+    ...matches(sharedEnvironmentSource, /requireValue\(\s*environment,\s*'(VITE_[A-Z0-9_]+)'/g),
+  ];
   const clientForbiddenEnvReferences = matches(
     combinedSource,
     /\b(SUPABASE_(?:SERVICE_ROLE_KEY|SECRET_KEY)|RESEND_(?:API_KEY|FROM_EMAIL))\b/g,
@@ -147,6 +152,8 @@ export async function collectPublicContracts(repoRoot) {
     ...matches(combinedApiSource, /process\.env\.([A-Z][A-Z0-9_]+)/g),
     ...matches(combinedApiSource, /readEnv\(\s*'([A-Z][A-Z0-9_]*)'/g),
     ...matches(combinedApiSource, /readEnv\(\s*'[A-Z][A-Z0-9_]*'\s*,\s*'([A-Z][A-Z0-9_]*)'/g),
+    ...matches(sharedEnvironmentSource, /environment\.(SUPABASE_[A-Z0-9_]+)/g),
+    ...matches(sharedEnvironmentSource, /requireValue\(\s*environment,\s*'(SUPABASE_[A-Z0-9_]+)'/g),
   ];
 
   const brandAssets = await listFiles(

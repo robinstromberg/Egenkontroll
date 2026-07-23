@@ -1,12 +1,14 @@
 /* global console */
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import {
+  SupabaseConfigurationError,
+  resolveAppUrl,
+  resolveServerSupabaseConfig,
+} from '../config/supabaseEnvironment.js';
 
 const ROUTE = '/api/send-organization-invitation';
-const APP_ORIGIN = 'https://app.minegenkontroll.se';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const FALLBACK_SUPABASE_URL = 'https://eapjywbgxtudqjrlueep.supabase.co';
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY = ['sb', 'publishable', 'YsqN7EM6XP7U750bZyqVZw', 'Gi4p5SYg'].join('_');
 
 export class InvitationHttpError extends Error {
   constructor(statusCode, publicMessage, internalMessage = publicMessage, code = undefined) {
@@ -67,21 +69,29 @@ function readBearerToken(request) {
 }
 
 export function resolveSupabasePublicConfig(environment = process.env) {
+  const { supabaseUrl, anonKey } = resolveServerSupabaseConfig(environment);
   return {
-    supabaseUrl: environment.SUPABASE_URL || environment.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL,
-    publishableKey:
-      environment.SUPABASE_ANON_KEY
-      || environment.VITE_SUPABASE_PUBLISHABLE_KEY
-      || FALLBACK_SUPABASE_PUBLISHABLE_KEY,
+    supabaseUrl,
+    publishableKey: anonKey,
   };
 }
 
 function requireSupabasePublicConfig(environment) {
-  const config = resolveSupabasePublicConfig(environment);
-  if (!config.supabaseUrl || !config.publishableKey) {
+  try {
+    return resolveSupabasePublicConfig(environment);
+  } catch (error) {
+    if (!(error instanceof SupabaseConfigurationError)) throw error;
     throw new InvitationHttpError(503, 'Inbjudningstjänsten är inte konfigurerad. Försök igen senare.');
   }
-  return config;
+}
+
+function requireAppOrigin(environment) {
+  try {
+    return resolveAppUrl(environment);
+  } catch (error) {
+    if (!(error instanceof SupabaseConfigurationError)) throw error;
+    throw new InvitationHttpError(503, 'Inbjudningstjänsten är inte konfigurerad. Försök igen senare.');
+  }
 }
 
 export function createSupabaseCallerClient(accessToken, options = {}) {
@@ -155,12 +165,15 @@ function formatExpiry(expiresAt) {
   }).format(new Date(expiresAt));
 }
 
-export function buildInvitationEmail(invitation) {
+export function buildInvitationEmail(invitation, appOrigin) {
+  if (!appOrigin) {
+    throw new InvitationHttpError(503, 'Inbjudningstjänsten är inte konfigurerad. Försök igen senare.');
+  }
   const organizationName = String(invitation.organizationName || '').trim() || 'din verksamhet';
   const subjectOrganizationName = organizationName.replace(/[\r\n]+/g, ' ');
   const roleLabel = invitation.role === 'admin' ? 'administratör' : 'personal';
   const expiresLabel = formatExpiry(invitation.expiresAt);
-  const invitationUrl = `${APP_ORIGIN}/login?invitation=${invitation.id}`;
+  const invitationUrl = `${appOrigin}/login?invitation=${invitation.id}`;
   const text = [
     'Hej!',
     '',
@@ -332,7 +345,7 @@ export function createOrganizationInvitationHandler(dependencies = {}) {
       const user = await verifyAccessToken(accessToken);
       const client = createCallerClient(accessToken);
       const invitation = await loadAuthorizedInvitation(client, user.id, invitationId);
-      const email = buildInvitationEmail(invitation);
+      const email = buildInvitationEmail(invitation, requireAppOrigin(dependencies.environment ?? process.env));
       const sendResult = await sendEmail({
         to: invitation.email,
         subject: email.subject,

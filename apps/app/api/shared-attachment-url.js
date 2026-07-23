@@ -1,9 +1,12 @@
 /* global console */
 import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import {
+  SupabaseConfigurationError,
+  resolveServerSupabaseConfig,
+} from '../config/supabaseEnvironment.js';
 
 const SIGNED_URL_MAX_EXPIRES_IN_SECONDS = 60 * 10;
-const FALLBACK_SUPABASE_URL = 'https://eapjywbgxtudqjrlueep.supabase.co';
 
 function jsonResponse(response, statusCode, body) {
   response.statusCode = statusCode;
@@ -69,36 +72,12 @@ function logApiError(route, request, requestId, startedAt, error) {
   });
 }
 
-function readEnv(name, fallbackName) {
-  return process.env[name] || (fallbackName ? process.env[fallbackName] : '');
-}
-
-function readSupabaseUrl() {
-  return readEnv('SUPABASE_URL', 'VITE_SUPABASE_URL') || FALLBACK_SUPABASE_URL;
-}
-
-function readServiceRoleKey() {
-  return readEnv('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY');
-}
-
-function readServerConfigDiagnostics() {
-  return {
-    hasSupabaseUrl: Boolean(readSupabaseUrl()),
-    hasServiceRoleKey: Boolean(readServiceRoleKey()),
-    acceptsServiceRoleKey: 'SUPABASE_SERVICE_ROLE_KEY',
-    acceptsLegacySecretKey: 'SUPABASE_SECRET_KEY',
-  };
-}
-
 function createServiceClient() {
-  const supabaseUrl = readSupabaseUrl();
-  const serviceRoleKey = readServiceRoleKey();
+  const { supabaseUrl, secretKey } = resolveServerSupabaseConfig(process.env, {
+    requireSecret: true,
+  });
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    return null;
-  }
-
-  return createClient(supabaseUrl, serviceRoleKey, {
+  return createClient(supabaseUrl, secretKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -144,18 +123,6 @@ export default async function handler(request, response) {
     }
 
     const serviceClient = createServiceClient();
-    if (!serviceClient) {
-      logApiEvent('error', {
-        msg: 'server_configuration_missing',
-        route,
-        requestId,
-        diagnostics: readServerConfigDiagnostics(),
-      });
-      return jsonResponse(response, 503, {
-        error: 'Bilden kan inte öppnas just nu.',
-        code: 'SERVER_CONFIGURATION_MISSING',
-      });
-    }
 
     const now = new Date();
     const { data: shareLink, error: shareLinkError } = await serviceClient
@@ -215,6 +182,13 @@ export default async function handler(request, response) {
     });
   } catch (error) {
     logApiError(route, request, requestId, startedAt, error);
+    if (error instanceof SupabaseConfigurationError) {
+      return jsonResponse(response, 503, {
+        error: 'Bilden kan inte öppnas just nu.',
+        code: error.code,
+        requestId,
+      });
+    }
     return jsonResponse(response, 500, {
       error: error instanceof Error ? error.message : 'Kunde inte skapa bildlänk.',
       requestId,
