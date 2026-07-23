@@ -13,6 +13,7 @@
     "precontracts": "npm run brand:sync",
     "contracts:update": "node ../../scripts/check-public-contracts.mjs --update",
     "precontracts:update": "npm run brand:sync",
+    "environment:test": "node --test src/config/supabaseEnvironment.test.js",
     "lint": "eslint . --config ../../eslint.config.js",
     "invitations:test": "node --test src/invitations/sendOrganizationInvitation.test.js",
     "organization-contexts:test": "tsx --test src/services/organizationContext.test.ts",

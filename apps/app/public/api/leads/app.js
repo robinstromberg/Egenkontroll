@@ -1,4 +1,9 @@
-import { ADMIN_EMAIL, db, PAGE_SIZE } from './config.js';
+import {
+  ADMIN_EMAIL,
+  db,
+  isLeadsEnabled,
+  PAGE_SIZE,
+} from './config.js';
 import { fetchLatestRun } from './data.js';
 import { drawRun } from './run-view.js';
 import { loadRows, sendLeadEmail, setLeadStatus } from './source.js';
@@ -391,6 +396,11 @@ function bindControls() {
 }
 
 async function start() {
+  if (!isLeadsEnabled || !db) {
+    showGate('Leads är avstängt i Preview.', 'Öppna leads från den kanoniska produktionsadressen.');
+    return;
+  }
+
   const sessionResponse = await db.auth.getSession();
   const session = sessionResponse.data.session;
   if (!session) {

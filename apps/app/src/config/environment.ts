@@ -1,18 +1,29 @@
-const fallbackSupabaseUrl = 'https://eapjywbgxtudqjrlueep.supabase.co';
-const fallbackSupabasePublishableKey = ['sb', 'publishable', 'YsqN7EM6XP7U750bZyqVZw', 'Gi4p5SYg'].join('_');
+function requireClientEnvironmentValue(name: string, value: string | undefined): string {
+  const normalized = value?.trim();
+  if (!normalized) {
+    throw new Error(`Appens konfiguration saknas: ${name}.`);
+  }
+  return normalized;
+}
 
-const publicSupabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? fallbackSupabaseUrl;
-const publicSupabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? fallbackSupabasePublishableKey;
-const productionAppUrl = 'https://minegenkontroll.se';
-const configuredAppUrl = import.meta.env.VITE_APP_URL ?? productionAppUrl;
-const publicAppUrl = configuredAppUrl.replace(/\/$/, '');
+const publicSupabaseUrl = requireClientEnvironmentValue(
+  'VITE_SUPABASE_URL',
+  import.meta.env.VITE_SUPABASE_URL,
+);
+const publicSupabasePublishableKey = requireClientEnvironmentValue(
+  'VITE_SUPABASE_PUBLISHABLE_KEY',
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+);
+const publicAppUrl = requireClientEnvironmentValue(
+  'VITE_APP_URL',
+  __APP_URL__,
+).replace(/\/$/, '');
 
 export type AppEnvironment = {
   appName: string;
   appUrl: string;
   supabaseUrl: string;
   supabasePublishableKey: string;
-  hasSupabaseConfig: boolean;
 };
 
 export const environment: AppEnvironment = {
@@ -20,5 +31,4 @@ export const environment: AppEnvironment = {
   appUrl: publicAppUrl,
   supabaseUrl: publicSupabaseUrl,
   supabasePublishableKey: publicSupabasePublishableKey,
-  hasSupabaseConfig: Boolean(publicSupabaseUrl && publicSupabasePublishableKey),
 };

@@ -104,7 +104,7 @@ test('invitation email contains exact app link and escapes dynamic HTML', () => 
     expiresAt: futureExpiry,
     organizationName: '<Test & kök>',
   };
-  const email = buildInvitationEmail(invitation);
+  const email = buildInvitationEmail(invitation, 'https://app.minegenkontroll.se');
 
   assert.equal(email.invitationUrl, `https://app.minegenkontroll.se/login?invitation=${invitationId}`);
   assert.match(email.text, /administratör/);
@@ -135,8 +135,8 @@ test('same send attempt deduplicates while an explicit resend gets a new key', a
 test('Supabase Auth verification separates publishable key from user bearer token', async () => {
   let captured;
   const user = await verifySupabaseAccessToken('user-access-token', {
-    environment: {
-      SUPABASE_URL: 'https://runtime.supabase.test',
+      environment: {
+      SUPABASE_URL: 'https://abcdefghijklmnopqrst.supabase.co',
       SUPABASE_ANON_KEY: 'runtime-publishable-key',
     },
     fetchImplementation: async (url, options) => {
@@ -146,7 +146,7 @@ test('Supabase Auth verification separates publishable key from user bearer toke
   });
 
   assert.deepEqual(user, { id: userId });
-  assert.equal(captured.url, 'https://runtime.supabase.test/auth/v1/user');
+  assert.equal(captured.url, 'https://abcdefghijklmnopqrst.supabase.co/auth/v1/user');
   assert.equal(captured.options.method, 'GET');
   assert.equal(captured.options.headers.apikey, 'runtime-publishable-key');
   assert.equal(captured.options.headers.authorization, 'Bearer user-access-token');
@@ -160,7 +160,7 @@ test('invalid user token returns 401 before database or email access', async () 
     client,
     verifyAccessToken: () => verifySupabaseAccessToken('invalid-access-token', {
       environment: {
-        SUPABASE_URL: 'https://runtime.supabase.test',
+        SUPABASE_URL: 'https://abcdefghijklmnopqrst.supabase.co',
         SUPABASE_ANON_KEY: 'runtime-publishable-key',
       },
       fetchImplementation: async () => ({
@@ -178,9 +178,10 @@ test('invalid user token returns 401 before database or email access', async () 
   assert.equal(providerCalls, 0);
 });
 
-test('handler uses public fallbacks for Auth and RLS-scoped caller client when runtime env is missing', async () => {
-  let capturedAuthRequest;
-  let capturedClientConfig;
+test('handler fails closed before Auth, database or email access when runtime env is missing', async () => {
+  let authCalls = 0;
+  let clientCalls = 0;
+  let providerCalls = 0;
   const request = {
     method: 'POST',
     headers: { authorization: 'Bearer test-access-token', 'x-request-id': 'request-fallback' },
@@ -189,46 +190,44 @@ test('handler uses public fallbacks for Auth and RLS-scoped caller client when r
   const response = createFakeResponse();
   const handler = createOrganizationInvitationHandler({
     environment: {},
-    authFetchImplementation: async (url, options) => {
-      capturedAuthRequest = { url, options };
+    authFetchImplementation: async () => {
+      authCalls += 1;
       return { ok: true, status: 200, json: async () => ({ id: userId }) };
     },
-    createClientImplementation: (supabaseUrl, publishableKey, options) => {
-      capturedClientConfig = { supabaseUrl, publishableKey, options };
+    createClientImplementation: () => {
+      clientCalls += 1;
       return createFakeClient();
     },
-    sendEmail: async () => ({ id: 'provider-id' }),
+    sendEmail: async () => {
+      providerCalls += 1;
+      return { id: 'provider-id' };
+    },
     logEvent: () => undefined,
   });
 
   await handler(request, response);
 
-  assert.equal(response.statusCode, 200);
-  assert.equal(capturedAuthRequest.url, 'https://eapjywbgxtudqjrlueep.supabase.co/auth/v1/user');
-  assert.equal(capturedAuthRequest.options.headers.apikey, 'sb_publishable_YsqN7EM6XP7U750bZyqVZw_Gi4p5SYg');
-  assert.equal(capturedAuthRequest.options.headers.authorization, 'Bearer test-access-token');
-  assert.equal(capturedClientConfig.supabaseUrl, 'https://eapjywbgxtudqjrlueep.supabase.co');
-  assert.equal(capturedClientConfig.publishableKey, 'sb_publishable_YsqN7EM6XP7U750bZyqVZw_Gi4p5SYg');
-  assert.equal(capturedClientConfig.options.global.headers.authorization, 'Bearer test-access-token');
+  assert.equal(response.statusCode, 503);
+  assert.match(JSON.parse(response.body).error, /inte konfigurerad/);
+  assert.equal(authCalls, 0);
+  assert.equal(clientCalls, 0);
+  assert.equal(providerCalls, 0);
 });
 
-test('runtime Supabase env takes precedence over public fallbacks', () => {
+test('server configuration uses only explicit server-side Supabase variables', () => {
   assert.deepEqual(resolveSupabasePublicConfig({
-    SUPABASE_URL: 'https://runtime.supabase.test',
+    SUPABASE_URL: 'https://abcdefghijklmnopqrst.supabase.co',
     VITE_SUPABASE_URL: 'https://vite.supabase.test',
     SUPABASE_ANON_KEY: 'runtime-publishable-key',
     VITE_SUPABASE_PUBLISHABLE_KEY: 'vite-publishable-key',
   }), {
-    supabaseUrl: 'https://runtime.supabase.test',
+    supabaseUrl: 'https://abcdefghijklmnopqrst.supabase.co',
     publishableKey: 'runtime-publishable-key',
   });
-  assert.deepEqual(resolveSupabasePublicConfig({
+  assert.throws(() => resolveSupabasePublicConfig({
     VITE_SUPABASE_URL: 'https://vite.supabase.test',
     VITE_SUPABASE_PUBLISHABLE_KEY: 'vite-publishable-key',
-  }), {
-    supabaseUrl: 'https://vite.supabase.test',
-    publishableKey: 'vite-publishable-key',
-  });
+  }), /SUPABASE_URL/);
 });
 
 test('Resend request uses an idempotency key and the API key never enters the body', async () => {

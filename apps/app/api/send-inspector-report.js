@@ -1,6 +1,7 @@
 /* global console */
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { resolveServerSupabaseConfig } from '../config/supabaseEnvironment.js';
 import {
   buildInspectorReportDocument,
   isReportImageAttachment,
@@ -9,8 +10,6 @@ import {
 import { buildInspectorReportPdf } from '../src/reports/inspectorReportPdf.js';
 
 const ATTACHMENT_LINK_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7;
-const FALLBACK_SUPABASE_URL = 'https://eapjywbgxtudqjrlueep.supabase.co';
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY = ['sb', 'publishable', 'YsqN7EM6XP7U750bZyqVZw', 'Gi4p5SYg'].join('_');
 
 function jsonResponse(response, statusCode, body) {
   response.statusCode = statusCode;
@@ -76,31 +75,14 @@ function logApiError(route, request, requestId, startedAt, error) {
   });
 }
 
-function readEnv(name, fallbackName) {
-  return process.env[name] || (fallbackName ? process.env[fallbackName] : '');
-}
-
-function readSupabaseUrl() {
-  return readEnv('SUPABASE_URL', 'VITE_SUPABASE_URL') || FALLBACK_SUPABASE_URL;
-}
-
-function readSupabasePublishableKey() {
-  return readEnv('SUPABASE_ANON_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY') || FALLBACK_SUPABASE_PUBLISHABLE_KEY;
-}
-
-function readServiceRoleKey() {
-  return readEnv('SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY');
-}
-
 function createServiceClient() {
-  const supabaseUrl = readSupabaseUrl();
-  const serviceRoleKey = readServiceRoleKey();
+  const { supabaseUrl, secretKey } = resolveServerSupabaseConfig(process.env);
 
-  if (!supabaseUrl || !serviceRoleKey) {
+  if (!secretKey) {
     return null;
   }
 
-  return createClient(supabaseUrl, serviceRoleKey, {
+  return createClient(supabaseUrl, secretKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
@@ -194,18 +176,13 @@ export async function resolveEmailAttachmentStates(runs, fetchImplementation = f
 }
 
 async function callSupabaseRpc(name, body) {
-  const supabaseUrl = readSupabaseUrl();
-  const supabaseKey = readSupabasePublishableKey();
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Rapportgeneratorn saknar Supabase-konfiguration.');
-  }
+  const { supabaseUrl, anonKey } = resolveServerSupabaseConfig(process.env);
 
   const result = await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/${name}`, {
     method: 'POST',
     headers: {
-      apikey: supabaseKey,
-      authorization: `Bearer ${supabaseKey}`,
+      apikey: anonKey,
+      authorization: `Bearer ${anonKey}`,
       'content-type': 'application/json',
     },
     body: JSON.stringify(body),
@@ -358,7 +335,9 @@ export default async function handler(request, response) {
 
     return jsonResponse(response, 200, { id: sendResult.id || sendResult.data?.id || null });
   } catch (error) {
-    const statusCode = error.statusCode || 500;
+    const statusCode = error instanceof Error && 'statusCode' in error
+      ? error.statusCode
+      : 500;
     logApiError(route, request, requestId, startedAt, error);
     return jsonResponse(response, statusCode, {
       error: error instanceof Error ? error.message : 'Kunde inte skicka rapporten.',
