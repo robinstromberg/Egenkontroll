@@ -4,6 +4,8 @@ Date: 2026-06-26
 
 Scope: local code, committed Supabase migrations, API routes and existing security notes. No live Supabase project changes were made in this audit.
 
+> Status update: This remains the dated audit from 2026-06-26. The operational domain and environment configuration changed later through #328, #338 and PR #339. Use `docs/auth-redirect.md` and `docs/reporting.md` as the current runbooks; the original security findings and conclusion below remain historical audit results.
+
 ## Summary
 
 The app is ready for a controlled public pilot after the pending migrations are applied and the production environment variables are verified. I did not find a local code or schema issue that should block a limited launch with test/pilot users.
@@ -16,7 +18,7 @@ Before opening the product for paying customers, run the live smoke tests agains
 - Server-only Supabase service role access is limited to Vercel API routes:
   - `api/shared-attachment-url.js`
   - `api/send-inspector-report.js`
-- `SUPABASE_SERVICE_ROLE_KEY` is read only from server runtime environment variables. It is not exposed with a `VITE_` prefix.
+- At the time of the audit, privileged attachment access used the server-only variable name `SUPABASE_SERVICE_ROLE_KEY`. The current runtime contract uses `SUPABASE_SECRET_KEY`, still without a `VITE_` prefix.
 - Public inspector RPCs are intentional read-only `SECURITY DEFINER` functions for temporary inspector links.
 - Current inspector report data does not expose internal attachment `storage_bucket` or `storage_path` values.
 - Private attachment images are opened through short-lived signed URLs created by `api/shared-attachment-url.js`.
@@ -38,13 +40,18 @@ The Supabase CLI is not installed in this workspace, so migrations and SQL smoke
 
 ## Manual production configuration
 
-Verify these in Vercel before a public pilot:
+The current Vercel configuration contract is:
 
-- `VITE_APP_URL=https://egenkontroll-indol.vercel.app`
-- `VITE_SUPABASE_URL` or `SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY` or `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` as a server-only variable, without a `VITE_` prefix
-- `RESEND_API_KEY` and `RESEND_FROM_EMAIL` if emailed inspector reports should work
+- `VITE_APP_URL=https://app.minegenkontroll.se`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_URL` as a server-only variable
+- `SUPABASE_ANON_KEY` as a server-only variable
+- `SUPABASE_SECRET_KEY` as a server-only variable, without a `VITE_` prefix
+
+Production requires explicit configuration and has no fallback to an older Vercel origin. Preview has a separate fail-closed staging configuration. See `docs/auth-redirect.md` for app-origin and Supabase Auth redirects, and `docs/reporting.md` for the complete Preview/Production environment matrix.
+
+Additionally, verify `RESEND_API_KEY` and `RESEND_FROM_EMAIL` if emailed inspector reports should work.
 
 Verify these in Supabase before a public pilot:
 
@@ -64,7 +71,7 @@ No blocker was found in the local audit.
 - Manually test two real accounts in different organizations and confirm cross-organization data remains invisible.
 - Manually test staff versus admin permissions for control type editing, share links and organization settings.
 - Confirm expired inspector links cannot read data or open attachment images.
-- Confirm Vercel has `SUPABASE_SERVICE_ROLE_KEY` configured so inspector attachment images work without exposing storage paths.
+- The original audit required a server-only privileged key for inspector attachment images. The current equivalent is `SUPABASE_SECRET_KEY`; its Production configuration and attachment flow were subsequently verified in #328.
 - Add or publish the operational privacy, data deletion and support process documents.
 
 ## Can wait
