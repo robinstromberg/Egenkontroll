@@ -6,11 +6,12 @@ import { readControlTypeIcon } from '../config/assets';
 import {
   createSharedAttachmentSignedUrl,
   logSharedExport,
+  readSharedInspectorContext,
   readSharedControlTypeOptions,
   readSharedRuns,
   sendSharedReportEmail,
 } from '../services/shareRecords';
-import type { SharedAttachment, SharedControlTypeOption, SharedExportType, SharedRun, SharedRunItem } from '../services/shareRecords';
+import type { SharedAttachment, SharedControlTypeOption, SharedExportType, SharedInspectorContext, SharedRun, SharedRunItem } from '../services/shareRecords';
 import { buildInspectorReportDocument } from '../reports/inspectorReportDocument.js';
 import type { AttachmentState } from '../reports/inspectorReportDocument.js';
 
@@ -542,6 +543,7 @@ function downloadTextFile(fileName: string, content: string, type: string) {
 }
 
 export function SharedRunList({ shareKey }: SharedRunListProps) {
+  const [inspectorContext, setInspectorContext] = useState<SharedInspectorContext | null>(null);
   const [controlTypes, setControlTypes] = useState<SharedControlTypeOption[]>([]);
   const [selectedControlTypeIds, setSelectedControlTypeIds] = useState<string[]>([]);
   const [periodStart, setPeriodStart] = useState(dateDaysAgo(30));
@@ -566,8 +568,13 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
       try {
         setOptionsLoading(true);
         setMessage('');
-        const nextControlTypes = await readSharedControlTypeOptions(shareKey);
+        const [nextInspectorContext, nextControlTypes] = await Promise.all([
+          readSharedInspectorContext(shareKey),
+          readSharedControlTypeOptions(shareKey),
+        ]);
         if (!active) return;
+        if (!nextInspectorContext) throw new Error('Delningslänken är ogiltig eller har gått ut.');
+        setInspectorContext(nextInspectorContext);
         setControlTypes(nextControlTypes);
         setSelectedControlTypeIds(nextControlTypes.map((option) => option.control_type_id));
       } catch (error) {
@@ -665,7 +672,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
       ? run.items.map((item) => ({ id: item.id, run, item }))
       : [{ id: run.run_id, run, item: null }]
   ));
-  const companyName = visibleRuns[0]?.organization_name ?? 'Verksamhet';
+  const companyName = inspectorContext?.organization_name ?? visibleRuns[0]?.organization_name ?? 'Verksamhet';
   const reportSummary: SharedReportSummary = {
     companyName,
     periodStart,
@@ -772,6 +779,23 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
 
   return (
     <div className="inspector-content">
+      {inspectorContext ? (
+        <section className="inspector-access-summary" aria-label="Inspektörslänkens omfattning">
+          <div>
+            <p className="inspector-report-eyebrow">Verksamhet</p>
+            <strong>{inspectorContext.organization_name}</strong>
+          </div>
+          <div>
+            <p className="inspector-report-eyebrow">Dokumentationsperiod</p>
+            <strong>{periodStart} - {periodEnd}</strong>
+          </div>
+          <div>
+            <p className="inspector-report-eyebrow">Länken gäller till</p>
+            <strong>{formatDateTime(inspectorContext.valid_until)}</strong>
+          </div>
+          <span className="inspector-read-only-badge">Skrivskyddad</span>
+        </section>
+      ) : null}
       <form className="inspector-filter-panel" onSubmit={handleSubmit}>
         <div className="inspector-filter-grid">
           <label>

@@ -15,7 +15,6 @@ import { SharingView } from './SharingView';
 import { SuppliersView } from './SuppliersView';
 import { TodayDashboard } from './TodayDashboard';
 import { UsersView } from './UsersView';
-import { BackButton } from './ui/BackButton';
 import { FIRST_RUN_ORGANIZATION_KEY } from './OrganizationSetup';
 import type { OrganizationContext } from '../services/organizationService';
 import { canManageOrganization } from '../services/organizationService';
@@ -139,7 +138,7 @@ export function AppDashboard({
       });
     }
 
-    if (activeView === 'sharing' && canManage) {
+    if (activeView === 'sharing') {
       trackProductEvent({
         eventName: 'share_viewed',
         userId: user.id,
@@ -227,19 +226,13 @@ export function AppDashboard({
     }
 
     if (activeView === 'sharing') {
-      return canManage ? (
+      return (
         <SharingView
           organizationId={context.organization.id}
           userId={user.id}
+          canManage={canManage}
           onBackToToday={() => onChangeView('today')}
         />
-      ) : (
-        <section className="empty-view-card" aria-labelledby="sharing-title">
-          <p className="eyebrow">Delning</p>
-          <h3 id="sharing-title">Admin krävs</h3>
-          <p className="muted-copy">Delningslänkar hanteras av administratörer.</p>
-          <BackButton label="Till idag" onClick={() => onChangeView('today')} />
-        </section>
       );
     }
 
