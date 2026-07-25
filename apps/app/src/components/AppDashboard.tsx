@@ -322,7 +322,7 @@ export function AppDashboard({
   }
 
   return (
-    <section className="dashboard-card" aria-labelledby="dashboard-title">
+    <section className="app-surface dashboard-card" aria-labelledby="dashboard-title">
       <div className="dashboard-header">
         <div>
           <p className="eyebrow">Inloggad</p>

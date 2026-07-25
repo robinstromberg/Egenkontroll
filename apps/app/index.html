@@ -3,6 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script data-app-theme-bootstrap>
+      (() => {
+        try {
+          const preference = window.localStorage.getItem('egenkontroll:app-theme');
+          if (preference === 'light' || preference === 'dark') {
+            document.documentElement.setAttribute('data-theme', preference);
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+          }
+        } catch {
+          document.documentElement.removeAttribute('data-theme');
+        }
+      })();
+    </script>
     <meta name="description" content="Praktisk hjälp med egenkontroll för små livsmedelsverksamheter – kunskap, resurser och en app för att dokumentera vardagens kontroller." />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#fffdf8" />

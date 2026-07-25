@@ -1,6 +1,7 @@
 import { appUiIcons } from '../config/assets';
 import { t } from '../locales';
 import { AssetIcon } from './ui/AssetIcon';
+import { AppNavButton } from './ui/AppPrimitives';
 
 export type AppView = 'today' | 'history' | 'kpi' | 'sharing' | 'menu';
 
@@ -18,8 +19,7 @@ export function AppBottomNav(props: { activeView?: AppView; onChangeView?: (view
       {items.map((item) => {
         const selected = item.id === (props.activeView ?? 'today');
         return (
-          <button
-            type="button"
+          <AppNavButton
             className={selected ? 'bottom-bar-item selected' : 'bottom-bar-item'}
             key={item.id}
             aria-current={selected ? 'page' : undefined}
@@ -29,7 +29,7 @@ export function AppBottomNav(props: { activeView?: AppView; onChangeView?: (view
               <AssetIcon src={item.icon} fallback={item.fallback} />
             </span>
             <span>{item.label}</span>
-          </button>
+          </AppNavButton>
         );
       })}
     </nav>

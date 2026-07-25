@@ -42,7 +42,7 @@ export function PasswordSetupPanel({ onSaved, onSkip }: PasswordSetupPanelProps)
   const loading = status === 'loading';
 
   return (
-    <section className="auth-card" aria-labelledby="password-setup-title">
+    <section className="app-surface auth-card" aria-labelledby="password-setup-title">
       <p className="eyebrow">Lösenord</p>
       <h2 id="password-setup-title">Sätt nytt lösenord</h2>
       <p className="muted-copy">Välj ett lösenord för e-postinloggning. Magic link fortsätter att fungera som reserv.</p>
