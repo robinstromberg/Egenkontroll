@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { readFileSync } from 'node:fs';
 import { URL } from 'node:url';
+import { brandAssets } from '@min-egenkontroll/brand';
 import PDFDocument from 'pdfkit';
 
 const COLORS = {
@@ -279,7 +280,8 @@ export function buildInspectorReportPdf(report, options = {}) {
     doc.on('end', () => resolve(Buffer.concat(chunks)));
 
     try {
-      const brandIcon = options.brandIcon ?? readFileSync(new URL('../../public/brand/min-egenkontroll-icon.png', import.meta.url));
+      const brandIcon = options.brandIcon
+        ?? readFileSync(new URL(`../../public${brandAssets.reportIcon}`, import.meta.url));
       addReportPage(doc);
       drawReportHeader(doc, report, brandIcon);
       drawSelection(doc, report.summary);

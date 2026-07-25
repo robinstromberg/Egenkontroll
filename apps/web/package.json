@@ -8,7 +8,7 @@
     "dev": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "predev": "npm run brand:sync",
     "build": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro build && tsx scripts/finalize-html-routes.ts && tsx scripts/verify-build.ts && npm run links:check",
-    "prebuild": "npm run brand:sync && npm run routes:check",
+    "prebuild": "node ../../scripts/check-visual-contracts.mjs && npm run brand:sync && npm run routes:check",
     "lint": "eslint . --config ../../eslint.config.js",
     "links:check": "tsx scripts/check-links.ts",
     "links:test": "tsx --test scripts/link-contract.test.ts",

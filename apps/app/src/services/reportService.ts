@@ -214,7 +214,7 @@ export function downloadCsvReport(rows: ReportRow[]) {
 export function openPrintReport(rows: ReportRow[], printWindow = createPrintReportWindow()) {
   if (!printWindow) return false;
 
-  const brandMarkUrl = absoluteAssetUrl(brandAssets.icon);
+  const brandMarkUrl = absoluteAssetUrl(brandAssets.reportIcon);
   const htmlRows = rows
     .map((row) => `
       <tr>

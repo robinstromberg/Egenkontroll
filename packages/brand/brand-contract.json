@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "assets": {
+    "logo": "/brand/min-egenkontroll-logo2.png",
+    "icon": "/brand/min-egenkontroll-icon.png",
+    "favicon": "/brand/min-egenkontroll-icon.png",
+    "appleTouchIcon": "/brand/min-egenkontroll-icon.png",
+    "openGraph": "/brand/OGImage.png",
+    "pwaIcon192": "/brand/pwa-icon-192.png",
+    "pwaIcon512": "/brand/pwa-icon-512.png",
+    "reportIcon": "/brand/min-egenkontroll-icon.png"
+  },
+  "metadata": {
+    "openGraph": {
+      "width": 1731,
+      "height": 909,
+      "alt": "Min Egenkontroll - digital egenkontroll för livsmedelsverksamheter"
+    }
+  }
+}

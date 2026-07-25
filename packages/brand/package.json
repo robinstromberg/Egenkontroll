@@ -5,14 +5,16 @@
   "type": "module",
   "files": [
     "assets",
+    "brand-contract.json",
     "src",
     "README.md"
   ],
   "exports": {
     ".": {
       "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "import": "./src/index.js"
     },
+    "./brand-contract.json": "./brand-contract.json",
     "./assets/*": "./assets/*"
   }
 }
