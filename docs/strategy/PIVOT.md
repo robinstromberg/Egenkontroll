@@ -128,6 +128,8 @@ Light mode och dark mode ska bygga på samma betydelser, men med anpassade färg
 
 Designen ska vara roligare och mer tillfredsställande än myndighetstjänster utan att bli lekfull eller oseriös.
 
+Det visuella lagret ska vara centralt styrt och enkelt att förändra utan att funktionalitet eller användarflöden byggs om. Den beslutade genomförandeplanen finns i `docs/strategy/VISUAL_SYSTEM_PLAN.md` och Epic #346.
+
 ## Centralt varumärkessystem
 
 Varumärket ska ha en tydlig källa.
@@ -145,7 +147,7 @@ Arbetet ska omfatta inventering och central hantering av:
 
 Målet är en masterlogga och en masterikon som ligger till grund för nödvändiga varianter, med tydlig dokumentation av vad som används var.
 
-Framtida byte av logga eller ikon ska inte kräva manuell jakt genom hela repon.
+Framtida byte av logga eller ikon ska inte kräva manuell jakt genom hela repot.
 
 ## Kunskapsplattform och gratis resurser
 
@@ -200,17 +202,18 @@ Detta ligger efter den grundläggande strategiomläggningen och ska inte blocker
 
 ## Teknisk målbild
 
-Den planerade målbilden är ett gemensamt repo med tydligt separerade delar:
+Den tekniska målbilden är genomförd som ett gemensamt npm-workspace-monorepo med tydligt separerade delar:
 
 ```text
 apps/web
 apps/app
 packages/brand
+packages/design-system
 ```
 
-Detta är en målbild, inte en beskrivning av nuvarande arkitektur.
+Den publika Astro-webben och Vite/React-appen byggs och deployas separat. `minegenkontroll.se` äger den publika plattformen och `app.minegenkontroll.se` äger auth, app, PWA, inspektörsvy och appens API-routes.
 
-Teknisk separation ska göras som ett avgränsat projekt efter att plattformens struktur och sidtyper är tillräckligt tydliga. Ingen permanent pivot-branch ska användas.
+`packages/brand` och `packages/design-system` är etablerade som delade gränser. Nästa tekniska uppgift är inte ytterligare repo-separation, utan att migrera appens befintliga visuella lager och framtidssäkra båda ytorna enligt `docs/strategy/VISUAL_SYSTEM_PLAN.md`.
 
 ## Befintliga publika sidor
 
@@ -267,27 +270,39 @@ I första hand:
 
 ### Fas 5 – Teknisk grund
 
-- separera webb och app,
-- skapa gemensamt brand- och designsystem,
-- koppla domäner och sömlöst auth-flöde.
+Genomförd:
+
+- webb och app är separerade,
+- gemensamma brand- och designsystempaket är etablerade,
+- separata deployer, domäner och authövergång är verifierade.
+
+### Fas 5B – Framtidssäkert visuellt system
+
+Genomförs enligt Epic #346 och `docs/strategy/VISUAL_SYSTEM_PLAN.md`:
+
+1. etablera maskinläsbart tema- och brandkontrakt,
+2. migrera appens shell och vyer utan funktionsförändringar,
+3. slutför appens guardrails, dokumentation och light/dark-QA,
+4. inför webbguardrails före nästa innehållsmigrationsbatch,
+5. slutgranska webben efter att innehållsmigrationen är klar.
 
 ### Fas 6 – Första kompletta minisystemet
 
-Bygg först en liten men komplett version:
+Funktionellt genomförd med:
 
 - en startsida,
 - ett ämnesnav,
-- två till tre faktasidor,
+- faktasidor,
 - en mall/checklista,
 - ett verktyg,
 - ett resursbibliotek,
-- login/signup.
-
-Testa helheten innan den skalas.
+- login/signup-övergång.
 
 ### Fas 7 – Migrera befintligt innehåll
 
 Flytta successivt befintliga publika sidor till rätt nya sidmallar och struktur.
+
+Innan nästa migrationsbatch ska webbguardrails i #353 vara genomförda. Den fullständiga visuella webbsaneringen i #354 görs först när migrationen är klar eller uttryckligen tillräckligt komplett.
 
 ### Fas 8 – Skala
 
@@ -309,7 +324,9 @@ Buggar och viktig produktutveckling fortsätter separat:
 
 - kritiska buggar och data-/auth-risker prioriteras direkt,
 - tydliga användbarhetsproblem fixas löpande,
-- kosmetisk finputsning i den gamla visuella identiteten kan vänta om den snart ska ersättas.
+- kosmetisk finputsning utanför det beslutade visuella systemet ska undvikas.
+
+Epic #346 är nu det prioriterade större appinitiativet. Större ny appfunktionalitet bör normalt vänta tills appens visuella fundament är stabilt, så att nya och ombyggda vyer automatiskt följer samma tema-, brand- och ikonkontrakt.
 
 Normalt ska det finnas högst:
 
