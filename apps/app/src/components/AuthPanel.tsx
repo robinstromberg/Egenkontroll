@@ -164,7 +164,7 @@ export function AuthPanel({
           : 'Logga in';
 
   return (
-    <section className="auth-card" aria-labelledby="auth-title">
+    <section className="app-surface auth-card" aria-labelledby="auth-title">
       <p className="eyebrow">Inloggning</p>
       <h2 id="auth-title">Logga in</h2>
       <p className="muted-copy">Under förhandslanseringen använder du e-post och lösenord. Magic link finns kvar som reserv.</p>

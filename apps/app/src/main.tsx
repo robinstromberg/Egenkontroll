@@ -5,9 +5,12 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { DesignSystemShowcase } from './components/DesignSystemShowcase';
 import { setupGlobalErrorReporting } from './lib/errorReporting';
 import { setupPwaInstallPromptListener } from './services/pwaInstallPrompt';
+import { initializeAppThemeRuntime } from './theme/appTheme';
 import '@min-egenkontroll/design-system/tokens.css';
-import './styles/global.css';
 import '@min-egenkontroll/design-system/base.css';
+import './styles/global.css';
+
+initializeAppThemeRuntime();
 
 const rootElement = document.getElementById('root');
 

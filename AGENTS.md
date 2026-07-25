@@ -97,6 +97,15 @@ Service role-nycklar får aldrig in i frontend, repo, issues eller logs. Secrets
 - AI-synlighet ska byggas in i relevanta sidmallar; skapa inte en separat AI-wireframe.
 - PWA ska inte lova offline-funktion som inte finns. Offline-läge ska vara tydligt och blockera osäker sparning.
 
+### Bindande visuellt kontrakt för appen
+
+- Läs `docs/strategy/VISUAL_SYSTEM_PLAN.md` före varje ändring av appens tema, visuella system, komponentutseende, brandassets, UI-ikoner, metadata eller rapportutseende. Dokumentet är bindande tillsammans med den aktuella issuen.
+- Använd semantiska tokens från `packages/design-system/theme-contract.json` via genererade `--ds-*`-variabler. Skapa inte nya lokala light-/dark-paletter eller råa temafärger i appkomponenter.
+- Använd `@min-egenkontroll/brand` för brandassets. Lägg inte in nya råa `/brand/...`-paths i komponenter, CSS eller rapportkod.
+- Generella UI-primitiver hör hemma i `packages/design-system`. Appspecifica kompositioner får ligga i `apps/app`, ska bygga på de generella primitiverna när beteendet passar och ska endast använda semantiska tokens.
+- Appens temakontrakt är `system | light | dark`: system är standard och explicit light/dark appliceras på dokumentroten före första rendering. Bygg inte en ny temaväljare i produkt-UI utan en separat beslutad issue.
+- Visuella migreringar får inte samtidigt ändra routing, auth, sessioner, behörigheter, affärslogik, datamodell, sparning, navigation eller flödesordning. Sådana ändringar ska separeras till egen issue och verifiering.
+
 ## Publikt innehåll och URL:er
 
 - Ta inte bort eller bygg om befintliga SEO-/kunskapssidor från grunden utan inventering.

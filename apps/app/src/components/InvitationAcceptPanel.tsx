@@ -6,7 +6,7 @@ import {
   updateProfile,
 } from '../services/organizationService';
 import type { OrganizationInvitationSummary } from '../services/organizationService';
-import './MenuDestinationView.css';
+import { AppSectionCard } from './ui/AppPrimitives';
 
 type InvitationAcceptPanelProps = {
   invitationId: string;
@@ -84,7 +84,7 @@ export function InvitationAcceptPanel({
   }
 
   return (
-    <section className="auth-card" aria-labelledby="invitation-title">
+    <section className="app-surface auth-card" aria-labelledby="invitation-title">
       <p className="eyebrow">Inbjudan</p>
       <h2 id="invitation-title">Acceptera verksamhetsinbjudan</h2>
       {loading ? <p className="muted-copy">Laddar inbjudan...</p> : null}
@@ -95,12 +95,12 @@ export function InvitationAcceptPanel({
       ) : null}
       {invitation ? (
         <>
-          <div className="menu-destination-panel">
+          <AppSectionCard>
             <h4>{invitation.email}</h4>
             <p className="muted-copy">
               Du är inloggad som {userEmail ?? 'okänd e-post'}. Inbjudan ger rollen {roleLabels[invitation.role]} och gäller till {formatDate(invitation.expires_at)}.
             </p>
-          </div>
+          </AppSectionCard>
           <form className="form-stack" onSubmit={handleAccept}>
             <label className="field-label" htmlFor="invitation-name">
               Ditt namn

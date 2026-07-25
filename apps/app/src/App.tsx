@@ -295,7 +295,7 @@ function App() {
     <>
       <OnlineOnlyBanner />
       <main className={showNavigation ? 'app-shell with-bottom-bar' : 'app-shell'}>
-        {!showNavigation ? <section className="hero-card auth-hero-card" aria-labelledby="page-title">
+        {!showNavigation ? <section className="app-surface hero-card auth-hero-card" aria-labelledby="page-title">
           <div className="app-icon" aria-hidden="true">
             <img src={brandAssets.icon} alt="" />
           </div>
@@ -312,7 +312,7 @@ function App() {
         {message ? <p className="form-message error-message">{message}</p> : null}
 
         {loading ? (
-          <section className="status-panel">
+          <section className="app-surface status-panel">
             <p className="eyebrow">Laddar</p>
             <h2>Kontrollerar session...</h2>
           </section>
