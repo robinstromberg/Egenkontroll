@@ -9,6 +9,7 @@
   "files": [
     "src",
     "styles",
+    "theme-contract.json",
     "README.md"
   ],
   "exports": {
@@ -16,6 +17,8 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts"
     },
+    "./theme": "./src/theme.ts",
+    "./theme-contract.json": "./theme-contract.json",
     "./tokens.css": "./styles/tokens.css",
     "./base.css": "./styles/base.css"
   },

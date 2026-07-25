@@ -325,7 +325,7 @@ function buildPrintReportHtml(
   attachmentStates: AttachmentState[] = [],
 ): string {
   const brandColor = '#5b46e1';
-  const brandMark = `<img class="brand-mark" src="${escapeHtml(absoluteAssetUrl(brandAssets.icon))}" alt="" />`;
+  const brandMark = `<img class="brand-mark" src="${escapeHtml(absoluteAssetUrl(brandAssets.reportIcon))}" alt="" />`;
   const report = buildInspectorReportDocument(runs, {
     companyName: summary.companyName,
     periodStart: summary.periodStart,

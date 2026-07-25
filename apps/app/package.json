@@ -8,7 +8,7 @@
     "dev": "vite",
     "predev": "npm run brand:sync",
     "build": "tsc -b && vite build",
-    "prebuild": "npm run brand:sync",
+    "prebuild": "node ../../scripts/check-visual-contracts.mjs && npm run brand:sync",
     "contracts": "node ../../scripts/check-public-contracts.mjs && node --test ../../scripts/contracts/public-platform-contracts.test.mjs",
     "precontracts": "npm run brand:sync",
     "contracts:update": "node ../../scripts/check-public-contracts.mjs --update",

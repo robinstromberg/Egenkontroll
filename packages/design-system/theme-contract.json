@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "sharedTokens": {
+    "font-sans": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    "font-size-sm": "0.875rem",
+    "font-size-base": "1rem",
+    "font-size-lg": "1.125rem",
+    "font-size-xl": "1.5rem",
+    "font-size-2xl": "2rem",
+    "line-height-tight": "1.15",
+    "line-height-base": "1.5",
+    "space-1": "0.25rem",
+    "space-2": "0.5rem",
+    "space-3": "0.75rem",
+    "space-4": "1rem",
+    "space-5": "1.5rem",
+    "space-6": "2rem",
+    "space-7": "3rem",
+    "page-gutter": "clamp(0.75rem, 3vw, 2rem)",
+    "page-max-inline": "72.5rem",
+    "prose-max-inline": "48rem",
+    "heading-max-inline": "58rem",
+    "intro-max-inline": "52rem",
+    "content-section-space": "clamp(2.5rem, 7vw, 4.75rem)",
+    "content-gap": "var(--ds-space-4)",
+    "form-gap": "var(--ds-space-4)",
+    "radius-sm": "0.25rem",
+    "radius-md": "0.5rem",
+    "radius-lg": "0.75rem"
+  },
+  "themes": {
+    "light": {
+      "colorScheme": "light",
+      "tokens": {
+        "canvas": "#fffdf8",
+        "surface": "#ffffff",
+        "surface-subtle": "#f5f2eb",
+        "surface-inverse": "#18221f",
+        "text": "#18221f",
+        "text-secondary": "#52605a",
+        "text-on-inverse": "#ffffff",
+        "border": "#c6cbc4",
+        "border-strong": "#7d8b82",
+        "action-primary": "#1f6048",
+        "action-primary-hover": "#174a38",
+        "action-primary-active": "#103d2d",
+        "action-on-primary": "#ffffff",
+        "action-secondary": "#edf1eb",
+        "action-secondary-hover": "#e1e8df",
+        "highlight-surface": "#f0e7cb",
+        "highlight-text": "#4f3c0d",
+        "highlight-border": "#ceb979",
+        "focus": "#006fdd",
+        "status-success-fg": "#145c40",
+        "status-success-bg": "#e6f5eb",
+        "status-success-border": "#84c69b",
+        "status-warning-fg": "#6b4d00",
+        "status-warning-bg": "#fff3c7",
+        "status-warning-border": "#d9ad35",
+        "status-danger-fg": "#972f20",
+        "status-danger-bg": "#ffe8e3",
+        "status-danger-border": "#dc8d80",
+        "status-neutral-fg": "#3e4c45",
+        "status-neutral-bg": "#edf1eb",
+        "status-neutral-border": "#b9c4bb",
+        "shadow-sm": "0 1px 2px rgb(24 34 31 / 8%)",
+        "shadow-md": "0 12px 30px rgb(24 34 31 / 12%)"
+      }
+    },
+    "dark": {
+      "colorScheme": "dark",
+      "tokens": {
+        "canvas": "#101713",
+        "surface": "#18211c",
+        "surface-subtle": "#202b24",
+        "surface-inverse": "#f6f5ef",
+        "text": "#f6f5ef",
+        "text-secondary": "#c7d1c9",
+        "text-on-inverse": "#17221d",
+        "border": "#54645b",
+        "border-strong": "#8b9b90",
+        "action-primary": "#77d3a0",
+        "action-primary-hover": "#9be4b8",
+        "action-primary-active": "#59b982",
+        "action-on-primary": "#082518",
+        "action-secondary": "#25342b",
+        "action-secondary-hover": "#314238",
+        "highlight-surface": "#4e3b05",
+        "highlight-text": "#ffe49a",
+        "highlight-border": "#c8a234",
+        "focus": "#91c5ff",
+        "status-success-fg": "#c2f5d1",
+        "status-success-bg": "#163f2b",
+        "status-success-border": "#559d71",
+        "status-warning-fg": "#ffe49a",
+        "status-warning-bg": "#4e3b05",
+        "status-warning-border": "#c8a234",
+        "status-danger-fg": "#ffc7bd",
+        "status-danger-bg": "#55251e",
+        "status-danger-border": "#c87465",
+        "status-neutral-fg": "#d7e0d8",
+        "status-neutral-bg": "#2b3931",
+        "status-neutral-border": "#697a70",
+        "shadow-sm": "0 1px 2px rgb(0 0 0 / 24%)",
+        "shadow-md": "0 14px 32px rgb(0 0 0 / 28%)"
+      }
+    }
+  },
+  "staticSurfaces": {
+    "appThemeColor": {
+      "theme": "light",
+      "token": "canvas"
+    },
+    "appPwaBackgroundColor": {
+      "theme": "light",
+      "token": "canvas"
+    },
+    "appPwaThemeColor": {
+      "theme": "light",
+      "token": "canvas"
+    },
+    "webThemeColor": {
+      "theme": "dark",
+      "token": "canvas"
+    }
+  }
+}
