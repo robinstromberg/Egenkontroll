@@ -14,6 +14,7 @@ import {
 import type { SharedAttachment, SharedControlTypeOption, SharedExportType, SharedInspectorContext, SharedRun, SharedRunItem } from '../services/shareRecords';
 import { buildInspectorReportDocument } from '../reports/inspectorReportDocument.js';
 import type { AttachmentState } from '../reports/inspectorReportDocument.js';
+import { reportPalette } from '../reports/reportPalette.js';
 
 type DeviationFilter = 'all' | 'with-open' | 'with-resolved' | 'without';
 type SortKey = 'performed-desc' | 'performed-asc' | 'control-type' | 'deviation-status';
@@ -324,7 +325,6 @@ function buildPrintReportHtml(
   summary: SharedReportSummary,
   attachmentStates: AttachmentState[] = [],
 ): string {
-  const brandColor = '#5b46e1';
   const brandMark = `<img class="brand-mark" src="${escapeHtml(absoluteAssetUrl(brandAssets.reportIcon))}" alt="" />`;
   const report = buildInspectorReportDocument(runs, {
     companyName: summary.companyName,
@@ -405,38 +405,38 @@ function buildPrintReportHtml(
       <head>
         <title>Egenkontroll - rapport</title>
         <style>
-          body { color: #172033; font-family: Arial, sans-serif; margin: 0; padding: 28px; }
+          body { color: ${reportPalette.text}; font-family: Arial, sans-serif; margin: 0; padding: 28px; background: ${reportPalette.paper}; }
           h1, h2, p { margin-top: 0; }
           .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
           .brand-mark { display: inline-flex; width: 42px; height: 42px; border-radius: 12px; object-fit: contain; }
           .brand h1 { margin: 0; }
-          .muted { color: #5f6b85; }
+          .muted { color: ${reportPalette.muted}; }
           .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 18px 0 24px; }
-          .metric { border: 1px solid #ddd8ff; border-radius: 12px; padding: 12px; background: #f7f5ff; }
+          .metric { border: 1px solid ${reportPalette.border}; border-radius: 12px; padding: 12px; background: ${reportPalette.brandPale}; }
           .metric strong { display: block; font-size: 22px; }
-          .filters { border: 1px solid #d9deea; border-radius: 12px; margin: 18px 0 24px; padding: 12px; }
+          .filters { border: 1px solid ${reportPalette.border}; border-radius: 12px; margin: 18px 0 24px; padding: 12px; }
           .filters p { margin: 4px 0; }
-          .routine { color: #4f5b73; margin: -4px 0 10px; }
+          .routine { color: ${reportPalette.muted}; margin: -4px 0 10px; }
           h3 { margin: 22px 0 10px; }
           .report-table-wrap { overflow-x: auto; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
-          th, td { border: 1px solid #d9deea; padding: 8px; text-align: left; vertical-align: top; word-break: break-word; }
-          th { background: #f0edff; }
+          th, td { border: 1px solid ${reportPalette.border}; padding: 8px; text-align: left; vertical-align: top; word-break: break-word; }
+          th { background: ${reportPalette.brandPale}; }
           .attachment-appendix { break-before: page; page-break-before: always; }
-          .attachment-appendix-card { break-inside: avoid; page-break-inside: avoid; margin: 0 0 24px; border: 1px solid #e5e1ff; border-radius: 14px; padding: 14px; }
-          .attachment-appendix-card h3 { margin: 0 0 8px; color: ${escapeHtml(brandColor)}; }
-          .attachment-appendix-card p { margin: 0 0 6px; color: #4f5b73; }
-          .attachment-appendix-card img { display: block; width: 100%; max-height: 620px; margin-top: 12px; border-radius: 10px; object-fit: contain; background: #f6f7fb; }
-          .attachment-warning { border: 1px solid #d97706; border-radius: 12px; background: #fff8e8; margin: 0 0 24px; padding: 12px; }
+          .attachment-appendix-card { break-inside: avoid; page-break-inside: avoid; margin: 0 0 24px; border: 1px solid ${reportPalette.border}; border-radius: 14px; padding: 14px; }
+          .attachment-appendix-card h3 { margin: 0 0 8px; color: ${reportPalette.brand}; }
+          .attachment-appendix-card p { margin: 0 0 6px; color: ${reportPalette.muted}; }
+          .attachment-appendix-card img { display: block; width: 100%; max-height: 620px; margin-top: 12px; border-radius: 10px; object-fit: contain; background: ${reportPalette.surfaceSubtle}; }
+          .attachment-warning { border: 1px solid ${reportPalette.warningBorder}; border-radius: 12px; background: ${reportPalette.warning}; margin: 0 0 24px; padding: 12px; }
           .attachment-warning h3 { margin: 0 0 8px; }
           .attachment-warning ul { margin: 0; padding-left: 20px; }
-          .report-row-temperature td:first-child { border-left: 5px solid #059669; }
-          .report-row-checklist td:first-child { border-left: 5px solid #2563eb; }
-          .report-row-receiving td:first-child { border-left: 5px solid #d97706; }
-          .report-row-traceability td:first-child { border-left: 5px solid #5b46e1; }
-          .report-row-round td:first-child { border-left: 5px solid #0891b2; }
-          .report-row-danger td { background: #fff5f6; }
-          .report-row-success td { background: #f1fbf5; }
+          .report-row-temperature td:first-child { border-left: 5px solid ${reportPalette.category.temperature}; }
+          .report-row-checklist td:first-child { border-left: 5px solid ${reportPalette.category.checklist}; }
+          .report-row-receiving td:first-child { border-left: 5px solid ${reportPalette.category.receiving}; }
+          .report-row-traceability td:first-child { border-left: 5px solid ${reportPalette.category.traceability}; }
+          .report-row-round td:first-child { border-left: 5px solid ${reportPalette.category.round}; }
+          .report-row-danger td { background: ${reportPalette.danger}; }
+          .report-row-success td { background: ${reportPalette.success}; }
           @media print { body { padding: 0; } .no-print { display: none; } }
         </style>
       </head>

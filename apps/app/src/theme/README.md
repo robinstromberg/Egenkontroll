@@ -28,7 +28,23 @@ behåller sina befintliga paths och sin befintliga stegordning.
 avvikelser, foto- och leverantörskontrakt, offline- och sparordning, PWA-stegen, navigation,
 frånvaro av lokala temapaletter samt SavedControlViews reduced-motion-kontrakt.
 
-Kvarvarande vyspecifik legacy-CSS migreras av #350
-(historik/KPI/delning/inspektör/rapport) och #351 (meny/administration/onboarding/ikoner).
-Under mellanfasen kan dessa omigrerade vyer fortfarande följa operativsystemets tema via
-egna media queries även när appens explicita val är det motsatta.
+Efter #350 använder även HistoryView, KpiView, SharingView och InspectorView enbart semantiska
+tokens i produktläget. Deras tidigare lokala dark-paletter är borttagna, så `system | light |
+dark` följer den gemensamma runtime-källan även på review- och delningsytorna. Filter, KPI-
+beräkningar, permissions, tabellkolumner, `data-label`, exportordning och rapportinnehåll är
+oförändrade.
+
+Browser-rapporter och PDFKit använder den statiska `src/reports/reportPalette.js`, vars samtliga
+värden härleds från `themes.light.tokens` i design-systemets kontrakt. Rapporter är därför alltid
+ljusa oavsett valt apptema. Endast två råfärgsundantag finns kvar: QR-kodens fasta mörk/vita
+skanningskontrast samt InspectorViews print-only-överskrivning av light-tokenvärden. Den senare
+behövs eftersom en CSS-fil inte kan importera JSON-kontraktet och verifieras mot samma källa av
+`reviewSharingVisualContract.test.ts`.
+
+`npm run review-sharing:test --workspace @min-egenkontroll/app` skyddar temagränsen,
+History/KPI-kontrakten, delningsbehörigheter, hash/QR, filter, mobiltabellernas kolumner och
+`data-label`, export-/e-postordningen samt den centrala light-rapportpaletten.
+
+Kvarvarande vyspecifik legacy-CSS migreras av #351
+(meny/administration/onboarding/ikoner). Under mellanfasen kan dessa omigrerade vyer fortfarande
+följa operativsystemets tema via egna media queries även när appens explicita val är det motsatta.

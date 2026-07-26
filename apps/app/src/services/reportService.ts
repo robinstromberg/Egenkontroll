@@ -1,4 +1,5 @@
 import { brandAssets } from '@min-egenkontroll/brand';
+import { reportPalette } from '../reports/reportPalette.js';
 import { getControlRunDetail, listHistoryRuns } from './historyService';
 import type { HistoryFilters } from './historyService';
 
@@ -127,16 +128,16 @@ export function createPrintReportWindow(): Window | null {
             min-height: 100vh;
             place-items: center;
             margin: 0;
-            color: #172033;
+            color: ${reportPalette.text};
             font-family: Arial, sans-serif;
-            background: #f7f8fd;
+            background: ${reportPalette.canvas};
           }
           p {
-            border: 1px solid #e5e1ff;
+            border: 1px solid ${reportPalette.border};
             border-radius: 16px;
             padding: 18px 20px;
-            background: #ffffff;
-            box-shadow: 0 16px 44px rgba(62, 46, 135, 0.12);
+            background: ${reportPalette.paper};
+            box-shadow: ${reportPalette.shadow};
             font-weight: 700;
           }
         </style>
@@ -257,20 +258,20 @@ export function openPrintReport(rows: ReportRow[], printWindow = createPrintRepo
       <head>
         <title>Egenkontroll - rapport</title>
         <style>
-          body { color: #172033; font-family: Arial, sans-serif; padding: 24px; }
+          body { color: ${reportPalette.text}; font-family: Arial, sans-serif; padding: 24px; background: ${reportPalette.paper}; }
           h1, h2, h3, p { margin-top: 0; }
           .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
           .brand img { width: 42px; height: 42px; border-radius: 12px; object-fit: cover; }
           .brand h1 { margin: 0; }
-          .muted { color: #5f6b85; }
+          .muted { color: ${reportPalette.muted}; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
-          th { background: #f3f0ff; }
+          th, td { border: 1px solid ${reportPalette.border}; padding: 8px; text-align: left; vertical-align: top; }
+          th { background: ${reportPalette.brandPale}; }
           .attachment-appendix { break-before: page; page-break-before: always; }
-          .attachment-card { break-inside: avoid; page-break-inside: avoid; margin: 0 0 24px; border: 1px solid #e5e1ff; border-radius: 14px; padding: 14px; }
-          .attachment-card h3 { margin-bottom: 8px; color: #5b46e1; }
-          .attachment-card p { margin-bottom: 6px; color: #4f5b73; }
-          .attachment-card img { display: block; width: 100%; max-height: 620px; margin-top: 12px; border-radius: 10px; object-fit: contain; background: #f6f7fb; }
+          .attachment-card { break-inside: avoid; page-break-inside: avoid; margin: 0 0 24px; border: 1px solid ${reportPalette.border}; border-radius: 14px; padding: 14px; }
+          .attachment-card h3 { margin-bottom: 8px; color: ${reportPalette.brand}; }
+          .attachment-card p { margin-bottom: 6px; color: ${reportPalette.muted}; }
+          .attachment-card img { display: block; width: 100%; max-height: 620px; margin-top: 12px; border-radius: 10px; object-fit: contain; background: ${reportPalette.surfaceSubtle}; }
           @media print { body { padding: 0; } .no-print { display: none; } }
         </style>
       </head>
