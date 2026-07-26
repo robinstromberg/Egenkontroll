@@ -17,8 +17,18 @@ etablerade mått ovanpå designsystemets generella primitiver. Nya appvyer ska �
 `AppSurface`, `AppSectionCard`, `AppIconButton`, `AppStatusIndicator` och `AppNavButton`
 när respektive mönster passar; de får inte skapa lokala färgpaletter.
 
-Efter #348 är global canvas, shell, authytor, formulärbas och bottennavigation migrerade.
-Vyspecifik legacy-CSS migreras av #349 (dagens kontroller/kontrollutförande), #350
+Efter #349 är även TodayDashboard, den befintliga PWA-onboardingen, kontrollutförandet,
+ControlDefinitionCanvas och SavedControlView migrerade. Deras kontrollspecifika kompositioner
+ligger kvar i appen eftersom generella primitiver skulle ändra DOM-, mått- eller
+required-/disabled-kontrakten. De använder enbart semantiska tokens; inga råa färgundantag
+finns i de tre migrerade CSS-filerna. PWA-guidens fyra skärmbilder är innehållsassets och
+behåller sina befintliga paths och sin befintliga stegordning.
+
+`npm run control-execution:test --workspace @min-egenkontroll/app` skyddar fältdefaults,
+avvikelser, foto- och leverantörskontrakt, offline- och sparordning, PWA-stegen, navigation,
+frånvaro av lokala temapaletter samt SavedControlViews reduced-motion-kontrakt.
+
+Kvarvarande vyspecifik legacy-CSS migreras av #350
 (historik/KPI/delning/inspektör/rapport) och #351 (meny/administration/onboarding/ikoner).
 Under mellanfasen kan dessa omigrerade vyer fortfarande följa operativsystemets tema via
 egna media queries även när appens explicita val är det motsatta.

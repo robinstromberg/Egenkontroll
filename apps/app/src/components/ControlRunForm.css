@@ -16,11 +16,11 @@
   gap: 12px;
   align-items: flex-start;
   justify-content: space-between;
-  border: 1px solid rgba(91, 70, 225, 0.1);
+  border: 1px solid var(--ds-border);
   border-radius: 18px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 12px 28px rgba(62, 46, 135, 0.12);
+  background: color-mix(in srgb, var(--ds-surface) 94%, transparent);
+  box-shadow: var(--ds-shadow-md);
   backdrop-filter: blur(14px);
 }
 
@@ -36,11 +36,11 @@
 .control-group {
   display: grid;
   gap: 9px;
-  border: 1px solid rgba(91, 70, 225, 0.1);
+  border: 1px solid var(--ds-border);
   border-radius: 16px;
   padding: 12px;
-  background: #ffffff;
-  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
 }
 
 .canvas-object-heading,
@@ -56,8 +56,8 @@
   align-items: center;
   border-radius: 12px;
   padding: 6px 8px;
-  color: #5b46e1;
-  background: #f5f3ff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-size: 0.74rem;
   font-weight: 900;
 }
@@ -69,7 +69,7 @@
 .canvas-edit-hint {
   margin: 0;
   padding: 8px 12px 0;
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.8rem;
   font-weight: 800;
   line-height: 1.35;
@@ -80,18 +80,18 @@
   border: 0;
   border-radius: 999px;
   padding: 0 10px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-size: 0.74rem;
   font-weight: 900;
   white-space: nowrap;
 }
 
 .canvas-field-editable {
-  border: 1px dashed rgba(91, 70, 225, 0.18);
+  border: 1px dashed var(--ds-border);
   border-radius: 14px;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.72);
+  background: color-mix(in srgb, var(--ds-surface) 72%, transparent);
 }
 
 .canvas-object-editable,
@@ -101,18 +101,18 @@
 
 .canvas-edit-selected,
 .canvas-field-editable.selected {
-  border-color: rgba(91, 70, 225, 0.5);
-  box-shadow: 0 0 0 3px rgba(91, 70, 225, 0.1);
+  border-color: var(--ds-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-focus) 16%, transparent);
 }
 
 .canvas-inline-editor {
   display: grid;
   gap: 10px;
-  border: 1px solid rgba(91, 70, 225, 0.18);
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
   padding: 10px;
-  background: #ffffff;
-  box-shadow: 0 10px 24px rgba(62, 46, 135, 0.08);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-md);
 }
 
 .canvas-inline-edit-form {
@@ -128,16 +128,16 @@
 .control-empty-state {
   display: grid;
   gap: 12px;
-  border: 1px solid rgba(91, 70, 225, 0.12);
+  border: 1px solid var(--ds-border);
   border-radius: 18px;
   padding: 16px;
-  background: #ffffff;
-  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
 }
 
 .control-empty-state h4 {
   margin: 0;
-  color: #11172c;
+  color: var(--ds-text);
 }
 
 .control-field {
@@ -157,7 +157,7 @@
 
 .field-hint {
   margin: 0;
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.35;
@@ -166,10 +166,10 @@
 .check-matrix {
   display: grid;
   overflow: hidden;
-  border: 1px solid rgba(91, 70, 225, 0.1);
+  border: 1px solid var(--ds-border);
   border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
 }
 
 .check-matrix-header,
@@ -182,14 +182,14 @@
 }
 
 .check-matrix-header {
-  color: #657089;
-  background: #fbfaff;
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-subtle);
   font-size: 0.78rem;
   font-weight: 900;
 }
 
 .check-matrix-header strong {
-  color: #11172c;
+  color: var(--ds-text);
   font-size: 0.84rem;
 }
 
@@ -198,15 +198,15 @@
 }
 
 .check-matrix-item + .check-matrix-item {
-  border-top: 1px solid rgba(91, 70, 225, 0.08);
+  border-top: 1px solid var(--ds-border);
 }
 
 .check-matrix-item.has-action {
-  background: #fff8f9;
+  background: var(--ds-status-danger-bg);
 }
 
 .check-matrix-name {
-  color: #172033;
+  color: var(--ds-text);
   font-weight: 800;
   line-height: 1.25;
   white-space: normal;
@@ -219,7 +219,7 @@
 }
 
 .check-matrix-meta {
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.76rem;
   font-weight: 700;
   line-height: 1.25;
@@ -233,7 +233,7 @@
 }
 
 .canvas-object-editable .check-matrix-row {
-  outline: 1px dashed rgba(91, 70, 225, 0.12);
+  outline: 1px dashed var(--ds-border);
   outline-offset: -6px;
 }
 
@@ -243,23 +243,23 @@
   height: 36px;
   place-self: center;
   place-items: center;
-  border: 2px solid #d7dbea;
+  border: 2px solid var(--ds-border-strong);
   border-radius: 999px;
   color: transparent;
-  background: #ffffff;
+  background: var(--ds-surface);
   font-weight: 900;
 }
 
 .matrix-choice.ok.selected {
-  border-color: #0c7a43;
-  color: #ffffff;
-  background: #0fa45a;
+  border-color: var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+  background: var(--ds-status-success-bg);
 }
 
 .matrix-choice.not-ok.selected {
-  border-color: #9f1d2b;
-  color: #ffffff;
-  background: #d63d4d;
+  border-color: var(--ds-status-danger-border);
+  color: var(--ds-status-danger-fg);
+  background: var(--ds-status-danger-bg);
 }
 
 .matrix-action-box {
@@ -268,8 +268,8 @@
   margin: 0 12px 12px;
   border-radius: 16px;
   padding: 12px;
-  color: #9f1d2b;
-  background: #ffe3e7;
+  color: var(--ds-status-danger-fg);
+  background: var(--ds-status-danger-bg);
 }
 
 .matrix-action-box strong {
@@ -279,16 +279,16 @@
 
 .matrix-action-box .text-input {
   min-height: 88px;
-  background: #ffffff;
+  background: var(--ds-surface);
 }
 
 .temperature-field {
   display: grid;
   gap: 7px;
-  border: 1px solid rgba(12, 122, 67, 0.14);
+  border: 1px solid var(--ds-status-success-border);
   border-radius: 16px;
   padding: 10px;
-  background: #f7fff9;
+  background: var(--ds-status-success-bg);
 }
 
 .date-input-shell {
@@ -311,10 +311,10 @@
   width: 26px;
   height: 26px;
   place-items: center;
-  border: 2px solid #5b46e1;
+  border: 2px solid var(--ds-action-primary);
   border-radius: 8px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   transform: translateY(-50%);
   pointer-events: none;
 }
@@ -340,8 +340,8 @@
 }
 
 .temperature-field.deviation {
-  border-color: rgba(159, 29, 43, 0.22);
-  background: #fff8f9;
+  border-color: var(--ds-status-danger-border);
+  background: var(--ds-status-danger-bg);
 }
 
 .temperature-input-row {
@@ -361,7 +361,7 @@
   position: absolute;
   top: 50%;
   right: 14px;
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-weight: 900;
   transform: translateY(-50%);
   pointer-events: none;
@@ -372,7 +372,7 @@
   gap: 8px;
   align-items: center;
   justify-content: space-between;
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.8rem;
   font-weight: 800;
 }
@@ -384,13 +384,13 @@
 }
 
 .temperature-status.good {
-  color: #0c6638;
-  background: #ddf8e7;
+  color: var(--ds-status-success-fg);
+  background: var(--ds-status-success-bg);
 }
 
 .temperature-status.bad {
-  color: #9f1d2b;
-  background: #ffe3e7;
+  color: var(--ds-status-danger-fg);
+  background: var(--ds-status-danger-bg);
 }
 
 .control-form-temperature {
@@ -430,7 +430,7 @@
 }
 
 .control-form-temperature .temperature-field.deviation {
-  border: 1px solid rgba(159, 29, 43, 0.22);
+  border: 1px solid var(--ds-status-danger-border);
   border-radius: 14px;
   padding: 9px;
 }
@@ -468,10 +468,10 @@
   width: 72px;
   height: 72px;
   flex: 0 0 72px;
-  border: 1px solid rgba(91, 70, 225, 0.14);
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
   object-fit: cover;
-  background: #f8f7ff;
+  background: var(--ds-surface-subtle);
 }
 
 .photo-empty-slot {
@@ -480,10 +480,10 @@
   min-width: 0;
   flex: 1;
   place-items: center;
-  border: 1px dashed rgba(91, 70, 225, 0.24);
+  border: 1px dashed var(--ds-border-strong);
   border-radius: 14px;
-  color: #657089;
-  background: #fbfaff;
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-subtle);
   font-size: 0.86rem;
   font-weight: 800;
 }
@@ -494,10 +494,10 @@
   height: 72px;
   flex: 0 0 72px;
   place-items: center;
-  border: 1px solid rgba(91, 70, 225, 0.18);
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-size: 1.45rem;
   font-weight: 900;
   cursor: pointer;
@@ -515,7 +515,7 @@
 
 .photo-file-name {
   margin: 0;
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.8rem;
   font-weight: 700;
 }
@@ -525,17 +525,17 @@
   gap: 8px;
   border-radius: 16px;
   padding: 12px;
-  color: #9f1d2b;
-  background: #ffe3e7;
+  color: var(--ds-status-danger-fg);
+  background: var(--ds-status-danger-bg);
 }
 
 .canvas-empty-fields {
   margin: 0;
-  border: 1px dashed rgba(91, 70, 225, 0.22);
+  border: 1px dashed var(--ds-border);
   border-radius: 14px;
   padding: 10px 12px;
-  color: #657089;
-  background: rgba(91, 70, 225, 0.05);
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-subtle);
   font-size: 0.86rem;
   font-weight: 800;
 }
@@ -563,30 +563,30 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid rgba(91, 70, 225, 0.14);
+  border: 1px solid var(--ds-border);
   border-radius: 13px;
   padding: 0 12px;
-  color: #34405a;
-  background: #ffffff;
+  color: var(--ds-text);
+  background: var(--ds-surface);
   font-weight: 900;
 }
 
 .choice-button.selected.good {
-  border-color: rgba(12, 122, 67, 0.22);
-  color: #0c6638;
-  background: #ddf8e7;
+  border-color: var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+  background: var(--ds-status-success-bg);
 }
 
 .choice-button.selected.bad {
-  border-color: rgba(159, 29, 43, 0.22);
-  color: #9f1d2b;
-  background: #ffe3e7;
+  border-color: var(--ds-status-danger-border);
+  color: var(--ds-status-danger-fg);
+  background: var(--ds-status-danger-bg);
 }
 
 .choice-button.selected.neutral {
-  border-color: rgba(91, 70, 225, 0.28);
-  color: #5b46e1;
-  background: #efedff;
+  border-color: var(--ds-status-neutral-border);
+  color: var(--ds-status-neutral-fg);
+  background: var(--ds-status-neutral-bg);
 }
 
 .choice-dot {
@@ -597,191 +597,10 @@
 }
 
 .choice-button.selected .choice-dot {
-  box-shadow: inset 0 0 0 4px #ffffff;
+  box-shadow: inset 0 0 0 4px var(--ds-surface);
   background: currentColor;
 }
 
-@media (prefers-color-scheme: dark) {
-  .control-group,
-  .check-matrix,
-  .control-empty-state {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: #121a2e;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
-  }
-
-  .control-group h4,
-  .control-field label,
-  .action-label,
-  .check-matrix-header strong,
-  .check-matrix-name,
-  .control-empty-state h4 {
-    color: #f7f9ff;
-  }
-
-  .canvas-field-toolbar,
-  .canvas-edit-action {
-    color: #b9afff;
-    background: #211b45;
-  }
-
-  .canvas-edit-hint,
-  .check-matrix-meta {
-    color: #aeb8d0;
-  }
-
-  .canvas-field-editable {
-    border-color: rgba(159, 145, 255, 0.24);
-    background: rgba(17, 26, 47, 0.62);
-  }
-
-  .canvas-row-edit-button {
-    color: #f7f9ff;
-  }
-
-  .canvas-object-editable .check-matrix-row {
-    outline-color: rgba(159, 145, 255, 0.2);
-  }
-
-  .canvas-edit-selected,
-  .canvas-field-editable.selected {
-    border-color: rgba(185, 175, 255, 0.58);
-    box-shadow: 0 0 0 3px rgba(185, 175, 255, 0.12);
-  }
-
-  .canvas-inline-editor {
-    border-color: rgba(159, 145, 255, 0.24);
-    background: #121a2e;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
-  }
-
-  .check-matrix-header {
-    color: #aeb8d0;
-    background: #111a2f;
-  }
-
-  .check-matrix-item + .check-matrix-item {
-    border-top-color: rgba(159, 145, 255, 0.12);
-  }
-
-  .check-matrix-item.has-action {
-    background: rgba(159, 29, 43, 0.12);
-  }
-
-  .matrix-choice {
-    border-color: rgba(159, 145, 255, 0.28);
-    background: #111a2f;
-  }
-
-  .matrix-choice.ok.selected {
-    border-color: #61d992;
-    background: #1f9f63;
-  }
-
-  .matrix-choice.not-ok.selected {
-    border-color: #ff9aa8;
-    background: #c83749;
-  }
-
-  .matrix-action-box {
-    border: 1px solid rgba(255, 119, 135, 0.36);
-    color: #ff9aa8;
-    background: rgba(159, 29, 43, 0.22);
-  }
-
-  .matrix-action-box .text-input {
-    color: #f7f9ff;
-    background: #111a2f;
-    border-color: rgba(255, 119, 135, 0.28);
-  }
-
-  .temperature-field {
-    border-color: rgba(97, 217, 146, 0.28);
-    background: rgba(39, 128, 83, 0.14);
-  }
-
-  .temperature-field.deviation {
-    border-color: rgba(255, 119, 135, 0.34);
-    background: rgba(159, 29, 43, 0.18);
-  }
-
-  .temperature-unit,
-  .temperature-meta-row,
-  .date-input-calendar {
-    color: #aeb8d0;
-  }
-
-  .date-input-calendar {
-    border-color: rgba(185, 175, 255, 0.72);
-    background: #211b45;
-  }
-
-  .temperature-status.good {
-    color: #61d992;
-    background: rgba(39, 128, 83, 0.22);
-  }
-
-  .temperature-status.bad {
-    color: #ff9aa8;
-    background: rgba(159, 29, 43, 0.24);
-  }
-
-  .deviation-box {
-    border: 1px solid rgba(255, 119, 135, 0.36);
-    color: #ff9aa8;
-    background: rgba(159, 29, 43, 0.22);
-  }
-
-  .choice-button {
-    border-color: rgba(159, 145, 255, 0.18);
-    color: #d8deef;
-    background: #111a2f;
-  }
-
-  .choice-button.selected.good {
-    border-color: rgba(97, 217, 146, 0.34);
-    color: #61d992;
-    background: rgba(39, 128, 83, 0.2);
-  }
-
-  .choice-button.selected.bad {
-    border-color: rgba(255, 119, 135, 0.34);
-    color: #ff9aa8;
-    background: rgba(159, 29, 43, 0.24);
-  }
-
-  .choice-button.selected.neutral,
-  .photo-camera-button {
-    border-color: rgba(185, 175, 255, 0.28);
-    color: #b9afff;
-    background: #211b45;
-  }
-
-  .photo-thumbnail {
-    border-color: rgba(159, 145, 255, 0.22);
-    background: #111a2f;
-  }
-
-  .photo-empty-slot {
-    border-color: rgba(159, 145, 255, 0.28);
-    color: #aeb8d0;
-    background: #111a2f;
-  }
-
-  .photo-file-name {
-    color: #aeb8d0;
-  }
-
-  .control-form-topbar {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: rgba(18, 26, 46, 0.94);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
-  }
-
-  .field-hint {
-    color: #aeb8d0;
-  }
-}
 
 @media (max-width: 420px) {
   .control-form-topbar {
