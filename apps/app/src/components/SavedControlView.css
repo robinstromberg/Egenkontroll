@@ -12,8 +12,8 @@
   place-items: center;
   justify-self: center;
   border-radius: 999px;
-  background: #0fa45a;
-  box-shadow: 0 14px 28px rgba(15, 164, 90, 0.24);
+  background: var(--ds-status-success-fg);
+  box-shadow: var(--ds-shadow-md);
   animation: saved-pop 560ms ease-out both;
 }
 
@@ -23,7 +23,7 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: #6d55e8;
+  background: var(--ds-focus);
   content: '';
   animation: saved-dot 760ms ease-out both;
 }
@@ -36,11 +36,11 @@
 .saved-success-mark::after {
   right: 8px;
   top: 7px;
-  background: #f2a23a;
+  background: var(--ds-status-warning-border);
 }
 
 .saved-checkmark {
-  color: #ffffff;
+  color: var(--ds-status-success-bg);
   font-size: 3rem;
   font-weight: 900;
   line-height: 1;
@@ -54,23 +54,24 @@
 
 .saved-control-copy h3 {
   margin: 0;
-  color: #11172c;
+  color: var(--ds-text);
   font-size: 1.45rem;
 }
 
 .saved-control-copy p {
   margin: 0;
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-weight: 700;
 }
 
 .saved-summary-card {
   display: grid;
   gap: 20px;
-  border: 1px solid rgba(91, 70, 225, 0.12);
+  border: 1px solid var(--ds-border);
   border-radius: 18px;
   padding: 20px;
-  background: #ffffff;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
 }
 
 .saved-summary-card div {
@@ -79,13 +80,13 @@
 }
 
 .saved-summary-card span {
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.84rem;
   font-weight: 800;
 }
 
 .saved-summary-card strong {
-  color: #172033;
+  color: var(--ds-text);
   font-size: 1rem;
 }
 
@@ -97,41 +98,14 @@
   border: 0;
   border-radius: 18px;
   padding: 0 18px;
-  color: #3d2fc7;
-  background: #f1edff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-weight: 900;
 }
 
 .saved-history-button span:last-child {
   font-size: 1.5rem;
   line-height: 1;
-}
-
-@media (prefers-color-scheme: dark) {
-  .saved-control-copy h3,
-  .saved-summary-card strong {
-    color: #f7f9ff;
-  }
-
-  .saved-control-copy p,
-  .saved-summary-card span {
-    color: #aeb8d0;
-  }
-
-  .saved-summary-card {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: #121a2e;
-  }
-
-  .saved-history-button {
-    color: #b9afff;
-    background: #211b45;
-  }
-
-  .saved-success-mark {
-    background: #16b86a;
-    box-shadow: 0 14px 28px rgba(22, 184, 106, 0.22);
-  }
 }
 
 @keyframes saved-pop {
