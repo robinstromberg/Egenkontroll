@@ -180,7 +180,7 @@ export const internalRoadmap = {
         'Grundläggande mätning och verifiering med pilotverksamheter.',
       ],
     },
-  ] satisfies readonly InternalRoadmapPhase[],
+  ] as readonly InternalRoadmapPhase[],
   destination: {
     eyebrow: 'Roadmapens destination',
     title: 'Min Egenkontroll är förhandslanserad, stabil och redo för riktiga kunder',
