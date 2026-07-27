@@ -7,6 +7,7 @@ import { validateDocumentLinks, type LinkDocument } from './link-contract';
 
 const webRoot = fileURLToPath(new URL('..', import.meta.url));
 const distRoot = path.join(webRoot, 'dist');
+const allowedInternalOutputs = new Set(['intern/roadmap/index.html']);
 
 export function outputFile(route: string): string {
   if (route === '/') return path.join(distRoot, 'index.html');
@@ -38,10 +39,13 @@ const notFound = path.join(distRoot, '404.html');
 if (!existsSync(notFound)) errors.push('404.html saknas.');
 else documents.push({ route: '/404', page: '404', html: readFileSync(notFound, 'utf8') });
 
-const allowedOutputs = new Set([...expectedOutputs.keys(), '404.html']);
+const allowedOutputs = new Set([...expectedOutputs.keys(), ...allowedInternalOutputs, '404.html']);
 for (const file of htmlFiles(distRoot)) {
   const relative = path.relative(distRoot, file).replaceAll('\\', '/');
   if (!allowedOutputs.has(relative)) errors.push(`Oregistrerad HTML-output: ${relative}`);
+}
+for (const internalOutput of allowedInternalOutputs) {
+  if (!existsSync(path.join(distRoot, ...internalOutput.split('/')))) errors.push(`Tillåten intern HTML-output saknas: ${internalOutput}`);
 }
 for (const redirect of webRedirects) {
   if (existsSync(outputFile(redirect.source))) errors.push(`Redirect har även byggd output: ${redirect.source}`);
