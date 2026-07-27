@@ -47,16 +47,34 @@ test('review and sharing product CSS uses semantic tokens with narrow static exc
   assert.doesNotMatch(sharingCss.replace(qrBlock, ''), rawColorPattern);
   assert.doesNotMatch(sharingCss, /@media\s*\(prefers-color-scheme:/);
 
+  const historyCss = await readComponentFile('HistoryView.css');
   const inspectorCss = await readComponentFile('InspectorView.css');
+  const modalBackdrops = [
+    ['HistoryView.css', historyCss, /\.history-image-modal\s*\{[\s\S]*?\n\}/],
+    ['SharingView.css', sharingCss, /\.share-modal-backdrop\s*\{[\s\S]*?\n\}/],
+    ['InspectorView.css', inspectorCss, /\.inspector-image-modal\s*\{[\s\S]*?\n\}/],
+  ] as const;
+  for (const [fileName, source, blockPattern] of modalBackdrops) {
+    const backdropBlock = source.match(blockPattern)?.[0] ?? '';
+    assert.match(backdropBlock, /background:\s*var\(--ds-overlay-scrim\)/, `${fileName} saknar central scrim`);
+    assert.doesNotMatch(backdropBlock, /--ds-canvas|color-mix\(/, `${fileName} fÃ¥r inte bygga scrim frÃ¥n canvas`);
+  }
+
   const printIndex = inspectorCss.indexOf('@media print');
   assert.notEqual(printIndex, -1);
   assert.doesNotMatch(inspectorCss.slice(0, printIndex), rawColorPattern);
   assert.doesNotMatch(inspectorCss, /@media\s*\(prefers-color-scheme:/);
 
   const themeContract = JSON.parse(await readSourceFile('../../../../packages/design-system/theme-contract.json')) as {
-    themes: { light: { tokens: Record<string, string> } };
+    themes: {
+      light: { tokens: Record<string, string> };
+      dark: { tokens: Record<string, string> };
+    };
   };
   const light = themeContract.themes.light.tokens;
+  const dark = themeContract.themes.dark.tokens;
+  assert.equal(light['overlay-scrim'], 'rgb(24 34 31 / 72%)');
+  assert.equal(dark['overlay-scrim'], 'rgb(0 0 0 / 72%)');
   const printAssignments = Object.fromEntries(
     [...inspectorCss.slice(printIndex).matchAll(/(--ds-[\w-]+):\s*(#[0-9a-f]{6});/gi)]
       .map((match) => [match[1], match[2].toLowerCase()]),

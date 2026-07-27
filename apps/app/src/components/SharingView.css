@@ -215,7 +215,7 @@
   display: grid;
   place-items: end center;
   padding: 18px;
-  background: color-mix(in srgb, var(--ds-canvas) 72%, transparent);
+  background: var(--ds-overlay-scrim);
 }
 
 .share-modal {
