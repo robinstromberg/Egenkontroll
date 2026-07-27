@@ -3,6 +3,7 @@ import { brandAssets } from '@min-egenkontroll/brand';
 import { ActionButton } from './ui/ActionButton';
 import { AssetIcon } from './ui/AssetIcon';
 import { readControlTypeIcon } from '../config/assets';
+import type { IconAsset } from '../config/assets';
 import {
   createSharedAttachmentSignedUrl,
   logSharedExport,
@@ -44,7 +45,7 @@ type SharedAttachmentPreview = {
   signedUrl: string;
 };
 
-const categoryMeta: Record<string, { icon: string; className: string; fallback: string }> = {
+const categoryMeta: Record<string, { icon: IconAsset; className: string; fallback: string }> = {
   temperature: { icon: readControlTypeIcon({ category: 'temperature' }), className: 'temperature', fallback: '°C' },
   checklist: { icon: readControlTypeIcon({ category: 'checklist' }), className: 'checklist', fallback: 'OK' },
   receiving: { icon: readControlTypeIcon({ category: 'receiving' }), className: 'receiving', fallback: 'IN' },
@@ -835,7 +836,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                   aria-hidden="true"
                 >
                   <AssetIcon
-                    src={readControlTypeMeta(controlType.control_type_category, controlType.control_type_name).icon}
+                    icon={readControlTypeMeta(controlType.control_type_category, controlType.control_type_name).icon}
                     fallback={readControlTypeMeta(controlType.control_type_category, controlType.control_type_name).fallback}
                   />
                 </span>
@@ -987,7 +988,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                           aria-hidden="true"
                         >
                           <AssetIcon
-                            src={readControlTypeMeta(run.control_type_category, run.control_type_name).icon}
+                            icon={readControlTypeMeta(run.control_type_category, run.control_type_name).icon}
                             fallback={readControlTypeMeta(run.control_type_category, run.control_type_name).fallback}
                           />
                         </span>
@@ -1040,7 +1041,7 @@ export function SharedRunList({ shareKey }: SharedRunListProps) {
                         aria-hidden="true"
                       >
                         <AssetIcon
-                          src={readControlTypeMeta(run.control_type_category, run.control_type_name).icon}
+                          icon={readControlTypeMeta(run.control_type_category, run.control_type_name).icon}
                           fallback={readControlTypeMeta(run.control_type_category, run.control_type_name).fallback}
                         />
                       </span>

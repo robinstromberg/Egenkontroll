@@ -21,6 +21,7 @@
     "theme:test": "tsx --test src/theme/appTheme.test.ts",
     "control-execution:test": "tsx --test src/components/controlExecutionVisualContract.test.ts",
     "review-sharing:test": "tsx --test src/components/reviewSharingVisualContract.test.ts",
+    "menu-admin:test": "tsx --test src/components/menuAdminIconVisualContract.test.ts",
     "preview": "vite preview",
     "reports:fixtures": "node scripts/render-inspector-report-fixtures.mjs",
     "reports:test": "node --test src/reports/inspectorReportDocument.test.js src/reports/inspectorReportPdf.test.js",

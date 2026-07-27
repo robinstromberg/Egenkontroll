@@ -349,7 +349,7 @@ export function KpiView({ organizationId }: KpiViewProps) {
     <section className="kpi-view" aria-labelledby="kpi-title">
       <div className="kpi-hero">
         <span className="kpi-hero-icon" aria-hidden="true">
-          <AssetIcon src={appUiIcons.kpi} fallback="KPI" />
+          <AssetIcon icon={appUiIcons.kpi} />
         </span>
         <div>
           <p className="eyebrow">KPI</p>
@@ -366,7 +366,7 @@ export function KpiView({ organizationId }: KpiViewProps) {
           <div className="kpi-grid" aria-label="Nyckeltal">
             <article className="kpi-card highlight">
               <span className="kpi-card-icon" aria-hidden="true">
-                <AssetIcon src={appUiIcons.document} fallback="D" />
+                <AssetIcon icon={appUiIcons.document} />
               </span>
               <strong>{summary.currentDocumentationStreak} dagar</strong>
               <span>obruten dokumentation</span>
@@ -375,7 +375,7 @@ export function KpiView({ organizationId }: KpiViewProps) {
 
             <article className="kpi-card">
               <span className="kpi-card-icon" aria-hidden="true">
-                <AssetIcon src={appUiIcons.kpi} fallback="%" />
+                <AssetIcon icon={appUiIcons.kpi} fallback="%" />
               </span>
               <strong>{formatPercent(summary.compliancePercent)}</strong>
               <span>av planerade kontroller utförda</span>
@@ -388,7 +388,7 @@ export function KpiView({ organizationId }: KpiViewProps) {
 
             <article className="kpi-card">
               <span className="kpi-card-icon" aria-hidden="true">
-                <AssetIcon src={appUiIcons.history} fallback="H" />
+                <AssetIcon icon={appUiIcons.history} fallback="H" />
               </span>
               <strong>{summary.completedControls}</strong>
               <span>kontroller utförda</span>
@@ -401,7 +401,7 @@ export function KpiView({ organizationId }: KpiViewProps) {
 
             <article className={summary.openDeviations > 0 ? 'kpi-card warning' : 'kpi-card'}>
               <span className="kpi-card-icon" aria-hidden="true">
-                <AssetIcon src={appUiIcons.deviation} fallback="!" />
+                <AssetIcon icon={appUiIcons.deviation} />
               </span>
               <strong>{summary.openDeviations}</strong>
               <span>öppna avvikelser</span>
@@ -410,7 +410,7 @@ export function KpiView({ organizationId }: KpiViewProps) {
 
             <article className="kpi-card">
               <span className="kpi-card-icon" aria-hidden="true">
-                <AssetIcon src={appUiIcons.action} fallback="Å" />
+                <AssetIcon icon={appUiIcons.action} />
               </span>
               <strong>{formatResolved(summary)}</strong>
               <span>åtgärdade avvikelser</span>
@@ -419,7 +419,7 @@ export function KpiView({ organizationId }: KpiViewProps) {
 
             <article className="kpi-card">
               <span className="kpi-card-icon" aria-hidden="true">
-                <AssetIcon src={appUiIcons.document} fallback="D" />
+                <AssetIcon icon={appUiIcons.document} />
               </span>
               <strong>{summary.documentationDays} av {summary.countedDays}</strong>
               <span>dagar med dokumentation</span>
