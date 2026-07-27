@@ -1,0 +1,628 @@
+---
+import { brandAssets } from '@min-egenkontroll/brand';
+import { resolveStaticThemeValue } from '@min-egenkontroll/design-system/theme';
+import { internalRoadmap } from '../../config/internalRoadmap';
+import '@min-egenkontroll/design-system/tokens.css';
+import '@min-egenkontroll/design-system/base.css';
+
+const themeColor = resolveStaticThemeValue('webThemeColor');
+const serializedRoadmap = JSON.stringify(internalRoadmap).replaceAll('<', '\\u003c');
+
+function durationHours(duration: { start: string; end?: string } | undefined): string | null {
+  if (!duration) return null;
+  const start = new Date(duration.start).getTime();
+  const end = duration.end ? new Date(duration.end).getTime() : Date.now();
+  const hours = Math.max(1, Math.ceil((end - start) / 3_600_000));
+  return `ca ${hours} h${duration.end ? '' : ' hittills'}`;
+}
+
+const currentPhase = internalRoadmap.phases.find((phase) => phase.id === internalRoadmap.current.phaseId);
+---
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Intern visuell lägesrapport för Min Egenkontroll." />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="googlebot" content="noindex, nofollow, noarchive" />
+    <meta name="theme-color" content={themeColor} />
+    <link rel="icon" type="image/png" href={brandAssets.favicon} />
+    <title>Projektroadmap | Min Egenkontroll</title>
+    <script is:inline>
+      (() => {
+        const key = 'egenkontroll:homepage-theme';
+        const saved = localStorage.getItem(key);
+        const theme = saved === 'light' || saved === 'dark'
+          ? saved
+          : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Hoppa till innehållet</a>
+
+    <header class="roadmap-toolbar">
+      <div class="roadmap-shell roadmap-toolbar__inner">
+        <div>
+          <strong>Min Egenkontroll</strong>
+          <span>Intern projektroadmap</span>
+        </div>
+        <button class="theme-button" type="button" id="theme-toggle" aria-label="Växla ljust och mörkt tema">
+          Växla tema
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content" class="roadmap-shell roadmap-main">
+      <section class="goal-panel" aria-labelledby="goal-title">
+        <span class="eyebrow">{internalRoadmap.goal.eyebrow}</span>
+        <h1 id="goal-title">{internalRoadmap.goal.title}</h1>
+        <p>{internalRoadmap.goal.description}</p>
+      </section>
+
+      <section aria-labelledby="overview-title">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">Lägesrapport</span>
+            <h2 id="overview-title">Projektet i en blick</h2>
+          </div>
+          <div class="live-state" id="live-state" role="status" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="live-state-label">Lokal status laddad</span>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card">
+            <span>Vi befinner oss i</span>
+            <strong id="current-phase-value">{currentPhase?.title.replace(/^Fas /, 'Fas ') ?? '–'}</strong>
+            <small>{currentPhase?.summary ?? ''}</small>
+          </article>
+          <article class="metric-card">
+            <span>Aktivt arbete</span>
+            <strong id="active-work-value">#{internalRoadmap.current.activeIssueNumber}</strong>
+            <small id="active-work-label">Historik, KPI och delning</small>
+          </article>
+          <article class="metric-card">
+            <span>Aktiv blockerare</span>
+            <strong id="blocker-value">#{internalRoadmap.current.blockerIssueNumbers[0]}</strong>
+            <small id="blocker-label">Säker Preview behövs för produktägar-QA</small>
+          </article>
+        </div>
+
+        <p class="updated-at" id="updated-at">Visar den versionerade fallbacken från repot.</p>
+      </section>
+
+      <section aria-labelledby="built-title">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">Framsteg</span>
+            <h2 id="built-title">Vad vi redan har byggt</h2>
+          </div>
+        </div>
+        <div class="built-grid">
+          {internalRoadmap.completedStory.map((item) => (
+            <article class="built-card">
+              <span class="check-mark" aria-hidden="true">✓</span>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="roadmap-title">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">Från strategi till kunder</span>
+            <h2 id="roadmap-title">Transformationsroadmap</h2>
+          </div>
+          <p class="section-note">En tydlig början, en tydlig destination och därefter ett nytt arbetssätt.</p>
+        </div>
+
+        <div class="phase-list" id="phase-list">
+          {internalRoadmap.phases.map((phase) => {
+            const duration = durationHours(phase.duration);
+            return (
+              <details
+                class:list={[
+                  'phase-card',
+                  `phase-card--${phase.status}`,
+                  phase.id === internalRoadmap.current.phaseId && 'phase-card--current',
+                ]}
+                data-phase-id={phase.id}
+                open={phase.id === internalRoadmap.current.phaseId}
+              >
+                <summary>
+                  <span class="phase-heading">
+                    <span class="phase-icon" aria-hidden="true">
+                      {phase.status === 'complete' ? '✓' : phase.status === 'active' ? '●' : phase.status === 'waiting' ? '◐' : '○'}
+                    </span>
+                    <strong>{phase.title}</strong>
+                  </span>
+                  <span class="phase-meta">
+                    <span data-phase-status>{phase.statusLabel}</span>
+                    {duration ? <span aria-hidden="true">·</span> : null}
+                    {duration ? <span data-phase-duration>{duration}</span> : null}
+                  </span>
+                </summary>
+                <div class="phase-content">
+                  <p>{phase.summary}</p>
+                  <ul>
+                    {phase.points.map((point) => <li>{point}</li>)}
+                  </ul>
+                  {phase.id === internalRoadmap.current.phaseId ? (
+                    <div class="current-marker">
+                      <span class="eyebrow">Vi är här</span>
+                      <span id="current-marker-text">Aktivt arbete: #{internalRoadmap.current.activeIssueNumber}</span>
+                    </div>
+                  ) : null}
+                </div>
+              </details>
+            );
+          })}
+        </div>
+
+        <p class="duration-note">{internalRoadmap.durationNote}</p>
+      </section>
+
+      <section class="destination-section" aria-labelledby="destination-title">
+        <div class="destination-line" aria-hidden="true"></div>
+        <div class="destination-card">
+          <span class="destination-flag" aria-hidden="true">🏁</span>
+          <span class="eyebrow">{internalRoadmap.destination.eyebrow}</span>
+          <h2 id="destination-title">{internalRoadmap.destination.title}</h2>
+          <p>{internalRoadmap.destination.description}</p>
+          <div class="destination-checks">
+            {internalRoadmap.destination.checks.map((check) => (
+              <div><span aria-hidden="true">✓</span><strong>{check}</strong></div>
+            ))}
+          </div>
+        </div>
+        <div class="roadmap-end">
+          <strong>Transformationsroadmapen slutar här.</strong>
+          <span>Det finns inga fler faser i denna roadmap efter destinationen.</span>
+        </div>
+      </section>
+
+      <section aria-labelledby="after-title">
+        <div class="new-mode-divider" aria-hidden="true">
+          <span></span><strong>Nytt arbetssätt börjar</strong><span></span>
+        </div>
+        <div class="after-card">
+          <span class="section-kicker">Inte Fas 9</span>
+          <h2 id="after-title">Efter roadmapen: löpande drift, utveckling och tillväxt</h2>
+          <p>Detta är det normala arbetet i ett fungerande produktbolag, inte ännu en transformationsfas.</p>
+          <div class="after-grid">
+            {internalRoadmap.afterRoadmap.map((item) => (
+              <article>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="next-title">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">Närmaste vägen framåt</span>
+            <h2 id="next-title">Nästa konkreta steg</h2>
+          </div>
+        </div>
+        <ol class="next-steps" id="next-steps">
+          {internalRoadmap.nextSteps.map((step, index) => (
+            <li data-issue-number={step.issueNumber}>
+              <span>{index + 1}</span>
+              <div>
+                <strong>#{step.issueNumber}</strong>
+                <p>{step.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </main>
+
+    <script id="roadmap-config" type="application/json" set:html={serializedRoadmap}></script>
+    <script is:inline>
+      (() => {
+        const configElement = document.getElementById('roadmap-config');
+        if (!configElement?.textContent) return;
+        const config = JSON.parse(configElement.textContent);
+        const repository = config.repository;
+        const issueMap = new Map();
+
+        const formatHours = (duration) => {
+          if (!duration) return null;
+          const start = new Date(duration.start).getTime();
+          const end = duration.end ? new Date(duration.end).getTime() : Date.now();
+          const hours = Math.max(1, Math.ceil((end - start) / 3600000));
+          return `ca ${hours} h${duration.end ? '' : ' hittills'}`;
+        };
+
+        const setLiveState = (kind, label) => {
+          const state = document.getElementById('live-state');
+          const stateLabel = document.getElementById('live-state-label');
+          if (!state || !stateLabel) return;
+          state.dataset.state = kind;
+          stateLabel.textContent = label;
+        };
+
+        const itemState = (number) => issueMap.get(number)?.state ?? null;
+        const itemTitle = (number) => issueMap.get(number)?.title ?? null;
+
+        const derivePhaseStatus = (phase) => {
+          if (!phase.issueNumbers?.length) return phase.status;
+          const states = phase.issueNumbers.map(itemState).filter(Boolean);
+          if (!states.length) return phase.status;
+          if (states.every((state) => state === 'closed')) return 'complete';
+          if (phase.status === 'waiting') {
+            const blockers = (phase.blockedByIssueNumbers ?? []).map(itemState).filter(Boolean);
+            if (blockers.some((state) => state === 'open')) return 'waiting';
+          }
+          if (states.some((state) => state === 'closed')) return 'active';
+          return 'future';
+        };
+
+        const statusLabel = (phase, status) => {
+          if (status === 'complete') return phase.statusLabel === 'Funktionellt klar' ? phase.statusLabel : 'Klar';
+          if (status === 'active') return 'Pågår';
+          if (status === 'waiting') return 'Påbörjad / väntar';
+          return 'Inte påbörjad';
+        };
+
+        const iconForStatus = (status) => status === 'complete' ? '✓' : status === 'active' ? '●' : status === 'waiting' ? '◐' : '○';
+
+        const updatePhases = () => {
+          for (const phase of config.phases) {
+            const element = document.querySelector(`[data-phase-id="${phase.id}"]`);
+            if (!element) continue;
+            const status = derivePhaseStatus(phase);
+            element.classList.remove('phase-card--complete', 'phase-card--active', 'phase-card--waiting', 'phase-card--future');
+            element.classList.add(`phase-card--${status}`);
+            const label = element.querySelector('[data-phase-status]');
+            const duration = element.querySelector('[data-phase-duration]');
+            const icon = element.querySelector('.phase-icon');
+            if (label) label.textContent = statusLabel(phase, status);
+            if (duration) duration.textContent = formatHours(phase.duration) ?? '';
+            if (icon) icon.textContent = iconForStatus(status);
+          }
+        };
+
+        const updateCurrentState = () => {
+          const issueNumber = config.current.activeIssueNumber;
+          const pullRequestNumber = config.current.activePullRequestNumber;
+          const blockerNumber = config.current.blockerIssueNumbers[0];
+          const issue = issueMap.get(issueNumber);
+          const pullRequest = issueMap.get(pullRequestNumber);
+          const blocker = issueMap.get(blockerNumber);
+
+          const activeWorkLabel = document.getElementById('active-work-label');
+          const blockerLabel = document.getElementById('blocker-label');
+          const marker = document.getElementById('current-marker-text');
+          if (activeWorkLabel && issue?.title) activeWorkLabel.textContent = issue.title;
+          if (blockerLabel && blocker?.title) blockerLabel.textContent = blocker.title;
+          if (marker) {
+            const prState = pullRequest ? (pullRequest.state === 'closed' ? 'stängd' : 'öppen') : 'status okänd';
+            marker.textContent = `Aktivt arbete: #${issueNumber} · PR #${pullRequestNumber} ${prState}`;
+          }
+        };
+
+        const updateNextSteps = () => {
+          for (const element of document.querySelectorAll('[data-issue-number]')) {
+            const number = Number(element.getAttribute('data-issue-number'));
+            const title = itemTitle(number);
+            const state = itemState(number);
+            const strong = element.querySelector('strong');
+            if (strong) strong.textContent = `#${number}${state === 'closed' ? ' · klar' : ''}`;
+            if (title) element.setAttribute('title', title);
+          }
+        };
+
+        const loadGitHubStatus = async () => {
+          const base = `https://api.github.com/repos/${repository}/issues?state=all&per_page=100&sort=created&direction=desc`;
+          const responses = await Promise.all([
+            fetch(`${base}&page=1`, { cache: 'no-cache' }),
+            fetch(`${base}&page=2`, { cache: 'no-cache' }),
+          ]);
+          if (responses.some((response) => !response.ok)) throw new Error('GitHub svarade inte med en giltig status.');
+          const pages = await Promise.all(responses.map((response) => response.json()));
+          for (const item of pages.flat()) issueMap.set(item.number, item);
+          updatePhases();
+          updateCurrentState();
+          updateNextSteps();
+          setLiveState('live', 'Live från GitHub');
+          const updatedAt = document.getElementById('updated-at');
+          if (updatedAt) {
+            updatedAt.textContent = `Senast uppdaterad ${new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())}. Uppdatera sidan för att hämta nytt läge.`;
+          }
+        };
+
+        loadGitHubStatus().catch(() => {
+          setLiveState('fallback', 'GitHub kunde inte nås');
+          const updatedAt = document.getElementById('updated-at');
+          if (updatedAt) updatedAt.textContent = 'Live-status kunde inte hämtas. Den versionerade fallbacken från repot visas i stället.';
+        });
+
+        const themeButton = document.getElementById('theme-toggle');
+        themeButton?.addEventListener('click', () => {
+          const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.dataset.theme = nextTheme;
+          localStorage.setItem('egenkontroll:homepage-theme', nextTheme);
+        });
+      })();
+    </script>
+  </body>
+</html>
+
+<style>
+  :global(*) { box-sizing: border-box; }
+  :global(html) { background: var(--ds-canvas); }
+  :global(body) {
+    margin: 0;
+    min-width: 320px;
+    color: var(--ds-text);
+    background: var(--ds-canvas);
+    font-family: var(--ds-font-sans);
+    font-size: var(--ds-font-size-base);
+    line-height: var(--ds-line-height-base);
+  }
+  :global(button) { font: inherit; }
+  :global(h1), :global(h2), :global(h3), :global(p) { margin-top: 0; }
+  :global(h1), :global(h2), :global(h3) { line-height: var(--ds-line-height-tight); text-wrap: balance; }
+  :global(a), :global(button), :global(summary) { -webkit-tap-highlight-color: transparent; }
+  :global(:focus-visible) { outline: 3px solid var(--ds-focus); outline-offset: 3px; }
+
+  .skip-link {
+    position: absolute;
+    top: var(--ds-space-3);
+    left: var(--ds-space-3);
+    z-index: 10;
+    padding: var(--ds-space-2) var(--ds-space-3);
+    color: var(--ds-action-on-primary);
+    background: var(--ds-action-primary);
+    border-radius: var(--ds-radius-md);
+    transform: translateY(-200%);
+  }
+  .skip-link:focus { transform: none; }
+
+  .roadmap-shell {
+    width: min(calc(100% - (2 * var(--ds-page-gutter))), 62rem);
+    margin-inline: auto;
+  }
+  .roadmap-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    border-bottom: 1px solid var(--ds-border);
+    background: color-mix(in srgb, var(--ds-canvas) 92%, transparent);
+    backdrop-filter: blur(14px);
+  }
+  .roadmap-toolbar__inner {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-3);
+  }
+  .roadmap-toolbar__inner > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--ds-space-2); }
+  .roadmap-toolbar span { color: var(--ds-text-secondary); font-size: var(--ds-font-size-sm); }
+  .theme-button {
+    min-height: 40px;
+    border: 1px solid var(--ds-border);
+    border-radius: var(--ds-radius-md);
+    padding-inline: var(--ds-space-3);
+    color: var(--ds-text);
+    background: var(--ds-surface);
+    cursor: pointer;
+  }
+  .theme-button:hover { background: var(--ds-surface-subtle); }
+
+  .roadmap-main { display: grid; gap: var(--ds-space-7); padding-block: clamp(1.5rem, 5vw, 3rem) 5rem; }
+  .goal-panel {
+    display: grid;
+    gap: var(--ds-space-3);
+    padding: clamp(1.25rem, 4vw, 2rem);
+    border: 1px solid var(--ds-highlight-border);
+    border-radius: var(--ds-radius-lg);
+    color: var(--ds-highlight-text);
+    background: var(--ds-highlight-surface);
+  }
+  .goal-panel h1 { max-width: 52rem; margin-bottom: 0; font-size: clamp(1.7rem, 5vw, 2.75rem); }
+  .goal-panel p { max-width: 50rem; margin-bottom: 0; font-size: var(--ds-font-size-lg); }
+  .eyebrow, .section-kicker {
+    display: inline-flex;
+    width: fit-content;
+    font-size: var(--ds-font-size-sm);
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .section-kicker { color: var(--ds-action-primary); }
+
+  .section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--ds-space-4);
+    margin-bottom: var(--ds-space-4);
+  }
+  .section-heading h2 { margin: var(--ds-space-1) 0 0; font-size: clamp(1.35rem, 4vw, 2rem); }
+  .section-note { max-width: 28rem; margin: 0; color: var(--ds-text-secondary); font-size: var(--ds-font-size-sm); text-align: right; }
+
+  .live-state {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    min-height: 32px;
+    padding: 0 var(--ds-space-3);
+    border: 1px solid var(--ds-status-neutral-border);
+    border-radius: 999px;
+    color: var(--ds-status-neutral-fg);
+    background: var(--ds-status-neutral-bg);
+    font-size: var(--ds-font-size-sm);
+    font-weight: 750;
+  }
+  .live-state[data-state='live'] { color: var(--ds-status-success-fg); border-color: var(--ds-status-success-border); background: var(--ds-status-success-bg); }
+  .live-state[data-state='fallback'] { color: var(--ds-status-warning-fg); border-color: var(--ds-status-warning-border); background: var(--ds-status-warning-bg); }
+  .status-dot { width: .55rem; height: .55rem; border-radius: 50%; background: currentColor; }
+
+  .metric-grid, .built-grid, .after-grid, .destination-checks { display: grid; gap: var(--ds-space-3); }
+  .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .metric-card {
+    min-width: 0;
+    display: grid;
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-4);
+    border: 1px solid var(--ds-border);
+    border-radius: var(--ds-radius-lg);
+    background: var(--ds-surface);
+  }
+  .metric-card > span, .metric-card small { color: var(--ds-text-secondary); }
+  .metric-card strong { font-size: var(--ds-font-size-xl); overflow-wrap: anywhere; }
+  .updated-at, .duration-note { margin: var(--ds-space-3) 0 0; color: var(--ds-text-secondary); font-size: var(--ds-font-size-sm); }
+
+  .built-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .built-card {
+    display: flex;
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-4);
+    border: 1px solid var(--ds-border);
+    border-radius: var(--ds-radius-lg);
+    background: var(--ds-surface);
+  }
+  .check-mark { color: var(--ds-status-success-fg); font-weight: 900; }
+  .built-card h3 { margin-bottom: var(--ds-space-2); font-size: var(--ds-font-size-base); }
+  .built-card p { margin-bottom: 0; color: var(--ds-text-secondary); font-size: var(--ds-font-size-sm); }
+
+  .phase-list { display: grid; gap: var(--ds-space-3); }
+  .phase-card {
+    border: 1px solid var(--ds-border);
+    border-radius: var(--ds-radius-lg);
+    background: var(--ds-surface);
+    overflow: clip;
+  }
+  .phase-card--current { border-width: 2px; border-color: var(--ds-action-primary); }
+  .phase-card--future { border-style: dashed; opacity: .82; }
+  .phase-card summary {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-4);
+    padding: var(--ds-space-3) var(--ds-space-4);
+    cursor: pointer;
+    list-style: none;
+  }
+  .phase-card summary::-webkit-details-marker { display: none; }
+  .phase-card summary:hover { background: var(--ds-surface-subtle); }
+  .phase-heading { min-width: 0; display: flex; align-items: center; gap: var(--ds-space-3); }
+  .phase-heading strong { overflow-wrap: anywhere; }
+  .phase-icon { width: 1rem; flex: 0 0 1rem; text-align: center; font-weight: 900; }
+  .phase-card--complete .phase-icon { color: var(--ds-status-success-fg); }
+  .phase-card--active .phase-icon { color: var(--ds-action-primary); }
+  .phase-card--waiting .phase-icon { color: var(--ds-status-warning-fg); }
+  .phase-meta {
+    flex: 0 0 auto;
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--ds-space-1);
+    color: var(--ds-text-secondary);
+    font-size: var(--ds-font-size-sm);
+    text-align: right;
+  }
+  .phase-content { display: grid; gap: var(--ds-space-3); padding: 0 var(--ds-space-4) var(--ds-space-4) 3.25rem; }
+  .phase-content > p { margin: 0; }
+  .phase-content ul { display: grid; gap: var(--ds-space-2); margin: 0; padding-left: 1.15rem; color: var(--ds-text-secondary); }
+  .current-marker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-3);
+    border: 1px solid var(--ds-status-success-border);
+    border-radius: var(--ds-radius-md);
+    color: var(--ds-status-success-fg);
+    background: var(--ds-status-success-bg);
+  }
+
+  .destination-section { display: grid; gap: var(--ds-space-3); }
+  .destination-line { width: 2px; height: 3rem; margin-inline: auto; background: repeating-linear-gradient(to bottom, var(--ds-action-primary) 0 6px, transparent 6px 12px); }
+  .destination-card {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--ds-space-3);
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    border: 2px solid var(--ds-action-primary);
+    border-radius: var(--ds-radius-lg);
+    background: var(--ds-status-success-bg);
+    text-align: center;
+  }
+  .destination-card h2 { max-width: 48rem; margin-bottom: 0; font-size: clamp(1.45rem, 4.5vw, 2.25rem); }
+  .destination-card > p { max-width: 48rem; margin-bottom: 0; }
+  .destination-flag { font-size: 2rem; }
+  .destination-checks { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: var(--ds-space-2); text-align: left; }
+  .destination-checks > div {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-3);
+    border: 1px solid var(--ds-status-success-border);
+    border-radius: var(--ds-radius-md);
+    background: var(--ds-surface);
+  }
+  .roadmap-end {
+    display: grid;
+    gap: var(--ds-space-1);
+    padding: var(--ds-space-4);
+    border: 1px solid var(--ds-border-strong);
+    border-radius: var(--ds-radius-lg);
+    background: var(--ds-surface);
+    text-align: center;
+  }
+  .roadmap-end span { color: var(--ds-text-secondary); }
+
+  .new-mode-divider { display: flex; align-items: center; gap: var(--ds-space-3); margin-bottom: var(--ds-space-4); color: var(--ds-text-secondary); font-size: var(--ds-font-size-sm); text-transform: uppercase; letter-spacing: .05em; }
+  .new-mode-divider span { height: 1px; flex: 1; background: var(--ds-border); }
+  .after-card { padding: clamp(1.25rem, 4vw, 2rem); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-lg); background: var(--ds-surface); }
+  .after-card > p { color: var(--ds-text-secondary); }
+  .after-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: var(--ds-space-4); }
+  .after-grid article { padding: var(--ds-space-4); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface-subtle); }
+  .after-grid h3 { margin-bottom: var(--ds-space-2); }
+  .after-grid p { margin-bottom: 0; color: var(--ds-text-secondary); }
+
+  .next-steps { display: grid; gap: var(--ds-space-3); margin: 0; padding: 0; list-style: none; }
+  .next-steps li { display: flex; gap: var(--ds-space-3); padding: var(--ds-space-4); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-lg); background: var(--ds-surface); }
+  .next-steps li > span { width: 2rem; height: 2rem; flex: 0 0 2rem; display: grid; place-items: center; border-radius: 50%; color: var(--ds-action-on-primary); background: var(--ds-action-primary); font-weight: 800; }
+  .next-steps p { margin: var(--ds-space-1) 0 0; color: var(--ds-text-secondary); }
+
+  @media (max-width: 760px) {
+    .metric-grid, .after-grid { grid-template-columns: 1fr; }
+    .section-heading { align-items: flex-start; flex-direction: column; }
+    .section-note { text-align: left; }
+  }
+  @media (max-width: 620px) {
+    .built-grid, .destination-checks { grid-template-columns: 1fr; }
+    .phase-card summary { align-items: flex-start; flex-direction: column; gap: var(--ds-space-2); }
+    .phase-meta { padding-left: 1.75rem; justify-content: flex-start; text-align: left; }
+    .phase-content { padding-left: var(--ds-space-4); }
+    .roadmap-toolbar__inner { align-items: flex-start; padding-block: var(--ds-space-2); }
+    .roadmap-toolbar__inner > div { display: grid; gap: 0; }
+  }
+  @media (max-width: 390px) {
+    .theme-button { min-height: 36px; padding-inline: var(--ds-space-2); font-size: var(--ds-font-size-sm); }
+    .goal-panel p { font-size: var(--ds-font-size-base); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skip-link, .theme-button { transition: none; }
+    .roadmap-toolbar { backdrop-filter: none; }
+  }
+</style>
