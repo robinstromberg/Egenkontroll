@@ -5,6 +5,7 @@
   --ds-surface: #ffffff;
   --ds-surface-subtle: #f5f2eb;
   --ds-surface-inverse: #18221f;
+  --ds-overlay-scrim: rgb(24 34 31 / 72%);
   --ds-text: #18221f;
   --ds-text-secondary: #52605a;
   --ds-text-on-inverse: #ffffff;
@@ -68,6 +69,7 @@
   --ds-surface: #18211c;
   --ds-surface-subtle: #202b24;
   --ds-surface-inverse: #f6f5ef;
+  --ds-overlay-scrim: rgb(0 0 0 / 72%);
   --ds-text: #f6f5ef;
   --ds-text-secondary: #c7d1c9;
   --ds-text-on-inverse: #17221d;
@@ -106,6 +108,7 @@
     --ds-surface: #18211c;
     --ds-surface-subtle: #202b24;
     --ds-surface-inverse: #f6f5ef;
+    --ds-overlay-scrim: rgb(0 0 0 / 72%);
     --ds-text: #f6f5ef;
     --ds-text-secondary: #c7d1c9;
     --ds-text-on-inverse: #17221d;

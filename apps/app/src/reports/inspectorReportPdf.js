@@ -3,23 +3,19 @@ import { readFileSync } from 'node:fs';
 import { URL } from 'node:url';
 import { brandAssets } from '@min-egenkontroll/brand';
 import PDFDocument from 'pdfkit';
+import { reportPalette } from './reportPalette.js';
 
-const COLORS = {
-  text: '#172033',
-  muted: '#5f6b85',
-  brand: '#5b46e1',
-  brandPale: '#f0edff',
-  border: '#d9deea',
-  danger: '#fff5f6',
-  success: '#f1fbf5',
-  paper: '#ffffff',
-  temperature: '#059669',
-  checklist: '#2563eb',
-  receiving: '#d97706',
-  traceability: '#5b46e1',
-  round: '#0891b2',
-  custom: '#6b7280',
-};
+const COLORS = Object.freeze({
+  text: reportPalette.text,
+  muted: reportPalette.muted,
+  brand: reportPalette.brand,
+  brandPale: reportPalette.brandPale,
+  border: reportPalette.border,
+  danger: reportPalette.danger,
+  success: reportPalette.success,
+  paper: reportPalette.paper,
+  ...reportPalette.category,
+});
 
 const PAGE = { size: 'A4', layout: 'landscape', margin: 34 };
 const BODY_FONT = 'Helvetica';
@@ -79,7 +75,7 @@ function drawSelection(doc, summary) {
   const height = lineHeights.reduce((sum, value) => sum + value, 0) + 31;
   ensureSpace(doc, height);
   const y = doc.y;
-  doc.roundedRect(x, y, width, height, 10).fillAndStroke('#fbfbfe', COLORS.border);
+  doc.roundedRect(x, y, width, height, 10).fillAndStroke(reportPalette.surfaceSubtle, COLORS.border);
   doc.fillColor(COLORS.text).font(BOLD_FONT).fontSize(11).text('Urval', x + 12, y + 10);
   let rowY = y + 29;
   lines.forEach(([label, value], index) => {
@@ -100,7 +96,7 @@ function drawMetrics(doc, metrics) {
   const y = doc.y;
   metrics.forEach((metric, index) => {
     const cardX = x + index * (width + gap);
-    doc.roundedRect(cardX, y, width, height, 9).fillAndStroke('#f7f5ff', '#ddd8ff');
+    doc.roundedRect(cardX, y, width, height, 9).fillAndStroke(reportPalette.brandPale, COLORS.border);
     doc.fillColor(COLORS.text).font(BOLD_FONT).fontSize(17).text(safeText(metric.value), cardX + 10, y + 8, { width: width - 20 });
     doc.fillColor(COLORS.muted).font(BODY_FONT).fontSize(7.5).text(metric.label, cardX + 10, y + 29, { width: width - 20 });
   });
@@ -220,7 +216,7 @@ function drawAttachments(doc, report) {
     const height = Math.max(48, doc.font(BODY_FONT).fontSize(8).heightOfString(text, { width: 690 }) + 32);
     const x = doc.page.margins.left;
     const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-    doc.roundedRect(x, doc.y, width, height, 9).fillAndStroke('#fff8e8', '#d97706');
+    doc.roundedRect(x, doc.y, width, height, 9).fillAndStroke(reportPalette.warning, reportPalette.warningBorder);
     const y = doc.y;
     doc.fillColor(COLORS.text).font(BOLD_FONT).fontSize(9).text('Några bildbilagor kunde inte tas med', x + 12, y + 10);
     doc.font(BODY_FONT).fontSize(8).text(text, x + 12, y + 26, { width: width - 24 });
@@ -243,7 +239,7 @@ function drawImageAppendix(doc, report) {
     try {
       doc.image(image.source, doc.page.margins.left, imageY, { fit: [maxWidth, maxHeight], align: 'center', valign: 'center' });
     } catch {
-      doc.roundedRect(doc.page.margins.left, imageY, maxWidth, 72, 9).fillAndStroke('#fff8e8', '#d97706');
+      doc.roundedRect(doc.page.margins.left, imageY, maxWidth, 72, 9).fillAndStroke(reportPalette.warning, reportPalette.warningBorder);
       doc.fillColor(COLORS.text).font(BODY_FONT).fontSize(9).text('Bilden kunde inte renderas i PDF-filen. Filreferensen finns kvar i bilagetabellen.', doc.page.margins.left + 12, imageY + 18, { width: maxWidth - 24 });
     }
   });

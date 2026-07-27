@@ -1,10 +1,10 @@
 .report-tools {
   display: grid;
   gap: 14px;
-  border: 1px solid rgba(91, 70, 225, 0.12);
+  border: 1px solid var(--ds-border);
   border-radius: 28px;
   padding: 20px;
-  background: #ffffff;
+  background: var(--ds-surface);
 }
 
 .report-actions {
