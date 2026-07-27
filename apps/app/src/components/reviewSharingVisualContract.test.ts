@@ -57,7 +57,7 @@ test('review and sharing product CSS uses semantic tokens with narrow static exc
   for (const [fileName, source, blockPattern] of modalBackdrops) {
     const backdropBlock = source.match(blockPattern)?.[0] ?? '';
     assert.match(backdropBlock, /background:\s*var\(--ds-overlay-scrim\)/, `${fileName} saknar central scrim`);
-    assert.doesNotMatch(backdropBlock, /--ds-canvas|color-mix\(/, `${fileName} fÃ¥r inte bygga scrim frÃ¥n canvas`);
+    assert.doesNotMatch(backdropBlock, /--ds-canvas|color-mix\(/, `${fileName} får inte bygga scrim från canvas`);
   }
 
   const printIndex = inspectorCss.indexOf('@media print');
