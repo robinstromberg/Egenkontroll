@@ -11,11 +11,11 @@
   grid-template-columns: auto minmax(0, 1fr);
   gap: 12px;
   align-items: center;
-  border: 1px solid rgba(91, 70, 225, 0.12);
+  border: 1px solid var(--ds-border);
   border-radius: 18px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 12px 28px rgba(62, 46, 135, 0.12);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-md);
   backdrop-filter: blur(14px);
 }
 
@@ -33,7 +33,7 @@
 }
 
 .control-type-detail-topbar > div > p:last-child {
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.84rem;
   font-weight: 800;
 }
@@ -42,17 +42,17 @@
 .quick-create-panel,
 .inactive-editor-list,
 .control-type-settings-panel {
-  border: 1px solid rgba(91, 70, 225, 0.14);
+  border: 1px solid var(--ds-border);
   border-radius: 18px;
   padding: 14px;
-  background: #ffffff;
-  box-shadow: 0 10px 26px rgba(62, 46, 135, 0.07);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
 }
 
 .control-editor-canvas-shell {
   display: grid;
   gap: 12px;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfaff 100%);
+  background: linear-gradient(180deg, var(--ds-surface) 0%, var(--ds-surface-subtle) 100%);
 }
 
 .control-editor-heading {
@@ -71,8 +71,8 @@
   flex: 0 0 auto;
   border-radius: 999px;
   padding: 5px 9px;
-  color: #0c6638;
-  background: #ddf8e7;
+  color: var(--ds-status-success-fg);
+  background: var(--ds-status-success-bg);
   font-size: 0.72rem;
   font-weight: 900;
 }
@@ -116,7 +116,7 @@
 
 .field-palette-heading h5 {
   margin: 0;
-  color: #172033;
+  color: var(--ds-text);
   font-size: 1rem;
 }
 
@@ -132,18 +132,18 @@
   cursor: pointer;
   gap: 7px;
   align-content: start;
-  border: 1px solid rgba(91, 70, 225, 0.16);
+  border: 1px solid var(--ds-border);
   border-radius: 16px;
   padding: 12px;
-  color: #172033;
-  background: #ffffff;
+  color: var(--ds-text);
+  background: var(--ds-surface);
   text-align: left;
 }
 
 .field-type-card:hover,
 .field-type-card:focus-visible {
-  border-color: rgba(91, 70, 225, 0.42);
-  box-shadow: 0 0 0 3px rgba(91, 70, 225, 0.1);
+  border-color: var(--ds-focus);
+  box-shadow: 0 0 0 3px var(--ds-border);
   outline: 0;
 }
 
@@ -152,7 +152,7 @@
 }
 
 .field-type-card > span:last-child {
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.3;
@@ -164,8 +164,8 @@
   height: 36px;
   place-items: center;
   border-radius: 12px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-size: 0.72rem;
   font-weight: 900;
 }
@@ -180,7 +180,7 @@
 .quick-create-panel label span,
 .control-type-settings-form.compact label span,
 .canvas-inline-edit-form label span {
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.78rem;
   font-weight: 900;
 }
@@ -196,8 +196,8 @@
   min-width: 44px;
   border-radius: 12px;
   padding: 11px 12px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-weight: 900;
   text-align: center;
 }
@@ -212,35 +212,35 @@
   border: 0;
   border-radius: 999px;
   padding: 0 12px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-size: 0.78rem;
   font-weight: 900;
   white-space: nowrap;
 }
 
 .control-point-action.primary {
-  color: #ffffff;
-  background: #5b46e1;
+  color: var(--ds-action-on-primary);
+  background: var(--ds-action-primary);
 }
 
 .control-point-action.danger {
-  color: #b42334;
-  background: #ffe9ed;
+  color: var(--ds-status-danger-fg);
+  background: var(--ds-status-danger-bg);
 }
 
 .control-field-checkbox {
   display: flex !important;
   gap: 9px;
   align-items: center;
-  color: #34405a;
+  color: var(--ds-text);
   font-weight: 800;
 }
 
 .control-field-checkbox input {
   width: 18px;
   height: 18px;
-  accent-color: #5b46e1;
+  accent-color: var(--ds-action-primary);
 }
 
 .temperature-rule-editor {
@@ -259,28 +259,28 @@
   margin: 0;
   border-radius: 999px;
   padding: 5px 9px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-size: 0.78rem;
   font-weight: 900;
 }
 
 .preset-chip {
-  border: 1px solid rgba(91, 70, 225, 0.16);
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
   padding: 9px 11px;
-  color: #172033;
-  background: #ffffff;
+  color: var(--ds-text);
+  background: var(--ds-surface);
   font-weight: 900;
 }
 
 .control-detail-empty.compact {
   display: grid;
   gap: 5px;
-  border: 1px dashed rgba(91, 70, 225, 0.22);
+  border: 1px dashed var(--ds-border-strong);
   border-radius: 16px;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--ds-surface-subtle);
 }
 
 .inactive-editor-list,
@@ -298,7 +298,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 0 14px;
-  color: #172033;
+  color: var(--ds-text);
   font-weight: 900;
   list-style: none;
 }
@@ -316,8 +316,8 @@
   height: 30px;
   place-items: center;
   border-radius: 12px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
 }
 
 .inactive-editor-list[open] > summary::after,
@@ -340,10 +340,10 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
-  border: 1px solid rgba(91, 70, 225, 0.1);
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
   padding: 10px;
-  background: #fbfaff;
+  background: var(--ds-surface-subtle);
 }
 
 .inactive-editor-row > div {
@@ -353,85 +353,8 @@
 }
 
 .inactive-editor-row span {
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.82rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  .control-type-detail-topbar,
-  .control-editor-canvas-shell,
-  .quick-create-panel,
-  .inactive-editor-list,
-  .control-type-settings-panel {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: #121a2e;
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
-  }
-
-  .control-type-detail-topbar {
-    background: rgba(18, 26, 46, 0.94);
-  }
-
-  .control-editor-canvas-shell {
-    background: linear-gradient(180deg, #121a2e 0%, #111a2f 100%);
-  }
-
-  .control-type-detail-topbar > div > p:last-child,
-  .quick-create-panel label span,
-  .control-type-settings-form.compact label span,
-  .canvas-inline-edit-form label span,
-  .field-type-card > span:last-child,
-  .inactive-editor-row span {
-    color: #aeb8d0;
-  }
-
-  .control-point-count {
-    color: #61d992;
-    background: rgba(39, 128, 83, 0.22);
-  }
-
-  .control-point-action,
-  .field-editor-type,
-  .limit-input-row > span,
-  .inactive-editor-list > summary::after,
-  .control-type-settings-panel > summary::after {
-    color: #b9afff;
-    background: #211b45;
-  }
-
-  .control-point-action.primary {
-    color: #ffffff;
-    background: #6d55ff;
-  }
-
-  .control-point-action.danger {
-    color: #ff9caa;
-    background: rgba(159, 29, 43, 0.18);
-  }
-
-  .preset-chip,
-  .field-type-card,
-  .inactive-editor-row,
-  .control-detail-empty.compact {
-    border-color: rgba(159, 145, 255, 0.18);
-    color: #f7f9ff;
-    background: #111a2f;
-  }
-
-  .field-palette-heading h5 {
-    color: #f7f9ff;
-  }
-
-  .field-type-icon {
-    color: #b9afff;
-    background: #211b45;
-  }
-
-  .inactive-editor-list > summary,
-  .control-type-settings-panel > summary,
-  .control-field-checkbox {
-    color: #f7f9ff;
-  }
 }
 
 @media (max-width: 520px) {

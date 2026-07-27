@@ -1,6 +1,7 @@
 import { ActionButton } from './ui/ActionButton';
 import { AssetIcon } from './ui/AssetIcon';
 import { appUiIcons } from '../config/assets';
+import type { IconAsset } from '../config/assets';
 import { billingPlans, daysUntilTrialEnds, subscriptionStatusLabel } from '../config/subscription';
 import type { OrganizationContext } from '../services/organizationService';
 import './MenuView.css';
@@ -24,8 +25,8 @@ type MenuAction = 'profile' | 'organization' | 'users' | 'controlTypes' | 'suppl
 type MenuItem = {
   title: string;
   description: string;
-  icon: string;
-  fallback: string;
+  icon: IconAsset;
+  fallback?: string;
   action: MenuAction;
   adminOnly?: boolean;
 };
@@ -35,14 +36,12 @@ const menuItems: MenuItem[] = [
     title: 'Min profil',
     description: 'Namn, e-post och personliga inställningar.',
     icon: appUiIcons.profile,
-    fallback: 'P',
     action: 'profile',
   },
   {
     title: 'Verksamheten',
     description: 'Grunduppgifter, plats och information som visas i rapporter.',
     icon: appUiIcons.organization,
-    fallback: 'V',
     action: 'organization',
     adminOnly: true,
   },
@@ -50,7 +49,6 @@ const menuItems: MenuItem[] = [
     title: 'Användare',
     description: 'Se personal och hantera roller.',
     icon: appUiIcons.users,
-    fallback: 'A',
     action: 'users',
     adminOnly: true,
   },
@@ -66,7 +64,6 @@ const menuItems: MenuItem[] = [
     title: 'Leverantörer',
     description: 'Leverantörer för varumottagning och spårbarhet.',
     icon: appUiIcons.suppliers,
-    fallback: 'L',
     action: 'suppliers',
     adminOnly: true,
   },
@@ -74,7 +71,6 @@ const menuItems: MenuItem[] = [
     title: 'Hjälp',
     description: 'Instruktioner, frågor och stöd vid kontroll.',
     icon: appUiIcons.help,
-    fallback: '?',
     action: 'help',
   },
 ];
@@ -142,7 +138,7 @@ export function MenuView({
             onClick={actionHandlers[item.action]}
           >
             <span className="menu-list-icon" aria-hidden="true">
-              <AssetIcon src={item.icon} fallback={item.fallback} />
+              <AssetIcon icon={item.icon} fallback={item.fallback} />
             </span>
             <span className="menu-list-copy">
               <strong>{item.title}</strong>

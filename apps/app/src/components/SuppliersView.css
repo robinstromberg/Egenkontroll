@@ -11,11 +11,11 @@
   gap: 12px;
   align-items: flex-start;
   justify-content: space-between;
-  border: 1px solid rgba(91, 70, 225, 0.1);
+  border: 1px solid var(--ds-border);
   border-radius: 18px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 12px 28px rgba(62, 46, 135, 0.12);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-md);
   backdrop-filter: blur(14px);
 }
 
@@ -27,7 +27,7 @@
 
 .supplier-create-form label,
 .supplier-search label {
-  color: #172033;
+  color: var(--ds-text);
   font-weight: 900;
 }
 
@@ -46,11 +46,11 @@
 .supplier-item {
   display: grid;
   gap: 12px;
-  border: 1px solid rgba(91, 70, 225, 0.1);
+  border: 1px solid var(--ds-border);
   border-radius: 18px;
   padding: 14px;
-  background: #ffffff;
-  box-shadow: 0 8px 22px rgba(62, 46, 135, 0.05);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
 }
 
 .supplier-item.inactive {
@@ -64,7 +64,7 @@
 }
 
 .supplier-item-main strong {
-  color: #172033;
+  color: var(--ds-text);
   font-size: 1rem;
   line-height: 1.25;
   white-space: normal;
@@ -74,51 +74,21 @@
   width: fit-content;
   border-radius: 999px;
   padding: 4px 9px;
-  color: #0c6638;
-  background: #ddf8e7;
+  color: var(--ds-status-success-fg);
+  background: var(--ds-status-success-bg);
   font-size: 0.78rem;
   font-weight: 900;
 }
 
 .supplier-item.inactive .supplier-item-main span {
-  color: #657089;
-  background: #eef1f7;
+  color: var(--ds-text-secondary);
+  background: var(--ds-status-neutral-bg);
 }
 
 .supplier-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  .supplier-create-form label,
-  .supplier-search label,
-  .supplier-item-main strong {
-    color: #f7f9ff;
-  }
-
-  .suppliers-header {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: rgba(18, 26, 46, 0.94);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
-  }
-
-  .supplier-item {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: #121a2e;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
-  }
-
-  .supplier-item-main span {
-    color: #61d992;
-    background: rgba(39, 128, 83, 0.22);
-  }
-
-  .supplier-item.inactive .supplier-item-main span {
-    color: #aeb8d0;
-    background: #111a2f;
-  }
 }
 
 @media (max-width: 520px) {

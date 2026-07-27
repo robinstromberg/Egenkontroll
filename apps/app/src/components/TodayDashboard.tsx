@@ -231,7 +231,7 @@ function ControlSection({
 
       {controls.map((control) => {
         const categoryMeta = getCategoryMeta(control.controlType.category);
-        const iconSrc = readControlTypeIcon({
+        const icon = readControlTypeIcon({
           category: control.controlType.category,
           name: control.controlType.name,
         });
@@ -243,7 +243,7 @@ function ControlSection({
             type="button"
           >
             <span className={`control-type-icon ${categoryMeta.className}`} aria-hidden="true">
-              <AssetIcon src={iconSrc} fallback={categoryMeta.label} />
+              <AssetIcon icon={icon} fallback={categoryMeta.label} />
             </span>
             <span className="today-control-copy">
               <strong>{control.controlType.name}</strong>

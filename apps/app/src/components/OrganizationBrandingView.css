@@ -8,11 +8,11 @@
   grid-template-columns: auto 1fr;
   gap: 14px;
   align-items: center;
-  border: 1px solid rgba(91, 70, 225, 0.14);
+  border: 1px solid var(--ds-border);
   border-radius: 18px;
   padding: 16px;
-  background: #ffffff;
-  box-shadow: 0 16px 34px rgba(62, 46, 135, 0.08);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-md);
 }
 
 .branding-preview span {
@@ -37,28 +37,12 @@
 }
 
 .branding-preview strong {
-  color: #172033;
+  color: var(--ds-text);
   font-size: 1.05rem;
 }
 
 .branding-preview small {
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-weight: 700;
   line-height: 1.35;
-}
-
-@media (prefers-color-scheme: dark) {
-  .branding-preview {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: #121a2e;
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.26);
-  }
-
-  .branding-preview strong {
-    color: #f7f9ff;
-  }
-
-  .branding-preview small {
-    color: #aeb8d0;
-  }
 }

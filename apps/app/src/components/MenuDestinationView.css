@@ -5,10 +5,10 @@
 
 .menu-destination-panel,
 .menu-record-row {
-  border: 1px solid rgba(91, 70, 225, 0.1);
+  border: 1px solid var(--ds-border);
   border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 10px 24px rgba(62, 46, 135, 0.06);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
 }
 
 .menu-destination-panel {
@@ -38,12 +38,12 @@
 .invitation-form label {
   display: grid;
   gap: 6px;
-  color: #172033;
+  color: var(--ds-text);
   font-weight: 900;
 }
 
 .invitation-form label span {
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.8rem;
 }
 
@@ -63,8 +63,8 @@
   border: 0;
   border-radius: 999px;
   padding: 0 10px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-size: 0.76rem;
   font-weight: 900;
 }
@@ -75,8 +75,8 @@
   height: 38px;
   place-items: center;
   border-radius: 14px;
-  color: #5b46e1;
-  background: #efedff;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
   font-weight: 900;
 }
 
@@ -87,12 +87,12 @@
 }
 
 .menu-record-copy strong {
-  color: #172033;
+  color: var(--ds-text);
   font-size: 0.98rem;
 }
 
 .menu-record-copy span {
-  color: #657089;
+  color: var(--ds-text-secondary);
   font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.35;
@@ -104,48 +104,8 @@
   overflow-wrap: anywhere;
   border-radius: 10px;
   padding: 6px 8px;
-  color: #4b35dd;
-  background: #f6f3ff;
+  color: var(--ds-action-primary);
+  background: var(--ds-surface-subtle);
   font-size: 0.72rem;
   line-height: 1.35;
-}
-
-@media (prefers-color-scheme: dark) {
-  .menu-destination-panel,
-  .menu-record-row {
-    border-color: rgba(159, 145, 255, 0.18);
-    background: #121a2e;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
-  }
-
-  .menu-record-mark {
-    color: #b9afff;
-    background: #211b45;
-  }
-
-  .menu-record-copy strong {
-    color: #f7f9ff;
-  }
-
-  .menu-record-copy span {
-    color: #aeb8d0;
-  }
-
-  .invitation-link-preview {
-    color: #b9afff;
-    background: #171335;
-  }
-
-  .invitation-form label {
-    color: #f7f9ff;
-  }
-
-  .invitation-form label span {
-    color: #aeb8d0;
-  }
-
-  .invitation-actions button {
-    color: #b9afff;
-    background: #211b45;
-  }
 }

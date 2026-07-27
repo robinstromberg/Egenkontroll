@@ -201,7 +201,7 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
         {runs.map((run) => (
           <button className="history-row" key={run.id} onClick={() => openDetail(run.id)} type="button">
             <span className="history-icon" aria-hidden="true">
-              <AssetIcon src={appUiIcons.history} fallback="H" />
+              <AssetIcon icon={appUiIcons.history} fallback="H" />
             </span>
             <span className="history-copy">
               <strong>{run.control_type_name ?? 'Kontroll'}</strong>

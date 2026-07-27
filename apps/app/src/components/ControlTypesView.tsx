@@ -62,12 +62,12 @@ function ControlTypeRow({
   onToggleActive,
 }: ControlTypeRowProps) {
   const meta = categoryMeta[controlType.category] ?? categoryMeta.custom;
-  const iconSrc = readControlTypeIcon({ category: controlType.category, name: controlType.name });
+  const icon = readControlTypeIcon({ category: controlType.category, name: controlType.name });
 
   return (
     <article className={controlType.active ? 'control-type-row' : 'control-type-row inactive'}>
       <span className={`control-type-icon ${meta.className}`} aria-hidden="true">
-        <AssetIcon src={iconSrc} fallback={meta.icon} />
+        <AssetIcon icon={icon} fallback={meta.icon} />
       </span>
       <div className="control-type-copy">
         <button className="control-type-open-button" type="button" aria-label={`Öppna ${controlType.name}`} onClick={onOpen}>

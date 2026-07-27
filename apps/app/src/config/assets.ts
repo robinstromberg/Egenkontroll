@@ -2,47 +2,63 @@ import type { ControlCategory } from '../types/database';
 
 const uiIconBase = '/ui-icons';
 
+export type IconAsset = Readonly<{
+  src: `/ui-icons/${string}.${'png' | 'svg'}`;
+  fallback: string;
+}>;
+
+function defineIcon(fileName: `${string}.${'png' | 'svg'}`, fallback: string): IconAsset {
+  return {
+    src: `${uiIconBase}/${fileName}`,
+    fallback,
+  };
+}
+
 export const appUiIcons = {
-  today: `${uiIconBase}/idag.svg`,
-  history: `${uiIconBase}/historik.png`,
-  kpi: `${uiIconBase}/verifiering.png`,
-  add: `${uiIconBase}/lagg-till.svg`,
-  sharing: `${uiIconBase}/delning.png`,
-  menu: `${uiIconBase}/meny.svg`,
-  profile: `${uiIconBase}/Profil.png`,
-  organization: `${uiIconBase}/installningar.png`,
-  users: `${uiIconBase}/anvandare.png`,
-  suppliers: `${uiIconBase}/varumottagning.png`,
-  help: `${uiIconBase}/hjalp.svg`,
-  document: `${uiIconBase}/dokument.png`,
-  export: `${uiIconBase}/export.png`,
-  photo: `${uiIconBase}/foto.png`,
-  notification: `${uiIconBase}/notis.png`,
-  qr: `${uiIconBase}/qrkod.png`,
-  search: `${uiIconBase}/sok.png`,
-  action: `${uiIconBase}/atgard.png`,
-  deviation: `${uiIconBase}/avvikelse.png`,
-};
+  today: defineIcon('idag.svg', '□'),
+  history: defineIcon('historik.png', '↺'),
+  kpi: defineIcon('verifiering.png', 'KPI'),
+  add: defineIcon('lagg-till.svg', '+'),
+  sharing: defineIcon('delning.png', '◇'),
+  menu: defineIcon('meny.svg', '≡'),
+  profile: defineIcon('profil.png', 'P'),
+  organization: defineIcon('installningar.png', 'V'),
+  users: defineIcon('anvandare.png', 'A'),
+  suppliers: defineIcon('varumottagning.png', 'L'),
+  help: defineIcon('hjalp.svg', '?'),
+  document: defineIcon('dokument.png', 'D'),
+  export: defineIcon('export.png', 'EX'),
+  photo: defineIcon('foto.png', 'F'),
+  notification: defineIcon('notis.png', '!'),
+  qr: defineIcon('qrkod.png', 'QR'),
+  search: defineIcon('sok.png', 'S'),
+  action: defineIcon('atgard.png', 'Å'),
+  deviation: defineIcon('avvikelse.png', '!'),
+} as const satisfies Record<string, IconAsset>;
 
-export const controlTypeIcons: Record<string, string> = {
-  kyltemperatur: `${uiIconBase}/kyltemperatur.png`,
-  stadning: `${uiIconBase}/stadning.png`,
-  sparbarhet: `${uiIconBase}/sparbarhet.png`,
-  datummarkning: `${uiIconBase}/datum.png`,
-  varumottagning: `${uiIconBase}/varumottagning.png`,
-  allergener: `${uiIconBase}/allergener.png`,
-  servering: `${uiIconBase}/servering.png`,
-  egenkontrollrunda: `${uiIconBase}/Egenkontrollrunda.png`,
-  hygien: `${uiIconBase}/hygien.png`,
-  vatten: `${uiIconBase}/vatten.png`,
-  skadedjur: `${uiIconBase}/skadedjur.png`,
-  avfallshantering: `${uiIconBase}/avfallshantering.png`,
-  verifiering: `${uiIconBase}/verifiering.png`,
-  dokument: `${uiIconBase}/dokument.png`,
-  custom: `${uiIconBase}/verifiering.png`,
-};
+export type AppUiIconKey = keyof typeof appUiIcons;
 
-export const controlCategoryIcons: Record<ControlCategory, string> = {
+export const controlTypeIcons = {
+  kyltemperatur: defineIcon('kyltemperatur.png', '°C'),
+  stadning: defineIcon('stadning.png', 'OK'),
+  sparbarhet: defineIcon('sparbarhet.png', 'SP'),
+  datummarkning: defineIcon('datum.png', 'DAT'),
+  varumottagning: defineIcon('varumottagning.png', 'IN'),
+  allergener: defineIcon('allergener.png', 'A'),
+  servering: defineIcon('servering.png', 'S'),
+  egenkontrollrunda: defineIcon('egenkontrollrunda.png', 'R'),
+  hygien: defineIcon('hygien.png', 'H'),
+  vatten: defineIcon('vatten.png', 'V'),
+  skadedjur: defineIcon('skadedjur.png', 'SK'),
+  avfallshantering: defineIcon('avfallshantering.png', 'AV'),
+  verifiering: defineIcon('verifiering.png', 'V'),
+  dokument: defineIcon('dokument.png', 'D'),
+  custom: defineIcon('verifiering.png', '+'),
+} as const satisfies Record<string, IconAsset>;
+
+export type ControlTypeIconKey = keyof typeof controlTypeIcons;
+
+export const controlCategoryIcons: Record<ControlCategory, IconAsset> = {
   temperature: controlTypeIcons.kyltemperatur,
   checklist: controlTypeIcons.stadning,
   receiving: controlTypeIcons.varumottagning,
@@ -54,7 +70,7 @@ export const controlCategoryIcons: Record<ControlCategory, string> = {
 export function readControlTypeIcon(input: {
   category?: ControlCategory | string | null;
   name?: string | null;
-}): string {
+}): IconAsset {
   const normalizedName = (input.name ?? '')
     .toLowerCase()
     .normalize('NFD')

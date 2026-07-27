@@ -45,6 +45,19 @@ behövs eftersom en CSS-fil inte kan importera JSON-kontraktet och verifieras mo
 History/KPI-kontrakten, delningsbehörigheter, hash/QR, filter, mobiltabellernas kolumner och
 `data-label`, export-/e-postordningen samt den centrala light-rapportpaletten.
 
-Kvarvarande vyspecifik legacy-CSS migreras av #351
-(meny/administration/onboarding/ikoner). Under mellanfasen kan dessa omigrerade vyer fortfarande
-följa operativsystemets tema via egna media queries även när appens explicita val är det motsatta.
+Efter #351 använder även MenuView, profil, verksamhetsbranding, användare, leverantörer, hjälp,
+kontrolltyper, kontrolltypsdetaljen, OrganizationSetup och den fristående AdminControls-ytan
+semantiska tokens utan lokala dark-paletter. Layout, DOM, rollgrindar, hashparametrar och
+administrativa sparflöden är oförändrade.
+
+`src/config/assets.ts` är appens typade registry för UI- och kontrolltypsikoner. Varje registry-
+post äger assetpath och standardfallback; `AssetIcon` tillåter endast en kontextuell fallback-
+överstyrning när det behövs för att bevara befintligt uttryck. Kontrolltypsresolverns namn- och
+kategoriprioritet är oförändrad. Råa `/ui-icons/...`-paths är förbjudna utanför registryn, och
+kontraktstestet verifierar att alla registrerade filer finns med exakt skiftläge. Befintliga
+oregistrerade alternativ ligger kvar som legacyassets eftersom byte eller borttagning skulle
+bredda den visuella migreringen; de är inte en parallell runtime-registry.
+
+`npm run menu-admin:test --workspace @min-egenkontroll/app` skyddar tema- och ikonkontraktet,
+owner/admin/staff-gränserna, inbjudningsgrindar, meny- och kontrolltypshash samt ordningen i
+verksamhets-, setup-, leverantörs-, kontrolltyps- och inbjudningsflödena.
