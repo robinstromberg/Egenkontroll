@@ -45,7 +45,15 @@ for (const file of htmlFiles(distRoot)) {
   if (!allowedOutputs.has(relative)) errors.push(`Oregistrerad HTML-output: ${relative}`);
 }
 for (const internalOutput of allowedInternalOutputs) {
-  if (!existsSync(path.join(distRoot, ...internalOutput.split('/')))) errors.push(`Tillåten intern HTML-output saknas: ${internalOutput}`);
+  const output = path.join(distRoot, ...internalOutput.split('/'));
+  if (!existsSync(output)) {
+    errors.push(`Tillåten intern HTML-output saknas: ${internalOutput}`);
+    continue;
+  }
+  const html = readFileSync(output, 'utf8');
+  if (!/<meta\s+name="robots"\s+content="noindex, nofollow, noarchive"/i.test(html)) {
+    errors.push(`Intern HTML-output saknar bindande robots-skydd: ${internalOutput}`);
+  }
 }
 for (const redirect of webRedirects) {
   if (existsSync(outputFile(redirect.source))) errors.push(`Redirect har även byggd output: ${redirect.source}`);
