@@ -27,7 +27,7 @@ Det visuella systemarbetet får inte ändra:
 
 En visuell migrering får inte användas som förevändning för opportunistisk UX-, layout- eller kodrefaktorering.
 
-## Verifierat nuläge
+## Verifierat startläge inför #347
 
 ### Gemensam grund finns
 
@@ -44,9 +44,9 @@ packages/design-system
 
 `packages/brand` är källa för masterassets och typade referenser till logotyp, ikon, Open Graph-bild och PWA-ikoner. Brandassets synkas deterministiskt till båda applikationernas publika kataloger.
 
-### Appen är bara delvis ansluten
+### Appen var bara delvis ansluten
 
-Appen importerar det gemensamma tokenpaketet, men större delen av produktionsgränssnittet använder fortfarande:
+Inför #347 importerade appen det gemensamma tokenpaketet, men större delen av produktionsgränssnittet använde fortfarande:
 
 - hårdkodade färger och genomskinligheter,
 - lokala lila legacy-paletter,
@@ -56,6 +56,12 @@ Appen importerar det gemensamma tokenpaketet, men större delen av produktionsgr
 - statiska browser- och PWA-färger som tidigare har behövt korrigeras manuellt.
 
 De största visuella ytorna finns i global CSS, bottennavigation, dagens kontroller, kontrollutförande, historik, delning, inspektörsvy, administration och menyvyer.
+
+## Status efter leveransen i #352 (2026-07-28)
+
+Appspåret #347–#352 är genomfört: appen har maskinläsbara tema-/brandkontrakt, pre-render theme runtime, semantiska tokens på centrala produktvyer, typat UI-ikonregistry, central exakt allowlist, negativa guardrail-fixtures, dokumenterad rebrandväg och en full QA-matris. Kvarvarande råvärden är tekniska QR-/print-/e-postundantag eller frysta publika kompatibilitetsytor; varje literal och antal är baselinat med motivering i `scripts/contracts/app-visual-allowlist.json`.
+
+Detta avslutar appdelen av Epic #346 men ändrar inte webbspårets status eller ordning. Autentiserad owner/admin/staff-/inspektörs-QA kräver fortfarande produktägarens befintliga säkra testsession enligt `apps/app/src/theme/QA_MATRIX.md`.
 
 ### Webben är närmare målbilden
 
@@ -185,7 +191,7 @@ Dokumentationen ska räcka för en agent eller utvecklare utan tillgång till ti
 
 ## Genomförandeordning
 
-### Appspåret – genomförs nu
+### Appspåret – genomfört i #347–#352
 
 1. #347 – maskinläsbart tema- och brandkontrakt samt statiska ytor.
 2. #348 – appens temaruntime, shell och visuella primitiver.
@@ -238,4 +244,4 @@ Initiativet är klart när:
 
 ## Nästa steg
 
-När denna plan är mergad startar implementationen med #347. Ingen annan child issue i #346 ska implementeras före den.
+Nya appvyer ska byggas mot de färdiga guardrailsen och QA-matrisen. Det visuella webbspåret fortsätter i beslutad ordning med #353, innehållsmigrationen i #315 och därefter #354. Epic #346 ska inte stängas förrän även webbspårets definition of done är verifierad.

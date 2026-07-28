@@ -57,10 +57,11 @@ Efter ändring av redirect-inställningar behöver en ny magic link skickas. Gam
 npm run typecheck
 npm run lint
 npm run build
+npm run contracts
 ```
 
 ## Arbetsregler
 
-Läs `AGENTS.md` innan du implementerar nya issues. Läs även `docs/strategy/PIVOT.md` när arbetet rör strategi, publik webb, SEO, innehåll, varumärke, designsystem, wireframes, repo-separation eller större appredesign.
+Läs `AGENTS.md` innan du implementerar nya issues. Läs även `docs/strategy/PIVOT.md` när arbetet rör strategi, publik webb, SEO, innehåll, varumärke, designsystem, wireframes, repo-separation eller större appredesign. För visuellt apparbete är `docs/strategy/VISUAL_SYSTEM_PLAN.md`, `docs/DESIGN_SYSTEM_CORE.md` och `apps/app/src/theme/README.md` bindande ingångar.
 
 Projektet ska byggas issue för issue med tydlig koppling till aktuell fas och prioritet.

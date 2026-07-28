@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "canonical": [
+    {
+      "path": "packages/design-system/theme-contract.json",
+      "kinds": ["raw-color"],
+      "reason": "Kanonisk maskinläsbar light/dark-palett; nyckelparitet valideras av visual-contracts."
+    },
+    {
+      "path": "packages/design-system/styles/tokens.css",
+      "kinds": ["raw-color", "local-theme-media", "local-theme-selector", "local-token-definition"],
+      "reason": "Deterministiskt genererad CSS från theme-contract.json och validerad av visual-contracts."
+    },
+    {
+      "path": "packages/design-system/styles/base.css",
+      "kinds": ["local-token-definition"],
+      "reason": "Designsystemets generella primitiver får sätta egna layoutvariabler som refererar till semantiska tokens."
+    },
+    {
+      "path": "packages/brand/brand-contract.json",
+      "kinds": ["raw-brand-path"],
+      "reason": "Kanoniskt rollbaserat kontrakt för brandassets och publika URL:er."
+    },
+    {
+      "path": "apps/app/src/config/assets.ts",
+      "kinds": ["raw-ui-icon-path"],
+      "reason": "Appens enda typade UI-ikonregistry; exakta filer och skiftlägen kontraktstestas."
+    },
+    {
+      "path": "apps/app/index.html",
+      "kinds": ["raw-color", "raw-brand-path"],
+      "reason": "Genererad och validerad metadata-/theme-color-konsument från tema- och brandkontrakten."
+    },
+    {
+      "path": "apps/app/public/manifest.webmanifest",
+      "kinds": ["raw-color", "raw-brand-path"],
+      "reason": "Genererad och validerad PWA-konsument från tema- och brandkontrakten."
+    },
+    {
+      "pathPrefix": "apps/app/public/seo/",
+      "kinds": ["raw-brand-path"],
+      "reason": "Statiska SEO-loggor synkas och valideras mot brandkontraktet av visual-contracts."
+    }
+  ],
+  "exceptions": [
+    {
+      "path": "apps/app/api/send-organization-invitation.js",
+      "reason": "Statiska e-postfärger måste fungera utan appens CSS-variabler i externa e-postklienter.",
+      "allow": {
+        "raw-color": {
+          "#f4f1ea": 1,
+          "#21352d": 1,
+          "#fff": 2,
+          "#21634f": 1,
+          "#66756e": 1
+        }
+      }
+    },
+    {
+      "path": "apps/app/public/api/leads/styles.css",
+      "reason": "Fristående statiskt leadverktyg med befintlig egen palett utanför den autentiserade appens temaruntime.",
+      "allow": {
+        "raw-color": {
+          "#172033": 5,
+          "#f7f8fc": 2,
+          "#5b46e1": 9,
+          "#657089": 9,
+          "#efedff": 5,
+          "rgba(91, 70, 225, .12)": 3,
+          "#fff": 6,
+          "rgba(62, 46, 135, .06)": 1,
+          "rgba(91, 70, 225, .18)": 2,
+          "#4f43aa": 1,
+          "#176b3b": 3,
+          "#e5f8ec": 3,
+          "#8c2d20": 1,
+          "#fff0ee": 1,
+          "#3f4a61": 1,
+          "#f8f7ff": 1,
+          "#4f3bce": 1,
+          "#7a8398": 2,
+          "#2f21a7": 1,
+          "#566079": 1,
+          "#eef1f7": 1,
+          "#885d00": 1,
+          "#fff4cf": 1,
+          "#72798a": 1,
+          "#edf0f4": 2,
+          "#676e7d": 1,
+          "#d9deea": 1,
+          "rgba(91, 70, 225, .24)": 1,
+          "rgba(255, 255, 255, .72)": 1,
+          "#f7f9ff": 3,
+          "#0b1020": 1,
+          "#aeb8d0": 3,
+          "rgba(159, 145, 255, .18)": 1,
+          "#121a2e": 2,
+          "rgba(0, 0, 0, .24)": 1,
+          "#d3d9e7": 1,
+          "#171335": 1,
+          "#b9afff": 1,
+          "rgba(18, 26, 46, .72)": 1
+        },
+        "local-theme-media": {
+          "@media (prefers-color-scheme: dark)": 1
+        }
+      }
+    },
+    {
+      "path": "apps/app/public/seo-guides.css",
+      "reason": "Fryst statisk SEO-palett som delas byte-identiskt med apps/web och inte får migreras ensidigt i appspåret.",
+      "allow": {
+        "raw-color": {
+          "#0b1224": 2,
+          "#f7f9ff": 1,
+          "rgba(122,92,255,.34)": 1,
+          "#111a32": 1,
+          "#12122b": 1,
+          "#cbd3e8": 1,
+          "#a99cff": 2,
+          "#fff": 1,
+          "#c3cbdf": 1,
+          "rgba(255,255,255,.035)": 1,
+          "rgba(255,255,255,.07)": 2,
+          "rgba(255,255,255,.09)": 1,
+          "rgba(255,255,255,.055)": 1,
+          "rgba(169,156,255,.13)": 1,
+          "#ddd8ff": 1,
+          "rgba(169,156,255,.08)": 1,
+          "#9ca6be": 1
+        }
+      }
+    },
+    {
+      "path": "apps/app/src/components/HaccpTopicHub.css",
+      "reason": "Publik innehållskomposition med avsiktlig fast mörk informationsyta, inte appens lokala temapalett.",
+      "allow": {
+        "raw-color": {
+          "#143c32": 1,
+          "#f6f5ef": 1,
+          "#bbe4cb": 1,
+          "#d3e4d8": 1
+        }
+      }
+    },
+    {
+      "path": "apps/app/src/components/HazardAnalysisToolPage.css",
+      "reason": "Teknisk svartvit printpalett som ska vara stabil och läsbar oberoende av valt app-tema.",
+      "allow": {
+        "raw-color": {
+          "#fff": 7,
+          "#000": 13,
+          "#555": 2
+        }
+      }
+    },
+    {
+      "path": "apps/app/src/components/Homepage.css",
+      "reason": "Publika redaktionella och illustrativa kompositioner med bevarade visuella värden utanför produktens temaytor.",
+      "allow": {
+        "raw-color": {
+          "#3f5147": 3,
+          "#17251e": 1,
+          "#f6f5ef": 2,
+          "rgb(31 96 72 / 12%)": 2,
+          "#d3e4d8": 4,
+          "#123c2e": 1,
+          "#bdd0c3": 3,
+          "#fff": 4,
+          "#ffe49a": 1,
+          "#4e3b05": 1,
+          "#d7e0d8": 1,
+          "#2b3931": 1,
+          "#c2f5d1": 1,
+          "#163f2b": 1,
+          "#ffc7bd": 1,
+          "#55251e": 1,
+          "#f0e7cb": 1,
+          "#ceb979": 2,
+          "#695011": 1,
+          "#143c32": 1,
+          "#bbe4cb": 1,
+          "#6b8c7e": 2
+        }
+      }
+    },
+    {
+      "path": "apps/app/src/components/InspectorView.css",
+      "reason": "Print-only spegling av light-kontraktet; värden och selektorer kontraktstestas mot central källa.",
+      "allow": {
+        "raw-color": {
+          "#fffdf8": 1,
+          "#ffffff": 1,
+          "#f5f2eb": 1,
+          "#18221f": 1,
+          "#52605a": 1,
+          "#c6cbc4": 1,
+          "#1f6048": 1,
+          "#edf1eb": 2,
+          "#145c40": 1,
+          "#e6f5eb": 1,
+          "#972f20": 1,
+          "#ffe8e3": 1,
+          "#3e4c45": 1
+        },
+        "local-theme-selector": {
+          "[data-theme='dark']": 1,
+          "[data-theme='light']": 1
+        },
+        "local-token-definition": {
+          "--ds-canvas:": 1,
+          "--ds-surface:": 1,
+          "--ds-surface-subtle:": 1,
+          "--ds-text:": 1,
+          "--ds-text-secondary:": 1,
+          "--ds-border:": 1,
+          "--ds-action-primary:": 1,
+          "--ds-action-secondary:": 1,
+          "--ds-status-success-fg:": 1,
+          "--ds-status-success-bg:": 1,
+          "--ds-status-danger-fg:": 1,
+          "--ds-status-danger-bg:": 1,
+          "--ds-status-neutral-fg:": 1,
+          "--ds-status-neutral-bg:": 1
+        }
+      }
+    },
+    {
+      "path": "apps/app/src/components/LocalQrCode.tsx",
+      "reason": "Fast svartvit QR-kontrast krävs för skanning och får inte följa appens växlande tema.",
+      "allow": {
+        "raw-color": {
+          "#ffffff": 1,
+          "#111827": 1
+        }
+      }
+    },
+    {
+      "path": "apps/app/src/components/PublicLandingPage.css",
+      "reason": "Aktiva publika kompatibilitets- och legalsidor behåller sin befintliga separata visuella komposition.",
+      "allow": {
+        "raw-color": {
+          "#f7f9ff": 1,
+          "rgba(122, 92, 255, 0.34)": 1,
+          "#0b1224": 1,
+          "#111a32": 1,
+          "#12122b": 1,
+          "#ffffff": 9,
+          "rgba(112, 85, 255, 0.18)": 1,
+          "#cbd3e8": 1,
+          "rgba(255, 255, 255, 0.12)": 4,
+          "#a99cff": 1,
+          "#c3cbdf": 2,
+          "#7055ff": 1,
+          "#5138db": 1,
+          "rgba(112, 85, 255, 0.32)": 1,
+          "#d8ddff": 2,
+          "rgba(255, 255, 255, 0.1)": 1,
+          "rgba(255, 255, 255, 0.075)": 2,
+          "rgba(0, 0, 0, 0.16)": 1,
+          "rgba(22, 185, 129, 0.14)": 1,
+          "rgba(72, 124, 255, 0.14)": 1,
+          "rgba(255, 184, 77, 0.16)": 1,
+          "#aeb8d4": 1,
+          "rgba(0, 0, 0, 0.22)": 1
+        }
+      }
+    },
+    {
+      "path": "apps/app/src/components/PublicSiteShell.css",
+      "reason": "Publik mobilmeny behåller sin befintliga 28-procentiga backdrop utan att ändra visuellt värde.",
+      "allow": {
+        "raw-color": {
+          "rgb(0 0 0 / 28%)": 1
+        }
+      }
+    },
+    {
+      "path": "apps/app/src/components/SharingView.css",
+      "reason": "Fast svartvit QR-kontrast krävs för skanning och verifieras tillsammans med QR-komponenten.",
+      "allow": {
+        "raw-color": {
+          "#111827": 1,
+          "#ffffff": 1
+        }
+      }
+    },
+    {
+      "path": "apps/app/src/components/TemplatePage.css",
+      "reason": "Teknisk svartvit printpalett som ska vara stabil och läsbar oberoende av valt app-tema.",
+      "allow": {
+        "raw-color": {
+          "#fff": 4,
+          "#000": 10,
+          "#555": 1
+        }
+      }
+    }
+  ]
+}

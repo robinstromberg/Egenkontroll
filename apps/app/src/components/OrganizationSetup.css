@@ -27,39 +27,12 @@
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
 }
 
-.industry-panel,
 .business-type-card {
   border: 1px solid var(--ds-border);
   color: var(--ds-text);
   background: var(--ds-surface);
 }
 
-.industry-panel {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
-  border-radius: 18px;
-  padding: 14px;
-}
-
-.industry-icon {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border-radius: 14px;
-  color: var(--ds-status-success-fg);
-  background: var(--ds-status-success-bg);
-  font-weight: 900;
-}
-
-.industry-panel span:last-child {
-  display: grid;
-  gap: 4px;
-}
-
-.industry-panel small,
 .business-type-card span {
   color: var(--ds-text-secondary);
   line-height: 1.45;
@@ -110,8 +83,7 @@
 
 .business-type-card strong,
 .billing-plan-card strong,
-.template-card strong,
-.industry-panel strong {
+.template-card strong {
   color: var(--ds-text);
 }
 
