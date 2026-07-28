@@ -1,9 +1,25 @@
-export type KnowledgeArticleClassification = 'requirement' | 'guidance' | 'example';
+import {
+  buildKnowledgeSourceImpactIndex,
+  defaultKnowledgeSourceContractRegistries,
+  projectKnowledgeSource,
+  validateKnowledgeArticleContracts,
+  type KnowledgeArticleContractInput,
+  type KnowledgeArticleClaim,
+  type KnowledgeArticleClassification,
+  type KnowledgeDisclaimerId,
+  type KnowledgeLanguagePolicyId,
+  type KnowledgeSourceId,
+} from './knowledgeSourceContract';
+
+export type { KnowledgeArticleClassification } from './knowledgeSourceContract';
 
 export type KnowledgeArticleBlock = {
   id: string;
   title: string;
   paragraphs: readonly string[];
+  material: boolean;
+  sourceIds: readonly KnowledgeSourceId[];
+  claims?: readonly KnowledgeArticleClaim[];
 } & (
   | { type: 'prose' | 'fact-box' }
   | {
@@ -14,7 +30,8 @@ export type KnowledgeArticleBlock = {
     }
 );
 
-export type MigratedKnowledgeArticleContent = {
+export type MigratedKnowledgeArticleDefinition = {
+  id: string;
   title: string;
   description: string;
   canonicalPath: string;
@@ -25,15 +42,10 @@ export type MigratedKnowledgeArticleContent = {
   tableOfContentsTitle: string;
   blocks: readonly KnowledgeArticleBlock[];
   sourceSectionTitle: string;
-  source: {
-    label: string;
-    url: string;
-    type: 'myndighetsvägledning';
-    factCheckedAt: string;
-    relevantSections: readonly string[];
-    legalReference: string;
-    limitation: string;
-  };
+  sourceIds: readonly KnowledgeSourceId[];
+  languagePolicyIds: readonly KnowledgeLanguagePolicyId[];
+  disclaimerIds: readonly KnowledgeDisclaimerId[];
+  aiInterpretation: 'none' | 'human-reviewed';
   relatedLinks: {
     title: string;
     links: readonly { href: string; title: string; copy: string }[];
@@ -41,7 +53,20 @@ export type MigratedKnowledgeArticleContent = {
   appBridge: { eyebrow: string; title: string; copy: string; href: string; linkLabel: string };
 };
 
-const personalHygieneArticle: MigratedKnowledgeArticleContent = {
+export type MigratedKnowledgeArticleContent = MigratedKnowledgeArticleDefinition & {
+  source: ReturnType<typeof projectKnowledgeSource>;
+};
+
+function toMigratedKnowledgeArticleContent(
+  article: MigratedKnowledgeArticleDefinition,
+): MigratedKnowledgeArticleContent {
+  const [primarySourceId] = article.sourceIds;
+  if (!primarySourceId) throw new Error(`Migrerad artikel saknar primär källa: ${article.id}`);
+  return { ...article, source: projectKnowledgeSource(primarySourceId) };
+}
+
+const personalHygieneArticle: MigratedKnowledgeArticleDefinition = {
+  id: 'seo-personlig-hygien-livsmedel',
   title: 'Personlig hygien i livsmedelsverksamhet | Min Egenkontroll',
   description: 'Vad personlig hygien innebär i en livsmedelsverksamhet: renlighet, skyddskläder, rutiner vid sjukdom och praktiska kontrollfrågor.',
   canonicalPath: '/seo/personlig-hygien-livsmedel.html',
@@ -57,6 +82,8 @@ const personalHygieneArticle: MigratedKnowledgeArticleContent = {
   blocks: [
     {
       type: 'fact-box',
+      material: false,
+      sourceIds: [],
       id: 'skillnaden-mellan-krav-och-exempel',
       title: 'Så ska innehållet läsas',
       paragraphs: [
@@ -66,6 +93,8 @@ const personalHygieneArticle: MigratedKnowledgeArticleContent = {
     {
       type: 'classified',
       classification: 'requirement',
+      material: true,
+      sourceIds: ['kontrollwiki:345'],
       classificationLabel: 'Krav enligt reglerna',
       id: 'krav-pa-personlig-hygien',
       title: 'Vilka grundkrav gäller?',
@@ -77,6 +106,8 @@ const personalHygieneArticle: MigratedKnowledgeArticleContent = {
     {
       type: 'classified',
       classification: 'guidance',
+      material: true,
+      sourceIds: ['kontrollwiki:345'],
       classificationLabel: 'Myndighetsvägledning',
       id: 'verksamhetens-rutiner',
       title: 'Hur kan verksamheten omsätta kraven?',
@@ -88,6 +119,8 @@ const personalHygieneArticle: MigratedKnowledgeArticleContent = {
     {
       type: 'classified',
       classification: 'example',
+      material: true,
+      sourceIds: ['kontrollwiki:345'],
       classificationLabel: 'Praktiskt exempel',
       id: 'exempel-pa-kontrollfragor',
       title: 'Exempel på frågor i en enkel rutin',
@@ -103,15 +136,10 @@ const personalHygieneArticle: MigratedKnowledgeArticleContent = {
     },
   ],
   sourceSectionTitle: 'Källa och faktakontroll',
-  source: {
-    label: 'Livsmedelsverkets Kontrollwiki: Personlig hygien',
-    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/345/personlig-hygien',
-    type: 'myndighetsvägledning',
-    factCheckedAt: '2026-07-18',
-    relevantSections: ['Artikelhuvud', 'Tips på kontroll'],
-    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel VIII',
-    limitation: 'Kontrollwiki är Livsmedelsverkets vägledning och är inte bindande i sig. Artikeln ersätter inte den egna verksamhetens riskbedömning eller kontrollmyndighetens bedömning i det enskilda fallet.',
-  },
+  sourceIds: ['kontrollwiki:345'],
+  languagePolicyIds: ['language-policy:source-classification:v1'],
+  disclaimerIds: ['disclaimer:kontrollwiki-guidance:v1'],
+  aiInterpretation: 'none',
   relatedLinks: {
     title: 'Relaterade frågor',
     links: [
@@ -129,9 +157,21 @@ const personalHygieneArticle: MigratedKnowledgeArticleContent = {
   },
 };
 
-export const migratedKnowledgeArticles = [
+export const migratedKnowledgeArticleDefinitions = [
   personalHygieneArticle,
-] as const satisfies readonly MigratedKnowledgeArticleContent[];
+] as const satisfies readonly KnowledgeArticleContractInput[];
+
+const contractErrors = validateKnowledgeArticleContracts(
+  migratedKnowledgeArticleDefinitions,
+  defaultKnowledgeSourceContractRegistries,
+);
+if (contractErrors.length > 0) {
+  throw new Error(`Kunskapsartikelkontraktet är inte giltigt:\n- ${contractErrors.join('\n- ')}`);
+}
+
+export const migratedKnowledgeArticles = migratedKnowledgeArticleDefinitions.map(toMigratedKnowledgeArticleContent) as readonly MigratedKnowledgeArticleContent[];
+
+export const migratedKnowledgeArticleSourceImpactIndex = buildKnowledgeSourceImpactIndex(migratedKnowledgeArticleDefinitions);
 
 export const migratedKnowledgeArticleByPath = new Map<string, MigratedKnowledgeArticleContent>(
   migratedKnowledgeArticles.map((article) => [article.canonicalPath, article]),
