@@ -247,6 +247,22 @@ Pilotens gränser:
 - Om framtida verktyg/generatorer ska få egna URL:er, inbäddade sektioner eller båda.
 - Om `/api/leads` ska ligga kvar på den deployade publika ytan.
 
+## Bindande visuell batchchecklista för #315
+
+Checklistan gäller varje child issue och varje ny eller migrerad Astro-/React-sida i #315. Den kompletterar den exakta ruttlistan från #316 och får inte användas för att bredda en batch.
+
+1. Kopiera batchens exakta ruttlista från #316 och den aktuella child-issuen. Gissa inte routes och ändra inga andra sidor.
+2. Bevara innehåll, SEO, canonical, sitemap, URL, routing och sidstruktur om child-issuen inte uttryckligen beslutar något annat.
+3. Använd centrala `--ds-*`-tokens för temafärg, yta, text, kant, fokus och tillgängliga typografi-, radius- och skuggroller. Lägg inte till lokala `[data-theme]`-regler, `prefers-color-scheme`-paletter eller `--ds-*`-definitioner.
+4. Importera brandassets från `@min-egenkontroll/brand`. Lägg inte till råa `/brand/...`- eller `/ui-icons/...`-paths.
+5. Utöka inte `scripts/contracts/web-visual-allowlist.json` som standard. Ett verifierat tekniskt, dekorativt eller innehållsbundet undantag ska ha exakt fil, normaliserad literal, antal och motivering samt granskas som en egen punkt.
+6. När en legacyfil eller förekomst migreras bort ska motsvarande baseline minskas eller tas bort i samma PR. Lämna inte inaktuella undantag och uppdatera aldrig baselinen endast för att få en kontroll grön.
+7. Håll negativa fixtures syntetiska och in-memory. Lägg inte trasiga fixturefiler i produktionskoden.
+8. Kör `npm run web-visual:check`, `npm run web-visual:test`, `npm run contracts`, `npm run routes:check --workspace @min-egenkontroll/web`, `npm run links:test --workspace @min-egenkontroll/web`, `npm run typecheck`, `npm run lint`, `npm run build` och `git diff --check`.
+9. Kontrollera varje ändrad representativ route i light och dark vid 320/375 px och desktop. Verifiera tangentbord, synligt fokus, kontrast, reduced motion och att innehållet inte får horisontell overflow. Rapportera exakt vad som inte kunnat verifieras.
+
+Full generell legacy-sanering tillhör #354. En enskild #315-batch ska endast minska den baseline som dess uttryckligen migrerade filer äger.
+
 ## Nästa användning
 
 Använd den här kartan för att styra nästa fas först efter att den strategiska kontexten och nulägesinventeringen har lästs. Nästa säkra leverans är sannolikt sidtypswireframes eller ett implementationsneutralt beslut om informationsarkitektur, inte innehållsomskrivningar eller route-ändringar.

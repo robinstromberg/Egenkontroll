@@ -89,6 +89,7 @@ const articleStructuredData = route.structuredData?.kind === 'article' ? {
           const key = 'egenkontroll:homepage-theme';
           const saved = localStorage.getItem(key);
           const theme = saved === 'light' || saved === 'dark' ? saved : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
           document.currentScript?.parentElement?.setAttribute('data-theme', theme);
         })();
       </script>

@@ -8,6 +8,7 @@ Den här kärnan är Min Egenkontrolls gemensamma visuella kontrakt. Den ersätt
 - `packages/design-system/styles/tokens.css` genereras av `npm run visual:sync`; redigera den inte manuellt.
 - Generella primitiver ligger direkt i `packages/design-system/src/` och exporteras från paketet.
 - Appspecifica kompositioner ligger i `apps/app/src/components/ui/AppPrimitives.tsx` och använder de genererade `--ds-*`-variablerna.
+- Webbens Astro-layout, React-islands och sidkompositioner ligger i `apps/web`; de delar token- och brandkällor men inte appens layoutkomponenter.
 - `packages/brand/brand-contract.json` och `packages/brand/assets/` äger brandroller respektive masterassets.
 - `apps/app/src/config/assets.ts` är appens enda registry för `/ui-icons/...`.
 - `apps/app/src/reports/reportPalette.js` härleder alltid rapportfärger från light-temat.
@@ -38,12 +39,16 @@ Alla stödda representativa tillstånd visas i det dev-only showcase som finns p
 
 Den enda maskinläsbara allowlisten finns i `scripts/contracts/app-visual-allowlist.json`. Kanoniska/genererade poster delegerar till tema-, brand- och ikonkontrakten. Varje tekniskt undantag baselinar exakt literal och antal med en motivering. `npm run app-visual:test` använder enbart syntetiska in-memory-fixtures för negativa fall och ändrar aldrig produktionsfiler.
 
+`npm run web-visual:check` skannar webbens produktionsfiler under `apps/web/src` och textbaserade produktionsfiler under `apps/web/public`, inklusive Astro. Kontrollen stoppar samma råa tema-, brand- och ikonpaths som appguardrailen samt rå `font-family`/`font-size`/`line-height`, radius och skugga som inte använder tillgängliga semantiska tokens. Den skyddar också webbens systemtema, 320 px-baslinje, tokenbaserade fokus och reduced motion på det publika skalet, den migrerade faktasidemallen och det interaktiva faroanalysverktyget.
+
+Webbens enda maskinläsbara allowlist är `scripts/contracts/web-visual-allowlist.json`. Befintliga legacy-, dekorativa och printtekniska värden lagras som exakt fil + normaliserad literal + antal; både tillväxt och en inaktuell minskad baseline ger fel. De 54 frysta SEO-filernas centrala loggpath skyddas som en grupperad exakt baseline med filantal och en förekomst per fil, utöver visual-, route- och länkkontrakten. `npm run web-visual:test` bevisar alla negativa fall med in-memory-fixtures. Full sanering av baselinen tillhör #315-batcherna och slutrevisionen #354, inte guardrailinförandet.
+
 ## Kort rebrandchecklista
 
 1. Tema, typografi, spacing, radier och skuggor: ändra endast `packages/design-system/theme-contract.json`. Behåll samma ordnade semantiska tokennycklar i light och dark. Välj browser-/PWA-värden via `staticSurfaces`; redigera inte genererad tokens-CSS, `apps/app/index.html` eller manifestvärden manuellt. Rapporter följer light-kontraktet via `apps/app/src/reports/reportPalette.js`.
 2. Brand: ersätt eller lägg masterfiler i `packages/brand/assets/`. Ändra `packages/brand/brand-contract.json` endast när en roll/path eller `metadata.openGraph.{width,height,alt}` ändras. Redigera aldrig de genererade `apps/*/public/brand/`-katalogerna.
 3. Produktikoner: ersätt eller lägg filer i `apps/app/public/ui-icons/` och uppdatera registry/fallback i `apps/app/src/config/assets.ts`. Använd gemener, exakt skiftläge och säker textfallback; lägg inte brandikoner här.
 4. Synka från reporoten med `npm run visual:sync` och `npm run brand:sync`.
-5. Verifiera med `npm run visual:check`, `npm run app-visual:check`, `npm run contracts`, `npm run typecheck`, `npm run lint`, `npm run build` och `git diff --check`. Kör därefter showcase och full QA-matris i light/dark/system vid 320/375 px och desktop, inklusive tangentbord, fokus, kontrast och reduced motion.
+5. Verifiera med `npm run visual:check`, `npm run app-visual:check`, `npm run web-visual:check`, `npm run web-visual:test`, `npm run contracts`, `npm run typecheck`, `npm run lint`, `npm run build` och `git diff --check`. Kör därefter appens showcase/QA-matris och representativa webbsidor i light/dark/system vid 320/375 px och desktop, inklusive tangentbord, fokus, kontrast och reduced motion.
 
 Alla allowlistförändringar är en separat granskningspunkt. En rebrand får inte lägga till ett nytt undantag bara för att få guardrailen att passera.

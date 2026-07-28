@@ -109,6 +109,16 @@ Service role-nycklar får aldrig in i frontend, repo, issues eller logs. Secrets
 - Kör `npm run contracts` för varje ändring av appens visuella system. Nya eller ombyggda appvyer ska dessutom verifieras i light, dark och system vid 320 px och relevant desktopbredd, med tangentbord, synligt fokus, kontrast och reduced motion enligt `apps/app/src/theme/QA_MATRIX.md`.
 - Visuella migreringar får inte samtidigt ändra routing, auth, sessioner, behörigheter, affärslogik, datamodell, sparning, navigation eller flödesordning. Sådana ändringar ska separeras till egen issue och verifiering.
 
+### Bindande visuellt kontrakt för publika webben
+
+- Läs `docs/strategy/VISUAL_SYSTEM_PLAN.md`, `docs/DESIGN_SYSTEM_CORE.md` och den aktuella sid-/migrationsissuen före varje ändring av webbens tema, sidmallar, komponentutseende, brandassets eller metadata.
+- Nya och migrerade Astro-/React-/CSS-ytor ska använda genererade semantiska `--ds-*`-tokens för temafärg, yta, text, kant, fokus, typografi, radius och skugga. Skapa inte lokala light-/dark-paletter, `[data-theme]`-regler, `prefers-color-scheme`-paletter eller `--ds-*`-definitioner i webbfiler.
+- Brandassets ska importeras från `@min-egenkontroll/brand`. Lägg inte in nya råa `/brand/...`- eller `/ui-icons/...`-paths i Astro-, React-, CSS- eller konfigurationsfiler.
+- Webbens enda maskinläsbara undantagslista är `scripts/contracts/web-visual-allowlist.json`. Varje undantag ska ha exakt fil, normaliserad literal, antal och teknisk/dekorativ motivering. En allowlist får aldrig uppdateras endast för att få ett test grönt, och en migrerad borttagen förekomst ska rensas ur baselinen i samma PR.
+- Kör `npm run web-visual:check`, `npm run web-visual:test` och `npm run contracts` för varje ny eller migrerad webbyta. Negativa fixtures ska vara syntetiska och in-memory; lägg inte trasiga fixturefiler i produktionskoden.
+- Verifiera varje berörd representativ sida i light och dark vid 320/375 px och desktop, med tangentbord, synligt fokus, kontrast och reduced motion. Följ den bindande batchchecklistan i `docs/strategy/CONTENT_MIGRATION_MAP.md` för arbete under #315.
+- En visuell webbmigrering får inte samtidigt ändra innehåll, SEO, canonical, sitemap, URL:er, routing eller sidstruktur om den aktuella issuen inte uttryckligen beslutar det. Full legacy-sanering tillhör #354.
+
 ## Publikt innehåll och URL:er
 
 - Ta inte bort eller bygg om befintliga SEO-/kunskapssidor från grunden utan inventering.
