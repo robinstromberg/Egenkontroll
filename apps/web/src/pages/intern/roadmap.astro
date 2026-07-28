@@ -6,7 +6,6 @@ import '@min-egenkontroll/design-system/tokens.css';
 import '@min-egenkontroll/design-system/base.css';
 
 const themeColor = resolveStaticThemeValue('webThemeColor');
-const serializedRoadmap = JSON.stringify(internalRoadmap).replaceAll('<', '\\u003c');
 
 function durationHours(duration: { start: string; end?: string } | undefined): string | null {
   if (!duration) return null;
@@ -74,7 +73,7 @@ const currentPhase = internalRoadmap.phases.find((phase) => phase.id === interna
           </div>
         </div>
 
-        <div class="metric-grid">
+        <div class="metric-grid" id="metric-grid" data-blocker-visible="false">
           <article class="metric-card">
             <span>Vi befinner oss i</span>
             <strong id="current-phase-value">{currentPhase?.title.replace(/^Fas /, 'Fas ') ?? '–'}</strong>
@@ -82,13 +81,13 @@ const currentPhase = internalRoadmap.phases.find((phase) => phase.id === interna
           </article>
           <article class="metric-card">
             <span>Aktivt arbete</span>
-            <strong id="active-work-value">#{internalRoadmap.current.activeIssueNumber}</strong>
-            <small id="active-work-label">Historik, KPI och delning</small>
+            <strong id="active-work-value">#{internalRoadmap.current.fallbackActiveIssueNumber}</strong>
+            <small id="active-work-label">{internalRoadmap.current.fallbackActiveIssueTitle}</small>
           </article>
-          <article class="metric-card">
+          <article class="metric-card" id="blocker-card" hidden>
             <span>Aktiv blockerare</span>
-            <strong id="blocker-value">#{internalRoadmap.current.blockerIssueNumbers[0]}</strong>
-            <small id="blocker-label">Säker Preview behövs för produktägar-QA</small>
+            <strong id="blocker-value">–</strong>
+            <small id="blocker-label"></small>
           </article>
         </div>
 
@@ -158,7 +157,7 @@ const currentPhase = internalRoadmap.phases.find((phase) => phase.id === interna
                   {phase.id === internalRoadmap.current.phaseId ? (
                     <div class="current-marker">
                       <span class="eyebrow">Vi är här</span>
-                      <span id="current-marker-text">Aktivt arbete: #{internalRoadmap.current.activeIssueNumber}</span>
+                      <span id="current-marker-text">Aktivt arbete: #{internalRoadmap.current.fallbackActiveIssueNumber}</span>
                     </div>
                   ) : null}
                 </div>
@@ -229,134 +228,162 @@ const currentPhase = internalRoadmap.phases.find((phase) => phase.id === interna
       </section>
     </main>
 
-    <script id="roadmap-config" type="application/json" set:html={serializedRoadmap}></script>
-    <script is:inline>
-      (() => {
-        const configElement = document.getElementById('roadmap-config');
-        if (!configElement?.textContent) return;
-        const config = JSON.parse(configElement.textContent);
-        const repository = config.repository;
-        const issueMap = new Map();
+    <script>
+      import { internalRoadmap } from '../../config/internalRoadmap';
+      import {
+        resolveCurrentRoadmapDisplay,
+        type GitHubRoadmapItem,
+      } from '../../lib/internalRoadmapStatus';
 
-        const formatHours = (duration) => {
-          if (!duration) return null;
-          const start = new Date(duration.start).getTime();
-          const end = duration.end ? new Date(duration.end).getTime() : Date.now();
-          const hours = Math.max(1, Math.ceil((end - start) / 3600000));
-          return `ca ${hours} h${duration.end ? '' : ' hittills'}`;
-        };
+      const config = internalRoadmap;
+      const repository = config.repository;
+      const issueMap = new Map<number, GitHubRoadmapItem>();
+      const currentPhase = config.phases.find((phase) => phase.id === config.current.phaseId);
 
-        const setLiveState = (kind, label) => {
-          const state = document.getElementById('live-state');
-          const stateLabel = document.getElementById('live-state-label');
-          if (!state || !stateLabel) return;
-          state.dataset.state = kind;
-          stateLabel.textContent = label;
-        };
+      const formatHours = (duration: { start: string; end?: string } | undefined) => {
+        if (!duration) return null;
+        const start = new Date(duration.start).getTime();
+        const end = duration.end ? new Date(duration.end).getTime() : Date.now();
+        const hours = Math.max(1, Math.ceil((end - start) / 3600000));
+        return `ca ${hours} h${duration.end ? '' : ' hittills'}`;
+      };
 
-        const itemState = (number) => issueMap.get(number)?.state ?? null;
-        const itemTitle = (number) => issueMap.get(number)?.title ?? null;
+      const setLiveState = (kind: 'live' | 'fallback', label: string) => {
+        const state = document.getElementById('live-state');
+        const stateLabel = document.getElementById('live-state-label');
+        if (!state || !stateLabel) return;
+        state.dataset.state = kind;
+        stateLabel.textContent = label;
+      };
 
-        const derivePhaseStatus = (phase) => {
-          if (!phase.issueNumbers?.length) return phase.status;
-          const states = phase.issueNumbers.map(itemState).filter(Boolean);
-          if (!states.length) return phase.status;
-          if (states.every((state) => state === 'closed')) return 'complete';
-          if (phase.status === 'waiting') {
-            const blockers = (phase.blockedByIssueNumbers ?? []).map(itemState).filter(Boolean);
-            if (blockers.some((state) => state === 'open')) return 'waiting';
-          }
-          if (states.some((state) => state === 'closed')) return 'active';
-          return 'future';
-        };
+      const itemState = (number: number) => issueMap.get(number)?.state ?? null;
+      const itemTitle = (number: number) => issueMap.get(number)?.title ?? null;
 
-        const statusLabel = (phase, status) => {
-          if (status === 'complete') return phase.statusLabel === 'Funktionellt klar' ? phase.statusLabel : 'Klar';
-          if (status === 'active') return 'Pågår';
-          if (status === 'waiting') return 'Påbörjad / väntar';
-          return 'Inte påbörjad';
-        };
+      const derivePhaseStatus = (phase: (typeof config.phases)[number]) => {
+        if (!phase.issueNumbers?.length) return phase.status;
+        const states = phase.issueNumbers.map(itemState).filter(Boolean);
+        if (!states.length) return phase.status;
+        if (states.length === phase.issueNumbers.length && states.every((state) => state === 'closed')) return 'complete';
+        if (phase.status === 'waiting') {
+          const blockers = (phase.blockedByIssueNumbers ?? []).map(itemState).filter(Boolean);
+          if (blockers.some((state) => state === 'open')) return 'waiting';
+        }
+        if (states.some((state) => state === 'open')) return 'active';
+        return phase.status;
+      };
 
-        const iconForStatus = (status) => status === 'complete' ? '✓' : status === 'active' ? '●' : status === 'waiting' ? '◐' : '○';
+      const statusLabel = (phase: (typeof config.phases)[number], status: string) => {
+        if (status === 'complete') return phase.statusLabel === 'Funktionellt klar' ? phase.statusLabel : 'Klar';
+        if (status === 'active') return 'Pågår';
+        if (status === 'waiting') return 'Påbörjad / väntar';
+        return 'Inte påbörjad';
+      };
 
-        const updatePhases = () => {
-          for (const phase of config.phases) {
-            const element = document.querySelector(`[data-phase-id="${phase.id}"]`);
-            if (!element) continue;
-            const status = derivePhaseStatus(phase);
-            element.classList.remove('phase-card--complete', 'phase-card--active', 'phase-card--waiting', 'phase-card--future');
-            element.classList.add(`phase-card--${status}`);
-            const label = element.querySelector('[data-phase-status]');
-            const duration = element.querySelector('[data-phase-duration]');
-            const icon = element.querySelector('.phase-icon');
-            if (label) label.textContent = statusLabel(phase, status);
-            if (duration) duration.textContent = formatHours(phase.duration) ?? '';
-            if (icon) icon.textContent = iconForStatus(status);
-          }
-        };
+      const iconForStatus = (status: string) => status === 'complete' ? '✓' : status === 'active' ? '●' : status === 'waiting' ? '◐' : '○';
 
-        const updateCurrentState = () => {
-          const issueNumber = config.current.activeIssueNumber;
-          const pullRequestNumber = config.current.activePullRequestNumber;
-          const blockerNumber = config.current.blockerIssueNumbers[0];
-          const issue = issueMap.get(issueNumber);
-          const pullRequest = issueMap.get(pullRequestNumber);
-          const blocker = issueMap.get(blockerNumber);
+      const updatePhases = () => {
+        for (const phase of config.phases) {
+          const element = document.querySelector<HTMLElement>(`[data-phase-id="${phase.id}"]`);
+          if (!element) continue;
+          const status = derivePhaseStatus(phase);
+          element.classList.remove('phase-card--complete', 'phase-card--active', 'phase-card--waiting', 'phase-card--future');
+          element.classList.add(`phase-card--${status}`);
+          const label = element.querySelector<HTMLElement>('[data-phase-status]');
+          const duration = element.querySelector<HTMLElement>('[data-phase-duration]');
+          const icon = element.querySelector<HTMLElement>('.phase-icon');
+          if (label) label.textContent = statusLabel(phase, status);
+          if (duration) duration.textContent = formatHours(phase.duration) ?? '';
+          if (icon) icon.textContent = iconForStatus(status);
+        }
+      };
 
-          const activeWorkLabel = document.getElementById('active-work-label');
-          const blockerLabel = document.getElementById('blocker-label');
-          const marker = document.getElementById('current-marker-text');
-          if (activeWorkLabel && issue?.title) activeWorkLabel.textContent = issue.title;
-          if (blockerLabel && blocker?.title) blockerLabel.textContent = blocker.title;
-          if (marker) {
-            const prState = pullRequest ? (pullRequest.state === 'closed' ? 'stängd' : 'öppen') : 'status okänd';
-            marker.textContent = `Aktivt arbete: #${issueNumber} · PR #${pullRequestNumber} ${prState}`;
-          }
-        };
-
-        const updateNextSteps = () => {
-          for (const element of document.querySelectorAll('[data-issue-number]')) {
-            const number = Number(element.getAttribute('data-issue-number'));
-            const title = itemTitle(number);
-            const state = itemState(number);
-            const strong = element.querySelector('strong');
-            if (strong) strong.textContent = `#${number}${state === 'closed' ? ' · klar' : ''}`;
-            if (title) element.setAttribute('title', title);
-          }
-        };
-
-        const loadGitHubStatus = async () => {
-          const base = `https://api.github.com/repos/${repository}/issues?state=all&per_page=100&sort=created&direction=desc`;
-          const responses = await Promise.all([
-            fetch(`${base}&page=1`, { cache: 'no-cache' }),
-            fetch(`${base}&page=2`, { cache: 'no-cache' }),
-          ]);
-          if (responses.some((response) => !response.ok)) throw new Error('GitHub svarade inte med en giltig status.');
-          const pages = await Promise.all(responses.map((response) => response.json()));
-          for (const item of pages.flat()) issueMap.set(item.number, item);
-          updatePhases();
-          updateCurrentState();
-          updateNextSteps();
-          setLiveState('live', 'Live från GitHub');
-          const updatedAt = document.getElementById('updated-at');
-          if (updatedAt) {
-            updatedAt.textContent = `Senast uppdaterad ${new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())}. Uppdatera sidan för att hämta nytt läge.`;
-          }
-        };
-
-        loadGitHubStatus().catch(() => {
-          setLiveState('fallback', 'GitHub kunde inte nås');
-          const updatedAt = document.getElementById('updated-at');
-          if (updatedAt) updatedAt.textContent = 'Live-status kunde inte hämtas. Den versionerade fallbacken från repot visas i stället.';
+      const updateCurrentState = (githubItems: readonly GitHubRoadmapItem[] | null) => {
+        const display = resolveCurrentRoadmapDisplay({
+          issueNumbers: currentPhase?.issueNumbers ?? [],
+          blockerIssueNumbers: currentPhase?.blockedByIssueNumbers ?? [],
+          githubItems,
+          fallback: {
+            activeIssueNumber: config.current.fallbackActiveIssueNumber,
+            activeIssueTitle: config.current.fallbackActiveIssueTitle,
+          },
         });
 
-        const themeButton = document.getElementById('theme-toggle');
-        themeButton?.addEventListener('click', () => {
-          const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-          document.documentElement.dataset.theme = nextTheme;
-          localStorage.setItem('egenkontroll:homepage-theme', nextTheme);
-        });
-      })();
+        const activeWorkValue = document.getElementById('active-work-value');
+        const activeWorkLabel = document.getElementById('active-work-label');
+        const blockerCard = document.getElementById('blocker-card') as HTMLElement | null;
+        const blockerValue = document.getElementById('blocker-value');
+        const blockerLabel = document.getElementById('blocker-label');
+        const metricGrid = document.getElementById('metric-grid');
+        const marker = document.getElementById('current-marker-text');
+
+        if (activeWorkValue) activeWorkValue.textContent = display.activeIssueNumber ? `#${display.activeIssueNumber}` : 'Klar';
+        if (activeWorkLabel) activeWorkLabel.textContent = display.activeIssueTitle;
+
+        const hasBlocker = display.blockerIssueNumber !== null;
+        if (blockerCard) blockerCard.hidden = !hasBlocker;
+        if (metricGrid) metricGrid.dataset.blockerVisible = String(hasBlocker);
+        if (blockerValue) blockerValue.textContent = hasBlocker ? `#${display.blockerIssueNumber}` : '–';
+        if (blockerLabel) blockerLabel.textContent = display.blockerIssueTitle ?? '';
+
+        if (marker) {
+          if (display.phaseComplete) {
+            marker.textContent = 'Fasen är klar · inget aktivt issue';
+          } else if (display.activeIssueNumber) {
+            const pullRequestText = display.activePullRequestNumber
+              ? ` · PR #${display.activePullRequestNumber} öppen`
+              : ' · ingen aktiv PR verifierad';
+            marker.textContent = `Aktivt arbete: #${display.activeIssueNumber}${pullRequestText}`;
+          } else {
+            marker.textContent = 'Ingen aktiv issue kunde identifieras';
+          }
+        }
+      };
+
+      const updateNextSteps = () => {
+        for (const element of document.querySelectorAll<HTMLElement>('[data-issue-number]')) {
+          const number = Number(element.getAttribute('data-issue-number'));
+          const title = itemTitle(number);
+          const state = itemState(number);
+          const strong = element.querySelector('strong');
+          if (strong) strong.textContent = `#${number}${state === 'closed' ? ' · klar' : ''}`;
+          if (title) element.setAttribute('title', title);
+        }
+      };
+
+      const loadGitHubStatus = async () => {
+        const base = `https://api.github.com/repos/${repository}/issues?state=all&per_page=100&sort=created&direction=desc`;
+        const responses = await Promise.all([
+          fetch(`${base}&page=1`, { cache: 'no-cache' }),
+          fetch(`${base}&page=2`, { cache: 'no-cache' }),
+        ]);
+        if (responses.some((response) => !response.ok)) throw new Error('GitHub svarade inte med en giltig status.');
+        const pages = await Promise.all(responses.map(async (response) => await response.json() as GitHubRoadmapItem[]));
+        const items = pages.flat();
+        issueMap.clear();
+        for (const item of items) issueMap.set(item.number, item);
+        updatePhases();
+        updateCurrentState(items);
+        updateNextSteps();
+        setLiveState('live', 'Live från GitHub');
+        const updatedAt = document.getElementById('updated-at');
+        if (updatedAt) {
+          updatedAt.textContent = `Senast uppdaterad ${new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())}. Uppdatera sidan för att hämta nytt läge.`;
+        }
+      };
+
+      loadGitHubStatus().catch(() => {
+        updateCurrentState(null);
+        setLiveState('fallback', 'GitHub kunde inte nås');
+        const updatedAt = document.getElementById('updated-at');
+        if (updatedAt) updatedAt.textContent = 'Live-status kunde inte hämtas. Den versionerade fallbacken från repot visas i stället.';
+      });
+
+      const themeButton = document.getElementById('theme-toggle');
+      themeButton?.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = nextTheme;
+        localStorage.setItem('egenkontroll:homepage-theme', nextTheme);
+      });
     </script>
   </body>
 </html>
@@ -475,6 +502,7 @@ const currentPhase = internalRoadmap.phases.find((phase) => phase.id === interna
 
   .metric-grid, .built-grid, .after-grid, .destination-checks { display: grid; gap: var(--ds-space-3); }
   .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .metric-grid[data-blocker-visible='false'] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metric-card {
     min-width: 0;
     display: grid;
@@ -484,6 +512,7 @@ const currentPhase = internalRoadmap.phases.find((phase) => phase.id === interna
     border-radius: var(--ds-radius-lg);
     background: var(--ds-surface);
   }
+  .metric-card[hidden] { display: none; }
   .metric-card > span, .metric-card small { color: var(--ds-text-secondary); }
   .metric-card strong { font-size: var(--ds-font-size-xl); overflow-wrap: anywhere; }
   .updated-at, .duration-note { margin: var(--ds-space-3) 0 0; color: var(--ds-text-secondary); font-size: var(--ds-font-size-sm); }
@@ -605,7 +634,7 @@ const currentPhase = internalRoadmap.phases.find((phase) => phase.id === interna
   .next-steps p { margin: var(--ds-space-1) 0 0; color: var(--ds-text-secondary); }
 
   @media (max-width: 760px) {
-    .metric-grid, .after-grid { grid-template-columns: 1fr; }
+    .metric-grid, .metric-grid[data-blocker-visible='false'], .after-grid { grid-template-columns: 1fr; }
     .section-heading { align-items: flex-start; flex-direction: column; }
     .section-note { text-align: left; }
   }
