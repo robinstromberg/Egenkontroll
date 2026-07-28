@@ -159,7 +159,7 @@ export const internalRoadmap = {
       },
       points: [
         'Omfattar inventering, klassificering, migrering och faktagranskning av legacy-innehåll.',
-        'Migrationsbatcherna använder den gemensamma artikelmodellen och webbens visuella guardrails.',
+        'Webbguardrailen i #353 är den stabila ramen för migrationsbatchernas visuella implementation.',
       ],
     },
     {
