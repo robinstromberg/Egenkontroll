@@ -3,6 +3,8 @@ export type InternalRoadmapPhase = {
   title: string;
   summary: string;
   issueNumbers?: readonly number[];
+  coordinatingIssueNumbers?: readonly number[];
+  implementationStages?: readonly (readonly number[])[];
   blockedByIssueNumbers?: readonly number[];
   fixedCompletion?: 'complete';
   planned?: boolean;
@@ -152,13 +154,16 @@ export const internalRoadmap = {
       id: 'phase-7',
       title: 'Fas 7 – Innehållsmigration',
       summary: 'Befintligt innehåll flyttas successivt till rätt nya sidmallar och struktur.',
-      issueNumbers: [315, 320, 321, 322, 323, 324],
+      issueNumbers: [315, 320, 370, 371, 372, 373, 374, 321, 322, 323, 324],
+      coordinatingIssueNumbers: [315, 320],
+      implementationStages: [[370], [371], [372, 373], [374]],
       blockedByIssueNumbers: [353],
       duration: {
         start: '2026-07-19T09:25:30Z',
       },
       points: [
-        'Omfattar inventering, klassificering, migrering och faktagranskning av legacy-innehåll.',
+        'Huvud- och klusterissues samordnar migrationen men väljs inte som implementerbara arbetssteg.',
+        'Det aktuella klustret genomförs i fyra steg: källkontrakt, ämnesnav, två parallellt möjliga innehållsbatcher och slutlig QA.',
         'Webbguardrailen i #353 är den stabila ramen för migrationsbatchernas visuella implementation.',
       ],
     },
@@ -176,6 +181,13 @@ export const internalRoadmap = {
     },
   ] as readonly InternalRoadmapPhase[],
   relatedTracks: [
+    {
+      id: 'seo-ownership',
+      title: 'Entydigt ägarskap för publikt SEO-innehåll',
+      description: 'Roadmaprelaterad uppföljning som ska vara genomförd före migrationshuvudspårets slutliga stängning.',
+      issueNumber: 375,
+      kind: 'roadmap-follow-up',
+    },
     {
       id: 'web-visual-finalization',
       title: 'Slutgranskning av webbens visuella system',
