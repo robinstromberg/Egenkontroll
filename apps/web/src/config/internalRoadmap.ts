@@ -7,7 +7,6 @@ export type InternalRoadmapPhase = {
   status: InternalRoadmapPhaseStatus;
   statusLabel: string;
   issueNumbers?: readonly number[];
-  activeIssueNumber?: number;
   blockedByIssueNumbers?: readonly number[];
   duration?: {
     start: string;
@@ -125,7 +124,6 @@ export const internalRoadmap = {
       status: 'active',
       statusLabel: 'Pågår',
       issueNumbers: [347, 348, 349, 350, 351, 352],
-      activeIssueNumber: 350,
       blockedByIssueNumbers: [359],
       duration: {
         start: '2026-07-25T14:43:58Z',
@@ -200,9 +198,8 @@ export const internalRoadmap = {
   ],
   current: {
     phaseId: 'phase-5b',
-    activeIssueNumber: 350,
-    activePullRequestNumber: 360,
-    blockerIssueNumbers: [359],
+    fallbackActiveIssueNumber: 352,
+    fallbackActiveIssueTitle: 'Slutför appens visuella guardrails, dokumentation och kvalitetssäkring',
   },
   nextSteps: [
     { issueNumber: 359, text: 'Lösa eller avgränsa Safe Browsing-problemet för säker produktägar-QA.' },
