@@ -58,7 +58,7 @@ button:disabled {
   opacity: 0.72;
 }
 
-:where(a, button, input, textarea, select):focus-visible {
+:where(a, button, input, textarea, select, [role='button']):focus-visible {
   outline: 3px solid var(--ds-focus);
   outline-offset: 3px;
 }
@@ -100,7 +100,6 @@ button:disabled {
 
 .hero-card,
 .status-panel,
-.module-card,
 .auth-card,
 .dashboard-card,
 .role-panel {
@@ -297,34 +296,6 @@ h3 {
   line-height: 1.55;
 }
 
-.check-list {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.check-list li {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  color: var(--ds-text);
-}
-
-.check-list li::before {
-  content: "✓";
-  display: grid;
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
-  place-items: center;
-  border-radius: 999px;
-  color: var(--ds-status-success-fg);
-  background: var(--ds-status-success-bg);
-  font-weight: 800;
-}
-
 .form-stack {
   display: grid;
   gap: 10px;
@@ -490,21 +461,6 @@ input.text-input[type="date"]::-webkit-calendar-picker-indicator {
   background: var(--ds-status-danger-bg);
 }
 
-.module-grid {
-  display: grid;
-  gap: 14px;
-}
-
-.module-card {
-  padding: 20px;
-}
-
-.module-card p {
-  margin-bottom: 0;
-  color: var(--ds-text-secondary);
-  line-height: 1.55;
-}
-
 section + section {
   margin-top: 28px;
 }
@@ -536,9 +492,6 @@ section + section {
     padding: 32px;
   }
 
-  .module-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
 }
 
 @media (max-width: 560px) {

@@ -3,6 +3,7 @@ import { Alert, Badge, Button, Card, Field, LinkButton, SearchField, TextField }
 import { getAppThemeRuntime, type ThemePreference } from '../theme/appTheme';
 import {
   AppIconButton,
+  AppNavButton,
   AppSectionCard,
   AppStatusIndicator,
   AppSurface,
@@ -20,6 +21,7 @@ export function DesignSystemShowcase() {
   const themeRuntime = getAppThemeRuntime();
   const [themeState, setThemeState] = useState(() => themeRuntime.getState());
   const [searchMessage, setSearchMessage] = useState('');
+  const [showAssertiveAlert, setShowAssertiveAlert] = useState(false);
   const [showcaseView, setShowcaseView] = useState<AppView>('today');
 
   useEffect(() => themeRuntime.subscribe(setThemeState), [themeRuntime]);
@@ -59,6 +61,9 @@ export function DesignSystemShowcase() {
               <Button disabled>Inaktiverad</Button>
               <Button loading loadingText="Sparar...">Spara</Button>
               <LinkButton href="#falt">Länkhandling</LinkButton>
+              <LinkButton href="#falt" variant="secondary">Sekundär länk</LinkButton>
+              <LinkButton href="#falt" variant="ghost">Diskret länk</LinkButton>
+              <LinkButton disabled href="#falt">Inaktiverad länk</LinkButton>
             </div>
             <div className="ds-showcase__badges" aria-label="Statusexempel">
               <Badge tone="success">Klar</Badge>
@@ -70,20 +75,46 @@ export function DesignSystemShowcase() {
             <Alert tone="warning" title="Kontrollera före användning">Anpassa alltid rutinen till verksamheten.</Alert>
             <Alert tone="danger" title="Åtgärd krävs">Beskriv åtgärden innan kontrollen sparas.</Alert>
             <Alert title="Information">Detta är ett neutralt meddelande.</Alert>
+            <Button variant="secondary" onClick={() => setShowAssertiveAlert((visible) => !visible)}>
+              {showAssertiveAlert ? 'Dölj blockerande fel' : 'Visa blockerande fel'}
+            </Button>
+            {showAssertiveAlert ? (
+              <Alert live="assertive" tone="danger" title="Blockerande fel">
+                Assertive live-region visas först efter en avsiktlig handling.
+              </Alert>
+            ) : null}
           </Card>
 
           <Card className="ds-showcase__card" id="falt">
             <h2>Fält och återkoppling</h2>
+            <Field id="showcase-default" label="Valfritt fält">
+              {(controlProps) => <TextField {...controlProps} placeholder="Standardläge" />}
+            </Field>
             <Field id="showcase-name" label="Verksamhetens namn" hint="Använd namnet som personalen känner igen." required>
               {(controlProps) => <TextField {...controlProps} placeholder="Exempel Café Eken" />}
             </Field>
             <Field id="showcase-temperature" label="Kontrollvärde" error="Ange ett värde i grader, till exempel 6,8.">
               {(controlProps) => <TextField {...controlProps} inputMode="decimal" placeholder="6,8" />}
             </Field>
+            <Field id="showcase-invalid" label="Explicit ogiltigt fält">
+              {(controlProps) => <TextField {...controlProps} defaultValue="Felaktigt värde" invalid />}
+            </Field>
+            <Field id="showcase-disabled" label="Inaktiverat fält">
+              {(controlProps) => <TextField {...controlProps} defaultValue="Kan inte ändras" disabled />}
+            </Field>
+            <Field id="showcase-readonly" label="Skrivskyddat fält">
+              {(controlProps) => <TextField {...controlProps} defaultValue="Visas utan redigering" readOnly />}
+            </Field>
             <SearchField
               label="Sök i vägledning"
               placeholder="Sök i mallar och checklistor"
               onSearch={(value) => setSearchMessage(value ? `Sökningen “${value}” är bara ett showcase-exempel.` : 'Skriv en sökfras för att prova sökfältet.')}
+            />
+            <SearchField
+              disabled
+              label="Inaktiverad sökning"
+              placeholder="Sökning är inte tillgänglig"
+              onSearch={() => undefined}
             />
             {searchMessage ? <Alert live="polite" title="Sökfält" tone="neutral">{searchMessage}</Alert> : null}
           </Card>
@@ -95,11 +126,13 @@ export function DesignSystemShowcase() {
                 <h2>Återkommande produktmönster</h2>
               </div>
               <AppIconButton aria-label="Fler alternativ"><span aria-hidden="true">•••</span></AppIconButton>
+              <AppIconButton aria-label="Inaktiverade alternativ" disabled><span aria-hidden="true">•••</span></AppIconButton>
             </div>
             <div className="ds-showcase__badges">
               <AppStatusIndicator tone="success">Klar</AppStatusIndicator>
               <AppStatusIndicator tone="warning">Behöver kontrolleras</AppStatusIndicator>
               <AppStatusIndicator tone="danger">Avvikelse</AppStatusIndicator>
+              <AppStatusIndicator>Planerad</AppStatusIndicator>
             </div>
             <AppSectionCard>
               <strong>Temperaturkontroll</strong>
@@ -107,6 +140,7 @@ export function DesignSystemShowcase() {
             </AppSectionCard>
             <div className="ds-showcase__app-nav">
               <AppBottomNav activeView={showcaseView} onChangeView={setShowcaseView} />
+              <AppNavButton disabled>Inaktiverad navigation</AppNavButton>
             </div>
           </AppSurface>
         </div>

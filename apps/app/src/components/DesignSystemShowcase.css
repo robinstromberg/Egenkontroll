@@ -30,6 +30,7 @@
 .ds-showcase__app-heading h2,
 .ds-showcase__app-heading p { margin: 0; }
 .ds-showcase__app-heading p { color: var(--ds-action-primary); font-size: var(--ds-font-size-sm); font-weight: 750; text-transform: uppercase; }
+.ds-showcase__app-nav { display: grid; gap: var(--ds-space-3); }
 .ds-showcase__app-nav .bottom-bar { position: static; width: 100%; margin: 0; }
 
 @media (max-width: 680px) {

@@ -33,7 +33,7 @@ function stripHtmlEntities(source: string) {
 }
 
 test('review and sharing product CSS uses semantic tokens with narrow static exceptions', async () => {
-  for (const cssFile of ['HistoryView.css', 'KpiView.css', 'ReportTools.css']) {
+  for (const cssFile of ['HistoryView.css', 'KpiView.css']) {
     const source = await readComponentFile(cssFile);
     assert.match(source, /var\(--ds-/);
     assert.doesNotMatch(source, rawColorPattern, `${cssFile} innehåller en rå färg`);

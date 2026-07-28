@@ -22,8 +22,7 @@
 
 .sharing-form,
 .quick-share-card,
-.share-list,
-.share-result {
+.share-list {
   display: grid;
   gap: 11px;
 }

@@ -14,11 +14,6 @@
   box-shadow: var(--ds-shadow-md);
 }
 
-.inspector-list {
-  display: grid;
-  gap: 10px;
-}
-
 .inspector-content {
   display: grid;
   gap: 14px;
@@ -179,15 +174,6 @@
 .inspector-type-mark.round {
   color: var(--ds-action-primary);
   background: var(--ds-action-secondary);
-}
-
-.inspector-row {
-  display: grid;
-  gap: 14px;
-  border: 1px solid var(--ds-border);
-  border-radius: 18px;
-  padding: 14px;
-  background: var(--ds-surface-subtle);
 }
 
 .inspector-report-panel {

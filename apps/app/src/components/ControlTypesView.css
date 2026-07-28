@@ -156,11 +156,6 @@
   padding: 9px 12px;
 }
 
-.control-type-edit-form {
-  display: grid;
-  gap: 10px;
-}
-
 .control-type-create-card {
   display: grid;
   gap: 10px;
@@ -171,7 +166,6 @@
   box-shadow: var(--ds-shadow-sm);
 }
 
-.control-type-edit-form label,
 .control-type-create-card label {
   display: grid;
   gap: 6px;

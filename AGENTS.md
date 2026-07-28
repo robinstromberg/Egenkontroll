@@ -102,8 +102,11 @@ Service role-nycklar får aldrig in i frontend, repo, issues eller logs. Secrets
 - Läs `docs/strategy/VISUAL_SYSTEM_PLAN.md` före varje ändring av appens tema, visuella system, komponentutseende, brandassets, UI-ikoner, metadata eller rapportutseende. Dokumentet är bindande tillsammans med den aktuella issuen.
 - Använd semantiska tokens från `packages/design-system/theme-contract.json` via genererade `--ds-*`-variabler. Skapa inte nya lokala light-/dark-paletter eller råa temafärger i appkomponenter.
 - Använd `@min-egenkontroll/brand` för brandassets. Lägg inte in nya råa `/brand/...`-paths i komponenter, CSS eller rapportkod.
+- Använd UI-ikonregistryn i `apps/app/src/config/assets.ts`; lägg inte in råa `/ui-icons/...`-paths utanför registryn. Varje ikon ska ha verifierat exakt filnamn/skiftläge och en begriplig textfallback.
+- Nya råa färger, lokala tema-/tokenpaletter och assetpaths är förbjudna utanför den centrala, exakt baselinade allowlisten i `scripts/contracts/app-visual-allowlist.json`. Nya undantag kräver en dokumenterad teknisk motivering och riktad kontraktsverifiering; skapa inte lokala allowlists.
 - Generella UI-primitiver hör hemma i `packages/design-system`. Appspecifica kompositioner får ligga i `apps/app`, ska bygga på de generella primitiverna när beteendet passar och ska endast använda semantiska tokens.
 - Appens temakontrakt är `system | light | dark`: system är standard och explicit light/dark appliceras på dokumentroten före första rendering. Bygg inte en ny temaväljare i produkt-UI utan en separat beslutad issue.
+- Kör `npm run contracts` för varje ändring av appens visuella system. Nya eller ombyggda appvyer ska dessutom verifieras i light, dark och system vid 320 px och relevant desktopbredd, med tangentbord, synligt fokus, kontrast och reduced motion enligt `apps/app/src/theme/QA_MATRIX.md`.
 - Visuella migreringar får inte samtidigt ändra routing, auth, sessioner, behörigheter, affärslogik, datamodell, sparning, navigation eller flödesordning. Sådana ändringar ska separeras till egen issue och verifiering.
 
 ## Publikt innehåll och URL:er
