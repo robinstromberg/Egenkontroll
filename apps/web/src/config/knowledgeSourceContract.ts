@@ -29,6 +29,39 @@ export type KnowledgeDisclaimer = {
 };
 
 export const knowledgeSources = {
+  'kontrollwiki:341': {
+    id: 'kontrollwiki:341',
+    label: 'Livsmedelsverkets Kontrollwiki: Avfall',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/341/avfall',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-18',
+    accessedAt: '2026-07-18',
+    relevantSections: ['Artikelhuvud', 'Lagstiftningsavsnitt'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel VI',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
+  'kontrollwiki:342': {
+    id: 'kontrollwiki:342',
+    label: 'Livsmedelsverkets Kontrollwiki: Hantering och förvaring',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/342/hantering-och-forvaring',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-18',
+    accessedAt: '2026-07-18',
+    relevantSections: ['Hantering, lagring och transport', 'Tips på kontroll'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel IX',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
+  'kontrollwiki:343': {
+    id: 'kontrollwiki:343',
+    label: 'Livsmedelsverkets Kontrollwiki: Lokaler och utrustning',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/343/lokaler-och-utrustning',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-18',
+    accessedAt: '2026-07-18',
+    relevantSections: ['Artikelhuvud', 'Lokaler', 'Utrustning'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel I, II och V',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
   'kontrollwiki:345': {
     id: 'kontrollwiki:345',
     label: 'Livsmedelsverkets Kontrollwiki: Personlig hygien',
@@ -38,6 +71,72 @@ export const knowledgeSources = {
     accessedAt: '2026-07-18',
     relevantSections: ['Artikelhuvud', 'Tips på kontroll'],
     legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel VIII',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
+  'kontrollwiki:346': {
+    id: 'kontrollwiki:346',
+    label: 'Livsmedelsverkets Kontrollwiki: Rengöring',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/346/rengoring',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-18',
+    accessedAt: '2026-07-18',
+    relevantSections: ['Artikelhuvud'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel I, II och V',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
+  'kontrollwiki:348': {
+    id: 'kontrollwiki:348',
+    label: 'Livsmedelsverkets Kontrollwiki: Skadedjursbekämpning',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/348/skadedjursbekampning',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-18',
+    accessedAt: '2026-07-18',
+    relevantSections: ['Artikelhuvud'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel IX',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
+  'kontrollwiki:349': {
+    id: 'kontrollwiki:349',
+    label: 'Livsmedelsverkets Kontrollwiki: Temperatur',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/349/temperatur',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-18',
+    accessedAt: '2026-07-18',
+    relevantSections: ['Artikelhuvud'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel IX',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
+  'kontrollwiki:350': {
+    id: 'kontrollwiki:350',
+    label: 'Livsmedelsverkets Kontrollwiki: Transport',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/350/transport',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-18',
+    accessedAt: '2026-07-18',
+    relevantSections: ['Artikelhuvud', 'Lagstiftningsavsnitt'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel IV',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
+  'kontrollwiki:351': {
+    id: 'kontrollwiki:351',
+    label: 'Livsmedelsverkets Kontrollwiki: Utbildning',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/351/utbildning',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-18',
+    accessedAt: '2026-07-18',
+    relevantSections: ['Artikelhuvud', 'Lagstiftningsavsnitt'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel XII',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
+  'kontrollwiki:352': {
+    id: 'kontrollwiki:352',
+    label: 'Livsmedelsverkets Kontrollwiki: Vattenförsörjning',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/352/vattenforsorjning',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-18',
+    accessedAt: '2026-07-18',
+    relevantSections: ['Artikelhuvud', 'Lagstiftningsavsnitt'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II kapitel VII',
     limitationId: 'disclaimer:kontrollwiki-guidance:v1',
   },
 } as const satisfies Record<string, KnowledgeSourceRecord>;
@@ -309,22 +408,28 @@ export function getKnowledgeSourceIdsForBlock(
   return block ? unique(sourceIdsFromBlock(block)) as KnowledgeSourceId[] : [];
 }
 
-export function projectKnowledgeSource(sourceId: KnowledgeSourceId): {
+export type KnowledgeSourcePresentation = {
+  id: KnowledgeSourceId;
   label: string;
   url: string;
   type: KnowledgeSourceType;
   factCheckedAt: string;
+  accessedAt: string;
   relevantSections: readonly string[];
   legalReference: string;
   limitation: string;
-} {
+};
+
+export function projectKnowledgeSource(sourceId: KnowledgeSourceId): KnowledgeSourcePresentation {
   const source = knowledgeSources[sourceId];
   const limitation = source.limitationId ? knowledgeDisclaimers[source.limitationId].text : '';
   return {
+    id: source.id,
     label: source.label,
     url: source.url,
     type: source.type,
     factCheckedAt: source.factCheckedAt,
+    accessedAt: source.accessedAt,
     relevantSections: source.relevantSections,
     legalReference: source.legalReference ?? '',
     limitation,

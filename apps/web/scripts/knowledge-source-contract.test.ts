@@ -49,6 +49,11 @@ test('R10:s källprojection bevarar befintlig metadata och URL', () => {
 test('source-impact-index listar artikel och materiella block per källa', () => {
   const impact = getKnowledgeSourceImpact(migratedKnowledgeArticleSourceImpactIndex, 'kontrollwiki:345');
   assert.deepEqual(impact, [{
+    articleId: 'seo-hygien-och-daglig-drift',
+    canonicalPath: '/seo/hygien-och-daglig-drift.html',
+    blockIds: ['personlig-hygien-i-driften'],
+    claimIds: [],
+  }, {
     articleId: 'seo-personlig-hygien-livsmedel',
     canonicalPath: '/seo/personlig-hygien-livsmedel.html',
     blockIds: ['exempel-pa-kontrollfragor', 'krav-pa-personlig-hygien', 'verksamhetens-rutiner'],
@@ -56,6 +61,25 @@ test('source-impact-index listar artikel och materiella block per källa', () =>
   }]);
   assert.deepEqual(getKnowledgeSourceIdsForBlock(r10, 'exempel-pa-kontrollfragor'), ['kontrollwiki:345']);
   assert.deepEqual(getKnowledgeSourceIdsForBlock(r10, 'skillnaden-mellan-krav-och-exempel'), []);
+});
+
+test('R02, R03, R04 och R08 har rätt källmängd och moderna breadcrumbs', () => {
+  const articles = migratedKnowledgeArticles.filter((article) => article.id !== r10.id);
+  assert.deepEqual(articles.map((article) => article.canonicalPath), [
+    '/seo/grundforutsattningar-livsmedel.html',
+    '/seo/hantering-och-forvaring-livsmedel.html',
+    '/seo/hygien-och-daglig-drift.html',
+    '/seo/lokaler-och-utrustning-livsmedel.html',
+  ]);
+  assert.deepEqual(articles.map((article) => article.sourceIds), [
+    ['kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'],
+    ['kontrollwiki:342'],
+    ['kontrollwiki:345', 'kontrollwiki:346', 'kontrollwiki:348', 'kontrollwiki:349'],
+    ['kontrollwiki:343'],
+  ]);
+  for (const article of articles) assert.equal(article.breadcrumb[0]?.href, '/kunskapsbank');
+  assert.equal(migratedKnowledgeArticles.find((article) => article.id === 'seo-grundforutsattningar-livsmedel')?.sources.length, 5);
+  assert.equal(migratedKnowledgeArticles.find((article) => article.id === 'seo-hygien-och-daglig-drift')?.sources.length, 4);
 });
 
 test('källmetadata, språkpolicy och AI-tolkning är separata kontrakt', () => {
