@@ -22,6 +22,7 @@ function readTheme(): Theme {
 }
 
 function applyTheme(theme: Theme) {
+  document.documentElement.setAttribute('data-theme', theme);
   document.querySelector<HTMLElement>('[data-public-site-root]')?.setAttribute('data-theme', theme);
 }
 
