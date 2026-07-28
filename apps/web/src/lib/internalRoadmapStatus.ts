@@ -18,6 +18,8 @@ export type RoadmapPhaseInput = {
   title: string;
   summary: string;
   issueNumbers?: readonly number[];
+  coordinatingIssueNumbers?: readonly number[];
+  implementationStages?: readonly (readonly number[])[];
   blockedByIssueNumbers?: readonly number[];
   fixedCompletion?: 'complete';
   planned?: boolean;
@@ -49,7 +51,9 @@ export type ResolvedRoadmapPhase = {
   status: RoadmapPhaseStatus;
   statusLabel: string;
   activeIssues: readonly ResolvedRoadmapIssue[];
-  openIssueNumbers: readonly number[];
+  openImplementationIssueNumbers: readonly number[];
+  readyIssueNumbers: readonly number[];
+  openCoordinatingIssueNumbers: readonly number[];
   openBlockers: readonly ResolvedRoadmapIssue[];
   completedAt: string | null;
 };
@@ -182,6 +186,10 @@ function resolveIssue(
   };
 }
 
+function uniqueNumbers(numbers: readonly number[]): readonly number[] {
+  return [...new Set(numbers)];
+}
+
 function uniqueIssues(issues: readonly ResolvedRoadmapIssue[]): readonly ResolvedRoadmapIssue[] {
   const seen = new Set<number>();
   return issues.filter((issue) => {
@@ -189,6 +197,49 @@ function uniqueIssues(issues: readonly ResolvedRoadmapIssue[]): readonly Resolve
     seen.add(issue.number);
     return true;
   });
+}
+
+function phaseTrackedIssueNumbers(phase: RoadmapPhaseInput): readonly number[] {
+  return uniqueNumbers([
+    ...(phase.issueNumbers ?? []),
+    ...(phase.coordinatingIssueNumbers ?? []),
+    ...(phase.implementationStages ?? []).flat(),
+  ]);
+}
+
+function phaseImplementationIssueNumbers(phase: RoadmapPhaseInput): readonly number[] {
+  const coordinators = new Set(phase.coordinatingIssueNumbers ?? []);
+  const staged = uniqueNumbers((phase.implementationStages ?? []).flat());
+  const stagedSet = new Set(staged);
+  const ungrouped = (phase.issueNumbers ?? []).filter(
+    (number) => !coordinators.has(number) && !stagedSet.has(number),
+  );
+  return [...staged, ...ungrouped];
+}
+
+function readyImplementationIssueNumbers(
+  phase: RoadmapPhaseInput,
+  issueMap: ReadonlyMap<number, GitHubRoadmapItem>,
+): readonly number[] {
+  const stages = phase.implementationStages ?? [];
+  for (let index = 0; index < stages.length; index += 1) {
+    const previousNumbers = stages.slice(0, index).flat();
+    if (!previousNumbers.every((number) => issueMap.get(number)?.state === 'closed')) return [];
+
+    const stage = stages[index];
+    const openStageIssues = stage.filter((number) => issueMap.get(number)?.state === 'open');
+    if (openStageIssues.length > 0) return openStageIssues;
+
+    if (!stage.every((number) => issueMap.get(number)?.state === 'closed')) return [];
+  }
+
+  const staged = new Set(stages.flat());
+  const coordinators = new Set(phase.coordinatingIssueNumbers ?? []);
+  return (phase.issueNumbers ?? []).filter(
+    (number) => !coordinators.has(number)
+      && !staged.has(number)
+      && issueMap.get(number)?.state === 'open',
+  );
 }
 
 function phaseStatusLabel(status: RoadmapPhaseStatus): string {
@@ -208,7 +259,7 @@ export function collectRequiredIssueNumbers(
 ): readonly number[] {
   const numbers = new Set<number>();
   for (const phase of phases) {
-    for (const number of phase.issueNumbers ?? []) numbers.add(number);
+    for (const number of phaseTrackedIssueNumbers(phase)) numbers.add(number);
     for (const number of phase.blockedByIssueNumbers ?? []) numbers.add(number);
   }
   for (const track of tracks) {
@@ -251,7 +302,9 @@ export function resolveRoadmapDisplay({
         status: 'complete',
         statusLabel: phaseStatusLabel('complete'),
         activeIssues: [],
-        openIssueNumbers: [],
+        openImplementationIssueNumbers: [],
+        readyIssueNumbers: [],
+        openCoordinatingIssueNumbers: [],
         openBlockers: [],
         completedAt: null,
       };
@@ -264,28 +317,41 @@ export function resolveRoadmapDisplay({
         status: 'future',
         statusLabel: phaseStatusLabel('future'),
         activeIssues: [],
-        openIssueNumbers: [],
+        openImplementationIssueNumbers: [],
+        readyIssueNumbers: [],
+        openCoordinatingIssueNumbers: [],
         openBlockers: [],
         completedAt: null,
       };
     }
 
-    const issueNumbers = phase.issueNumbers ?? [];
+    const trackedIssueNumbers = phaseTrackedIssueNumbers(phase);
+    const implementationIssueNumbers = phaseImplementationIssueNumbers(phase);
+    const coordinatorNumbers = phase.coordinatingIssueNumbers ?? [];
     const blockerNumbers = phase.blockedByIssueNumbers ?? [];
-    const phaseMissing = [...issueNumbers, ...blockerNumbers].some((number) => !issueMap.has(number));
-    const openIssues = issueNumbers
+    const phaseMissing = [...trackedIssueNumbers, ...blockerNumbers].some((number) => !issueMap.has(number));
+    const openTrackedIssues = trackedIssueNumbers
       .map((number) => issueMap.get(number))
       .filter((item): item is GitHubRoadmapItem => item?.state === 'open');
-    const activeIssues = openIssues
-      .map((item) => resolveIssue(repository, item.number, issueMap, pullRequests))
+    const openImplementationIssueNumbers = implementationIssueNumbers.filter(
+      (number) => issueMap.get(number)?.state === 'open',
+    );
+    const openCoordinatingIssueNumbers = coordinatorNumbers.filter(
+      (number) => issueMap.get(number)?.state === 'open',
+    );
+    const activeIssues = openImplementationIssueNumbers
+      .map((number) => resolveIssue(repository, number, issueMap, pullRequests))
       .filter((item): item is ResolvedRoadmapIssue => item?.activityEvidence !== null);
     const openBlockers = blockerNumbers
       .map((number) => resolveIssue(repository, number, issueMap, pullRequests))
       .filter((item): item is ResolvedRoadmapIssue => item !== null);
-    const allClosed = issueNumbers.length > 0
-      && issueNumbers.every((number) => issueMap.get(number)?.state === 'closed');
+    const readyIssueNumbers = openBlockers.length > 0
+      ? []
+      : readyImplementationIssueNumbers(phase, issueMap);
+    const allClosed = trackedIssueNumbers.length > 0
+      && trackedIssueNumbers.every((number) => issueMap.get(number)?.state === 'closed');
     const completedAt = allClosed
-      ? issueNumbers
+      ? trackedIssueNumbers
           .map((number) => issueMap.get(number)?.closed_at ?? null)
           .filter((value): value is string => Boolean(value))
           .sort()
@@ -297,17 +363,23 @@ export function resolveRoadmapDisplay({
     else if (allClosed) status = 'complete';
     else if (activeIssues.length > 0) status = 'active';
     else if (openBlockers.length > 0) status = 'blocked';
-    else if (openIssues.length > 0) status = 'ready';
+    else if (readyIssueNumbers.length > 0 || openTrackedIssues.length > 0) status = 'ready';
     else status = 'unknown';
+
+    const onlyCoordinationRemains = readyIssueNumbers.length === 0
+      && openImplementationIssueNumbers.length === 0
+      && openCoordinatingIssueNumbers.length > 0;
 
     return {
       id: phase.id,
       title: phase.title,
       summary: phase.summary,
       status,
-      statusLabel: phaseStatusLabel(status),
+      statusLabel: onlyCoordinationRemains ? 'Samordning återstår' : phaseStatusLabel(status),
       activeIssues,
-      openIssueNumbers: openIssues.map((item) => item.number),
+      openImplementationIssueNumbers,
+      readyIssueNumbers,
+      openCoordinatingIssueNumbers,
       openBlockers,
       completedAt,
     };
@@ -365,7 +437,7 @@ export function resolveRoadmapDisplay({
   let nextReady: ResolvedRoadmapIssue | null = null;
   for (const phase of mainPhaseOrder) {
     if (phase.status === 'blocked' || phase.status === 'unknown' || phase.status === 'future') continue;
-    const candidateNumber = phase.openIssueNumbers.find(
+    const candidateNumber = phase.readyIssueNumbers.find(
       (number) => !phase.activeIssues.some((active) => active.number === number),
     );
     if (candidateNumber !== undefined) {
@@ -416,7 +488,7 @@ export function resolveRoadmapDisplay({
   };
   for (const phase of mainPhaseOrder) {
     if (phase.status === 'blocked' || phase.status === 'unknown' || phase.status === 'future') continue;
-    for (const number of phase.openIssueNumbers) {
+    for (const number of phase.readyIssueNumbers) {
       pushIssue(resolveIssue(repository, number, issueMap, pullRequests));
     }
   }
@@ -424,12 +496,9 @@ export function resolveRoadmapDisplay({
     const mainIndex = resolvedPhases.findIndex((phase) => phase.id === mainTrack.phaseIds[0]);
     const nextPhase = resolvedPhases.slice(mainIndex + 1).find((phase) => phase.status === 'ready');
     if (nextPhase) {
-      for (const number of nextPhase.openIssueNumbers) pushIssue(resolveIssue(repository, number, issueMap, pullRequests));
-    }
-  }
-  if (nextSteps.length < 3) {
-    for (const track of relatedTracks.filter((item) => item.kind === 'roadmap-follow-up' && item.status === 'ready')) {
-      pushIssue(track.issue);
+      for (const number of nextPhase.readyIssueNumbers) {
+        pushIssue(resolveIssue(repository, number, issueMap, pullRequests));
+      }
     }
   }
 
