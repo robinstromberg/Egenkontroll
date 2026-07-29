@@ -192,9 +192,10 @@ const grunnforutsattningarArticle: MigratedKnowledgeArticleDefinition = {
       sourceIds: ['kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'],
       classificationLabel: 'Myndighetsvägledning',
       id: 'varfor-grundforutsattningar',
-      title: 'Vad betyder grundförutsättningar?',
+      title: 'Grundförutsättningar inom livsmedelshygien',
       paragraphs: [
-        'Kontrollwiki behandlar bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning som grundförutsättningar inom livsmedelshygien.',
+        '”Grundförutsättningar” är en etablerad fackterm inom livsmedelshygien. Den omfattar de krav, åtgärder och villkor som behöver vara på plats för att livsmedel ska kunna hanteras säkert. Kontrollwiki behandlar grundförutsättningar som ett eget hygienområde vid sidan av HACCP-baserade förfaranden.',
+        'Det gäller bland annat verksamhetens struktur, drift, hygien, lagring och transport. Rutiner och kontroller används för att säkerställa att grundförutsättningarna fungerar i praktiken.',
       ],
     },
     {

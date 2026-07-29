@@ -115,8 +115,10 @@ test('R02 förklarar grundförutsättningar med källspårad myndighetsvägledni
   assert.equal(context?.type === 'classified' ? context.classification : undefined, 'guidance');
   assert.equal(context?.material, true);
   assert.deepEqual(context?.sourceIds, expectedSourceIds);
+  assert.equal(context?.title, 'Grundförutsättningar inom livsmedelshygien');
   assert.deepEqual(context?.paragraphs, [
-    'Kontrollwiki behandlar bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning som grundförutsättningar inom livsmedelshygien.',
+    '”Grundförutsättningar” är en etablerad fackterm inom livsmedelshygien. Den omfattar de krav, åtgärder och villkor som behöver vara på plats för att livsmedel ska kunna hanteras säkert. Kontrollwiki behandlar grundförutsättningar som ett eget hygienområde vid sidan av HACCP-baserade förfaranden.',
+    'Det gäller bland annat verksamhetens struktur, drift, hygien, lagring och transport. Rutiner och kontroller används för att säkerställa att grundförutsättningarna fungerar i praktiken.',
   ]);
   assert.doesNotMatch(context?.paragraphs.join(' ') ?? '', /minskar riskerna|kontrollpunkt/i);
   for (const sourceId of expectedSourceIds) {
