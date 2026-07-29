@@ -58,15 +58,14 @@ function MigratedArticleBody({ content }: { content: MigratedKnowledgeArticleCon
         {content.sources.map((source) => <article className="fact-page__source-record" data-source-id={source.id} key={source.id}>
           <h3><a href={source.url}>{source.label}</a></h3>
           <dl>
-            <div><dt>Käll-ID</dt><dd>{source.id}</dd></div>
             <div><dt>Källtyp</dt><dd>{source.type}</dd></div>
             <div><dt>Faktagranskad</dt><dd><time dateTime={source.factCheckedAt}>{source.factCheckedAt}</time></dd></div>
             <div><dt>Åtkomstdatum</dt><dd><time dateTime={source.accessedAt}>{source.accessedAt}</time></dd></div>
             <div><dt>Kontrollerade avsnitt</dt><dd>{source.relevantSections.join(', ')}</dd></div>
             <div><dt>Rättslig hänvisning</dt><dd>{source.legalReference || 'Ingen separat rättsreferens angiven i källmatrisen.'}</dd></div>
           </dl>
-          <p>{source.limitation}</p>
         </article>)}
+        <p className="fact-page__source-disclaimer">{content.source.limitation}</p>
       </div>}
     </section>
     <section id="relaterat">

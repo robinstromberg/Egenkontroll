@@ -209,7 +209,19 @@ const grunnforutsattningarArticle: MigratedKnowledgeArticleDefinition = {
       id: 'varfor-grundforutsattningar',
       title: 'Varför är det här ett eget område?',
       paragraphs: [
-        'Grundförutsättningar minskar riskerna innan en enskild kontrollpunkt ens uppstår. Därför behöver de beskrivas som fungerande rutiner i verksamheten, inte bara som enstaka kryssrutor.',
+        'Grundförutsättningar minskar riskerna innan en enskild kontrollpunkt ens uppstår.',
+      ],
+    },
+    {
+      type: 'classified',
+      classification: 'recommendation',
+      material: false,
+      sourceIds: [],
+      classificationLabel: 'Min Egenkontrolls rekommendation',
+      id: 'rekommenderade-grundforutsattningar-rutiner',
+      title: 'Så kan ni beskriva grundförutsättningarna',
+      paragraphs: [
+        'Min Egenkontroll rekommenderar att de beskrivs som fungerande rutiner i verksamheten, inte bara som enstaka kryssrutor.',
       ],
     },
   ],
@@ -268,7 +280,19 @@ const hanteringForvaringArticle: MigratedKnowledgeArticleDefinition = {
       id: 'varfor-flera-rutiner-behovs',
       title: 'Varför behövs flera rutiner?',
       paragraphs: [
-        'Kontamination kan ske på olika sätt: genom mikroorganismer, allergener, kemikalier, smuts eller felaktig förvaring. Därför blir egenkontrollen tydligare när varje risk har en konkret kontrollpunkt och en tydlig åtgärd.',
+        'Kontamination kan ske på olika sätt: genom mikroorganismer, allergener, kemikalier, smuts eller felaktig förvaring.',
+      ],
+    },
+    {
+      type: 'classified',
+      classification: 'recommendation',
+      material: false,
+      sourceIds: [],
+      classificationLabel: 'Min Egenkontrolls rekommendation',
+      id: 'rekommenderad-struktur-for-kontroller',
+      title: 'Så kan ni göra egenkontrollen tydligare',
+      paragraphs: [
+        'Min Egenkontroll rekommenderar att varje risk får en konkret kontrollpunkt och en tydlig åtgärd.',
       ],
     },
   ],

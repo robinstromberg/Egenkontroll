@@ -63,7 +63,7 @@ export type WebRoute = {
   inSitemap: boolean;
   structuredData?: {
     kind: 'article';
-    citation: string;
+    citation: string | readonly string[];
     breadcrumb: readonly { label: string; href?: string }[];
   };
 };
@@ -84,6 +84,9 @@ function factPageRoute(
   content: FactPageContent | MigratedKnowledgeArticleContent,
   source: string,
 ): WebRoute {
+  const citationUrls = 'sources' in content
+    ? content.sources.map((articleSource) => articleSource.url)
+    : [content.source.url, ...(content.additionalSources ?? []).map((articleSource) => articleSource.url)];
   return modernRoute({
     path: content.canonicalPath,
     canonicalPath: content.canonicalPath,
@@ -95,7 +98,7 @@ function factPageRoute(
     shell: 'modern',
     shellClass: 'fact-page',
     source,
-    structuredData: { kind: 'article', citation: content.source.url, breadcrumb: content.breadcrumb },
+    structuredData: { kind: 'article', citation: citationUrls.length === 1 ? citationUrls[0] : citationUrls, breadcrumb: content.breadcrumb },
   });
 }
 
