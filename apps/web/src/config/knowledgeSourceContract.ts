@@ -29,6 +29,17 @@ export type KnowledgeDisclaimer = {
 };
 
 export const knowledgeSources = {
+  'kontrollwiki:246': {
+    id: 'kontrollwiki:246',
+    label: 'Livsmedelsverkets Kontrollwiki: Grundförutsättningar, hygien',
+    url: 'https://kontrollwiki.livsmedelsverket.se/artikel/246/j-grundforutsattningar-hygien',
+    type: 'myndighetsvägledning',
+    factCheckedAt: '2026-07-29',
+    accessedAt: '2026-07-29',
+    relevantSections: ['Hygien', 'Grundförutsättning eller HACCP', 'J02 - Utformning och underhåll av lokaler och utrustning', 'J03 - Hygien före, under och efter processen', 'J08 - Upprätthållande av kylkedjan och uppfyllande av temperaturkriterier'],
+    legalReference: 'Förordning (EG) nr 852/2004, bilaga II; förordning (EG) nr 853/2004',
+    limitationId: 'disclaimer:kontrollwiki-guidance:v1',
+  },
   'kontrollwiki:341': {
     id: 'kontrollwiki:341',
     label: 'Livsmedelsverkets Kontrollwiki: Avfall',

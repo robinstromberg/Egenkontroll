@@ -74,13 +74,13 @@ test('R02, R03, R04 och R08 har rätt källmängd och moderna breadcrumbs', () =
     '/seo/lokaler-och-utrustning-livsmedel.html',
   ]);
   assert.deepEqual(articles.map((article) => article.sourceIds), [
-    ['kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'],
+    ['kontrollwiki:246', 'kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'],
     ['kontrollwiki:342'],
     ['kontrollwiki:345', 'kontrollwiki:346', 'kontrollwiki:348', 'kontrollwiki:349'],
     ['kontrollwiki:343'],
   ]);
   for (const article of articles) assert.equal(article.breadcrumb[0]?.href, '/kunskapsbank');
-  assert.equal(migratedKnowledgeArticles.find((article) => article.id === 'seo-grundforutsattningar-livsmedel')?.sources.length, 5);
+  assert.equal(migratedKnowledgeArticles.find((article) => article.id === 'seo-grundforutsattningar-livsmedel')?.sources.length, 6);
   assert.equal(migratedKnowledgeArticles.find((article) => article.id === 'seo-hygien-och-daglig-drift')?.sources.length, 4);
 });
 
@@ -111,16 +111,16 @@ test('R02 förklarar grundförutsättningar med källspårad myndighetsvägledni
   const r02 = migratedKnowledgeArticleDefinitions.find((article) => article.id === 'seo-grundforutsattningar-livsmedel');
   if (!r02) throw new Error('R02 saknas.');
   const context = r02.blocks.find((block) => block.id === 'varfor-grundforutsattningar');
-  const expectedSourceIds = ['kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'];
+  const expectedSourceIds = ['kontrollwiki:246', 'kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'];
   assert.equal(context?.type === 'classified' ? context.classification : undefined, 'guidance');
   assert.equal(context?.material, true);
   assert.deepEqual(context?.sourceIds, expectedSourceIds);
   assert.equal(context?.title, 'Grundförutsättningar inom livsmedelshygien');
   assert.deepEqual(context?.paragraphs, [
-    '”Grundförutsättningar” är en etablerad fackterm inom livsmedelshygien. Den omfattar de krav, åtgärder och villkor som behöver vara på plats för att livsmedel ska kunna hanteras säkert. Kontrollwiki behandlar grundförutsättningar som ett eget hygienområde vid sidan av HACCP-baserade förfaranden.',
-    'Det gäller bland annat verksamhetens struktur, drift, hygien, lagring och transport. Rutiner och kontroller används för att säkerställa att grundförutsättningarna fungerar i praktiken.',
+    'Kontrollwiki beskriver grundförutsättningar som de åtgärder och villkor som behövs för att uppfylla kraven på livsmedelssäkerhet. De ger underlag för ett effektivt genomförande av HACCP.',
+    'Grundförutsättningarna omfattar krav på verksamhetens struktur, drift, hygien, lagring och transport. På den här sidan behandlas bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning.',
   ]);
-  assert.doesNotMatch(context?.paragraphs.join(' ') ?? '', /minskar riskerna|kontrollpunkt/i);
+  assert.doesNotMatch(context?.paragraphs.join(' ') ?? '', /rutiner och kontroller används|minskar riskerna|kontrollpunkt/i);
   for (const sourceId of expectedSourceIds) {
     assert.ok(getKnowledgeSourceImpact(migratedKnowledgeArticleSourceImpactIndex, sourceId).some((entry) =>
       entry.articleId === r02.id && entry.blockIds.includes('varfor-grundforutsattningar')),
@@ -148,6 +148,7 @@ test('Article JSON-LD citation följer alla registrerade artikelkällor', () => 
   const r04 = webMigratedKnowledgeArticleRoutes.find((route) => route.path === '/seo/hygien-och-daglig-drift.html');
   const r10 = webMigratedKnowledgeArticleRoutes.find((route) => route.path === '/seo/personlig-hygien-livsmedel.html');
   assert.deepEqual(r02?.structuredData?.citation, [
+    'https://kontrollwiki.livsmedelsverket.se/artikel/246/j-grundforutsattningar-hygien',
     'https://kontrollwiki.livsmedelsverket.se/artikel/341/avfall',
     'https://kontrollwiki.livsmedelsverket.se/artikel/343/lokaler-och-utrustning',
     'https://kontrollwiki.livsmedelsverket.se/artikel/350/transport',
