@@ -31,6 +31,7 @@
 .fact-page__content-block--fact-box { border-left-color: var(--ds-action-primary); background: var(--ds-surface-subtle); }
 .fact-page__content-block--requirement { border-left-color: var(--ds-action-primary); background: var(--ds-surface); }
 .fact-page__content-block--guidance { border-left-color: var(--ds-status-neutral-border); background: var(--ds-status-neutral-bg); }
+.fact-page__content-block--recommendation { border-left-color: var(--ds-highlight-border); background: var(--ds-highlight-surface); }
 .fact-page__content-block--example { border-left-color: var(--ds-status-warning-border); background: var(--ds-status-warning-bg); }
 .fact-page__content-block > p:last-child,
 .fact-page__content-block > ul:last-child { margin-bottom: 0; }
@@ -66,6 +67,19 @@
 .fact-page__source dl div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--ds-border); }
 .fact-page__source dt { font-weight: 800; }
 .fact-page__source dd { margin: 0; color: var(--ds-text-secondary); }
+.fact-page__source-records { display: grid; gap: var(--ds-space-5); }
+.fact-page__source-record { padding-top: var(--ds-space-5); border-top: 1px solid var(--ds-border); }
+.fact-page__source-record:first-child { padding-top: 0; border-top: 0; }
+.fact-page__source-record h3 { margin-bottom: var(--ds-space-3); }
+.fact-page__source-record dl { margin-top: var(--ds-space-3); }
+.fact-page__source-record p { margin-bottom: 0; }
+.fact-page__source-details { margin-top: var(--ds-space-3); }
+.fact-page__source-details summary { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); min-width: 0; color: var(--ds-text); cursor: pointer; font-size: var(--ds-font-size-sm); font-weight: 800; list-style: none; }
+.fact-page__source-details summary::-webkit-details-marker { display: none; }
+.fact-page__source-details summary:focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 3px; }
+.fact-page__source-details-indicator::before { content: '+'; }
+.fact-page__source-details[open] .fact-page__source-details-indicator::before { content: '−'; }
+.fact-page__source-disclaimer { margin-bottom: 0; padding-top: var(--ds-space-5); border-top: 1px solid var(--ds-border); }
 .fact-page__next { color: var(--ds-text); background: var(--ds-surface); }
 .fact-page__next h2, .fact-page__next h3 { color: var(--ds-text); }
 .fact-page__next p, .fact-page__next li, .fact-page__next dt, .fact-page__next dd { color: var(--ds-text-secondary); }
@@ -89,3 +103,4 @@
 .fact-page a:focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 3px; }
 .fact-page section { scroll-margin-top: 20px; }
 @media (min-width: 768px) { .fact-page__mistakes { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; } }
+@media (max-width: 767px) { .fact-page__source-record dl div { grid-template-columns: 1fr; gap: var(--ds-space-1); } }

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
   buildKnowledgeSourceImpactIndex,
@@ -18,6 +19,7 @@ import {
   migratedKnowledgeArticles,
   migratedKnowledgeArticleSourceImpactIndex,
 } from '../src/config/migratedKnowledgeArticles';
+import { webMigratedKnowledgeArticleRoutes } from '../src/config/routes';
 
 const r10 = migratedKnowledgeArticleDefinitions[0];
 
@@ -49,6 +51,11 @@ test('R10:s källprojection bevarar befintlig metadata och URL', () => {
 test('source-impact-index listar artikel och materiella block per källa', () => {
   const impact = getKnowledgeSourceImpact(migratedKnowledgeArticleSourceImpactIndex, 'kontrollwiki:345');
   assert.deepEqual(impact, [{
+    articleId: 'seo-hygien-och-daglig-drift',
+    canonicalPath: '/seo/hygien-och-daglig-drift.html',
+    blockIds: ['personlig-hygien-i-driften'],
+    claimIds: [],
+  }, {
     articleId: 'seo-personlig-hygien-livsmedel',
     canonicalPath: '/seo/personlig-hygien-livsmedel.html',
     blockIds: ['exempel-pa-kontrollfragor', 'krav-pa-personlig-hygien', 'verksamhetens-rutiner'],
@@ -56,6 +63,105 @@ test('source-impact-index listar artikel och materiella block per källa', () =>
   }]);
   assert.deepEqual(getKnowledgeSourceIdsForBlock(r10, 'exempel-pa-kontrollfragor'), ['kontrollwiki:345']);
   assert.deepEqual(getKnowledgeSourceIdsForBlock(r10, 'skillnaden-mellan-krav-och-exempel'), []);
+});
+
+test('R02, R03, R04 och R08 har rätt källmängd och moderna breadcrumbs', () => {
+  const articles = migratedKnowledgeArticles.filter((article) => article.id !== r10.id);
+  assert.deepEqual(articles.map((article) => article.canonicalPath), [
+    '/seo/grundforutsattningar-livsmedel.html',
+    '/seo/hantering-och-forvaring-livsmedel.html',
+    '/seo/hygien-och-daglig-drift.html',
+    '/seo/lokaler-och-utrustning-livsmedel.html',
+  ]);
+  assert.deepEqual(articles.map((article) => article.sourceIds), [
+    ['kontrollwiki:246', 'kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'],
+    ['kontrollwiki:342'],
+    ['kontrollwiki:345', 'kontrollwiki:346', 'kontrollwiki:348', 'kontrollwiki:349'],
+    ['kontrollwiki:343'],
+  ]);
+  for (const article of articles) assert.equal(article.breadcrumb[0]?.href, '/kunskapsbank');
+  assert.equal(migratedKnowledgeArticles.find((article) => article.id === 'seo-grundforutsattningar-livsmedel')?.sources.length, 6);
+  assert.equal(migratedKnowledgeArticles.find((article) => article.id === 'seo-hygien-och-daglig-drift')?.sources.length, 4);
+});
+
+test('R02 och R03 skiljer myndighetsvägledning från MEK-rekommendationer', () => {
+  const r02 = migratedKnowledgeArticleDefinitions.find((article) => article.id === 'seo-grundforutsattningar-livsmedel');
+  const r03 = migratedKnowledgeArticleDefinitions.find((article) => article.id === 'seo-hantering-och-forvaring-livsmedel');
+  assert.ok(r02);
+  assert.ok(r03);
+
+  const r02Guidance = r02.blocks.find((block) => block.id === 'varfor-grundforutsattningar');
+  const r02Recommendation = r02.blocks.find((block) => block.id === 'rekommenderade-grundforutsattningar-rutiner');
+  const r03Guidance = r03.blocks.find((block) => block.id === 'varfor-flera-rutiner-behovs');
+  const r03Recommendation = r03.blocks.find((block) => block.id === 'rekommenderad-struktur-for-kontroller');
+  const classificationOf = (block: typeof r02Guidance) => block?.type === 'classified' ? block.classification : undefined;
+  assert.equal(classificationOf(r02Guidance), 'guidance');
+  assert.equal(classificationOf(r03Guidance), 'guidance');
+  assert.equal(classificationOf(r02Recommendation), 'recommendation');
+  assert.equal(classificationOf(r03Recommendation), 'recommendation');
+  assert.deepEqual(r02Recommendation?.sourceIds, []);
+  assert.deepEqual(r03Recommendation?.sourceIds, []);
+  assert.equal(r02Recommendation?.material, false);
+  assert.equal(r03Recommendation?.material, false);
+  assert.match(r02Recommendation?.paragraphs.join(' ') ?? '', /Min Egenkontroll rekommenderar/);
+  assert.match(r03Recommendation?.paragraphs.join(' ') ?? '', /Min Egenkontroll rekommenderar/);
+});
+
+test('R02 förklarar grundförutsättningar med källspårad myndighetsvägledning', () => {
+  const r02 = migratedKnowledgeArticleDefinitions.find((article) => article.id === 'seo-grundforutsattningar-livsmedel');
+  if (!r02) throw new Error('R02 saknas.');
+  const context = r02.blocks.find((block) => block.id === 'varfor-grundforutsattningar');
+  const expectedSourceIds = ['kontrollwiki:246', 'kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'];
+  assert.equal(context?.type === 'classified' ? context.classification : undefined, 'guidance');
+  assert.equal(context?.material, true);
+  assert.deepEqual(context?.sourceIds, expectedSourceIds);
+  assert.equal(context?.title, 'Grundförutsättningar inom livsmedelshygien');
+  assert.deepEqual(context?.paragraphs, [
+    'Kontrollwiki beskriver grundförutsättningar som de åtgärder och villkor som behövs för att uppfylla kraven på livsmedelssäkerhet. De ger underlag för ett effektivt genomförande av HACCP.',
+    'Grundförutsättningarna omfattar krav på verksamhetens struktur, drift, hygien, lagring och transport. På den här sidan behandlas bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning.',
+  ]);
+  assert.doesNotMatch(context?.paragraphs.join(' ') ?? '', /rutiner och kontroller används|minskar riskerna|kontrollpunkt/i);
+  for (const sourceId of expectedSourceIds) {
+    assert.ok(getKnowledgeSourceImpact(migratedKnowledgeArticleSourceImpactIndex, sourceId).some((entry) =>
+      entry.articleId === r02.id && entry.blockIds.includes('varfor-grundforutsattningar')),
+    );
+  }
+});
+
+test('recommendation-block använder egna semantiska tokens i light och dark', () => {
+  const css = readFileSync(new URL('../src/components/FactPage.css', import.meta.url), 'utf8');
+  assert.match(css, /\.fact-page__content-block--recommendation[^}]*var\(--ds-highlight-border\)[^}]*var\(--ds-highlight-surface\)/);
+});
+
+test('flerkällesdetaljer använder native details med tokenbaserat fokus och indikator', () => {
+  const component = readFileSync(new URL('../src/components/FactPage.tsx', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/components/FactPage.css', import.meta.url), 'utf8');
+  assert.match(component, /<details className="fact-page__source-details">/);
+  assert.match(component, /<summary><span>Visa källdetaljer<\/span><span aria-hidden="true" className="fact-page__source-details-indicator" \/><\/summary>/);
+  assert.doesNotMatch(component, /<details className="fact-page__source-details" open/);
+  assert.match(css, /\.fact-page__source-details summary:focus-visible[^}]*var\(--ds-focus\)/);
+  assert.match(css, /\.fact-page__source-details\[open\] \.fact-page__source-details-indicator::before/);
+});
+
+test('Article JSON-LD citation följer alla registrerade artikelkällor', () => {
+  const r02 = webMigratedKnowledgeArticleRoutes.find((route) => route.path === '/seo/grundforutsattningar-livsmedel.html');
+  const r04 = webMigratedKnowledgeArticleRoutes.find((route) => route.path === '/seo/hygien-och-daglig-drift.html');
+  const r10 = webMigratedKnowledgeArticleRoutes.find((route) => route.path === '/seo/personlig-hygien-livsmedel.html');
+  assert.deepEqual(r02?.structuredData?.citation, [
+    'https://kontrollwiki.livsmedelsverket.se/artikel/246/j-grundforutsattningar-hygien',
+    'https://kontrollwiki.livsmedelsverket.se/artikel/341/avfall',
+    'https://kontrollwiki.livsmedelsverket.se/artikel/343/lokaler-och-utrustning',
+    'https://kontrollwiki.livsmedelsverket.se/artikel/350/transport',
+    'https://kontrollwiki.livsmedelsverket.se/artikel/351/utbildning',
+    'https://kontrollwiki.livsmedelsverket.se/artikel/352/vattenforsorjning',
+  ]);
+  assert.deepEqual(r04?.structuredData?.citation, [
+    'https://kontrollwiki.livsmedelsverket.se/artikel/345/personlig-hygien',
+    'https://kontrollwiki.livsmedelsverket.se/artikel/346/rengoring',
+    'https://kontrollwiki.livsmedelsverket.se/artikel/348/skadedjursbekampning',
+    'https://kontrollwiki.livsmedelsverket.se/artikel/349/temperatur',
+  ]);
+  assert.equal(r10?.structuredData?.citation, 'https://kontrollwiki.livsmedelsverket.se/artikel/345/personlig-hygien');
 });
 
 test('källmetadata, språkpolicy och AI-tolkning är separata kontrakt', () => {

@@ -66,7 +66,7 @@ for (const route of webModernRoutes) {
       });
     const article = jsonLd.flatMap((item) => item['@graph'] ?? []).find((item) => item['@type'] === 'Article');
     if (!article) errors.push(`Article JSON-LD saknas för ${route.path}`);
-    else if (article.citation !== route.structuredData.citation) errors.push(`Fel JSON-LD-citation för ${route.path}`);
+    else if (JSON.stringify(article.citation) !== JSON.stringify(route.structuredData.citation)) errors.push(`Fel JSON-LD-citation för ${route.path}`);
   }
 }
 
@@ -92,7 +92,9 @@ for (const article of migratedKnowledgeArticles) {
     continue;
   }
   const [route] = routeMatches;
-  if (route.page !== 'fact-page' || route.canonicalPath !== article.canonicalPath || route.title !== article.title || route.description !== article.description || route.structuredData?.citation !== article.source.url) {
+  const expectedCitationUrls = article.sources.map((source) => source.url);
+  const expectedCitation = expectedCitationUrls.length === 1 ? expectedCitationUrls[0] : expectedCitationUrls;
+  if (route.page !== 'fact-page' || route.canonicalPath !== article.canonicalPath || route.title !== article.title || route.description !== article.description || JSON.stringify(route.structuredData?.citation) !== JSON.stringify(expectedCitation)) {
     errors.push(`Migrerad artikel och modern route avviker: ${article.canonicalPath}`);
   }
   const output = builtFile(article.canonicalPath);
@@ -100,6 +102,47 @@ for (const article of migratedKnowledgeArticles) {
   const outputVariants = [output, directoryOutput].filter((candidate) => existsSync(candidate));
   if (outputVariants.length !== 1) errors.push(`Migrerad artikel ska ha exakt en byggd output: ${article.canonicalPath} (${outputVariants.length})`);
   else if (outputVariants[0] !== output || !statSync(output).isFile()) errors.push(`Migrerad artikel byggdes inte som faktisk .html-fil: ${article.canonicalPath}`);
+  else {
+    const html = readFileSync(outputVariants[0], 'utf8');
+    const jsonLd = [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/gis)]
+      .flatMap((match) => {
+        try { return [JSON.parse(match[1]) as { '@graph'?: Array<Record<string, unknown>> }]; }
+        catch { return []; }
+      });
+    const articleJsonLd = jsonLd.flatMap((item) => item['@graph'] ?? []).find((item) => item['@type'] === 'Article');
+    if (!articleJsonLd || JSON.stringify(articleJsonLd.citation) !== JSON.stringify(expectedCitation)) {
+      errors.push(`Byggd Article JSON-LD saknar alla källor: ${article.canonicalPath}`);
+    }
+    if (article.sources.length > 1) {
+      const sourceRecords = [...html.matchAll(/<article class="fact-page__source-record" data-source-id="([^"]+)">([\s\S]*?)<\/article>/g)];
+      const renderedSourceIds = sourceRecords.map((match) => match[1]);
+      if (JSON.stringify(renderedSourceIds) !== JSON.stringify(article.sourceIds)) {
+        errors.push(`Byggd källsektion avviker från källregistret: ${article.canonicalPath}`);
+      }
+      for (const [index, source] of article.sources.entries()) {
+        const sourceRecord = sourceRecords[index]?.[2] ?? '';
+        if (!sourceRecord.includes(`<h3><a href="${source.url}">`)) {
+          errors.push(`Byggd källsektion saknar synlig källänk: ${article.canonicalPath} -> ${source.id}`);
+        }
+        if (!/<details class="fact-page__source-details">[\s\S]*?<summary>[\s\S]*?Visa källdetaljer[\s\S]*?<\/summary>[\s\S]*?<\/details>/.test(sourceRecord)) {
+          errors.push(`Byggd källsektion saknar expanderbara detaljer: ${article.canonicalPath} -> ${source.id}`);
+        }
+        if (/<details\b[^>]*\bopen(?:\b|=)/i.test(sourceRecord)) {
+          errors.push(`Byggd källsektion har öppna detaljer som standard: ${article.canonicalPath} -> ${source.id}`);
+        }
+        for (const label of ['Källtyp', 'Faktagranskad', 'Åtkomstdatum', 'Kontrollerade avsnitt', 'Rättslig hänvisning']) {
+          if (!sourceRecord.includes(`<dt>${label}</dt>`)) {
+            errors.push(`Byggd källsektion saknar detaljfälten: ${article.canonicalPath} -> ${source.id}`);
+            break;
+          }
+        }
+      }
+      if (/<dt>Käll-ID<\/dt>/i.test(html)) errors.push(`Byggd källsektion visar internt käll-ID: ${article.canonicalPath}`);
+      if (html.split(article.source.limitation).length - 1 !== 1) {
+        errors.push(`Gemensam Kontrollwiki-friskrivning ska visas exakt en gång: ${article.canonicalPath}`);
+      }
+    }
+  }
 }
 
 const sitemapFile = path.join(distRoot, 'sitemap.xml');

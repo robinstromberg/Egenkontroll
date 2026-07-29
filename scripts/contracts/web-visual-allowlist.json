@@ -6,7 +6,7 @@
       "kinds": ["raw-brand-path"],
       "reason": "Frysta statiska SEO-sidor använder exakt den centrala loggrollen och valideras dessutom av visual- och routekontrakten.",
       "baseline": {
-        "fileCount": 54,
+        "fileCount": 50,
         "literal": "/brand/min-egenkontroll-logo2.png",
         "countPerFile": 1
       }

@@ -10,6 +10,14 @@ function isMigratedArticle(content: FactPageProps['content']): content is Migrat
   return 'blocks' in content;
 }
 
+const classificationMarks = {
+  requirement: 'K',
+  guidance: 'V',
+  recommendation: 'R',
+  example: 'E',
+  uncertainty: 'U',
+} as const;
+
 function MigratedArticleBody({ content }: { content: MigratedKnowledgeArticleContent }) {
   return <>
     <nav className="fact-page__toc" aria-label="Innehåll på sidan">
@@ -28,22 +36,40 @@ function MigratedArticleBody({ content }: { content: MigratedKnowledgeArticleCon
         id={block.id}
         key={block.id}
       >
-        {block.type === 'classified' ? <p className="fact-page__classification"><span aria-hidden="true">{block.classification === 'requirement' ? 'K' : block.classification === 'guidance' ? 'V' : 'E'}</span>{block.classificationLabel}</p> : null}
+        {block.type === 'classified' ? <p className="fact-page__classification"><span aria-hidden="true">{classificationMarks[block.classification]}</span>{block.classificationLabel}</p> : null}
         <h2>{block.title}</h2>
         {block.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
         {block.type === 'classified' && block.items ? <ul>{block.items.map((item) => <li key={item}>{item}</li>)}</ul> : null}
+        {block.links?.length ? <div className="fact-page__faq">{block.links.map((link) => <article key={link.href}><h3><a href={link.href}>{link.title}</a></h3><p>{link.copy}</p></article>)}</div> : null}
       </section>;
     })}
     <section className="fact-page__source" id="kalla">
       <h2>{content.sourceSectionTitle}</h2>
-      <dl>
-        <div><dt>Källtyp</dt><dd>{content.source.type}</dd></div>
-        <div><dt>Faktagranskad</dt><dd><time dateTime={content.source.factCheckedAt}>{content.source.factCheckedAt}</time></dd></div>
-        <div><dt>Kontrollerade avsnitt</dt><dd>{content.source.relevantSections.join(', ')}</dd></div>
-        <div><dt>Rättslig hänvisning</dt><dd>{content.source.legalReference}</dd></div>
-      </dl>
-      <p><a href={content.source.url}>{content.source.label}</a></p>
-      <p>{content.source.limitation}</p>
+      {content.sources.length === 1 ? <>
+        <dl>
+          <div><dt>Källtyp</dt><dd>{content.source.type}</dd></div>
+          <div><dt>Faktagranskad</dt><dd><time dateTime={content.source.factCheckedAt}>{content.source.factCheckedAt}</time></dd></div>
+          <div><dt>Kontrollerade avsnitt</dt><dd>{content.source.relevantSections.join(', ')}</dd></div>
+          <div><dt>Rättslig hänvisning</dt><dd>{content.source.legalReference}</dd></div>
+        </dl>
+        <p><a href={content.source.url}>{content.source.label}</a></p>
+        <p>{content.source.limitation}</p>
+      </> : <div className="fact-page__source-records">
+        {content.sources.map((source) => <article className="fact-page__source-record" data-source-id={source.id} key={source.id}>
+          <h3><a href={source.url}>{source.label}</a></h3>
+          <details className="fact-page__source-details">
+            <summary><span>Visa källdetaljer</span><span aria-hidden="true" className="fact-page__source-details-indicator" /></summary>
+            <dl>
+              <div><dt>Källtyp</dt><dd>{source.type}</dd></div>
+              <div><dt>Faktagranskad</dt><dd><time dateTime={source.factCheckedAt}>{source.factCheckedAt}</time></dd></div>
+              <div><dt>Åtkomstdatum</dt><dd><time dateTime={source.accessedAt}>{source.accessedAt}</time></dd></div>
+              <div><dt>Kontrollerade avsnitt</dt><dd>{source.relevantSections.join(', ')}</dd></div>
+              <div><dt>Rättslig hänvisning</dt><dd>{source.legalReference || 'Ingen separat rättsreferens angiven i källmatrisen.'}</dd></div>
+            </dl>
+          </details>
+        </article>)}
+        <p className="fact-page__source-disclaimer">{content.source.limitation}</p>
+      </div>}
     </section>
     <section id="relaterat">
       <h2>{content.relatedLinks.title}</h2>
