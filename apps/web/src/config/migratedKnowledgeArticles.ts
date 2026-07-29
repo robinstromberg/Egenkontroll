@@ -186,6 +186,18 @@ const grunnforutsattningarArticle: MigratedKnowledgeArticleDefinition = {
   tableOfContentsTitle: 'På den här sidan',
   blocks: [
     {
+      type: 'classified',
+      classification: 'guidance',
+      material: true,
+      sourceIds: ['kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'],
+      classificationLabel: 'Myndighetsvägledning',
+      id: 'varfor-grundforutsattningar',
+      title: 'Vad betyder grundförutsättningar?',
+      paragraphs: [
+        'Kontrollwiki behandlar bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning som grundförutsättningar inom livsmedelshygien.',
+      ],
+    },
+    {
       type: 'fact-box',
       material: false,
       sourceIds: [],
@@ -198,18 +210,6 @@ const grunnforutsattningarArticle: MigratedKnowledgeArticleDefinition = {
         { href: '/seo/transport-av-livsmedel.html', title: 'Transport', copy: 'Skydd mot kontaminering och rätt temperatur under transport.' },
         { href: '/seo/utbildning-livsmedelshygien-personal.html', title: 'Kunskap och utbildning', copy: 'Rätt kunskap för rätt uppgift utan onödiga formkrav.' },
         { href: '/seo/vatten-i-livsmedelsverksamhet.html', title: 'Vatten och is', copy: 'När dricksvatten krävs och hur is behöver hanteras.' },
-      ],
-    },
-    {
-      type: 'classified',
-      classification: 'guidance',
-      material: true,
-      sourceIds: ['kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'],
-      classificationLabel: 'Myndighetsvägledning',
-      id: 'varfor-grundforutsattningar',
-      title: 'Varför är det här ett eget område?',
-      paragraphs: [
-        'Grundförutsättningar minskar riskerna innan en enskild kontrollpunkt ens uppstår.',
       ],
     },
     {

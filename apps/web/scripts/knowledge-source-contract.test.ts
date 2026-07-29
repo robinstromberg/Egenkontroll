@@ -107,9 +107,38 @@ test('R02 och R03 skiljer myndighetsvägledning från MEK-rekommendationer', () 
   assert.match(r03Recommendation?.paragraphs.join(' ') ?? '', /Min Egenkontroll rekommenderar/);
 });
 
+test('R02 förklarar grundförutsättningar med källspårad myndighetsvägledning', () => {
+  const r02 = migratedKnowledgeArticleDefinitions.find((article) => article.id === 'seo-grundforutsattningar-livsmedel');
+  if (!r02) throw new Error('R02 saknas.');
+  const context = r02.blocks.find((block) => block.id === 'varfor-grundforutsattningar');
+  const expectedSourceIds = ['kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'];
+  assert.equal(context?.type === 'classified' ? context.classification : undefined, 'guidance');
+  assert.equal(context?.material, true);
+  assert.deepEqual(context?.sourceIds, expectedSourceIds);
+  assert.deepEqual(context?.paragraphs, [
+    'Kontrollwiki behandlar bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning som grundförutsättningar inom livsmedelshygien.',
+  ]);
+  assert.doesNotMatch(context?.paragraphs.join(' ') ?? '', /minskar riskerna|kontrollpunkt/i);
+  for (const sourceId of expectedSourceIds) {
+    assert.ok(getKnowledgeSourceImpact(migratedKnowledgeArticleSourceImpactIndex, sourceId).some((entry) =>
+      entry.articleId === r02.id && entry.blockIds.includes('varfor-grundforutsattningar')),
+    );
+  }
+});
+
 test('recommendation-block använder egna semantiska tokens i light och dark', () => {
   const css = readFileSync(new URL('../src/components/FactPage.css', import.meta.url), 'utf8');
   assert.match(css, /\.fact-page__content-block--recommendation[^}]*var\(--ds-highlight-border\)[^}]*var\(--ds-highlight-surface\)/);
+});
+
+test('flerkällesdetaljer använder native details med tokenbaserat fokus och indikator', () => {
+  const component = readFileSync(new URL('../src/components/FactPage.tsx', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../src/components/FactPage.css', import.meta.url), 'utf8');
+  assert.match(component, /<details className="fact-page__source-details">/);
+  assert.match(component, /<summary><span>Visa källdetaljer<\/span><span aria-hidden="true" className="fact-page__source-details-indicator" \/><\/summary>/);
+  assert.doesNotMatch(component, /<details className="fact-page__source-details" open/);
+  assert.match(css, /\.fact-page__source-details summary:focus-visible[^}]*var\(--ds-focus\)/);
+  assert.match(css, /\.fact-page__source-details\[open\] \.fact-page__source-details-indicator::before/);
 });
 
 test('Article JSON-LD citation följer alla registrerade artikelkällor', () => {

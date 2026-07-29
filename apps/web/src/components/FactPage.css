@@ -73,6 +73,12 @@
 .fact-page__source-record h3 { margin-bottom: var(--ds-space-3); }
 .fact-page__source-record dl { margin-top: var(--ds-space-3); }
 .fact-page__source-record p { margin-bottom: 0; }
+.fact-page__source-details { margin-top: var(--ds-space-3); }
+.fact-page__source-details summary { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-3); min-width: 0; color: var(--ds-text); cursor: pointer; font-size: var(--ds-font-size-sm); font-weight: 800; list-style: none; }
+.fact-page__source-details summary::-webkit-details-marker { display: none; }
+.fact-page__source-details summary:focus-visible { outline: 3px solid var(--ds-focus); outline-offset: 3px; }
+.fact-page__source-details-indicator::before { content: '+'; }
+.fact-page__source-details[open] .fact-page__source-details-indicator::before { content: '−'; }
 .fact-page__source-disclaimer { margin-bottom: 0; padding-top: var(--ds-space-5); border-top: 1px solid var(--ds-border); }
 .fact-page__next { color: var(--ds-text); background: var(--ds-surface); }
 .fact-page__next h2, .fact-page__next h3 { color: var(--ds-text); }

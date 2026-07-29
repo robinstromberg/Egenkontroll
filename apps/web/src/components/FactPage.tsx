@@ -57,13 +57,16 @@ function MigratedArticleBody({ content }: { content: MigratedKnowledgeArticleCon
       </> : <div className="fact-page__source-records">
         {content.sources.map((source) => <article className="fact-page__source-record" data-source-id={source.id} key={source.id}>
           <h3><a href={source.url}>{source.label}</a></h3>
-          <dl>
-            <div><dt>Källtyp</dt><dd>{source.type}</dd></div>
-            <div><dt>Faktagranskad</dt><dd><time dateTime={source.factCheckedAt}>{source.factCheckedAt}</time></dd></div>
-            <div><dt>Åtkomstdatum</dt><dd><time dateTime={source.accessedAt}>{source.accessedAt}</time></dd></div>
-            <div><dt>Kontrollerade avsnitt</dt><dd>{source.relevantSections.join(', ')}</dd></div>
-            <div><dt>Rättslig hänvisning</dt><dd>{source.legalReference || 'Ingen separat rättsreferens angiven i källmatrisen.'}</dd></div>
-          </dl>
+          <details className="fact-page__source-details">
+            <summary><span>Visa källdetaljer</span><span aria-hidden="true" className="fact-page__source-details-indicator" /></summary>
+            <dl>
+              <div><dt>Källtyp</dt><dd>{source.type}</dd></div>
+              <div><dt>Faktagranskad</dt><dd><time dateTime={source.factCheckedAt}>{source.factCheckedAt}</time></dd></div>
+              <div><dt>Åtkomstdatum</dt><dd><time dateTime={source.accessedAt}>{source.accessedAt}</time></dd></div>
+              <div><dt>Kontrollerade avsnitt</dt><dd>{source.relevantSections.join(', ')}</dd></div>
+              <div><dt>Rättslig hänvisning</dt><dd>{source.legalReference || 'Ingen separat rättsreferens angiven i källmatrisen.'}</dd></div>
+            </dl>
+          </details>
         </article>)}
         <p className="fact-page__source-disclaimer">{content.source.limitation}</p>
       </div>}
