@@ -91,7 +91,8 @@ values
   ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', 'invite-owner@example.test', 'Invite Owner'),
   ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02', 'invite-staff@example.test', 'Invite Staff'),
   ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03', 'invitee@example.test', 'Invitee'),
-  ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee04', 'stranger@example.test', 'Stranger'),
+  -- Deliberately forged profile e-mail: the Auth identity remains stranger@example.test.
+  ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee04', 'invitee@example.test', 'Stranger'),
   ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee05', 'expired-invitee@example.test', 'Expired Invitee');
 
 insert into public.organizations (id, name, subscription_status, created_by)
@@ -193,6 +194,20 @@ end $$;
 select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee04', true);
 
 do $$
+begin
+  begin
+    update public.profiles
+    set email = 'attacker-controlled@example.test'
+    where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee04';
+
+    raise exception 'Profile security failure: authenticated client rewrote profile email';
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+end $$;
+
+do $$
 declare
   visible_count int;
 begin
@@ -204,6 +219,22 @@ begin
   if visible_count <> 0 then
     raise exception 'RLS failure: stranger can read invitee invitation';
   end if;
+end $$;
+
+do $$
+begin
+  begin
+    perform public.accept_organization_invitation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee21');
+    raise exception 'Invitation security failure: forged profile email accepted invitation';
+  exception
+    when others then
+      if sqlerrm = 'Invitation security failure: forged profile email accepted invitation' then
+        raise;
+      end if;
+      if sqlerrm <> 'Invitation does not match current user email' then
+        raise exception 'Invitation security failure: forged profile email returned unexpected error: %', sqlerrm;
+      end if;
+  end;
 end $$;
 
 select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03', true);
@@ -273,6 +304,78 @@ begin
   if visible_count <> 1 then
     raise exception 'Invitation failure: invitation was not marked accepted';
   end if;
+end $$;
+
+insert into public.organization_invitations (
+  id,
+  organization_id,
+  email,
+  role,
+  status,
+  invited_by,
+  expires_at
+)
+values (
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee25',
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee11',
+  'invitee@example.test',
+  'staff',
+  'pending',
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01',
+  now() + interval '7 days'
+);
+
+update public.organization_invitations
+set status = 'revoked'
+where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee25';
+
+do $$
+declare
+  revoked_count int;
+begin
+  select count(*)
+  into revoked_count
+  from public.organization_invitations
+  where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee25'
+    and status = 'revoked';
+
+  if revoked_count <> 1 then
+    raise exception 'Invitation failure: admin could not revoke pending invitation';
+  end if;
+end $$;
+
+select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03', true);
+
+do $$
+begin
+  begin
+    perform public.accept_organization_invitation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee21');
+    raise exception 'Invitation failure: already accepted invitation was accepted again';
+  exception
+    when others then
+      if sqlerrm = 'Invitation failure: already accepted invitation was accepted again' then
+        raise;
+      end if;
+      if sqlerrm <> 'Invitation is not pending' then
+        raise exception 'Invitation failure: already accepted invitation returned unexpected error: %', sqlerrm;
+      end if;
+  end;
+end $$;
+
+do $$
+begin
+  begin
+    perform public.accept_organization_invitation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee25');
+    raise exception 'Invitation failure: client-revoked invitation was accepted';
+  exception
+    when others then
+      if sqlerrm = 'Invitation failure: client-revoked invitation was accepted' then
+        raise;
+      end if;
+      if sqlerrm <> 'Invitation is not pending' then
+        raise exception 'Invitation failure: client-revoked invitation returned unexpected error: %', sqlerrm;
+      end if;
+  end;
 end $$;
 
 select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee05', true);

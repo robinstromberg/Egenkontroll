@@ -31,7 +31,6 @@ export function ProfileView({ user, initialFullName, onBack }: ProfileViewProps)
       await updateProfile({
         userId: user.id,
         fullName,
-        email: user.email ?? null,
       });
       setStatus('saved');
       setMessage('Profilen sparades.');

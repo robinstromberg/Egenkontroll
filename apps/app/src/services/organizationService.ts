@@ -88,7 +88,6 @@ export async function ensureProfile(user: User): Promise<void> {
 
   const { error } = await supabase.from('profiles').upsert({
     id: user.id,
-    email: user.email ?? null,
     full_name: metadataFullName || existingProfile?.full_name || '',
   });
 
@@ -185,12 +184,10 @@ export async function createFirstOrganization(
 export async function updateProfile(input: {
   userId: string;
   fullName: string;
-  email: string | null;
 }): Promise<void> {
   const { error } = await supabase.from('profiles').upsert({
     id: input.userId,
     full_name: input.fullName.trim(),
-    email: input.email,
   });
 
   if (error) {

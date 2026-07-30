@@ -56,7 +56,7 @@ Security Advisor visar fortfarande avsiktliga varningar for tokenstyrda `SECURIT
 
 De ar avsiktligt korbara for `anon`/`authenticated` eftersom inspektorslankar ska fungera utan app-inloggning. De begransas av hashad token, aktiv status, giltighetstid och delningsscope. Ta inte bort dessa grants utan att samtidigt bygga om inspektorsflodet.
 
-Security Advisor visar ocksa en avsiktlig varning for `accept_organization_invitation`. Funktionen ar korbar for `authenticated` eftersom inloggade anvandare maste kunna acceptera en inbjudan. `public` och `anon` ar revokade, och funktionen validerar auth-user, profil-e-post, invitation-status, utgangstid och medlemskap innan den skriver.
+Security Advisor visar ocksa en avsiktlig varning for `accept_organization_invitation`. Funktionen ar korbar for `authenticated` eftersom inloggade anvandare maste kunna acceptera en inbjudan. `public` och `anon` ar revokade, och funktionen validerar verifierad Supabase Auth-e-post, invitation-status, utgangstid och medlemskap innan den skriver. `profiles.email` anvands inte som identitetsgrund och kan inte skrivas av Data API-rollerna.
 
 Status 2026-06-30: leaked password protection ar aktiverat i Supabase Auth och Security Advisor-varningen ar borta.
 

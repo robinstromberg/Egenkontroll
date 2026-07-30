@@ -72,7 +72,6 @@ export function InvitationAcceptPanel({
       await updateProfile({
         userId,
         fullName,
-        email: userEmail ?? null,
       });
       const organizationId = await acceptOrganizationInvitation(invitationId);
       await onAccepted(organizationId);
