@@ -129,7 +129,7 @@ grant execute on function public.accept_organization_invitation(uuid) to authent
 -- Keep the profile display field available for reads, but make its e-mail
 -- identity immutable from the Data API roles. New profiles omit this nullable
 -- column and existing e-mail values are not used for invitation authorization.
-revoke insert (email), update (email)
+revoke insert, update
 on table public.profiles
 from public, anon, authenticated;
 
