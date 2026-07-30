@@ -101,7 +101,6 @@ export function OrganizationSetup({ user, onCreated }: OrganizationSetupProps) {
       await updateProfile({
         userId: user.id,
         fullName,
-        email: user.email ?? null,
       });
       const organizationId = await createFirstOrganization(user, organizationName.trim(), selectedTemplateIds, {
         industry: 'food',

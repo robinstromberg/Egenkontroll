@@ -84,6 +84,19 @@ values
     '{}'::jsonb,
     now(),
     now()
+  ),
+  (
+    'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee06',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated',
+    'authenticated',
+    'profile-writer@example.test',
+    extensions.crypt('test-profile-writer-password', extensions.gen_salt('bf')),
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
   );
 
 insert into public.profiles (id, email, full_name)
@@ -91,7 +104,8 @@ values
   ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', 'invite-owner@example.test', 'Invite Owner'),
   ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee02', 'invite-staff@example.test', 'Invite Staff'),
   ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03', 'invitee@example.test', 'Invitee'),
-  ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee04', 'stranger@example.test', 'Stranger'),
+  -- Deliberately forged profile e-mail: the Auth identity remains stranger@example.test.
+  ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee04', 'invitee@example.test', 'Stranger'),
   ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee05', 'expired-invitee@example.test', 'Expired Invitee');
 
 insert into public.organizations (id, name, subscription_status, created_by)
@@ -139,6 +153,64 @@ values
 select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', true);
 select set_config('request.jwt.claim.role', 'authenticated', true);
 set local role authenticated;
+
+do $$
+begin
+  if has_table_privilege('authenticated', 'public.profiles', 'INSERT') then
+    raise exception 'Profile privilege failure: authenticated retains table-level INSERT';
+  end if;
+
+  if has_table_privilege('authenticated', 'public.profiles', 'UPDATE') then
+    raise exception 'Profile privilege failure: authenticated retains table-level UPDATE';
+  end if;
+
+  if has_column_privilege('authenticated', 'public.profiles', 'email', 'INSERT') then
+    raise exception 'Profile privilege failure: authenticated can INSERT profiles.email';
+  end if;
+
+  if has_column_privilege('authenticated', 'public.profiles', 'email', 'UPDATE') then
+    raise exception 'Profile privilege failure: authenticated can UPDATE profiles.email';
+  end if;
+
+  if not has_column_privilege('authenticated', 'public.profiles', 'id', 'INSERT') then
+    raise exception 'Profile privilege failure: authenticated cannot INSERT profiles.id';
+  end if;
+
+  if not has_column_privilege('authenticated', 'public.profiles', 'full_name', 'INSERT') then
+    raise exception 'Profile privilege failure: authenticated cannot INSERT profiles.full_name';
+  end if;
+
+  if not has_column_privilege('authenticated', 'public.profiles', 'full_name', 'UPDATE') then
+    raise exception 'Profile privilege failure: authenticated cannot UPDATE profiles.full_name';
+  end if;
+end $$;
+
+select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee06', true);
+
+insert into public.profiles (id, full_name)
+values ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee06', 'Profile Writer');
+
+update public.profiles
+set full_name = 'Profile Writer Updated'
+where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee06';
+
+do $$
+declare
+  profile_count int;
+begin
+  select count(*)
+  into profile_count
+  from public.profiles
+  where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee06'
+    and full_name = 'Profile Writer Updated'
+    and email is null;
+
+  if profile_count <> 1 then
+    raise exception 'Profile flow failure: authenticated could not write id/full_name without email';
+  end if;
+end $$;
+
+select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01', true);
 
 insert into public.organization_invitations (
   id,
@@ -193,6 +265,20 @@ end $$;
 select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee04', true);
 
 do $$
+begin
+  begin
+    update public.profiles
+    set email = 'attacker-controlled@example.test'
+    where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee04';
+
+    raise exception 'Profile security failure: authenticated client rewrote profile email';
+  exception
+    when insufficient_privilege then
+      null;
+  end;
+end $$;
+
+do $$
 declare
   visible_count int;
 begin
@@ -204,6 +290,22 @@ begin
   if visible_count <> 0 then
     raise exception 'RLS failure: stranger can read invitee invitation';
   end if;
+end $$;
+
+do $$
+begin
+  begin
+    perform public.accept_organization_invitation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee21');
+    raise exception 'Invitation security failure: forged profile email accepted invitation';
+  exception
+    when others then
+      if sqlerrm = 'Invitation security failure: forged profile email accepted invitation' then
+        raise;
+      end if;
+      if sqlerrm <> 'Invitation does not match current user email' then
+        raise exception 'Invitation security failure: forged profile email returned unexpected error: %', sqlerrm;
+      end if;
+  end;
 end $$;
 
 select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03', true);
@@ -273,6 +375,78 @@ begin
   if visible_count <> 1 then
     raise exception 'Invitation failure: invitation was not marked accepted';
   end if;
+end $$;
+
+insert into public.organization_invitations (
+  id,
+  organization_id,
+  email,
+  role,
+  status,
+  invited_by,
+  expires_at
+)
+values (
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee25',
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee11',
+  'invitee@example.test',
+  'staff',
+  'pending',
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01',
+  now() + interval '7 days'
+);
+
+update public.organization_invitations
+set status = 'revoked'
+where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee25';
+
+do $$
+declare
+  revoked_count int;
+begin
+  select count(*)
+  into revoked_count
+  from public.organization_invitations
+  where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee25'
+    and status = 'revoked';
+
+  if revoked_count <> 1 then
+    raise exception 'Invitation failure: admin could not revoke pending invitation';
+  end if;
+end $$;
+
+select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee03', true);
+
+do $$
+begin
+  begin
+    perform public.accept_organization_invitation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee21');
+    raise exception 'Invitation failure: already accepted invitation was accepted again';
+  exception
+    when others then
+      if sqlerrm = 'Invitation failure: already accepted invitation was accepted again' then
+        raise;
+      end if;
+      if sqlerrm <> 'Invitation is not pending' then
+        raise exception 'Invitation failure: already accepted invitation returned unexpected error: %', sqlerrm;
+      end if;
+  end;
+end $$;
+
+do $$
+begin
+  begin
+    perform public.accept_organization_invitation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeee25');
+    raise exception 'Invitation failure: client-revoked invitation was accepted';
+  exception
+    when others then
+      if sqlerrm = 'Invitation failure: client-revoked invitation was accepted' then
+        raise;
+      end if;
+      if sqlerrm <> 'Invitation is not pending' then
+        raise exception 'Invitation failure: client-revoked invitation returned unexpected error: %', sqlerrm;
+      end if;
+  end;
 end $$;
 
 select set_config('request.jwt.claim.sub', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee05', true);

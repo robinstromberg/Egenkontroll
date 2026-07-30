@@ -108,7 +108,7 @@ with check (
 
 ### Invitee
 
-Den inbjudna användaren behöver kunna se sin egen pending-inbjudan efter inloggning. RLS kan jämföra invitation email med `profiles.email`, inte med user-editable metadata.
+Den inbjudna användaren behöver kunna se sin egen pending-inbjudan efter inloggning. RLS ska jämföra invitation email med den verifierade e-postidentiteten i Supabase Auth, inte med ett klientredigerbart profilfält eller user-editable metadata.
 
 Föreslagen helper:
 
@@ -116,12 +116,14 @@ Föreslagen helper:
 create or replace function private.current_profile_email()
 returns text
 language sql
+stable
 security definer
-set search_path = public
+set search_path = pg_catalog
 as $$
-  select lower(trim(profile.email))
-  from public.profiles profile
-  where profile.id = (select auth.uid())
+  select lower(trim(auth_user.email))
+  from auth.users auth_user
+  where auth_user.id = (select auth.uid())
+    and auth_user.email_confirmed_at is not null
 $$;
 ```
 
@@ -153,11 +155,11 @@ returns uuid -- organization_id
 Funktionen ska:
 
 1. kräva `auth.uid()`
-2. läsa aktuell `profiles.email`
+2. läsa aktuell verifierad e-post från Supabase Auth
 3. låsa invitation-raden `for update`
 4. kontrollera `status = 'pending'`
 5. kontrollera `expires_at > now()`
-6. kontrollera att invitation email matchar aktuell profil-e-post
+6. kontrollera att invitation email matchar aktuell verifierad Auth-e-post
 7. kontrollera att användaren inte redan har aktivt membership i samma organization
 8. skapa eller uppdatera `organization_memberships` till `status = 'active'` med invitation role
 9. sätta invitation `status = 'accepted'`, `accepted_by = auth.uid()`, `accepted_at = now()`
@@ -187,7 +189,7 @@ Tokenvarianten ska inte ge åtkomst utan att e-post/account fortfarande matchar 
 
 ### Fel organization
 
-En användare får bara acceptera invitation där normaliserad `profiles.email` matchar invitation email. Membership ska alltid skapas för invitationens `organization_id`, aldrig för ett client-skickat organization-id.
+En användare får bara acceptera invitation där normaliserad verifierad Supabase Auth-e-post matchar invitation email. Membership ska alltid skapas för invitationens `organization_id`, aldrig för ett client-skickat organization-id.
 
 ### Redan medlem
 
@@ -215,7 +217,7 @@ Invitation med `expires_at <= now()` ska inte kunna accepteras. Den kan antingen
 
 ### Byte av e-post
 
-Eftersom Supabase auth-e-post och `profiles.email` kan hamna ur synk bör acceptansflödet först säkerställa att profilen är uppdaterad efter login. Appen gör redan `ensureProfile(user)` vid session.
+Profilens `email` får inte användas som identitetskälla för invitationer. Appen kan fortfarande skapa eller uppdatera profilens visningsnamn efter login, men invitationer matchas alltid mot verifierad Supabase Auth-e-post.
 
 ### Rolleskalering
 
@@ -225,16 +227,18 @@ En admin ska i första versionen kunna bjuda in `staff` och `admin`, men aldrig 
 
 1. Skapa migration med `supabase migration new create_organization_invitations`.
 2. Lägg till `organization_invitations` med checks, index, RLS och `set_updated_at` trigger.
-3. Lägg till private helper för aktuell profile email om den behövs.
+3. Lägg till private helper för aktuell verifierad Supabase Auth-e-post.
 4. Lägg till RLS-policies för admin och invitee read.
 5. Lägg till `accept_organization_invitation(invitation_id uuid)` som transaktionssäker acceptans-RPC.
-6. Revoke/grant execute explicit för RPC och helpers.
+6. Revoke/grant execute explicit för RPC och helpers samt lås `profiles.email` med column-level grants.
 7. Uppdatera `docs/database-schema.md` efter migration.
 8. Lägg till RLS smoke-test för:
    - admin kan skapa invitation i egen organization
    - staff kan inte skapa invitation
    - invitee kan läsa egen pending invitation
    - annan användare kan inte läsa invitation
+   - förfalskad `profiles.email` kan inte läsa eller acceptera invitation
+   - klienten kan inte skriva `profiles.email`
    - invitee kan acceptera och blir medlem i rätt organization
    - revoked/expired invitation kan inte accepteras
 9. Kör Supabase advisors eller motsvarande säkerhetsgenomgång innan merge.
