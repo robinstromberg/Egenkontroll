@@ -151,18 +151,29 @@ export const internalRoadmap = {
       ],
     },
     {
+      id: 'phase-6b',
+      title: 'Fas 6B – Permanent innehållssystem v1',
+      summary: 'Ett avgränsat permanent system för styrt, källspårat och granskningsbart kunskapsinnehåll.',
+      issueNumbers: [384],
+      points: [
+        'Governance-kontrakt, route-register, legacybaseline och riskbaserade publiceringsgrindar etableras före fortsatt migration.',
+        'Pilotsidor, källövervakning, isolerad historik, driftstatus, fyndkö och riktad AI-granskning levereras enligt fasens låsta Definition of Done.',
+        'Fortsatt innehållsmigration börjar först efter verifierad Definition of Done och uttryckligt driftgodkännande.',
+      ],
+    },
+    {
       id: 'phase-7',
       title: 'Fas 7 – Innehållsmigration',
-      summary: 'Befintligt innehåll flyttas successivt till rätt nya sidmallar och struktur.',
+      summary: 'Befintligt innehåll flyttas successivt till rätt nya sidmallar och struktur efter Fas 6B.',
       issueNumbers: [315, 320, 370, 371, 372, 373, 374, 321, 322, 323, 324],
       coordinatingIssueNumbers: [315, 320],
       implementationStages: [[370], [371], [372, 373], [374]],
-      blockedByIssueNumbers: [353],
+      blockedByIssueNumbers: [353, 384],
       duration: {
         start: '2026-07-19T09:25:30Z',
       },
       points: [
-        'Huvud- och klusterissues samordnar migrationen men väljs inte som implementerbara arbetssteg.',
+        'Migrationen väntar på att Innehållssystem v1 har lämnat sin Definition of Done; huvud- och klusterissues samordnar därefter arbetet men väljs inte som implementerbara arbetssteg.',
         'Det aktuella klustret genomförs i fyra steg: källkontrakt, ämnesnav, två parallellt möjliga innehållsbatcher och slutlig QA.',
         'Webbguardrailen i #353 är den stabila ramen för migrationsbatchernas visuella implementation.',
       ],
