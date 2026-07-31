@@ -174,13 +174,11 @@ values (
   'Justerat termostat.'
 );
 
-update public.deviations
-set
-  status = 'resolved',
-  resolved_by = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee01',
-  resolved_at = now(),
-  follow_up_comment = 'Återkontroll godkänd.'
-where id = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee61';
+select public.resolve_deviation(
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee11',
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeee61',
+  'Återkontroll godkänd.'
+);
 
 do $$
 declare
@@ -203,3 +201,5 @@ begin
 end $$;
 
 rollback;
+
+select 'PASS: deviation lifecycle smoke test; all fixtures rolled back' as result;
