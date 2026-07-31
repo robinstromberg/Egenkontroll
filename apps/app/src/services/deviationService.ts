@@ -1,21 +1,15 @@
 import { supabase } from '../lib/supabaseClient';
+import { buildResolveDeviationRpcArgs } from './deviationTransition';
 
 export async function resolveDeviation(
   organizationId: string,
   deviationId: string,
-  resolvedBy: string,
   followUpComment: string,
 ): Promise<void> {
-  const { error } = await supabase
-    .from('deviations')
-    .update({
-      status: 'resolved',
-      resolved_by: resolvedBy,
-      resolved_at: new Date().toISOString(),
-      follow_up_comment: followUpComment.trim() || null,
-    })
-    .eq('id', deviationId)
-    .eq('organization_id', organizationId);
+  const { error } = await supabase.rpc(
+    'resolve_deviation',
+    buildResolveDeviationRpcArgs(organizationId, deviationId, followUpComment),
+  );
 
   if (error) {
     throw error;

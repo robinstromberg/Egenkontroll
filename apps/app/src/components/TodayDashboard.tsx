@@ -390,7 +390,7 @@ export function TodayDashboard({
   async function handleResolve(deviationId: string) {
     setMessage('');
     try {
-      await resolveDeviation(organizationId, deviationId, userId, followUps[deviationId] ?? '');
+      await resolveDeviation(organizationId, deviationId, followUps[deviationId] ?? '');
       setFollowUps((current) => ({ ...current, [deviationId]: '' }));
       await loadDashboard(true);
     } catch (error) {
