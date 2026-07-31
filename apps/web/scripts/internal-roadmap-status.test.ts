@@ -16,6 +16,7 @@ const repository = 'robinstromberg/Egenkontroll';
 const phases: readonly RoadmapPhaseInput[] = [
   { id: 'done', title: 'Klar fas', summary: 'Historik', fixedCompletion: 'complete' },
   { id: 'app', title: 'App', summary: 'Appfas', issueNumbers: [347, 348, 349, 350, 351, 352], blockedByIssueNumbers: [359] },
+  { id: 'governance', title: 'Fas 6B', summary: 'Permanent innehållssystem', issueNumbers: [384] },
   {
     id: 'content',
     title: 'Innehåll',
@@ -23,7 +24,7 @@ const phases: readonly RoadmapPhaseInput[] = [
     issueNumbers: [315, 320, 370, 371, 372, 373, 374, 321, 322, 323, 324],
     coordinatingIssueNumbers: [315, 320],
     implementationStages: [[370], [371], [372, 373], [374]],
-    blockedByIssueNumbers: [353],
+    blockedByIssueNumbers: [353, 384],
   },
   { id: 'launch', title: 'Lansering', summary: 'Framtid', planned: true },
 ];
@@ -65,6 +66,7 @@ const currentScenario = [
   issue(347, 'closed'), issue(348, 'closed'), issue(349, 'closed'),
   issue(350, 'closed'), issue(351, 'closed'), issue(352, 'closed', { closed_at: '2026-07-28T10:35:18Z' }),
   issue(359, 'closed'), issue(353, 'closed'),
+  issue(384, 'open'),
   issue(315, 'open'),
   issue(320, 'open', { labels: ['in-progress'] }),
   issue(370, 'open'), issue(371, 'open'), issue(372, 'open'), issue(373, 'open'), issue(374, 'open'),
@@ -72,13 +74,24 @@ const currentScenario = [
   issue(375, 'open'), issue(354, 'open'), issue(364, 'open'),
 ] as const;
 
+const migrationScenario = closeIssues(currentScenario, [384]);
+
 test('alla issues i en färdig fas ger complete', () => {
   const result = resolve(currentScenario);
   assert.equal(result.phases.find((phase) => phase.id === 'app')?.status, 'complete');
 });
 
-test('samordnande parent med in-progress blir inte verifierat aktivt arbete', () => {
+test('#384 är nästa avgränsade huvudfas och håller #315 som framtida tills Fas 6B är klar', () => {
   const result = resolve(currentScenario);
+  assert.equal(result.phases.find((phase) => phase.id === 'governance')?.status, 'ready');
+  assert.equal(result.phases.find((phase) => phase.id === 'content')?.status, 'future');
+  assert.equal(result.mainTrack.label, 'Fas 6B');
+  assert.equal(result.nextReady?.number, 384);
+  assert.deepEqual(result.nextSteps.map((item) => item.number), [384]);
+});
+
+test('samordnande parent med in-progress blir inte verifierat aktivt arbete', () => {
+  const result = resolve(migrationScenario);
   const content = result.phases.find((phase) => phase.id === 'content');
   assert.equal(content?.status, 'ready');
   assert.equal(result.activeIssues.some((item) => item.number === 320), false);
@@ -87,13 +100,13 @@ test('samordnande parent med in-progress blir inte verifierat aktivt arbete', ()
 });
 
 test('explicit PR mot samordnande parent blir inte aktivt implementationsarbete', () => {
-  const result = resolve([...currentScenario, pull(400, 'open', 'Closes #320')]);
+  const result = resolve([...migrationScenario, pull(400, 'open', 'Closes #320')]);
   assert.equal(result.activeIssues.some((item) => item.number === 320), false);
   assert.equal(result.nextReady?.number, 370);
 });
 
 test('in-progress på implementerbar child ger verifierad aktivitet', () => {
-  const items = replaceIssue(currentScenario, 370, 'open', { labels: ['in-progress'] });
+  const items = replaceIssue(migrationScenario, 370, 'open', { labels: ['in-progress'] });
   const result = resolve(items);
   assert.equal(result.phases.find((phase) => phase.id === 'content')?.status, 'active');
   assert.equal(result.activeIssues[0]?.number, 370);
@@ -102,40 +115,40 @@ test('in-progress på implementerbar child ger verifierad aktivitet', () => {
 });
 
 test('explicit kopplad öppen PR på implementerbar child ger verifierad aktivitet', () => {
-  const result = resolve([...currentScenario, pull(400, 'open', 'Closes #370')]);
+  const result = resolve([...migrationScenario, pull(400, 'open', 'Closes #370')]);
   assert.equal(result.activeIssues[0]?.number, 370);
   assert.equal(result.activeIssues[0]?.activePullRequestNumber, 400);
 });
 
 test('stängd, mergad eller tvetydig PR ger inte verifierad aktivitet', () => {
-  const closed = resolve([...currentScenario, pull(400, 'closed', 'Closes #370')]);
-  const merged = resolve([...currentScenario, pull(401, 'open', 'Closes #370', { merged: true })]);
-  const ambiguous = resolve([...currentScenario, pull(402, 'open', 'Closes #370 och fixes #371')]);
+  const closed = resolve([...migrationScenario, pull(400, 'closed', 'Closes #370')]);
+  const merged = resolve([...migrationScenario, pull(401, 'open', 'Closes #370', { merged: true })]);
+  const ambiguous = resolve([...migrationScenario, pull(402, 'open', 'Closes #370 och fixes #371')]);
   assert.equal(closed.activeIssues.length, 0);
   assert.equal(merged.activeIssues.length, 0);
   assert.equal(ambiguous.activeIssues.length, 0);
 });
 
 test('vanlig omnämning av child räcker inte som aktivitet', () => {
-  const result = resolve([...currentScenario, pull(400, 'open', 'Arbetar med #370')]);
+  const result = resolve([...migrationScenario, pull(400, 'open', 'Arbetar med #370')]);
   assert.equal(result.activeIssues.length, 0);
   assert.equal(result.nextReady?.number, 370);
 });
 
 test('när första steget stängs blir #371 nästa redo', () => {
-  const result = resolve(closeIssues(currentScenario, [370]));
+  const result = resolve(closeIssues(migrationScenario, [370]));
   assert.equal(result.nextReady?.number, 371);
   assert.deepEqual(result.nextSteps.map((item) => item.number), [371]);
 });
 
 test('efter #371 blir #372 och #373 parallellt redo', () => {
-  const result = resolve(closeIssues(currentScenario, [370, 371]));
+  const result = resolve(closeIssues(migrationScenario, [370, 371]));
   assert.equal(result.nextReady?.number, 372);
   assert.deepEqual(result.nextSteps.map((item) => item.number), [372, 373]);
 });
 
 test('aktiv #372 lämnar #373 som nästa redo i samma steg', () => {
-  const staged = closeIssues(currentScenario, [370, 371]);
+  const staged = closeIssues(migrationScenario, [370, 371]);
   const items = replaceIssue(staged, 372, 'open', { labels: ['in-progress'] });
   const result = resolve(items);
   assert.deepEqual(result.activeIssues.map((item) => item.number), [372]);
@@ -144,20 +157,20 @@ test('aktiv #372 lämnar #373 som nästa redo i samma steg', () => {
 });
 
 test('när båda parallella batcherna är klara blir #374 nästa redo', () => {
-  const result = resolve(closeIssues(currentScenario, [370, 371, 372, 373]));
+  const result = resolve(closeIssues(migrationScenario, [370, 371, 372, 373]));
   assert.equal(result.nextReady?.number, 374);
   assert.deepEqual(result.nextSteps.map((item) => item.number), [374]);
 });
 
 test('efter det explicita klustret fortsätter övriga implementerbara fasissues i ordning', () => {
-  const result = resolve(closeIssues(currentScenario, [370, 371, 372, 373, 374]));
+  const result = resolve(closeIssues(migrationScenario, [370, 371, 372, 373, 374]));
   assert.equal(result.nextReady?.number, 321);
   assert.deepEqual(result.nextSteps.map((item) => item.number), [321, 322, 323]);
 });
 
 test('öppna parents håller fasen ofärdig men presenteras inte som implementation', () => {
   const implementationNumbers = [370, 371, 372, 373, 374, 321, 322, 323, 324];
-  const result = resolve(closeIssues(currentScenario, implementationNumbers));
+  const result = resolve(closeIssues(migrationScenario, implementationNumbers));
   const content = result.phases.find((phase) => phase.id === 'content');
   assert.equal(content?.status, 'ready');
   assert.equal(content?.statusLabel, 'Samordning återstår');
@@ -168,18 +181,18 @@ test('öppna parents håller fasen ofärdig men presenteras inte som implementat
 
 test('fasen blir complete först när även samordnande parents är stängda', () => {
   const allContentNumbers = [315, 320, 370, 371, 372, 373, 374, 321, 322, 323, 324];
-  const result = resolve(closeIssues(currentScenario, allContentNumbers));
+  const result = resolve(closeIssues(migrationScenario, allContentNumbers));
   assert.equal(result.phases.find((phase) => phase.id === 'content')?.status, 'complete');
 });
 
 test('öppen fasblockerare ger blocked och inget nästa redo', () => {
-  const result = resolve(replaceIssue(currentScenario, 353, 'open'));
+  const result = resolve(replaceIssue(migrationScenario, 353, 'open'));
   assert.equal(result.phases.find((phase) => phase.id === 'content')?.status, 'blocked');
   assert.equal(result.nextReady, null);
 });
 
 test('#375 visas som roadmaprelaterad uppföljning men blandas inte in i nästa steg', () => {
-  const result = resolve(currentScenario);
+  const result = resolve(migrationScenario);
   const track = result.relatedTracks.find((item) => item.issue?.number === 375);
   assert.equal(track?.kind, 'roadmap-follow-up');
   assert.equal(track?.status, 'ready');
@@ -187,7 +200,7 @@ test('#375 visas som roadmaprelaterad uppföljning men blandas inte in i nästa 
 });
 
 test('#354 är roadmaprelaterad uppföljning blockerad av öppet huvudissue', () => {
-  const result = resolve(currentScenario);
+  const result = resolve(migrationScenario);
   const track = result.relatedTracks.find((item) => item.issue?.number === 354);
   assert.equal(track?.kind, 'roadmap-follow-up');
   assert.equal(track?.status, 'blocked');
@@ -195,7 +208,7 @@ test('#354 är roadmaprelaterad uppföljning blockerad av öppet huvudissue', ()
 });
 
 test('#364 hålls separat från huvudspåret', () => {
-  const result = resolve(currentScenario);
+  const result = resolve(migrationScenario);
   assert.equal(result.nextSteps.some((item) => item.number === 364), false);
   assert.equal(result.relatedTracks.find((track) => track.issue?.number === 364)?.kind, 'separate');
 });
@@ -283,6 +296,6 @@ test('rate limiting ger ett explicit fel som sidan kan visa neutralt', async () 
 test('collectRequiredIssueNumbers inkluderar parents, steg, blockerare och spår utan dubbletter', () => {
   assert.deepEqual(
     [...collectRequiredIssueNumbers(phases, tracks)].sort((a, b) => a - b),
-    [315, 320, 321, 322, 323, 324, 347, 348, 349, 350, 351, 352, 353, 354, 359, 364, 370, 371, 372, 373, 374, 375],
+    [315, 320, 321, 322, 323, 324, 347, 348, 349, 350, 351, 352, 353, 354, 359, 364, 370, 371, 372, 373, 374, 375, 384],
   );
 });

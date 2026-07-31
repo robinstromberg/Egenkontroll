@@ -298,9 +298,30 @@ Funktionellt genomförd med:
 - ett resursbibliotek,
 - login/signup-övergång.
 
+### Fas 6B – Permanent innehållssystem v1
+
+Genomförs under parent issue #384 enligt den normativa specifikationen i
+`docs/content-governance-system.md` och den avgränsade genomförandeplanen i
+`docs/strategy/CONTENT_SYSTEM_V1_ROADMAP.md`.
+
+Fasen bygger ett permanent, avgränsat system för innehållets governance,
+källspårning, riskbaserade publiceringsgrindar och återkommande granskning.
+Den omfattar inte ett redaktionellt CMS, automatisk publicering eller en ny
+publik produktfunktion.
+
+Fasen är klar först när dess Definition of Done är uppfylld: alla indexerbara
+routes är registrerade, pilotsidorna är fullständigt styrda, ändrade källor kan
+spåras till berörda claims och artiklar, drift och fyndkö är synliga och Robin
+har godkänt normal drift utan fortsatt funktionsutbyggnad.
+
+Större innehållsmigrationer i #315 samt nya större webb- och appinitiativ
+väntar tills dess. Kritiska appbuggar, data-/auth-risker och nödvändigt
+underhåll fortsätter i separata spår.
+
 ### Fas 7 – Migrera befintligt innehåll
 
-Flytta successivt befintliga publika sidor till rätt nya sidmallar och struktur.
+Flytta successivt befintliga publika sidor till rätt nya sidmallar och struktur
+först efter att Fas 6B är klar.
 
 Innan nästa migrationsbatch ska webbguardrails i #353 vara genomförda. Den fullständiga visuella webbsaneringen i #354 görs först när migrationen är klar eller uttryckligen tillräckligt komplett.
 
