@@ -1,6 +1,11 @@
 import { supabase } from '../lib/supabaseClient';
 import type { ControlRun, ControlRunItem, Deviation, Profile } from '../types/database';
 import { createSignedAttachmentUrls, isImageAttachment } from './attachmentService';
+import {
+  HISTORY_PAGE_SIZE,
+  loadFilteredHistoryPage,
+} from './historyPagination';
+import type { HistoryCursor, HistoryPage } from './historyPagination';
 
 export type HistoryFilters = {
   fromDate?: string;
@@ -37,6 +42,13 @@ export type ControlRunDetail = {
 
 type ProfileSummary = Pick<Profile, 'id' | 'full_name' | 'email'>;
 
+type RawHistoryRun = ControlRun & {
+  control_types?: {
+    name?: string | null;
+    instructions?: string | null;
+  } | null;
+};
+
 function readPerformerName(performedBy: string | null, profileById: Map<string, ProfileSummary>): string {
   if (!performedBy) return 'Okänd användare';
   const profile = profileById.get(performedBy);
@@ -57,27 +69,42 @@ async function loadProfilesForRuns(runs: ControlRun[]): Promise<Map<string, Prof
   return new Map(((data ?? []) as ProfileSummary[]).map((profile) => [profile.id, profile]));
 }
 
-export async function listHistoryRuns(
+function startOfNextDay(value: string): string {
+  const nextDay = new Date(`${value}T00:00:00`);
+  nextDay.setDate(nextDay.getDate() + 1);
+  return nextDay.toISOString();
+}
+
+async function fetchHistoryRunBatch(
   organizationId: string,
   filters: HistoryFilters,
-): Promise<ControlRunSummary[]> {
+  cursor: HistoryCursor | null,
+  limit: number,
+): Promise<RawHistoryRun[]> {
   let query = supabase
     .from('control_runs')
     .select('*, control_types(name, instructions)')
     .eq('organization_id', organizationId)
     .order('performed_at', { ascending: false })
-    .limit(50);
+    .order('id', { ascending: false })
+    .limit(limit);
 
   if (filters.fromDate) {
     query = query.gte('performed_at', new Date(`${filters.fromDate}T00:00:00`).toISOString());
   }
 
   if (filters.toDate) {
-    query = query.lt('performed_at', new Date(`${filters.toDate}T23:59:59`).toISOString());
+    query = query.lt('performed_at', startOfNextDay(filters.toDate));
   }
 
   if (filters.status) {
     query = query.eq('status', filters.status);
+  }
+
+  if (cursor) {
+    query = query.or(
+      `performed_at.lt.${cursor.performedAt},and(performed_at.eq.${cursor.performedAt},id.lt.${cursor.id})`,
+    );
   }
 
   const { data, error } = await query;
@@ -86,9 +113,17 @@ export async function listHistoryRuns(
     throw error;
   }
 
-  const baseRows = (data ?? []).map((row) => ({
-    ...(row as ControlRun),
-    control_type_name: row.control_types?.name,
+  return (data ?? []) as RawHistoryRun[];
+}
+
+async function selectHistoryMatches(
+  organizationId: string,
+  filters: HistoryFilters,
+  sourceRows: RawHistoryRun[],
+): Promise<ControlRunSummary[]> {
+  const baseRows = sourceRows.map((row) => ({
+    ...row,
+    control_type_name: row.control_types?.name ?? undefined,
     control_type_instructions: row.control_types?.instructions ?? null,
   }));
 
@@ -103,26 +138,7 @@ export async function listHistoryRuns(
   }));
 
   const normalizedQuery = filters.query?.trim().toLowerCase() ?? '';
-  const runIds = rows.map((row) => row.id);
-  const { data: attachments, error: attachmentsError } = await supabase
-    .from('attachments')
-    .select('control_run_id')
-    .eq('organization_id', organizationId)
-    .in('control_run_id', runIds);
-
-  if (attachmentsError) {
-    throw attachmentsError;
-  }
-
-  const attachmentCountByRunId = new Map<string, number>();
-  for (const attachment of attachments ?? []) {
-    if (!attachment.control_run_id) continue;
-    attachmentCountByRunId.set(
-      attachment.control_run_id,
-      (attachmentCountByRunId.get(attachment.control_run_id) ?? 0) + 1,
-    );
-  }
-
+  const sourceRunIds = rows.map((row) => row.id);
   let filteredRows = rows;
 
   if (normalizedQuery) {
@@ -130,7 +146,7 @@ export async function listHistoryRuns(
       .from('control_run_items')
       .select('control_run_id, object_snapshot, field_snapshot, value_text, value_number, value_boolean, value_date, value_json, deviation_reason, action_text')
       .eq('organization_id', organizationId)
-      .in('control_run_id', runIds);
+      .in('control_run_id', sourceRunIds);
 
     if (itemsError) {
       throw itemsError;
@@ -166,10 +182,55 @@ export async function listHistoryRuns(
     });
   }
 
+  if (filteredRows.length === 0) {
+    return [];
+  }
+
+  const filteredRunIds = filteredRows.map((row) => row.id);
+  const { data: attachments, error: attachmentsError } = await supabase
+    .from('attachments')
+    .select('control_run_id')
+    .eq('organization_id', organizationId)
+    .in('control_run_id', filteredRunIds);
+
+  if (attachmentsError) {
+    throw attachmentsError;
+  }
+
+  const attachmentCountByRunId = new Map<string, number>();
+  for (const attachment of attachments ?? []) {
+    if (!attachment.control_run_id) continue;
+    attachmentCountByRunId.set(
+      attachment.control_run_id,
+      (attachmentCountByRunId.get(attachment.control_run_id) ?? 0) + 1,
+    );
+  }
+
   return filteredRows.map((row) => ({
     ...row,
     attachment_count: attachmentCountByRunId.get(row.id) ?? 0,
   }));
+}
+
+export async function listHistoryRunsPage(
+  organizationId: string,
+  filters: HistoryFilters,
+  options: {
+    cursor?: HistoryCursor | null;
+    pageSize?: number;
+  } = {},
+): Promise<HistoryPage<ControlRunSummary>> {
+  return loadFilteredHistoryPage({
+    cursor: options.cursor,
+    pageSize: options.pageSize ?? HISTORY_PAGE_SIZE,
+    fetchSourceBatch: (cursor, limit) => fetchHistoryRunBatch(
+      organizationId,
+      filters,
+      cursor,
+      limit,
+    ),
+    selectMatches: (rows) => selectHistoryMatches(organizationId, filters, rows),
+  });
 }
 
 export async function getControlRunDetail(

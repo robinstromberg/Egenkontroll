@@ -121,6 +121,9 @@ test('History and KPI keep filters, data boundaries, states and chart contracts'
   assert.match(history, /run\.status === 'completed_with_deviation' \? 'status-pill warning' : 'status-pill done'/);
   assert.match(history, /attachment\.signed_url \? \(/);
   assert.match(history, /onClick=\{\(event\) => event\.stopPropagation\(\)\}/);
+  assert.match(history, /listHistoryRunsPage\(organizationId, nextFilters/);
+  assert.match(history, /Ladda fler/);
+  assert.match(history, /Alla matchande kontroller är visade/);
   const historyPrint = history.slice(history.indexOf('async function handlePrint'), history.indexOf('function closeDetail'));
   assertOrdered(historyPrint, [
     'createPrintReportWindow()',
@@ -132,10 +135,14 @@ test('History and KPI keep filters, data boundaries, states and chart contracts'
   for (const contract of [
     ".eq('organization_id', organizationId)",
     ".order('performed_at', { ascending: false })",
-    '.limit(50)',
+    ".order('id', { ascending: false })",
+    '.limit(limit)',
     '`${filters.fromDate}T00:00:00`',
-    '`${filters.toDate}T23:59:59`',
+    'startOfNextDay(filters.toDate)',
     ".eq('status', filters.status)",
+    'performed_at.lt.${cursor.performedAt}',
+    'id.lt.${cursor.id}',
+    'loadFilteredHistoryPage({',
     '.filter(isImageAttachment)',
     'createSignedAttachmentUrls(imageAttachments)',
   ]) {
@@ -318,8 +325,9 @@ test('static reports share the light design-system palette and keep document str
     },
   });
 
-  const [historyReport, shared, pdf, documentModel] = await Promise.all([
+  const [historyReport, historyReportContent, shared, pdf, documentModel] = await Promise.all([
     readSourceFile('../services/reportService.ts'),
+    readSourceFile('../services/historyReportContent.ts'),
     readComponentFile('SharedRunList.tsx'),
     readSourceFile('../reports/inspectorReportPdf.js'),
     readSourceFile('../reports/inspectorReportDocument.js'),
@@ -329,18 +337,20 @@ test('static reports share the light design-system palette and keep document str
     assert.match(source, /brandAssets\.reportIcon/);
     assert.doesNotMatch(stripHtmlEntities(source), rawColorPattern);
   }
+  assert.match(historyReportContent, /reportPalette/);
+  assert.doesNotMatch(stripHtmlEntities(historyReportContent), rawColorPattern);
 
-  const historyCsv = historyReport.slice(historyReport.indexOf('export function downloadCsvReport'), historyReport.indexOf('export function openPrintReport'));
+  const historyCsv = historyReportContent.slice(historyReportContent.indexOf('export function buildCsvReportContent'), historyReportContent.indexOf('export function buildPrintReportHtml'));
   assertOrdered(historyCsv, ['Tidpunkt', 'Utförd av', 'Kontrolltyp', 'Rutin/instruktion', 'Status', 'Värden', 'Avvikelse', 'Åtgärd']);
   assert.match(historyCsv, /headers\.map\(escapeCsv\)\.join\(','\)/);
-  assert.match(historyCsv, /egenkontroll-historik\.csv/);
+  assert.match(historyReport, /egenkontroll-historik\.csv/);
 
   const sharedCsv = shared.slice(shared.indexOf('function buildCsv'), shared.indexOf('function escapeHtml'));
   assertOrdered(sharedCsv, ['Datum', 'Utförd av', 'Kontroll', 'Kategori', 'Rutin/instruktion', 'Status', 'Kontrollpunkt', 'Värde', 'Fältstatus', 'Avvikelse', 'Åtgärd', 'Anteckning']);
   assert.match(sharedCsv, /join\(';'\)/);
   assert.match(shared, /`egenkontroll-\$\{periodStart\}-\$\{periodEnd\}\.csv`/);
 
-  for (const source of [historyReport, shared]) {
+  for (const source of [historyReportContent, shared]) {
     assert.match(source, /break-before:\s*page; page-break-before:\s*always/);
     assert.match(source, /break-inside:\s*avoid; page-break-inside:\s*avoid/);
     assert.match(source, /max-height:\s*620px/);
