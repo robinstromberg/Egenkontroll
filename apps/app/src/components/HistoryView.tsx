@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActionButton } from './ui/ActionButton';
 import { AssetIcon } from './ui/AssetIcon';
 import { appUiIcons } from '../config/assets';
 import { collectReportRows, createPrintReportWindow, downloadCsvReport, openPrintReport } from '../services/reportService';
 import {
   getControlRunDetail,
-  listHistoryRuns,
+  listHistoryRunsPage,
 } from '../services/historyService';
 import type { ControlRunDetail, ControlRunSummary, HistoryFilters } from '../services/historyService';
+import { HISTORY_PAGE_SIZE } from '../services/historyPagination';
+import type { HistoryCursor } from '../services/historyPagination';
 import './HistoryView.css';
 
 export type HistoryViewProps = {
@@ -72,23 +74,80 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
   const [detail, setDetail] = useState<ControlRunDetail | null>(null);
   const [previewImage, setPreviewImage] = useState<ControlRunDetail['attachments'][number] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [nextCursor, setNextCursor] = useState<HistoryCursor | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [message, setMessage] = useState('');
+  const requestSequence = useRef(0);
+  const loadedRunIds = useRef(new Set<string>());
+  const reportRequestActive = useRef(false);
 
-  const loadRuns = useCallback(async (nextFilters: HistoryFilters) => {
+  const loadRuns = useCallback(async (
+    nextFilters: HistoryFilters,
+    cursor: HistoryCursor | null = null,
+    append = false,
+  ) => {
+    const requestId = requestSequence.current + 1;
+    requestSequence.current = requestId;
+
     try {
-      setLoading(true);
       setMessage('');
-      setRuns(await listHistoryRuns(organizationId, nextFilters));
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setLoadingMore(false);
+        setRuns([]);
+        setNextCursor(null);
+        setHasMore(false);
+        loadedRunIds.current = new Set();
+      }
+
+      const page = await listHistoryRunsPage(organizationId, nextFilters, {
+        cursor,
+        pageSize: HISTORY_PAGE_SIZE,
+      });
+
+      if (requestId !== requestSequence.current) return;
+
+      const nextLoadedIds = append
+        ? new Set(loadedRunIds.current)
+        : new Set<string>();
+      for (const run of page.rows) {
+        if (nextLoadedIds.has(run.id)) {
+          throw new Error('Historiken innehöll en duplicerad rad mellan två sidor.');
+        }
+        nextLoadedIds.add(run.id);
+      }
+
+      loadedRunIds.current = nextLoadedIds;
+      setRuns((currentRuns) => append ? [...currentRuns, ...page.rows] : page.rows);
+      setNextCursor(page.nextCursor);
+      setHasMore(page.hasMore);
     } catch (error) {
+      if (requestId !== requestSequence.current) return;
       setMessage(error instanceof Error ? error.message : 'Kunde inte läsa historiken.');
     } finally {
-      setLoading(false);
+      if (requestId === requestSequence.current) {
+        setLoading(false);
+        setLoadingMore(false);
+      }
     }
   }, [organizationId]);
 
   useEffect(() => {
-    void loadRuns({});
-  }, [loadRuns]);
+    requestSequence.current += 1;
+    const delay = filters.query ? 250 : 0;
+    const timeoutId = window.setTimeout(() => {
+      void loadRuns(filters);
+    }, delay);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      requestSequence.current += 1;
+    };
+  }, [filters, loadRuns]);
 
   async function openDetail(runId: string) {
     try {
@@ -102,33 +161,58 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
 
   function updateFilters(nextFilters: HistoryFilters) {
     setFilters(nextFilters);
-    void loadRuns(nextFilters);
+    setLoading(true);
+    setRuns([]);
+    setNextCursor(null);
+    setHasMore(false);
+    loadedRunIds.current = new Set();
+    setDetail(null);
+    setPreviewImage(null);
+  }
+
+  function loadMoreRuns() {
+    if (!nextCursor || loadingMore) return;
+    void loadRuns(filters, nextCursor, true);
   }
 
   async function handleCsv() {
+    if (reportRequestActive.current) return;
+    reportRequestActive.current = true;
+
     try {
+      setReportLoading(true);
       setMessage('');
       const rows = await collectReportRows(organizationId, filters);
       downloadCsvReport(rows);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa CSV.');
+    } finally {
+      reportRequestActive.current = false;
+      setReportLoading(false);
     }
   }
 
   async function handlePrint() {
+    if (reportRequestActive.current) return;
+
     const printWindow = createPrintReportWindow();
     if (!printWindow) {
       setMessage('Kunde inte öppna utskriftsvyn. Tillåt popup-fönster och försök igen.');
       return;
     }
 
+    reportRequestActive.current = true;
     try {
+      setReportLoading(true);
       setMessage('');
       const rows = await collectReportRows(organizationId, filters);
       openPrintReport(rows, printWindow);
     } catch (error) {
       printWindow.close();
       setMessage(error instanceof Error ? error.message : 'Kunde inte skapa utskriftsvy.');
+    } finally {
+      reportRequestActive.current = false;
+      setReportLoading(false);
     }
   }
 
@@ -189,12 +273,13 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
       </div>
 
       <div className="report-actions">
-        <ActionButton type="button" variant="secondary" onClick={handleCsv}>CSV</ActionButton>
-        <ActionButton type="button" variant="secondary" onClick={handlePrint}>Utskriftsvy</ActionButton>
+        <ActionButton type="button" variant="secondary" onClick={handleCsv} disabled={reportLoading}>CSV</ActionButton>
+        <ActionButton type="button" variant="secondary" onClick={handlePrint} disabled={reportLoading}>Utskriftsvy</ActionButton>
       </div>
 
-      {message ? <p className="form-message error-message">{message}</p> : null}
-      {loading ? <p className="muted-copy">Laddar historik...</p> : null}
+      {message ? <p className="form-message error-message" role="alert">{message}</p> : null}
+      {reportLoading ? <p className="muted-copy" role="status">Hämtar hela rapportunderlaget...</p> : null}
+      {loading ? <p className="muted-copy" role="status">Laddar historik...</p> : null}
 
       <div className="history-list">
         {runs.length === 0 && !loading ? <p className="muted-copy">Ingen historik hittades.</p> : null}
@@ -220,6 +305,24 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
           </button>
         ))}
       </div>
+
+      {hasMore && !loading ? (
+        <div className="history-pagination">
+          <ActionButton
+            type="button"
+            variant="secondary"
+            onClick={loadMoreRuns}
+            disabled={loadingMore}
+          >
+            {loadingMore ? 'Laddar fler...' : 'Ladda fler'}
+          </ActionButton>
+        </div>
+      ) : null}
+      {!loading && runs.length > 0 && !hasMore ? (
+        <p className="muted-copy history-list-end" role="status">
+          Alla matchande kontroller är visade.
+        </p>
+      ) : null}
 
       {detail ? (
         <div className="history-detail">

@@ -1,32 +1,20 @@
 import { brandAssets } from '@min-egenkontroll/brand';
 import { reportPalette } from '../reports/reportPalette.js';
-import { getControlRunDetail, listHistoryRuns } from './historyService';
+import { getControlRunDetail, listHistoryRunsPage } from './historyService';
 import type { HistoryFilters } from './historyService';
+import {
+  collectHistoryPagesSequentially,
+  HISTORY_PAGE_SIZE,
+} from './historyPagination';
+import {
+  buildCsvReportContent,
+  buildPrintReportHtml,
+} from './historyReportContent';
+import type { ReportRow } from './historyReportContent';
+
+export type { ReportRow } from './historyReportContent';
 
 type ReportFilters = HistoryFilters;
-
-type ReportAttachment = {
-  id: string;
-  reference: string;
-  performedAt: string;
-  controlType: string;
-  fileName: string;
-  createdAt: string;
-  signedUrl: string | null;
-};
-
-type ReportRow = {
-  id: string;
-  performedAt: string;
-  performedBy: string;
-  controlType: string;
-  routine: string;
-  status: string;
-  values: string;
-  deviation: string;
-  action: string;
-  attachments: ReportAttachment[];
-};
 
 function readItemLabel(item: Awaited<ReturnType<typeof getControlRunDetail>>['items'][number]): string {
   const fieldLabel = typeof item.field_snapshot.label === 'string' ? item.field_snapshot.label : 'Fält';
@@ -83,19 +71,6 @@ function readRunActionSummary(
     ...detail.items.map((item) => item.action_text),
     ...detail.deviations.map((deviation) => deviation.action_text),
   ]).join('; ');
-}
-
-function escapeCsv(value: string): string {
-  return `"${value.replace(/"/g, '""')}"`;
-}
-
-function escapeHtml(value: string | number): string {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
 
 function absoluteAssetUrl(path: string): string {
@@ -156,182 +131,57 @@ export async function collectReportRows(
   organizationId: string,
   filters: ReportFilters,
 ): Promise<ReportRow[]> {
-  const runs = await listHistoryRuns(organizationId, filters);
-  const rows: ReportRow[] = [];
+  return collectHistoryPagesSequentially({
+    fetchPage: (cursor) => listHistoryRunsPage(organizationId, filters, {
+      cursor,
+      pageSize: HISTORY_PAGE_SIZE,
+    }),
+    transformRow: async (run, resultIndex) => {
+      const detail = await getControlRunDetail(organizationId, run.id);
+      const controlType = run.control_type_name ?? 'Kontroll';
+      const routine = uniqueNonEmpty([
+        detail.run.control_type_instructions ?? '',
+        readObjectInstructionSummary(detail.items),
+      ]).join(' | ');
 
-  for (const run of runs) {
-    const detail = await getControlRunDetail(organizationId, run.id);
-    const controlType = run.control_type_name ?? 'Kontroll';
-    const routine = uniqueNonEmpty([
-      detail.run.control_type_instructions ?? '',
-      readObjectInstructionSummary(detail.items),
-    ]).join(' | ');
-    rows.push({
-      id: run.id,
-      performedAt: run.performed_at,
-      performedBy: detail.run.performed_by_name,
-      controlType,
-      routine,
-      status: run.status,
-      values: readRunValueSummary(detail.items) || 'Inga fält registrerade',
-      deviation: readRunDeviationSummary(detail),
-      action: readRunActionSummary(detail),
-      attachments: detail.attachments.map((attachment, index) => ({
-        id: attachment.id,
-        reference: `Bilaga ${rows.length + 1}.${index + 1}`,
+      return {
+        id: run.id,
         performedAt: run.performed_at,
+        performedBy: detail.run.performed_by_name,
         controlType,
-        fileName: attachment.file_name ?? 'Bilaga',
-        createdAt: attachment.created_at,
-        signedUrl: attachment.signed_url ?? null,
-      })),
-    });
-  }
-
-  return rows;
+        routine,
+        status: run.status,
+        values: readRunValueSummary(detail.items) || 'Inga fält registrerade',
+        deviation: readRunDeviationSummary(detail),
+        action: readRunActionSummary(detail),
+        attachments: detail.attachments.map((attachment, index) => ({
+          id: attachment.id,
+          reference: `Bilaga ${resultIndex + 1}.${index + 1}`,
+          performedAt: run.performed_at,
+          controlType,
+          fileName: attachment.file_name ?? 'Bilaga',
+          createdAt: attachment.created_at,
+          signedUrl: attachment.signed_url ?? null,
+        })),
+      };
+    },
+  });
 }
 
 export function downloadCsvReport(rows: ReportRow[]) {
-  const headers = ['Tidpunkt', 'Utförd av', 'Kontrolltyp', 'Rutin/instruktion', 'Status', 'Värden', 'Avvikelse', 'Åtgärd'];
-  const lines = [
-    headers.map(escapeCsv).join(','),
-    ...rows.map((row) =>
-      [
-        row.performedAt,
-        row.performedBy,
-        row.controlType,
-        row.routine,
-        row.status,
-        row.values,
-        row.deviation,
-        row.action,
-      ].map(escapeCsv).join(','),
-    ),
-  ];
-
-  downloadTextFile('egenkontroll-historik.csv', lines.join('\n'), 'text/csv;charset=utf-8');
+  downloadTextFile(
+    'egenkontroll-historik.csv',
+    buildCsvReportContent(rows),
+    'text/csv;charset=utf-8',
+  );
 }
 
 export function openPrintReport(rows: ReportRow[], printWindow = createPrintReportWindow()) {
   if (!printWindow) return false;
 
   const brandMarkUrl = absoluteAssetUrl(brandAssets.reportIcon);
-  const htmlRows = rows
-    .map((row) => `
-      <tr>
-        <td>${escapeHtml(row.performedAt)}</td>
-        <td>${escapeHtml(row.performedBy)}</td>
-        <td>${escapeHtml(row.controlType)}</td>
-        <td>${escapeHtml(row.routine)}</td>
-        <td>${escapeHtml(row.status)}</td>
-        <td>${escapeHtml(row.values)}</td>
-        <td>${escapeHtml(row.deviation)}</td>
-        <td>${escapeHtml(row.action)}</td>
-      </tr>
-    `)
-    .join('');
-  const attachments = rows.flatMap((row) => row.attachments);
-  const attachmentRows = attachments.map((attachment) => `
-    <tr>
-      <td>${escapeHtml(attachment.reference)}</td>
-      <td>${escapeHtml(attachment.controlType)}</td>
-      <td>${escapeHtml(attachment.fileName)}</td>
-      <td>${escapeHtml(attachment.createdAt)}</td>
-    </tr>
-  `).join('');
-  const attachmentImageSections = attachments
-    .filter((attachment) => attachment.signedUrl)
-    .map((attachment) => `
-      <article class="attachment-card">
-        <h3>${escapeHtml(attachment.reference)}</h3>
-        <p>${escapeHtml(attachment.controlType)} - ${escapeHtml(attachment.performedAt)}</p>
-        <p>${escapeHtml(attachment.fileName)}</p>
-        <img src="${escapeHtml(attachment.signedUrl ?? '')}" alt="${escapeHtml(attachment.fileName)}" />
-      </article>
-    `)
-    .join('');
-
   printWindow.document.open();
-  printWindow.document.write(`
-    <!doctype html>
-    <html lang="sv">
-      <head>
-        <title>Egenkontroll - rapport</title>
-        <style>
-          body { color: ${reportPalette.text}; font-family: Arial, sans-serif; padding: 24px; background: ${reportPalette.paper}; }
-          h1, h2, h3, p { margin-top: 0; }
-          .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
-          .brand img { width: 42px; height: 42px; border-radius: 12px; object-fit: cover; }
-          .brand h1 { margin: 0; }
-          .muted { color: ${reportPalette.muted}; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
-          th, td { border: 1px solid ${reportPalette.border}; padding: 8px; text-align: left; vertical-align: top; }
-          th { background: ${reportPalette.brandPale}; }
-          .attachment-appendix { break-before: page; page-break-before: always; }
-          .attachment-card { break-inside: avoid; page-break-inside: avoid; margin: 0 0 24px; border: 1px solid ${reportPalette.border}; border-radius: 14px; padding: 14px; }
-          .attachment-card h3 { margin-bottom: 8px; color: ${reportPalette.brand}; }
-          .attachment-card p { margin-bottom: 6px; color: ${reportPalette.muted}; }
-          .attachment-card img { display: block; width: 100%; max-height: 620px; margin-top: 12px; border-radius: 10px; object-fit: contain; background: ${reportPalette.surfaceSubtle}; }
-          @media print { body { padding: 0; } .no-print { display: none; } }
-        </style>
-      </head>
-      <body>
-        <div class="brand">
-          <img src="${escapeHtml(brandMarkUrl)}" alt="" />
-          <div>
-            <h1>Egenkontroll - rapport</h1>
-            <p class="muted">Min Egenkontroll</p>
-          </div>
-        </div>
-        <p class="no-print muted">Skapa PDF genom att välja "Spara som PDF" i utskriftsdialogen.</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Tidpunkt</th>
-              <th>Utförd av</th>
-              <th>Kontrolltyp</th>
-              <th>Rutin/instruktion</th>
-              <th>Status</th>
-              <th>Värden</th>
-              <th>Avvikelse</th>
-              <th>Åtgärd</th>
-            </tr>
-          </thead>
-          <tbody>${htmlRows || '<tr><td colspan="8">Inga kontroller i urvalet.</td></tr>'}</tbody>
-        </table>
-        <h2>Bilagor</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Referens</th>
-              <th>Kontroll</th>
-              <th>Filnamn</th>
-              <th>Registrerad</th>
-            </tr>
-          </thead>
-          <tbody>${attachmentRows || '<tr><td colspan="4">Inga bilagor i urvalet.</td></tr>'}</tbody>
-        </table>
-        ${attachmentImageSections ? `
-          <section class="attachment-appendix">
-            <h2>Bildbilagor</h2>
-            ${attachmentImageSections}
-          </section>
-        ` : ''}
-        <script>
-          Promise.all(Array.from(document.images).map((image) => {
-            if (image.complete) return Promise.resolve();
-            return new Promise((resolve) => {
-              image.addEventListener('load', resolve, { once: true });
-              image.addEventListener('error', resolve, { once: true });
-            });
-          })).finally(() => {
-            window.focus();
-            window.print();
-          });
-        </script>
-      </body>
-    </html>
-  `);
+  printWindow.document.write(buildPrintReportHtml(rows, brandMarkUrl));
   printWindow.document.close();
 
   return true;

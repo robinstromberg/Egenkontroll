@@ -35,6 +35,19 @@
   gap: 11px;
 }
 
+.history-pagination {
+  display: flex;
+  justify-content: center;
+}
+
+.history-pagination button {
+  width: min(100%, 220px);
+}
+
+.history-list-end {
+  text-align: center;
+}
+
 .history-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
