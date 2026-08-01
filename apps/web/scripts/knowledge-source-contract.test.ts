@@ -254,3 +254,341 @@ test('stoppar källor utan stabilt ID, exakt URL eller verifieringsmetadata', ()
   assert.ok(errors.some((error) => error.includes('faktakontrolldatum')));
   assert.ok(errors.some((error) => error.includes('åtkomstdatum')));
 });
+
+const v2Scope = {
+  audience: 'Små livsmedelsföretag',
+  applicability: 'Verksamheter efter primärproduktionen',
+  conditions: ['Bedömning görs utifrån verksamhetens risker.'],
+  exceptions: ['Lokala myndighetsbeslut kan påverka tillämpningen.'],
+} as const;
+
+const v2LegalSource: KnowledgeSourceRecord = {
+  id: 'test:law',
+  label: 'Testad rättsakt',
+  url: 'https://example.com/law',
+  type: 'rättsakt',
+  factCheckedAt: '2026-08-01',
+  accessedAt: '2026-08-01',
+  relevantSections: ['Artikel 1'],
+  latestVersion: '2026-08-01',
+  sections: [{ id: 'article-1', label: 'Artikel 1' }],
+};
+
+const v2GuidanceSource: KnowledgeSourceRecord = {
+  id: 'test:guidance',
+  label: 'Testad myndighetsvägledning',
+  url: 'https://example.com/guidance',
+  type: 'myndighetsvägledning',
+  factCheckedAt: '2026-08-01',
+  accessedAt: '2026-08-01',
+  relevantSections: ['Avsnitt A'],
+  latestVersion: '2026-08-01',
+  sections: [{ id: 'section-a', label: 'Avsnitt A' }],
+};
+
+const v2Registries: KnowledgeSourceContractRegistries = {
+  ...defaultKnowledgeSourceContractRegistries,
+  sources: {
+    ...knowledgeSources,
+    [v2LegalSource.id]: v2LegalSource,
+    [v2GuidanceSource.id]: v2GuidanceSource,
+  },
+};
+
+function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleContractInput {
+  return {
+    governanceVersion: 2,
+    id: 'test-governance-v2',
+    canonicalPath: '/seo/test-governance-v2.html',
+    title: 'Testad governance v2 | Min Egenkontroll',
+    description: 'Ett testat kontrakt för governance v2.',
+    sourceIds: ['test:law', 'test:guidance'],
+    languagePolicyIds: ['language-policy:source-classification:v1'],
+    disclaimerIds: [],
+    aiInterpretation: 'none',
+    contractKind: 'full',
+    scope: v2Scope,
+    risk: 'red',
+    review: {
+      status: 'approved',
+      humanReviewer: 'Robin Granskare',
+      expertReviewer: 'Sakkunnig Granskare',
+      requiresExpertReview: true,
+      explicitlyApproved: true,
+      approvedBy: 'Robin Godkännare',
+      approvedAt: '2026-08-01',
+    },
+    seo: {
+      primaryUserNeed: 'Få ett tydligt och granskningsbart innehållskontrakt.',
+      pageRole: 'fact-page',
+      searchIntent: 'Förstå hur governance v2 fungerar',
+      primaryTopic: 'Governance-kontrakt',
+      relatedPhrases: ['innehållskontrakt', 'faktagranskning'],
+      topicClusterId: 'content-governance',
+      structuralParentId: 'knowledge-base',
+      closestRelatedPagePaths: ['/kunskapsbank'],
+      uniqueValue: 'Ett avgränsat och testbart kontrakt.',
+      ownPageRationale: 'Ämnet behöver ett eget verifierbart kontrakt innan publicering.',
+      titleSource: 'article.title',
+      h1SurfaceId: 'h1',
+      metaDescriptionSource: 'article.description',
+      canonicalSource: 'article.canonicalPath',
+      indexingDecision: 'index',
+      sitemapDecision: 'include',
+      structuredDataTypes: ['Article', 'BreadcrumbList'],
+      plannedIncomingLinks: ['/kunskapsbank'],
+      plannedOutgoingLinks: ['/seo/test-governance-v2.html'],
+      followUpGoals: ['Kontrollera sökintentionen vid nästa innehållsrevision.'],
+    },
+    surfaces: [
+      { id: 'title', kind: 'title', material: true },
+      { id: 'h1', kind: 'h1', material: true },
+      { id: 'meta-description', kind: 'meta-description', material: true },
+      { id: 'short-answer', kind: 'short-answer', material: true },
+      { id: 'ingress', kind: 'ingress', material: true },
+      { id: 'block:main', kind: 'block', material: true, blockId: 'main' },
+      { id: 'faq:one', kind: 'faq', material: true },
+    ],
+    blocks: [{
+      id: 'main',
+      material: true,
+      sourceIds: ['test:law'],
+      claims: [
+        {
+          id: 'requirement-claim',
+          surfaceId: 'block:main',
+          classification: 'requirement',
+          reformulationType: 'near-paraphrase',
+          scope: v2Scope,
+          risk: 'red',
+          central: true,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
+          sourceIds: ['test:law'],
+          sourceReferences: [{ sourceId: 'test:law', sectionId: 'article-1', approvedSourceVersion: '2026-08-01' }],
+        },
+        {
+          id: 'title-claim',
+          surfaceId: 'title',
+          classification: 'guidance',
+          reformulationType: 'summary',
+          scope: v2Scope,
+          risk: 'yellow',
+          central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
+          sourceIds: ['test:guidance'],
+          sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
+        },
+        {
+          id: 'guidance-claim',
+          surfaceId: 'short-answer',
+          classification: 'guidance',
+          reformulationType: 'summary',
+          scope: v2Scope,
+          risk: 'yellow',
+          central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
+          sourceIds: ['test:guidance'],
+          sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
+        },
+        {
+          id: 'recommendation-claim',
+          surfaceId: 'ingress',
+          classification: 'recommendation',
+          reformulationType: 'recommendation',
+          scope: v2Scope,
+          risk: 'green',
+          central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
+          sourceIds: ['test:guidance'],
+          sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
+        },
+        {
+          id: 'example-claim',
+          surfaceId: 'faq:one',
+          classification: 'example',
+          reformulationType: 'practical-example',
+          scope: v2Scope,
+          risk: 'green',
+          central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
+          sourceIds: ['test:guidance'],
+          sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
+        },
+        {
+          id: 'uncertainty-claim',
+          surfaceId: 'meta-description',
+          classification: 'uncertainty',
+          reformulationType: 'inference',
+          scope: v2Scope,
+          risk: 'yellow',
+          central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
+          sourceIds: ['test:guidance'],
+          sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
+        },
+      ],
+    }],
+    ...overrides,
+  } as unknown as KnowledgeArticleContractInput;
+}
+
+test('v1-definitioner behåller läsbar migreringsväg och oförändrad source-impact', () => {
+  assert.deepEqual(validateKnowledgeArticleContracts(migratedKnowledgeArticleDefinitions), []);
+  assert.deepEqual(buildKnowledgeSourceImpactIndex([r10]), {
+    'kontrollwiki:345': [{
+      articleId: 'seo-personlig-hygien-livsmedel',
+      canonicalPath: '/seo/personlig-hygien-livsmedel.html',
+      blockIds: ['exempel-pa-kontrollfragor', 'krav-pa-personlig-hygien', 'verksamhetens-rutiner'],
+      claimIds: [],
+    }],
+  });
+});
+
+test('v2 godkänner komplett SEO-kontrakt, claimgranskning och utan duplicerad canonicaltext', () => {
+  const full = v2Article();
+  const compact = v2Article({ id: 'test-governance-v2-compact', canonicalPath: '/seo/test-governance-v2-compact.html', contractKind: 'compact' });
+  assert.deepEqual(validateKnowledgeArticleContracts([full, compact], v2Registries), []);
+  const impact = buildKnowledgeSourceImpactIndex([full]);
+  assert.deepEqual(impact['test:law'], [{
+    articleId: 'test-governance-v2',
+    canonicalPath: '/seo/test-governance-v2.html',
+    blockIds: ['main'],
+    claimIds: ['requirement-claim'],
+    surfaceIds: ['block:main'],
+  }]);
+  assert.deepEqual(impact['test:guidance'], [{
+    articleId: 'test-governance-v2',
+    canonicalPath: '/seo/test-governance-v2.html',
+    blockIds: [],
+    claimIds: ['example-claim', 'guidance-claim', 'recommendation-claim', 'title-claim', 'uncertainty-claim'],
+    surfaceIds: ['faq:one', 'ingress', 'meta-description', 'short-answer', 'title'],
+  }]);
+  assert.equal(JSON.stringify(full).includes('Testpåstående'), false);
+  assert.equal('canonicalPath' in (full.seo ?? {}), false);
+});
+
+test('v2 blockerar saknade governancefält, SEO-kontrakt och internlänkningsplan', () => {
+  const invalid = v2Article({ contractKind: undefined, scope: undefined, risk: undefined, review: undefined, seo: undefined });
+  const errors = validateKnowledgeArticleContracts([invalid], v2Registries);
+  assert.ok(errors.some((error) => error.includes('artikelkontrakt')));
+  assert.ok(errors.some((error) => error.includes('scope')));
+  assert.ok(errors.some((error) => error.includes('risk')));
+  assert.ok(errors.some((error) => error.includes('review-status')));
+  assert.ok(errors.some((error) => error.includes('SEO-sidroll')));
+  assert.ok(errors.some((error) => error.includes('internlänkningsplan')));
+});
+
+test('v2 blockerar saknad claimnivåns faktagranskning och otillåten review-status', () => {
+  const base = v2Article();
+  const invalid = {
+    ...base,
+    blocks: base.blocks.map((block) => ({
+      ...block,
+      claims: block.claims?.map((claim) => claim.id === 'title-claim'
+        ? { ...claim, factCheckedAt: '2026-8-01', reviewStatus: 'invalid' }
+        : claim),
+    })),
+  } as KnowledgeArticleContractInput;
+  const errors = validateKnowledgeArticleContracts([invalid], v2Registries);
+  assert.ok(errors.some((error) => error.includes('Claim saknar giltigt faktakontrolldatum')));
+  assert.ok(errors.some((error) => error.includes('Claim saknar giltig review-status')));
+});
+
+test('v2 blockerar ofullständiga maskinläsbara SEO-beslut utan canonical-duplicering', () => {
+  const base = v2Article();
+  const invalid = v2Article({
+    seo: {
+      ...base.seo,
+      primaryUserNeed: '',
+      relatedPhrases: undefined,
+      closestRelatedPagePaths: undefined,
+      ownPageRationale: '',
+      titleSource: undefined,
+      h1SurfaceId: 'missing-h1',
+      metaDescriptionSource: undefined,
+      canonicalSource: undefined,
+      indexingDecision: 'invalid',
+      sitemapDecision: 'invalid',
+      structuredDataTypes: undefined,
+      followUpGoals: undefined,
+    },
+  });
+  const errors = validateKnowledgeArticleContracts([invalid], v2Registries);
+  for (const field of [
+    'primaryUserNeed', 'relatedPhrases', 'closestRelatedPagePaths', 'ownPageRationale',
+    'title-mappning', 'H1-mappning', 'metabeskrivningsmappning', 'canonical-mappning',
+    'indexeringsbeslut', 'sitemapbeslut', 'structuredDataTypes', 'followUpGoals',
+  ]) assert.ok(errors.some((error) => error.includes(field)), `Saknar blockerregel för ${field}`);
+  assert.equal('canonicalPath' in (invalid.seo ?? {}), false);
+});
+
+test('v2 blockerar motsägelsefulla classification- och reformulationType-kombinationer', () => {
+  const base = v2Article();
+  const invalid = {
+    ...base,
+    blocks: base.blocks.map((block) => ({
+      ...block,
+      claims: block.claims?.map((claim) => claim.id === 'requirement-claim'
+        ? { ...claim, reformulationType: 'recommendation' }
+        : claim.id === 'example-claim'
+          ? { ...claim, reformulationType: 'inference' }
+          : claim),
+    })),
+  } as KnowledgeArticleContractInput;
+  const errors = validateKnowledgeArticleContracts([invalid], v2Registries);
+  assert.equal(errors.filter((error) => error.includes('motsägelsefull klassificering och omformuleringstyp')).length, 2);
+});
+
+test('v2 blockerar claimtext, ogiltig yta, omformulering, scope och källmetadata', () => {
+  const invalid = v2Article({
+    surfaces: [{ id: 'title', kind: 'title', material: false }],
+    blocks: [{
+      id: 'main', material: true, sourceIds: ['test:law'], claims: [{
+        id: 'invalid-claim', text: 'Får inte dupliceras', surfaceId: 'missing-surface', classification: 'guidance', reformulationType: 'invalid', scope: undefined,
+        risk: 'green', central: true, sourceIds: ['test:law'], sourceReferences: [{ sourceId: 'test:law', sectionId: 'missing-section', approvedSourceVersion: 'old-version' }],
+      }],
+    }],
+  });
+  const errors = validateKnowledgeArticleContracts([invalid], v2Registries);
+  assert.ok(errors.some((error) => error.includes('får inte duplicera publicerad text')));
+  assert.ok(errors.some((error) => error.includes('okänd surfaceId')));
+  assert.ok(errors.some((error) => error.includes('omformuleringstyp')));
+  assert.ok(errors.some((error) => error.includes('Claim saknar scope')));
+  assert.ok(errors.some((error) => error.includes('okänt källavsnitt')));
+  assert.ok(errors.some((error) => error.includes('senast godkänd källversion')));
+});
+
+test('v2 blockerar bindande claim utan rättsakt och riskbaserade godkännanden', () => {
+  const missingLegalSupport = v2Article({
+    blocks: [{
+      id: 'main', material: true, sourceIds: ['test:guidance'], claims: [{
+        id: 'requirement-with-guidance-only', surfaceId: 'block:main', classification: 'requirement', reformulationType: 'near-paraphrase', scope: v2Scope,
+        risk: 'red', central: true, sourceIds: ['test:guidance'], sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
+      }],
+    }],
+  });
+  const yellowWithoutReviewer = v2Article({
+    id: 'yellow-without-reviewer', canonicalPath: '/seo/yellow-without-reviewer.html', risk: 'yellow', review: { status: 'approved' },
+    blocks: [{ id: 'main', material: true, sourceIds: ['test:guidance'], claims: [{
+      id: 'yellow-claim', surfaceId: 'block:main', classification: 'guidance', reformulationType: 'summary', scope: v2Scope,
+      risk: 'yellow', central: true, sourceIds: ['test:guidance'], sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
+    }] }],
+  });
+  const redWithoutApproval = v2Article({ review: { status: 'approved', humanReviewer: 'Robin', requiresExpertReview: true } });
+  const errors = validateKnowledgeArticleContracts([missingLegalSupport, yellowWithoutReviewer, redWithoutApproval], v2Registries);
+  assert.ok(errors.some((error) => error.includes('Bindande claim saknar relevant rättskälla')));
+  assert.ok(errors.some((error) => error.includes('Gul artikel saknar namngiven mänsklig granskare')));
+  assert.ok(errors.some((error) => error.includes('Röd artikel saknar uttryckligt mänskligt godkännande')));
+  assert.ok(errors.some((error) => error.includes('Röd artikel saknar sakkunnig granskare')));
+});
+
+test('v2 blockerar sidrisk som inte motsvarar högsta centrala claimrisk', () => {
+  const invalid = v2Article({ risk: 'yellow' });
+  assert.ok(validateKnowledgeArticleContracts([invalid], v2Registries).some((error) => error.includes('högsta centrala claimrisk')));
+});
