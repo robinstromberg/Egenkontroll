@@ -786,6 +786,12 @@ Reglerna ska gälla även vid bulkproduktion och får inte vara beroende av minn
 - skapa valideringar och testfixtures,
 - migrera de tre pilotsidorna: grundförutsättningar, lokaler och utrustning samt faroanalys.
 
+### Route-governance under övergången
+
+Route-registret är fortsatt enda sanningskälla för public path, canonical, sitemap och resurshänvisningar. Governance-registret refererar endast route-pathen och dess status.
+
+En befintlig `legacy-inventory`- eller `transitional`-route flyttas till `full` först när den har ett komplett artikel- och claimkontrakt. Då ändras enbart governance-statusen; URL, canonical, sitemap och resource-href ändras inte. Nya indexerbara innehållsroutes ska registreras som `full`; nya `transitional`- och `legacy-inventory`-undantag är inte tillåtna.
+
 ### Etapp 2 – hela kunskapsbanken
 
 - migrera alla indexerbara kunskapssidor,
