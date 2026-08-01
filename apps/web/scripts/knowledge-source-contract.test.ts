@@ -22,9 +22,13 @@ import {
 import { webMigratedKnowledgeArticleRoutes, webRouteRegistry } from '../src/config/routes';
 
 const r10 = migratedKnowledgeArticleDefinitions[0];
+const migratedArticleRegistries: KnowledgeSourceContractRegistries = {
+  ...defaultKnowledgeSourceContractRegistries,
+  routeRegistry: webRouteRegistry,
+};
 
-test('R10 uppfyller källspårbarhetskontraktet', () => {
-  assert.deepEqual(validateKnowledgeArticleContracts(migratedKnowledgeArticleDefinitions), []);
+test('migrerade artiklar uppfyller källspårbarhetskontraktet med injicerat route-register', () => {
+  assert.deepEqual(validateKnowledgeArticleContracts(migratedKnowledgeArticleDefinitions, migratedArticleRegistries), []);
   assert.equal(r10.id, 'seo-personlig-hygien-livsmedel');
   assert.equal(r10.canonicalPath, '/seo/personlig-hygien-livsmedel.html');
   assert.deepEqual(r10.sourceIds, ['kontrollwiki:345']);
@@ -77,7 +81,7 @@ test('R02, R03, R04 och R08 har rätt källmängd och moderna breadcrumbs', () =
     ['kontrollwiki:246', 'kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'],
     ['kontrollwiki:342'],
     ['kontrollwiki:345', 'kontrollwiki:346', 'kontrollwiki:348', 'kontrollwiki:349'],
-    ['kontrollwiki:343'],
+    ['kontrollwiki:343', 'kontrollwiki:1045', 'kontrollwiki:1046'],
   ]);
   for (const article of articles) assert.equal(article.breadcrumb[0]?.href, '/kunskapsbank');
   assert.equal(migratedKnowledgeArticles.find((article) => article.id === 'seo-grundforutsattningar-livsmedel')?.sources.length, 6);
@@ -99,9 +103,9 @@ test('R02 och R03 skiljer myndighetsvägledning från MEK-rekommendationer', () 
   assert.equal(classificationOf(r03Guidance), 'guidance');
   assert.equal(classificationOf(r02Recommendation), 'recommendation');
   assert.equal(classificationOf(r03Recommendation), 'recommendation');
-  assert.deepEqual(r02Recommendation?.sourceIds, []);
+  assert.deepEqual(r02Recommendation?.sourceIds, ['kontrollwiki:246']);
   assert.deepEqual(r03Recommendation?.sourceIds, []);
-  assert.equal(r02Recommendation?.material, false);
+  assert.equal(r02Recommendation?.material, true);
   assert.equal(r03Recommendation?.material, false);
   assert.match(r02Recommendation?.paragraphs.join(' ') ?? '', /Min Egenkontroll rekommenderar/);
   assert.match(r03Recommendation?.paragraphs.join(' ') ?? '', /Min Egenkontroll rekommenderar/);
@@ -118,7 +122,7 @@ test('R02 förklarar grundförutsättningar med källspårad myndighetsvägledni
   assert.equal(context?.title, 'Grundförutsättningar inom livsmedelshygien');
   assert.deepEqual(context?.paragraphs, [
     'Kontrollwiki beskriver grundförutsättningar som de åtgärder och villkor som behövs för att uppfylla kraven på livsmedelssäkerhet. De ger underlag för ett effektivt genomförande av HACCP.',
-    'Grundförutsättningarna omfattar krav på verksamhetens struktur, drift, hygien, lagring och transport. På den här sidan behandlas bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning.',
+    'I Kontrollwikis indelning omfattar grundförutsättningarna områden som struktur, drift, hygien, lagring och transport. På den här sidan behandlas bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning.',
   ]);
   assert.doesNotMatch(context?.paragraphs.join(' ') ?? '', /rutiner och kontroller används|minskar riskerna|kontrollpunkt/i);
   for (const sourceId of expectedSourceIds) {
@@ -440,7 +444,8 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
 }
 
 test('v1-definitioner behåller läsbar migreringsväg och oförändrad source-impact', () => {
-  assert.deepEqual(validateKnowledgeArticleContracts(migratedKnowledgeArticleDefinitions), []);
+  const v1Definitions = migratedKnowledgeArticleDefinitions.filter((article) => article.governanceVersion !== 2);
+  assert.deepEqual(validateKnowledgeArticleContracts(v1Definitions), []);
   assert.deepEqual(buildKnowledgeSourceImpactIndex([r10]), {
     'kontrollwiki:345': [{
       articleId: 'seo-personlig-hygien-livsmedel',
@@ -483,7 +488,44 @@ test('v2 blockerar canonical som saknas i det injicerade route-registret', () =>
 test('v2 kräver ett injicerat route-register medan v1 fortsatt validerar utan det', () => {
   const withoutRoutes: KnowledgeSourceContractRegistries = { ...v2Registries, routeRegistry: undefined };
   assert.ok(validateKnowledgeArticleContracts([v2Article()], withoutRoutes).some((error) => error.includes('V2-artikel saknar injicerat route-register')));
-  assert.deepEqual(validateKnowledgeArticleContracts(migratedKnowledgeArticleDefinitions), []);
+  const v1Definitions = migratedKnowledgeArticleDefinitions.filter((article) => article.governanceVersion !== 2);
+  assert.deepEqual(validateKnowledgeArticleContracts(v1Definitions), []);
+});
+
+test('R02 och R08 har full yellow-governance med täckta materiella ytor och godkända vägledningsclaims', () => {
+  const articles = migratedKnowledgeArticleDefinitions.filter((article) =>
+    article.id === 'seo-grundforutsattningar-livsmedel' || article.id === 'seo-lokaler-och-utrustning-livsmedel',
+  );
+  assert.deepEqual(validateKnowledgeArticleContracts(articles, migratedArticleRegistries), []);
+  assert.equal(articles.length, 2);
+
+  for (const article of articles) {
+    assert.equal(article.governanceVersion, 2);
+    assert.equal(article.contractKind, 'full');
+    assert.equal(article.risk, 'yellow');
+    assert.deepEqual(article.review, {
+      status: 'approved', humanReviewer: 'Robin Strömberg', approvedBy: 'Robin Strömberg', approvedAt: '2026-08-01',
+    });
+    const claims = article.blocks.flatMap((block) => block.claims ?? []);
+    const materialSurfaceIds = article.surfaces?.filter((surface) => surface.material).map((surface) => surface.id) ?? [];
+    assert.deepEqual([...new Set(claims.map((claim) => 'surfaceId' in claim ? claim.surfaceId : ''))].sort(), materialSurfaceIds.sort());
+    assert.equal(claims.some((claim) => claim.classification === 'requirement'), false);
+    for (const claim of claims) {
+      if (!('surfaceId' in claim)) throw new Error('R02/R08 får inte innehålla v1-claims.');
+      assert.equal(claim.risk, 'yellow');
+      assert.equal(claim.factCheckedAt, '2026-08-01');
+      assert.equal(claim.reviewStatus, 'approved');
+    }
+  }
+
+  const r02 = articles.find((article) => article.id === 'seo-grundforutsattningar-livsmedel');
+  const r08 = articles.find((article) => article.id === 'seo-lokaler-och-utrustning-livsmedel');
+  assert.deepEqual(r02?.surfaces?.map((surface) => surface.id), ['r02-title', 'r02-meta-description', 'r02-h1', 'r02-short-answer', 'r02-block-varfor-grundforutsattningar', 'r02-block-omraden', 'r02-block-rekommenderade-rutiner']);
+  assert.deepEqual(r08?.surfaces?.map((surface) => surface.id), ['r08-title', 'r08-meta-description', 'r08-h1', 'r08-short-answer', 'r08-block-omraden', 'r08-block-ingen-ritning', 'r08-block-praktiska-kontrollomraden']);
+  assert.equal(r08?.seo?.structuralParentId, 'seo-grundforutsattningar-livsmedel');
+  assert.deepEqual(r08?.sourceIds, ['kontrollwiki:343', 'kontrollwiki:1045', 'kontrollwiki:1046']);
+  assert.deepEqual(knowledgeSources['kontrollwiki:1045'].sections, [{ id: 'handfat', label: 'Handfat' }]);
+  assert.deepEqual(knowledgeSources['kontrollwiki:1046'].sections, [{ id: 'ventilation', label: 'Ventilation' }]);
 });
 
 test('v2 blockerar saknade governancefält, SEO-kontrakt och internlänkningsplan', () => {
