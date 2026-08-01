@@ -12,14 +12,30 @@ import { webRedirects, webRouteRegistry } from '../src/config/routes';
 test('governance-baslinjen täcker varje indexerbar route med låsta historiska statusar', () => {
   assert.deepEqual(validateKnowledgeRouteGovernance(webRouteRegistry), []);
   assert.deepEqual(countKnowledgeRouteGovernanceStatuses(), {
-    full: 0,
-    transitional: 23,
+    full: 2,
+    transitional: 21,
     'legacy-inventory': 50,
     'seo-only': 3,
   });
   assert.equal(knowledgeRouteGovernance.length, 76);
   assert.equal(knowledgeRouteGovernance.some((entry) => entry.path === '/sok'), false);
   assert.equal(webRedirects.some((redirect) => knowledgeRouteGovernance.some((entry) => entry.path === redirect.source)), false);
+});
+
+test('R02 och R08 är fullstyrda utan ändrade route-, canonical- eller sitemapdata', () => {
+  const r02 = knowledgeRouteGovernance.find((entry) => entry.path === '/seo/grundforutsattningar-livsmedel.html');
+  const r08 = knowledgeRouteGovernance.find((entry) => entry.path === '/seo/lokaler-och-utrustning-livsmedel.html');
+  assert.deepEqual(r02, {
+    path: '/seo/grundforutsattningar-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'prerequisites', structuralParentPath: '/kunskapsbank', plannedIncomingLinks: ['/kunskapsbank'], plannedOutgoingLinks: [],
+  });
+  assert.deepEqual(r08, {
+    path: '/seo/lokaler-och-utrustning-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'premises-equipment', structuralParentPath: '/seo/grundforutsattningar-livsmedel.html', plannedIncomingLinks: ['/seo/grundforutsattningar-livsmedel.html'], plannedOutgoingLinks: [],
+  });
+  for (const path of [r02?.path, r08?.path]) {
+    const route = webRouteRegistry.find((candidate) => candidate.path === path);
+    assert.equal(route?.canonicalPath, path);
+    assert.equal(route?.inSitemap, true);
+  }
 });
 
 test('faroanalys är transitional utan ändrad route-, canonical- eller sitemapdata', () => {
