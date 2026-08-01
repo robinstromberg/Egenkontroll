@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertWebRouteRegistry, webModernRoutes, webRedirects, webRouteRegistry, webStaticSeoRoutes } from './routes';
+import { validateKnowledgeRouteGovernance } from './knowledgeRouteGovernance';
 import { config as vercelConfig } from '../../vercel';
 import { appRedirects, productionAppOrigin } from './appUrls';
 
@@ -26,6 +27,7 @@ function sourceFiles(directory: string): string[] {
 
 assertWebRouteRegistry();
 const errors: string[] = [];
+errors.push(...validateKnowledgeRouteGovernance(webRouteRegistry));
 const expectedVercelRedirects = appRedirects.map(({ source, destination }) => ({ source, destination, permanent: true }));
 if (JSON.stringify(vercelConfig.redirects) !== JSON.stringify(expectedVercelRedirects)) {
   errors.push(`Vercel-redirects avviker från det typade registret för ${productionAppOrigin}.`);
