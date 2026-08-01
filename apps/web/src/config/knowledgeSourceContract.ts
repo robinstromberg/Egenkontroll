@@ -191,7 +191,9 @@ export type KnowledgeArticleContractKind = 'compact' | 'full';
 export type KnowledgeReformulationType = 'near-paraphrase' | 'summary' | 'multi-source-synthesis' | 'inference' | 'recommendation' | 'practical-example';
 export type KnowledgeReviewStatus = 'not-required' | 'pending' | 'approved';
 export type KnowledgeSeoPageRole = 'knowledge-base' | 'topic-hub' | 'fact-page' | 'business-page' | 'workflow-template-tool' | 'product-page';
-export type KnowledgeSurfaceKind = 'title' | 'meta-description' | 'short-answer' | 'ingress' | 'block' | 'faq';
+export type KnowledgeIndexingDecision = 'index' | 'noindex';
+export type KnowledgeSitemapDecision = 'include' | 'exclude';
+export type KnowledgeSurfaceKind = 'title' | 'h1' | 'meta-description' | 'short-answer' | 'ingress' | 'block' | 'faq';
 
 export type KnowledgeScope = {
   audience: string;
@@ -211,14 +213,26 @@ export type KnowledgeReviewMetadata = {
 };
 
 export type KnowledgeSeoContract = {
+  primaryUserNeed: string;
   pageRole: KnowledgeSeoPageRole;
   searchIntent: string;
   primaryTopic: string;
+  relatedPhrases: readonly string[];
   topicClusterId: string;
   structuralParentId: string;
+  closestRelatedPagePaths: readonly string[];
   uniqueValue: string;
+  ownPageRationale: string;
+  titleSource: 'article.title';
+  h1SurfaceId: string;
+  metaDescriptionSource: 'article.description';
+  canonicalSource: 'article.canonicalPath';
+  indexingDecision: KnowledgeIndexingDecision;
+  sitemapDecision: KnowledgeSitemapDecision;
+  structuredDataTypes: readonly string[];
   plannedIncomingLinks: readonly string[];
   plannedOutgoingLinks: readonly string[];
+  followUpGoals: readonly string[];
 };
 
 export type KnowledgeArticleSurface = {
@@ -249,6 +263,8 @@ export type KnowledgeArticleClaimV2 = {
   scope: KnowledgeScope;
   risk: KnowledgeArticleRisk;
   central: boolean;
+  factCheckedAt: string;
+  reviewStatus: KnowledgeReviewStatus;
   sourceIds: readonly KnowledgeSourceId[];
   sourceReferences: readonly KnowledgeClaimSourceReference[];
   text?: never;
@@ -306,6 +322,7 @@ export const defaultKnowledgeSourceContractRegistries: KnowledgeSourceContractRe
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 const canonicalPathPattern = /^\/seo\/[^/]+\.html$/;
+const internalPathPattern = /^\/[^\s]*$/;
 const urlPattern = /^https?:\/\/[^\s]+$/;
 const stableIdPattern = /^[^\s]+$/;
 const classifications = new Set<KnowledgeClassification>([
@@ -321,7 +338,16 @@ const contractKinds = new Set<KnowledgeArticleContractKind>(['compact', 'full'])
 const reformulationTypes = new Set<KnowledgeReformulationType>(['near-paraphrase', 'summary', 'multi-source-synthesis', 'inference', 'recommendation', 'practical-example']);
 const reviewStatuses = new Set<KnowledgeReviewStatus>(['not-required', 'pending', 'approved']);
 const seoPageRoles = new Set<KnowledgeSeoPageRole>(['knowledge-base', 'topic-hub', 'fact-page', 'business-page', 'workflow-template-tool', 'product-page']);
-const surfaceKinds = new Set<KnowledgeSurfaceKind>(['title', 'meta-description', 'short-answer', 'ingress', 'block', 'faq']);
+const indexingDecisions = new Set<KnowledgeIndexingDecision>(['index', 'noindex']);
+const sitemapDecisions = new Set<KnowledgeSitemapDecision>(['include', 'exclude']);
+const surfaceKinds = new Set<KnowledgeSurfaceKind>(['title', 'h1', 'meta-description', 'short-answer', 'ingress', 'block', 'faq']);
+const allowedReformulations: Readonly<Record<KnowledgeClassification, ReadonlySet<KnowledgeReformulationType>>> = {
+  requirement: new Set(['near-paraphrase', 'summary', 'multi-source-synthesis']),
+  guidance: new Set(['near-paraphrase', 'summary', 'multi-source-synthesis', 'inference']),
+  recommendation: new Set(['recommendation']),
+  example: new Set(['practical-example']),
+  uncertainty: new Set(['near-paraphrase', 'summary', 'multi-source-synthesis', 'inference']),
+};
 
 const riskOrder: Readonly<Record<KnowledgeArticleRisk, number>> = { green: 0, yellow: 1, red: 2 };
 
@@ -360,6 +386,15 @@ function validateScope(scope: KnowledgeScope | undefined, label: string, errors:
   if (!Array.isArray(scope?.exceptions)) errors.push(`${label} saknar undantagslista.`);
 }
 
+function validateStringList(values: readonly string[] | undefined, label: string, errors: string[], validateValue?: (value: string) => boolean) {
+  if (!Array.isArray(values)) {
+    errors.push(`${label} saknar lista.`);
+    return;
+  }
+  if (values.some((value) => !value?.trim() || (validateValue && !validateValue(value)))) errors.push(`${label} innehåller ogiltigt värde.`);
+  if (duplicateValues(values).length > 0) errors.push(`${label} innehåller duplicerade värden.`);
+}
+
 function validateV2Article(
   article: KnowledgeArticleContractInput,
   blocks: readonly KnowledgeArticleBlockContract[],
@@ -374,15 +409,29 @@ function validateV2Article(
   const seo = article.seo;
   if (!seoPageRoles.has(seo?.pageRole as KnowledgeSeoPageRole)) errors.push(`V2-artikel saknar giltig SEO-sidroll: ${article.id}`);
   for (const [field, value] of Object.entries({
+    primaryUserNeed: seo?.primaryUserNeed,
     searchIntent: seo?.searchIntent,
     primaryTopic: seo?.primaryTopic,
     topicClusterId: seo?.topicClusterId,
     structuralParentId: seo?.structuralParentId,
     uniqueValue: seo?.uniqueValue,
+    ownPageRationale: seo?.ownPageRationale,
   })) {
     if (!value?.trim()) errors.push(`V2-artikel saknar SEO-fält ${field}: ${article.id}`);
   }
   if (!Array.isArray(seo?.plannedIncomingLinks) || !Array.isArray(seo?.plannedOutgoingLinks)) errors.push(`V2-artikel saknar internlänkningsplan: ${article.id}`);
+
+  validateStringList(seo?.relatedPhrases, `V2-artikel saknar SEO-fält relatedPhrases: ${article.id}`, errors);
+  validateStringList(seo?.closestRelatedPagePaths, `V2-artikel saknar SEO-fält closestRelatedPagePaths: ${article.id}`, errors, (value) => internalPathPattern.test(value));
+  validateStringList(seo?.structuredDataTypes, `V2-artikel saknar SEO-fält structuredDataTypes: ${article.id}`, errors);
+  validateStringList(seo?.followUpGoals, `V2-artikel saknar SEO-fält followUpGoals: ${article.id}`, errors);
+  validateStringList(seo?.plannedIncomingLinks, `V2-artikel saknar internlänkningsplan: ${article.id}`, errors, (value) => internalPathPattern.test(value));
+  validateStringList(seo?.plannedOutgoingLinks, `V2-artikel saknar internlänkningsplan: ${article.id}`, errors, (value) => internalPathPattern.test(value));
+  if (seo?.titleSource !== 'article.title') errors.push(`V2-artikel saknar title-mappning: ${article.id}`);
+  if (seo?.metaDescriptionSource !== 'article.description') errors.push(`V2-artikel saknar metabeskrivningsmappning: ${article.id}`);
+  if (seo?.canonicalSource !== 'article.canonicalPath') errors.push(`V2-artikel saknar canonical-mappning: ${article.id}`);
+  if (!indexingDecisions.has(seo?.indexingDecision as KnowledgeIndexingDecision)) errors.push(`V2-artikel saknar giltigt indexeringsbeslut: ${article.id}`);
+  if (!sitemapDecisions.has(seo?.sitemapDecision as KnowledgeSitemapDecision)) errors.push(`V2-artikel saknar giltigt sitemapbeslut: ${article.id}`);
 
   const surfaces = Array.isArray(article.surfaces) ? article.surfaces : [];
   if (surfaces.length === 0) errors.push(`V2-artikel saknar publicerade ytor: ${article.id}`);
@@ -395,6 +444,9 @@ function validateV2Article(
     if (!surfaceKinds.has(surface.kind)) errors.push(`Yta har okänd typ: ${article.id} -> ${surface.id}`);
     if (surface.kind === 'block' && (!surface.blockId || !blockIds.has(surface.blockId))) errors.push(`Blockyta saknar giltigt block: ${article.id} -> ${surface.id}`);
   }
+
+  const h1Surface = surfaces.find((surface) => surface.id === seo?.h1SurfaceId);
+  if (!h1Surface || h1Surface.kind !== 'h1') errors.push(`V2-artikel saknar H1-mappning: ${article.id}`);
 
   const claims = blocks.flatMap((block) => Array.isArray(block.claims) ? block.claims : []);
   const v2Claims = claims.filter(isV2Claim);
@@ -422,8 +474,11 @@ function validateV2Article(
     const surface = surfaces.find((candidate) => candidate.id === claim.surfaceId);
     if (surface && !surface.material) errors.push(`Claim refererar till icke-materiell yta: ${article.id} -> ${claim.id} -> ${claim.surfaceId}`);
     if (!reformulationTypes.has(claim.reformulationType)) errors.push(`Claim saknar giltig omformuleringstyp: ${article.id} -> ${claim.id}`);
+    if (!allowedReformulations[claim.classification]?.has(claim.reformulationType)) errors.push(`Claim har motsägelsefull klassificering och omformuleringstyp: ${article.id} -> ${claim.id}`);
     validateScope(claim.scope, `Claim saknar scope: ${article.id} -> ${claim.id}`, errors);
     if (!risks.has(claim.risk)) errors.push(`Claim saknar giltig risk: ${article.id} -> ${claim.id}`);
+    if (!isoDatePattern.test(claim.factCheckedAt ?? '')) errors.push(`Claim saknar giltigt faktakontrolldatum: ${article.id} -> ${claim.id}`);
+    if (!reviewStatuses.has(claim.reviewStatus)) errors.push(`Claim saknar giltig review-status: ${article.id} -> ${claim.id}`);
     const references = Array.isArray(claim.sourceReferences) ? claim.sourceReferences : [];
     if (references.length === 0) errors.push(`Claim saknar strukturerad källreferens: ${article.id} -> ${claim.id}`);
     const referencedSourceIds = references.map((reference) => reference.sourceId);
@@ -580,7 +635,9 @@ export function buildKnowledgeSourceImpactIndex(
       for (const sourceId of block.sourceIds) add(sourceId, article, block.id);
       for (const claim of block.claims ?? []) {
         if (isV2Claim(claim)) {
-          for (const sourceId of claim.sourceIds) add(sourceId, article, block.id, claim.id, claim.surfaceId);
+          const surface = article.surfaces?.find((candidate) => candidate.id === claim.surfaceId);
+          const surfaceBlockId = surface?.kind === 'block' ? surface.blockId : undefined;
+          for (const sourceId of claim.sourceIds) add(sourceId, article, surfaceBlockId, claim.id, claim.surfaceId);
         } else {
           for (const sourceId of claim.sourceIds) add(sourceId, article, block.id, claim.id);
         }

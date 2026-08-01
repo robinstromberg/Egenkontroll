@@ -319,17 +319,30 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
       approvedAt: '2026-08-01',
     },
     seo: {
+      primaryUserNeed: 'Få ett tydligt och granskningsbart innehållskontrakt.',
       pageRole: 'fact-page',
       searchIntent: 'Förstå hur governance v2 fungerar',
       primaryTopic: 'Governance-kontrakt',
+      relatedPhrases: ['innehållskontrakt', 'faktagranskning'],
       topicClusterId: 'content-governance',
       structuralParentId: 'knowledge-base',
+      closestRelatedPagePaths: ['/kunskapsbank'],
       uniqueValue: 'Ett avgränsat och testbart kontrakt.',
+      ownPageRationale: 'Ämnet behöver ett eget verifierbart kontrakt innan publicering.',
+      titleSource: 'article.title',
+      h1SurfaceId: 'h1',
+      metaDescriptionSource: 'article.description',
+      canonicalSource: 'article.canonicalPath',
+      indexingDecision: 'index',
+      sitemapDecision: 'include',
+      structuredDataTypes: ['Article', 'BreadcrumbList'],
       plannedIncomingLinks: ['/kunskapsbank'],
       plannedOutgoingLinks: ['/seo/test-governance-v2.html'],
+      followUpGoals: ['Kontrollera sökintentionen vid nästa innehållsrevision.'],
     },
     surfaces: [
       { id: 'title', kind: 'title', material: true },
+      { id: 'h1', kind: 'h1', material: true },
       { id: 'meta-description', kind: 'meta-description', material: true },
       { id: 'short-answer', kind: 'short-answer', material: true },
       { id: 'ingress', kind: 'ingress', material: true },
@@ -339,7 +352,7 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
     blocks: [{
       id: 'main',
       material: true,
-      sourceIds: ['test:law', 'test:guidance'],
+      sourceIds: ['test:law'],
       claims: [
         {
           id: 'requirement-claim',
@@ -349,8 +362,23 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
           scope: v2Scope,
           risk: 'red',
           central: true,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
           sourceIds: ['test:law'],
           sourceReferences: [{ sourceId: 'test:law', sectionId: 'article-1', approvedSourceVersion: '2026-08-01' }],
+        },
+        {
+          id: 'title-claim',
+          surfaceId: 'title',
+          classification: 'guidance',
+          reformulationType: 'summary',
+          scope: v2Scope,
+          risk: 'yellow',
+          central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
+          sourceIds: ['test:guidance'],
+          sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
         },
         {
           id: 'guidance-claim',
@@ -360,6 +388,8 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
           scope: v2Scope,
           risk: 'yellow',
           central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
           sourceIds: ['test:guidance'],
           sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
         },
@@ -371,6 +401,8 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
           scope: v2Scope,
           risk: 'green',
           central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
           sourceIds: ['test:guidance'],
           sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
         },
@@ -382,6 +414,8 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
           scope: v2Scope,
           risk: 'green',
           central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
           sourceIds: ['test:guidance'],
           sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
         },
@@ -393,6 +427,8 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
           scope: v2Scope,
           risk: 'yellow',
           central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
           sourceIds: ['test:guidance'],
           sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
         },
@@ -414,7 +450,7 @@ test('v1-definitioner behåller läsbar migreringsväg och oförändrad source-i
   });
 });
 
-test('v2 godkänner fullständigt och kompakt kontrakt utan duplicerad claimtext', () => {
+test('v2 godkänner komplett SEO-kontrakt, claimgranskning och utan duplicerad canonicaltext', () => {
   const full = v2Article();
   const compact = v2Article({ id: 'test-governance-v2-compact', canonicalPath: '/seo/test-governance-v2-compact.html', contractKind: 'compact' });
   assert.deepEqual(validateKnowledgeArticleContracts([full, compact], v2Registries), []);
@@ -426,7 +462,15 @@ test('v2 godkänner fullständigt och kompakt kontrakt utan duplicerad claimtext
     claimIds: ['requirement-claim'],
     surfaceIds: ['block:main'],
   }]);
+  assert.deepEqual(impact['test:guidance'], [{
+    articleId: 'test-governance-v2',
+    canonicalPath: '/seo/test-governance-v2.html',
+    blockIds: [],
+    claimIds: ['example-claim', 'guidance-claim', 'recommendation-claim', 'title-claim', 'uncertainty-claim'],
+    surfaceIds: ['faq:one', 'ingress', 'meta-description', 'short-answer', 'title'],
+  }]);
   assert.equal(JSON.stringify(full).includes('Testpåstående'), false);
+  assert.equal('canonicalPath' in (full.seo ?? {}), false);
 });
 
 test('v2 blockerar saknade governancefält, SEO-kontrakt och internlänkningsplan', () => {
@@ -438,6 +482,67 @@ test('v2 blockerar saknade governancefält, SEO-kontrakt och internlänkningspla
   assert.ok(errors.some((error) => error.includes('review-status')));
   assert.ok(errors.some((error) => error.includes('SEO-sidroll')));
   assert.ok(errors.some((error) => error.includes('internlänkningsplan')));
+});
+
+test('v2 blockerar saknad claimnivåns faktagranskning och otillåten review-status', () => {
+  const base = v2Article();
+  const invalid = {
+    ...base,
+    blocks: base.blocks.map((block) => ({
+      ...block,
+      claims: block.claims?.map((claim) => claim.id === 'title-claim'
+        ? { ...claim, factCheckedAt: '2026-8-01', reviewStatus: 'invalid' }
+        : claim),
+    })),
+  } as KnowledgeArticleContractInput;
+  const errors = validateKnowledgeArticleContracts([invalid], v2Registries);
+  assert.ok(errors.some((error) => error.includes('Claim saknar giltigt faktakontrolldatum')));
+  assert.ok(errors.some((error) => error.includes('Claim saknar giltig review-status')));
+});
+
+test('v2 blockerar ofullständiga maskinläsbara SEO-beslut utan canonical-duplicering', () => {
+  const base = v2Article();
+  const invalid = v2Article({
+    seo: {
+      ...base.seo,
+      primaryUserNeed: '',
+      relatedPhrases: undefined,
+      closestRelatedPagePaths: undefined,
+      ownPageRationale: '',
+      titleSource: undefined,
+      h1SurfaceId: 'missing-h1',
+      metaDescriptionSource: undefined,
+      canonicalSource: undefined,
+      indexingDecision: 'invalid',
+      sitemapDecision: 'invalid',
+      structuredDataTypes: undefined,
+      followUpGoals: undefined,
+    },
+  });
+  const errors = validateKnowledgeArticleContracts([invalid], v2Registries);
+  for (const field of [
+    'primaryUserNeed', 'relatedPhrases', 'closestRelatedPagePaths', 'ownPageRationale',
+    'title-mappning', 'H1-mappning', 'metabeskrivningsmappning', 'canonical-mappning',
+    'indexeringsbeslut', 'sitemapbeslut', 'structuredDataTypes', 'followUpGoals',
+  ]) assert.ok(errors.some((error) => error.includes(field)), `Saknar blockerregel för ${field}`);
+  assert.equal('canonicalPath' in (invalid.seo ?? {}), false);
+});
+
+test('v2 blockerar motsägelsefulla classification- och reformulationType-kombinationer', () => {
+  const base = v2Article();
+  const invalid = {
+    ...base,
+    blocks: base.blocks.map((block) => ({
+      ...block,
+      claims: block.claims?.map((claim) => claim.id === 'requirement-claim'
+        ? { ...claim, reformulationType: 'recommendation' }
+        : claim.id === 'example-claim'
+          ? { ...claim, reformulationType: 'inference' }
+          : claim),
+    })),
+  } as KnowledgeArticleContractInput;
+  const errors = validateKnowledgeArticleContracts([invalid], v2Registries);
+  assert.equal(errors.filter((error) => error.includes('motsägelsefull klassificering och omformuleringstyp')).length, 2);
 });
 
 test('v2 blockerar claimtext, ogiltig yta, omformulering, scope och källmetadata', () => {
