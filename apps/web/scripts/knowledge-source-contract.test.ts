@@ -122,13 +122,41 @@ test('R02 förklarar grundförutsättningar med källspårad myndighetsvägledni
   assert.equal(context?.title, 'Grundförutsättningar inom livsmedelshygien');
   assert.deepEqual(context?.paragraphs, [
     'Kontrollwiki beskriver grundförutsättningar som de åtgärder och villkor som behövs för att uppfylla kraven på livsmedelssäkerhet. De ger underlag för ett effektivt genomförande av HACCP.',
-    'I Kontrollwikis indelning omfattar grundförutsättningarna områden som struktur, drift, hygien, lagring och transport. På den här sidan behandlas bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning.',
+    'I Kontrollwikis indelning omfattar grundförutsättningarna områden som verksamhetens struktur, drift, hygien, lagring och transport. På den här sidan behandlas bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning.',
   ]);
   assert.doesNotMatch(context?.paragraphs.join(' ') ?? '', /rutiner och kontroller används|minskar riskerna|kontrollpunkt/i);
   for (const sourceId of expectedSourceIds) {
     assert.ok(getKnowledgeSourceImpact(migratedKnowledgeArticleSourceImpactIndex, sourceId).some((entry) =>
       entry.articleId === r02.id && entry.blockIds.includes('varfor-grundforutsattningar')),
     );
+  }
+});
+
+test('R02 låser korrigerade Kontrollwiki-versioner och publicerade avsnitt', () => {
+  const expectedSources = {
+    'kontrollwiki:341': { version: '2024-01-26', sections: [{ id: 'hygienisk-hantering', label: 'Hygienisk hantering' }, { id: 'krav-pa-avfallsutrymmen', label: 'Krav på avfallsutrymmen' }] },
+    'kontrollwiki:350': { version: '2026-03-06', sections: [{ id: 'allmant-om-livsmedel-under-transport', label: 'Allmänt om livsmedel under transport' }] },
+    'kontrollwiki:351': { version: '2026-02-24', sections: [{ id: 'utbildning-och-kunskap', label: 'Utbildning och kunskap' }] },
+    'kontrollwiki:352': { version: '2025-09-30', sections: [{ id: 'krav-pa-livsmedelsforetag-och-vatten', label: 'Krav på livsmedelsföretag och vatten' }, { id: 'vad-galler-for-is', label: 'Vad gäller för is?' }] },
+  } as const;
+  for (const [sourceId, expected] of Object.entries(expectedSources)) {
+    const source = knowledgeSources[sourceId as keyof typeof knowledgeSources] as KnowledgeSourceRecord;
+    assert.equal(source.latestVersion, expected.version);
+    assert.deepEqual(source.relevantSections, expected.sections.map((section) => section.label));
+    assert.deepEqual(source.sections, expected.sections);
+  }
+
+  const r02 = migratedKnowledgeArticleDefinitions.find((article) => article.id === 'seo-grundforutsattningar-livsmedel');
+  if (!r02) throw new Error('R02 saknas.');
+  const claims = r02.blocks.flatMap((block) => block.claims ?? []);
+  for (const claim of claims) {
+    if (!('sourceReferences' in claim)) continue;
+    for (const reference of claim.sourceReferences) {
+      const expected = expectedSources[reference.sourceId as keyof typeof expectedSources];
+      if (!expected) continue;
+      assert.equal(reference.approvedSourceVersion, expected.version);
+      assert.ok(expected.sections.some((section) => section.id === reference.sectionId));
+    }
   }
 });
 
