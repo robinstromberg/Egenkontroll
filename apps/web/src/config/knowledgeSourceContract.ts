@@ -308,10 +308,16 @@ export type KnowledgeSourceImpact = {
 
 export type KnowledgeSourceImpactIndex = Readonly<Record<string, readonly KnowledgeSourceImpact[]>>;
 
+export type KnowledgeCanonicalRoute = {
+  path: string;
+  canonicalPath: string | null;
+};
+
 export type KnowledgeSourceContractRegistries = {
   sources: Readonly<Record<string, KnowledgeSourceRecord>>;
   languagePolicies: Readonly<Record<string, KnowledgeLanguagePolicy>>;
   disclaimers: Readonly<Record<string, KnowledgeDisclaimer>>;
+  routeRegistry?: readonly KnowledgeCanonicalRoute[];
 };
 
 export const defaultKnowledgeSourceContractRegistries: KnowledgeSourceContractRegistries = {
@@ -321,7 +327,7 @@ export const defaultKnowledgeSourceContractRegistries: KnowledgeSourceContractRe
 };
 
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
-const canonicalPathPattern = /^\/seo\/[^/]+\.html$/;
+const legacyCanonicalPathPattern = /^\/seo\/[^/]+\.html$/;
 const internalPathPattern = /^\/[^\s]*$/;
 const urlPattern = /^https?:\/\/[^\s]+$/;
 const stableIdPattern = /^[^\s]+$/;
@@ -399,12 +405,18 @@ function validateV2Article(
   article: KnowledgeArticleContractInput,
   blocks: readonly KnowledgeArticleBlockContract[],
   sourceMap: ReadonlyMap<string, KnowledgeSourceRecord>,
+  routeRegistry: readonly KnowledgeCanonicalRoute[] | undefined,
   errors: string[],
 ) {
   if (!contractKinds.has(article.contractKind as KnowledgeArticleContractKind)) errors.push(`V2-artikel saknar giltigt artikelkontrakt: ${article.id}`);
   validateScope(article.scope, `V2-artikel saknar scope: ${article.id}`, errors);
   if (!risks.has(article.risk as KnowledgeArticleRisk)) errors.push(`V2-artikel saknar giltig risk: ${article.id}`);
   if (!reviewStatuses.has(article.review?.status as KnowledgeReviewStatus)) errors.push(`V2-artikel saknar giltig review-status: ${article.id}`);
+  if (!routeRegistry) {
+    errors.push(`V2-artikel saknar injicerat route-register: ${article.id}`);
+  } else if (!routeRegistry.some((route) => route.canonicalPath === article.canonicalPath)) {
+    errors.push(`V2-artikel canonical saknas i route-registret: ${article.id} -> ${article.canonicalPath}`);
+  }
 
   const seo = article.seo;
   if (!seoPageRoles.has(seo?.pageRole as KnowledgeSeoPageRole)) errors.push(`V2-artikel saknar giltig SEO-sidroll: ${article.id}`);
@@ -558,7 +570,7 @@ export function validateKnowledgeArticleContracts(
     if (articleIds.has(article.id)) errors.push(`Duplicerat artikel-ID: ${article.id}`);
     articleIds.add(article.id);
     if (!article.id?.trim() || !stableIdPattern.test(article.id)) errors.push('Artikel saknar stabilt ID.');
-    if (!canonicalPathPattern.test(article.canonicalPath ?? '')) errors.push(`Artikel har ogiltig canonical path: ${article.id}`);
+    if (!isV2Article(article) && !legacyCanonicalPathPattern.test(article.canonicalPath ?? '')) errors.push(`Artikel har ogiltig canonical path: ${article.id}`);
     if (!article.title?.trim()) errors.push(`Artikel saknar title: ${article.id}`);
     if (!article.description?.trim()) errors.push(`Artikel saknar description: ${article.id}`);
     const articleSourceIds = Array.isArray(article.sourceIds) ? article.sourceIds : [];
@@ -608,7 +620,7 @@ export function validateKnowledgeArticleContracts(
         }
       }
     }
-    if (isV2Article(article)) validateV2Article(article, blocks, sourceMap, errors);
+    if (isV2Article(article)) validateV2Article(article, blocks, sourceMap, registries.routeRegistry, errors);
   }
 
   return errors;

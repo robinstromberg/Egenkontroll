@@ -19,7 +19,7 @@ import {
   migratedKnowledgeArticles,
   migratedKnowledgeArticleSourceImpactIndex,
 } from '../src/config/migratedKnowledgeArticles';
-import { webMigratedKnowledgeArticleRoutes } from '../src/config/routes';
+import { webMigratedKnowledgeArticleRoutes, webRouteRegistry } from '../src/config/routes';
 
 const r10 = migratedKnowledgeArticleDefinitions[0];
 
@@ -288,6 +288,7 @@ const v2GuidanceSource: KnowledgeSourceRecord = {
 
 const v2Registries: KnowledgeSourceContractRegistries = {
   ...defaultKnowledgeSourceContractRegistries,
+  routeRegistry: webRouteRegistry,
   sources: {
     ...knowledgeSources,
     [v2LegalSource.id]: v2LegalSource,
@@ -299,7 +300,7 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
   return {
     governanceVersion: 2,
     id: 'test-governance-v2',
-    canonicalPath: '/seo/test-governance-v2.html',
+    canonicalPath: '/faroanalys-livsmedel',
     title: 'Testad governance v2 | Min Egenkontroll',
     description: 'Ett testat kontrakt för governance v2.',
     sourceIds: ['test:law', 'test:guidance'],
@@ -450,27 +451,39 @@ test('v1-definitioner behåller läsbar migreringsväg och oförändrad source-i
   });
 });
 
-test('v2 godkänner komplett SEO-kontrakt, claimgranskning och utan duplicerad canonicaltext', () => {
+test('v2 godkänner komplett SEO-kontrakt på faroanalys befintliga route och utan duplicerad canonicaltext', () => {
   const full = v2Article();
-  const compact = v2Article({ id: 'test-governance-v2-compact', canonicalPath: '/seo/test-governance-v2-compact.html', contractKind: 'compact' });
+  const compact = v2Article({ id: 'test-governance-v2-compact', canonicalPath: '/kontrollplan-livsmedel', contractKind: 'compact' });
   assert.deepEqual(validateKnowledgeArticleContracts([full, compact], v2Registries), []);
   const impact = buildKnowledgeSourceImpactIndex([full]);
   assert.deepEqual(impact['test:law'], [{
     articleId: 'test-governance-v2',
-    canonicalPath: '/seo/test-governance-v2.html',
+    canonicalPath: '/faroanalys-livsmedel',
     blockIds: ['main'],
     claimIds: ['requirement-claim'],
     surfaceIds: ['block:main'],
   }]);
   assert.deepEqual(impact['test:guidance'], [{
     articleId: 'test-governance-v2',
-    canonicalPath: '/seo/test-governance-v2.html',
+    canonicalPath: '/faroanalys-livsmedel',
     blockIds: [],
     claimIds: ['example-claim', 'guidance-claim', 'recommendation-claim', 'title-claim', 'uncertainty-claim'],
     surfaceIds: ['faq:one', 'ingress', 'meta-description', 'short-answer', 'title'],
   }]);
   assert.equal(JSON.stringify(full).includes('Testpåstående'), false);
   assert.equal('canonicalPath' in (full.seo ?? {}), false);
+});
+
+test('v2 blockerar canonical som saknas i det injicerade route-registret', () => {
+  const invalid = v2Article({ canonicalPath: '/saknas-i-route-registret' });
+  const errors = validateKnowledgeArticleContracts([invalid], v2Registries);
+  assert.ok(errors.some((error) => error.includes('V2-artikel canonical saknas i route-registret')));
+});
+
+test('v2 kräver ett injicerat route-register medan v1 fortsatt validerar utan det', () => {
+  const withoutRoutes: KnowledgeSourceContractRegistries = { ...v2Registries, routeRegistry: undefined };
+  assert.ok(validateKnowledgeArticleContracts([v2Article()], withoutRoutes).some((error) => error.includes('V2-artikel saknar injicerat route-register')));
+  assert.deepEqual(validateKnowledgeArticleContracts(migratedKnowledgeArticleDefinitions), []);
 });
 
 test('v2 blockerar saknade governancefält, SEO-kontrakt och internlänkningsplan', () => {
