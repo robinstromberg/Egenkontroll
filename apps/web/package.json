@@ -11,7 +11,7 @@
     "prebuild": "node ../../scripts/check-visual-contracts.mjs && npm run brand:sync && npm run routes:check",
     "lint": "eslint . --config ../../eslint.config.js",
     "links:check": "tsx scripts/check-links.ts",
-    "links:test": "tsx --test scripts/link-contract.test.ts scripts/internal-roadmap-status.test.ts scripts/knowledge-source-contract.test.ts scripts/knowledge-route-governance.test.ts",
+    "links:test": "tsx --test scripts/link-contract.test.ts scripts/internal-roadmap-status.test.ts scripts/knowledge-source-contract.test.ts scripts/knowledge-route-governance.test.ts scripts/publication-gate.test.ts",
     "deploy:smoke": "tsx scripts/deploy-smoke.ts",
     "preview": "cross-env ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "routes:check": "tsx src/config/check-routes.ts",

@@ -2,8 +2,13 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { appOrigin, appUrls } from '../src/config/appUrls';
+import { grandfatheredGovernanceBaseline } from '../src/config/grandfatheredGovernanceBaseline';
+import { governanceFindings } from '../src/config/governanceFindings';
+import { knowledgeRouteGovernance } from '../src/config/knowledgeRouteGovernance';
+import { migratedKnowledgeArticleDefinitions } from '../src/config/migratedKnowledgeArticles';
+import { publicationIncomingLinkRequirements } from '../src/config/publicationGate';
 import { siteOrigin, webRedirects, webRouteRegistry } from '../src/config/routes';
-import { validateDocumentLinks, type LinkDocument } from './link-contract';
+import { validateDocumentLinks, validateRequiredIncomingLinks, type LinkDocument } from './link-contract';
 
 const webRoot = fileURLToPath(new URL('..', import.meta.url));
 const distRoot = path.join(webRoot, 'dist');
@@ -67,6 +72,13 @@ const result = validateDocumentLinks(documents, {
   routePaths: webRouteRegistry.map((route) => route.path),
 });
 errors.push(...result.errors);
+errors.push(...validateRequiredIncomingLinks(documents, publicationIncomingLinkRequirements({
+  routes: webRouteRegistry,
+  governance: knowledgeRouteGovernance,
+  articles: migratedKnowledgeArticleDefinitions,
+  grandfatheredBaseline: grandfatheredGovernanceBaseline,
+  findings: governanceFindings,
+}), siteOrigin));
 
 if (errors.length > 0) throw new Error(`Länkkontraktet misslyckades:\n- ${errors.join('\n- ')}`);
 

@@ -64,8 +64,8 @@ test('nya transitional- och legacy-undantag blockeras även om routen är regist
   const newRoute = { ...webRouteRegistry[0], path: '/ny-indexerbar-route', canonicalPath: '/ny-indexerbar-route' };
   const transitional = [...knowledgeRouteGovernance, { path: newRoute.path, status: 'transitional' as const, pageRole: 'fact-page' as const }];
   const legacy = [...knowledgeRouteGovernance, { path: newRoute.path, status: 'legacy-inventory' as const, pageRole: 'fact-page' as const }];
-  assert.ok(validateKnowledgeRouteGovernance([...webRouteRegistry, newRoute], transitional).some((error) => error.includes('Ny transitional-route är inte tillåten')));
-  assert.ok(validateKnowledgeRouteGovernance([...webRouteRegistry, newRoute], legacy).some((error) => error.includes('Ny legacy-inventory-route är inte tillåten')));
+  assert.ok(validateKnowledgeRouteGovernance([...webRouteRegistry, newRoute], transitional).some((error) => error.includes('Icke-full governance-route saknar exakt grandfathered-baslinje')));
+  assert.ok(validateKnowledgeRouteGovernance([...webRouteRegistry, newRoute], legacy).some((error) => error.includes('Icke-full governance-route saknar exakt grandfathered-baslinje')));
 });
 
 test('en ny indexerbar route kan endast anslutas med full governance-status', () => {

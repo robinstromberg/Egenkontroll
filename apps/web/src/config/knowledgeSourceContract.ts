@@ -533,7 +533,7 @@ function validateV2Article(
     if (article.review?.status !== 'approved' || !article.review.humanReviewer?.trim() || article.review.explicitlyApproved !== true || !article.review.approvedBy?.trim() || !isoDatePattern.test(article.review.approvedAt ?? '')) {
       errors.push(`Röd artikel saknar uttryckligt mänskligt godkännande: ${article.id}`);
     }
-    if (article.review?.requiresExpertReview === true && !article.review.expertReviewer?.trim()) errors.push(`Röd artikel saknar sakkunnig granskare: ${article.id}`);
+    if (article.review?.requiresExpertReview !== true || !article.review.expertReviewer?.trim()) errors.push(`Röd artikel saknar obligatorisk sakkunnig granskare: ${article.id}`);
   }
 
   for (const claim of v2Claims) {
@@ -557,6 +557,12 @@ function validateV2Article(
       if (!source?.latestVersion?.trim() || source.latestVersion !== reference.approvedSourceVersion) errors.push(`Claim saknar senast godkänd källversion: ${article.id} -> ${claim.id} -> ${reference.sourceId}`);
     }
     if (claim.classification === 'requirement' && !references.some((reference) => sourceMap.get(reference.sourceId)?.type === 'rättsakt')) errors.push(`Bindande claim saknar relevant rättskälla: ${article.id} -> ${claim.id}`);
+  }
+
+  for (const surface of surfaces.filter((candidate) => candidate.material)) {
+    if (!v2Claims.some((claim) => claim.surfaceId === surface.id)) {
+      errors.push(`Materiell yta saknar claimkoppling: ${article.id} -> ${surface.id}`);
+    }
   }
 }
 
