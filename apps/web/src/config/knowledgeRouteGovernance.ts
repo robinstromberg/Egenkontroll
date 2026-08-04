@@ -38,8 +38,8 @@ function deriveGrandfatheredGovernance(entry: GrandfatheredGovernanceEntry): Kno
 }
 
 const fullGovernanceEntries = [
-  { path: '/seo/grundforutsattningar-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'prerequisites', structuralParentPath: '/kunskapsbank', plannedIncomingLinks: ['/kunskapsbank'], plannedOutgoingLinks: [] },
-  { path: '/seo/lokaler-och-utrustning-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'premises-equipment', structuralParentPath: '/seo/grundforutsattningar-livsmedel.html', plannedIncomingLinks: ['/seo/grundforutsattningar-livsmedel.html'], plannedOutgoingLinks: [] },
+  { path: '/seo/grundforutsattningar-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'prerequisites', structuralParentPath: '/kunskapsbank', plannedIncomingLinks: ['/kunskapsbank'], plannedOutgoingLinks: ['/seo/lokaler-och-utrustning-livsmedel.html', '/seo/avfall-livsmedelsverksamhet.html', '/seo/transport-av-livsmedel.html', '/seo/utbildning-livsmedelshygien-personal.html', '/seo/vatten-i-livsmedelsverksamhet.html', '/seo/hygien-och-daglig-drift.html', '/seo/hantering-och-forvaring-livsmedel.html', '/seo/temperaturprocesser-livsmedel.html', '/kunskapsbank', '/digital-egenkontroll-livsmedel'] },
+  { path: '/seo/lokaler-och-utrustning-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'premises-equipment', structuralParentPath: '/seo/grundforutsattningar-livsmedel.html', plannedIncomingLinks: ['/seo/grundforutsattningar-livsmedel.html'], plannedOutgoingLinks: ['/seo/materialval-livsmedelslokal.html', '/seo/underhall-livsmedelslokal.html', '/seo/toalett-och-handfat-livsmedelsverksamhet.html', '/seo/ventilation-livsmedelsverksamhet.html', '/seo/grundforutsattningar-livsmedel.html', '/seo/rengoring-livsmedelsverksamhet.html', '/kunskapsbank', '/digital-egenkontroll-livsmedel'] },
 ] as const satisfies readonly KnowledgeRouteGovernanceEntry[];
 
 export const knowledgeRouteGovernance = [

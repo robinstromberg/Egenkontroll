@@ -47,6 +47,10 @@ function findingLocation(finding: GovernanceFinding): string {
   return [finding.routePath, finding.articleId, finding.surfaceId, finding.claimId].filter(Boolean).join(' -> ') || finding.id;
 }
 
+function structuralParentIdFromPath(path: string): string {
+  return path.slice(1).replace(/\.html$/, '').replaceAll('/', '-');
+}
+
 export function publicationIncomingLinkRequirements(
   input: PublicationGateInput,
 ): readonly PublicationGateIncomingLinkRequirement[] {
@@ -106,11 +110,23 @@ export function validatePublicationGate(input: PublicationGateInput): string[] {
     if ((seo?.sitemapDecision === 'include') !== route.inSitemap) {
       errors.push(`Publication gate: sitemapbeslut avviker från route-registret: ${entry.path} -> ${article.id}`);
     }
+    if (entry.pageRole !== seo?.pageRole) {
+      errors.push(`Publication gate: sidroll avviker mellan route- och SEO-kontrakt: ${entry.path} -> ${article.id}`);
+    }
+    if (entry.topicClusterId !== seo?.topicClusterId) {
+      errors.push(`Publication gate: ämneskluster avviker mellan route- och SEO-kontrakt: ${entry.path} -> ${article.id}`);
+    }
     if (!entry.structuralParentPath || !routesByPath.has(entry.structuralParentPath) || !seo?.plannedIncomingLinks.includes(entry.structuralParentPath)) {
       errors.push(`Publication gate: full route saknar faktisk strukturell förälder: ${entry.path} -> ${article.id}`);
     }
+    if (entry.structuralParentPath && seo?.structuralParentId !== structuralParentIdFromPath(entry.structuralParentPath)) {
+      errors.push(`Publication gate: strukturell förälder avviker mellan route- och SEO-kontrakt: ${entry.path} -> ${article.id}`);
+    }
     if (!sameStrings(entry.plannedIncomingLinks, seo?.plannedIncomingLinks) || (seo?.plannedIncomingLinks.length ?? 0) === 0) {
       errors.push(`Publication gate: full route saknar matchande internlänkningsplan: ${entry.path} -> ${article.id}`);
+    }
+    if (!sameStrings(entry.plannedOutgoingLinks, seo?.plannedOutgoingLinks)) {
+      errors.push(`Publication gate: utgående länkplan avviker mellan route- och SEO-kontrakt: ${entry.path} -> ${article.id}`);
     }
 
     const claims = article.blocks.flatMap((block) => block.claims ?? []).filter(isV2Claim);

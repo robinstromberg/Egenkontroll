@@ -520,6 +520,17 @@ test('v2 godkänner komplett SEO-kontrakt på faroanalys befintliga route och ut
   assert.equal('canonicalPath' in (full.seo ?? {}), false);
 });
 
+test('fulla v2-kontrakt kräver materiella kärnytor', () => {
+  const base = v2Article();
+  const missingTitle = v2Article({ surfaces: base.surfaces?.filter((surface) => surface.kind !== 'title') });
+  const nonMaterialTitle = v2Article({ surfaces: base.surfaces?.map((surface) => surface.kind === 'title' ? { ...surface, material: false } : surface) });
+  const missingDirectAnswer = v2Article({ surfaces: base.surfaces?.filter((surface) => surface.kind !== 'short-answer' && surface.kind !== 'ingress') });
+  const errors = validateKnowledgeArticleContracts([missingTitle, nonMaterialTitle, missingDirectAnswer], v2Registries);
+  assert.ok(errors.some((error) => error.includes('Full v2-artikel saknar obligatorisk kärnyta titel: test-governance-v2')));
+  assert.ok(errors.some((error) => error.includes('Full v2-artikels obligatoriska kärnyta måste vara materiell titel: test-governance-v2')));
+  assert.ok(errors.some((error) => error.includes('Full v2-artikel saknar obligatoriskt direkt svar eller ingress: test-governance-v2')));
+});
+
 test('v2 blockerar canonical som saknas i det injicerade route-registret', () => {
   const invalid = v2Article({ canonicalPath: '/saknas-i-route-registret' });
   const errors = validateKnowledgeArticleContracts([invalid], v2Registries);

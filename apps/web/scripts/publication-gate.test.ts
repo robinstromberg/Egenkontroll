@@ -70,3 +70,20 @@ test('blockerar full route utan exakt ett v2-kontrakt', () => {
   const errors = validatePublicationGate({ ...input(), articles });
   assert.ok(errors.some((error) => error.includes('full route saknar exakt ett governance v2-kontrakt: /seo/grundforutsattningar-livsmedel.html')));
 });
+
+test('blockerar avvikande sidroll, ämneskluster, strukturell förälder och utgående länkplan', () => {
+  const governance = knowledgeRouteGovernance.map((entry) => entry.path === '/seo/grundforutsattningar-livsmedel.html' ? {
+    ...entry,
+    pageRole: 'topic-hub' as const,
+    topicClusterId: 'fel-kluster',
+    plannedOutgoingLinks: [],
+  } : entry);
+  const articles = structuredClone(migratedKnowledgeArticleDefinitions);
+  const r02 = articles.find((article) => article.id === 'seo-grundforutsattningar-livsmedel')!;
+  r02.seo = { ...r02.seo!, structuralParentId: 'fel-foralder' };
+  const errors = validatePublicationGate({ ...input(), governance, articles });
+  assert.ok(errors.some((error) => error.includes('sidroll avviker mellan route- och SEO-kontrakt: /seo/grundforutsattningar-livsmedel.html')));
+  assert.ok(errors.some((error) => error.includes('ämneskluster avviker mellan route- och SEO-kontrakt: /seo/grundforutsattningar-livsmedel.html')));
+  assert.ok(errors.some((error) => error.includes('strukturell förälder avviker mellan route- och SEO-kontrakt: /seo/grundforutsattningar-livsmedel.html')));
+  assert.ok(errors.some((error) => error.includes('utgående länkplan avviker mellan route- och SEO-kontrakt: /seo/grundforutsattningar-livsmedel.html')));
+});
