@@ -216,6 +216,15 @@ const grunnforutsattningarArticle: MigratedKnowledgeArticleDefinition = {
         'I Kontrollwikis indelning omfattar grundförutsättningarna områden som verksamhetens struktur, drift, hygien, lagring och transport. På den här sidan behandlas bland annat avfall, lokaler och utrustning, transport, utbildning och vattenförsörjning.',
       ],
       claims: [
+        { id: 'r02-claim-title', surfaceId: 'r02-title', classification: 'guidance', reformulationType: 'summary', scope: r02Scope, central: false, sourceIds: ['kontrollwiki:246'], sourceReferences: [{ sourceId: 'kontrollwiki:246', sectionId: 'grundforutsattning-eller-haccp', approvedSourceVersion: '2025-11-18' }], ...approvedClaim },
+        { id: 'r02-claim-meta-description', surfaceId: 'r02-meta-description', classification: 'guidance', reformulationType: 'multi-source-synthesis', scope: r02Scope, central: false, sourceIds: ['kontrollwiki:246', 'kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'], sourceReferences: [
+          { sourceId: 'kontrollwiki:246', sectionId: 'grundforutsattning-eller-haccp', approvedSourceVersion: '2025-11-18' },
+          { sourceId: 'kontrollwiki:341', sectionId: 'hygienisk-hantering', approvedSourceVersion: '2024-01-26' },
+          { sourceId: 'kontrollwiki:343', sectionId: 'lokaler-for-livsmedelsforetagare', approvedSourceVersion: '2026-06-02' },
+          { sourceId: 'kontrollwiki:350', sectionId: 'allmant-om-livsmedel-under-transport', approvedSourceVersion: '2026-03-06' },
+          { sourceId: 'kontrollwiki:351', sectionId: 'utbildning-och-kunskap', approvedSourceVersion: '2026-02-24' },
+          { sourceId: 'kontrollwiki:352', sectionId: 'krav-pa-livsmedelsforetag-och-vatten', approvedSourceVersion: '2025-09-30' },
+        ], ...approvedClaim },
         { id: 'r02-claim-h1-grundarbete', surfaceId: 'r02-h1', classification: 'guidance', reformulationType: 'summary', scope: r02Scope, central: true, sourceIds: ['kontrollwiki:246'], sourceReferences: [{ sourceId: 'kontrollwiki:246', sectionId: 'grundforutsattning-eller-haccp', approvedSourceVersion: '2025-11-18' }], ...approvedClaim },
         { id: 'r02-claim-kortsvar-grundforutsattningar', surfaceId: 'r02-short-answer', classification: 'guidance', reformulationType: 'multi-source-synthesis', scope: r02Scope, central: true, sourceIds: ['kontrollwiki:246', 'kontrollwiki:341', 'kontrollwiki:343', 'kontrollwiki:350', 'kontrollwiki:351', 'kontrollwiki:352'], sourceReferences: [
           { sourceId: 'kontrollwiki:246', sectionId: 'hygien', approvedSourceVersion: '2025-11-18' },
@@ -296,7 +305,7 @@ const grunnforutsattningarArticle: MigratedKnowledgeArticleDefinition = {
     followUpGoals: ['Granska källstöd och scope vid nästa materiella ändring.'],
   },
   surfaces: [
-    { id: 'r02-title', kind: 'title', material: false }, { id: 'r02-meta-description', kind: 'meta-description', material: false }, { id: 'r02-h1', kind: 'h1', material: true }, { id: 'r02-short-answer', kind: 'short-answer', material: true },
+    { id: 'r02-title', kind: 'title', material: true }, { id: 'r02-meta-description', kind: 'meta-description', material: true }, { id: 'r02-h1', kind: 'h1', material: true }, { id: 'r02-short-answer', kind: 'short-answer', material: true },
     { id: 'r02-block-varfor-grundforutsattningar', kind: 'block', material: true, blockId: 'varfor-grundforutsattningar' }, { id: 'r02-block-omraden', kind: 'block', material: true, blockId: 'omraden-i-grundforutsattningarna' }, { id: 'r02-block-rekommenderade-rutiner', kind: 'block', material: true, blockId: 'rekommenderade-grundforutsattningar-rutiner' },
   ],
   relatedLinks: {
@@ -505,6 +514,9 @@ const lokalerUtrustningArticle: MigratedKnowledgeArticleDefinition = {
         { href: '/seo/ventilation-livsmedelsverksamhet.html', title: 'Ventilation', copy: 'Luftflöden, kondens och föroreningar behöver hållas under kontroll.' },
       ],
       claims: [
+        { id: 'r08-claim-title', surfaceId: 'r08-title', classification: 'guidance', reformulationType: 'summary', scope: r08Scope, central: false, sourceIds: ['kontrollwiki:343'], sourceReferences: [{ sourceId: 'kontrollwiki:343', sectionId: 'lokaler-for-livsmedelsforetagare', approvedSourceVersion: '2026-06-02' }], ...approvedClaim },
+        { id: 'r08-claim-meta-description', surfaceId: 'r08-meta-description', classification: 'guidance', reformulationType: 'multi-source-synthesis', scope: r08Scope, central: false, sourceIds: ['kontrollwiki:343', 'kontrollwiki:1045', 'kontrollwiki:1046'], sourceReferences: [{ sourceId: 'kontrollwiki:343', sectionId: 'lokaler-for-livsmedelsforetagare', approvedSourceVersion: '2026-06-02' }, { sourceId: 'kontrollwiki:1045', sectionId: 'handfat', approvedSourceVersion: '2026-04-13' }, { sourceId: 'kontrollwiki:1046', sectionId: 'ventilation', approvedSourceVersion: '2026-04-13' }], ...approvedClaim },
+        { id: 'r08-claim-h1', surfaceId: 'r08-h1', classification: 'guidance', reformulationType: 'summary', scope: r08Scope, central: true, sourceIds: ['kontrollwiki:343'], sourceReferences: [{ sourceId: 'kontrollwiki:343', sectionId: 'lokaler-for-livsmedelsforetagare', approvedSourceVersion: '2026-06-02' }], ...approvedClaim },
         { id: 'r08-short-answer-hygieniskt-arbete', surfaceId: 'r08-short-answer', classification: 'guidance', reformulationType: 'summary', scope: r08Scope, central: true, sourceIds: ['kontrollwiki:343'], sourceReferences: [{ sourceId: 'kontrollwiki:343', sectionId: 'lokaler-for-livsmedelsforetagare', approvedSourceVersion: '2026-06-02' }], ...approvedClaim },
         { id: 'r08-short-answer-rengoring', surfaceId: 'r08-short-answer', classification: 'guidance', reformulationType: 'summary', scope: r08Scope, central: true, sourceIds: ['kontrollwiki:343'], sourceReferences: [{ sourceId: 'kontrollwiki:343', sectionId: 'inredning-och-materialval', approvedSourceVersion: '2026-06-02' }], ...approvedClaim },
         { id: 'r08-short-answer-kontamination', surfaceId: 'r08-short-answer', classification: 'guidance', reformulationType: 'summary', scope: r08Scope, central: true, sourceIds: ['kontrollwiki:343'], sourceReferences: [{ sourceId: 'kontrollwiki:343', sectionId: 'lokaler-for-livsmedelsforetagare', approvedSourceVersion: '2026-06-02' }], ...approvedClaim },
@@ -561,7 +573,7 @@ const lokalerUtrustningArticle: MigratedKnowledgeArticleDefinition = {
     followUpGoals: ['Granska källstöd och scope vid nästa materiella ändring.'],
   },
   surfaces: [
-    { id: 'r08-title', kind: 'title', material: false }, { id: 'r08-meta-description', kind: 'meta-description', material: false }, { id: 'r08-h1', kind: 'h1', material: false }, { id: 'r08-short-answer', kind: 'short-answer', material: true },
+    { id: 'r08-title', kind: 'title', material: true }, { id: 'r08-meta-description', kind: 'meta-description', material: true }, { id: 'r08-h1', kind: 'h1', material: true }, { id: 'r08-short-answer', kind: 'short-answer', material: true },
     { id: 'r08-block-omraden', kind: 'block', material: true, blockId: 'omraden-i-lokaler-och-utrustning' }, { id: 'r08-block-ingen-ritning', kind: 'block', material: true, blockId: 'ingen-ritning-passar-alla' }, { id: 'r08-block-praktiska-kontrollomraden', kind: 'block', material: false, blockId: 'praktiska-kontrollomraden' },
   ],
   relatedLinks: {

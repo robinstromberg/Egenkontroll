@@ -3,6 +3,8 @@
 Status: **Beslutad strategisk specifikation, version 1**  
 Datum: **2026-07-30**
 
+Operativ drift och migration beskrivs i [Publication gate](content-publication-gate.md).
+
 ## 1. Syfte
 
 Den här specifikationen är den permanenta styrningen för hur Min Egenkontroll ska skapa, publicera, länka, faktagranska och underhålla kunskapsinnehåll.

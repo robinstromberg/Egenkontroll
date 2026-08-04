@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateDocumentLinks, type LinkDocument } from './link-contract';
+import { validateDocumentLinks, validateRequiredIncomingLinks, type LinkDocument } from './link-contract';
 
 const contract = {
   siteOrigin: 'https://minegenkontroll.se',
@@ -44,4 +44,18 @@ test('avvisar fel app-path, query och routevarianter', () => {
   assert.ok(result.some((error) => error.includes('/guide/')));
   assert.ok(result.some((error) => error.includes('/guide.html')));
   assert.ok(result.some((error) => error.includes('/legacy.html')));
+});
+
+test('verifierar faktisk inkommande länk i byggd HTML', () => {
+  const requirement = [{ targetPath: '/guide', sourcePaths: ['/'], articleId: 'guide' }];
+  assert.deepEqual(validateRequiredIncomingLinks([
+    { route: '/', page: 'home', html: '<a href="/guide#answer">Guide</a>' },
+    { route: '/guide', page: 'fact-page', html: '<h1>Guide</h1>' },
+  ], requirement, contract.siteOrigin), []);
+  const missing = validateRequiredIncomingLinks([
+    { route: '/', page: 'home', html: '<a href="/">Start</a>' },
+  ], requirement, contract.siteOrigin);
+  assert.ok(missing.some((error) => error.includes('Obligatorisk inkommande länk saknas: / -> /guide (guide)')));
+  const sourceMissing = validateRequiredIncomingLinks([], requirement, contract.siteOrigin);
+  assert.ok(sourceMissing.some((error) => error.includes('saknar byggd källroute: / -> /guide (guide)')));
 });

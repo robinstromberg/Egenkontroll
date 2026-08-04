@@ -26,6 +26,12 @@ export type LinkResult = {
   legacyRedirectLinks: number;
 };
 
+export type IncomingLinkRequirement = {
+  targetPath: string;
+  sourcePaths: readonly string[];
+  articleId: string;
+};
+
 function inspectHtml(html: string) {
   const root = parse(html) as unknown as HtmlNode;
   const ids = new Set<string>();
@@ -98,4 +104,34 @@ export function validateDocumentLinks(documents: readonly LinkDocument[], contra
   }
 
   return { errors, checkedLinks, legacyRedirectLinks };
+}
+
+export function validateRequiredIncomingLinks(
+  documents: readonly LinkDocument[],
+  requirements: readonly IncomingLinkRequirement[],
+  siteOrigin: string,
+): string[] {
+  const errors: string[] = [];
+  const inspected = new Map(documents.map((document) => [document.route, inspectHtml(document.html)]));
+
+  for (const requirement of requirements) {
+    for (const sourcePath of requirement.sourcePaths) {
+      const source = inspected.get(sourcePath);
+      if (!source) {
+        errors.push(`Obligatorisk inkommande länk saknar byggd källroute: ${sourcePath} -> ${requirement.targetPath} (${requirement.articleId})`);
+        continue;
+      }
+      const linksToTarget = source.links.some((rawHref) => {
+        try {
+          const target = new URL(rawHref, new URL(sourcePath, siteOrigin));
+          return target.origin === siteOrigin && target.pathname === requirement.targetPath;
+        } catch {
+          return false;
+        }
+      });
+      if (!linksToTarget) errors.push(`Obligatorisk inkommande länk saknas: ${sourcePath} -> ${requirement.targetPath} (${requirement.articleId})`);
+    }
+  }
+
+  return errors;
 }

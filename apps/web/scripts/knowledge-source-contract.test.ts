@@ -414,6 +414,19 @@ function v2Article(overrides: Record<string, unknown> = {}): KnowledgeArticleCon
           sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
         },
         {
+          id: 'h1-claim',
+          surfaceId: 'h1',
+          classification: 'guidance',
+          reformulationType: 'summary',
+          scope: v2Scope,
+          risk: 'yellow',
+          central: false,
+          factCheckedAt: '2026-08-01',
+          reviewStatus: 'approved',
+          sourceIds: ['test:guidance'],
+          sourceReferences: [{ sourceId: 'test:guidance', sectionId: 'section-a', approvedSourceVersion: '2026-08-01' }],
+        },
+        {
           id: 'guidance-claim',
           surfaceId: 'short-answer',
           classification: 'guidance',
@@ -500,11 +513,22 @@ test('v2 godkänner komplett SEO-kontrakt på faroanalys befintliga route och ut
     articleId: 'test-governance-v2',
     canonicalPath: '/faroanalys-livsmedel',
     blockIds: [],
-    claimIds: ['example-claim', 'guidance-claim', 'recommendation-claim', 'title-claim', 'uncertainty-claim'],
-    surfaceIds: ['faq:one', 'ingress', 'meta-description', 'short-answer', 'title'],
+    claimIds: ['example-claim', 'guidance-claim', 'h1-claim', 'recommendation-claim', 'title-claim', 'uncertainty-claim'],
+    surfaceIds: ['faq:one', 'h1', 'ingress', 'meta-description', 'short-answer', 'title'],
   }]);
   assert.equal(JSON.stringify(full).includes('Testpåstående'), false);
   assert.equal('canonicalPath' in (full.seo ?? {}), false);
+});
+
+test('fulla v2-kontrakt kräver materiella kärnytor', () => {
+  const base = v2Article();
+  const missingTitle = v2Article({ surfaces: base.surfaces?.filter((surface) => surface.kind !== 'title') });
+  const nonMaterialTitle = v2Article({ surfaces: base.surfaces?.map((surface) => surface.kind === 'title' ? { ...surface, material: false } : surface) });
+  const missingDirectAnswer = v2Article({ surfaces: base.surfaces?.filter((surface) => surface.kind !== 'short-answer' && surface.kind !== 'ingress') });
+  const errors = validateKnowledgeArticleContracts([missingTitle, nonMaterialTitle, missingDirectAnswer], v2Registries);
+  assert.ok(errors.some((error) => error.includes('Full v2-artikel saknar obligatorisk kärnyta titel: test-governance-v2')));
+  assert.ok(errors.some((error) => error.includes('Full v2-artikels obligatoriska kärnyta måste vara materiell titel: test-governance-v2')));
+  assert.ok(errors.some((error) => error.includes('Full v2-artikel saknar obligatoriskt direkt svar eller ingress: test-governance-v2')));
 });
 
 test('v2 blockerar canonical som saknas i det injicerade route-registret', () => {
@@ -668,7 +692,7 @@ test('v2 blockerar bindande claim utan rättsakt och riskbaserade godkännanden'
   assert.ok(errors.some((error) => error.includes('Bindande claim saknar relevant rättskälla')));
   assert.ok(errors.some((error) => error.includes('Gul artikel saknar namngiven mänsklig granskare')));
   assert.ok(errors.some((error) => error.includes('Röd artikel saknar uttryckligt mänskligt godkännande')));
-  assert.ok(errors.some((error) => error.includes('Röd artikel saknar sakkunnig granskare')));
+  assert.ok(errors.some((error) => error.includes('Röd artikel saknar obligatorisk sakkunnig granskare')));
 });
 
 test('v2 blockerar sidrisk som inte motsvarar högsta centrala claimrisk', () => {

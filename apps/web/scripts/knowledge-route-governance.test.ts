@@ -7,6 +7,7 @@ import {
   knowledgeRouteGovernanceMigrationGuide,
   validateKnowledgeRouteGovernance,
 } from '../src/config/knowledgeRouteGovernance';
+import { migratedKnowledgeArticleDefinitions } from '../src/config/migratedKnowledgeArticles';
 import { webRedirects, webRouteRegistry } from '../src/config/routes';
 
 test('governance-baslinjen täcker varje indexerbar route med låsta historiska statusar', () => {
@@ -25,11 +26,13 @@ test('governance-baslinjen täcker varje indexerbar route med låsta historiska 
 test('R02 och R08 är fullstyrda utan ändrade route-, canonical- eller sitemapdata', () => {
   const r02 = knowledgeRouteGovernance.find((entry) => entry.path === '/seo/grundforutsattningar-livsmedel.html');
   const r08 = knowledgeRouteGovernance.find((entry) => entry.path === '/seo/lokaler-och-utrustning-livsmedel.html');
+  const r02Article = migratedKnowledgeArticleDefinitions.find((article) => article.id === 'seo-grundforutsattningar-livsmedel');
+  const r08Article = migratedKnowledgeArticleDefinitions.find((article) => article.id === 'seo-lokaler-och-utrustning-livsmedel');
   assert.deepEqual(r02, {
-    path: '/seo/grundforutsattningar-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'prerequisites', structuralParentPath: '/kunskapsbank', plannedIncomingLinks: ['/kunskapsbank'], plannedOutgoingLinks: [],
+    path: '/seo/grundforutsattningar-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'prerequisites', structuralParentPath: '/kunskapsbank', plannedIncomingLinks: ['/kunskapsbank'], plannedOutgoingLinks: r02Article?.seo?.plannedOutgoingLinks,
   });
   assert.deepEqual(r08, {
-    path: '/seo/lokaler-och-utrustning-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'premises-equipment', structuralParentPath: '/seo/grundforutsattningar-livsmedel.html', plannedIncomingLinks: ['/seo/grundforutsattningar-livsmedel.html'], plannedOutgoingLinks: [],
+    path: '/seo/lokaler-och-utrustning-livsmedel.html', status: 'full', pageRole: 'fact-page', topicClusterId: 'premises-equipment', structuralParentPath: '/seo/grundforutsattningar-livsmedel.html', plannedIncomingLinks: ['/seo/grundforutsattningar-livsmedel.html'], plannedOutgoingLinks: r08Article?.seo?.plannedOutgoingLinks,
   });
   for (const path of [r02?.path, r08?.path]) {
     const route = webRouteRegistry.find((candidate) => candidate.path === path);
@@ -64,8 +67,8 @@ test('nya transitional- och legacy-undantag blockeras även om routen är regist
   const newRoute = { ...webRouteRegistry[0], path: '/ny-indexerbar-route', canonicalPath: '/ny-indexerbar-route' };
   const transitional = [...knowledgeRouteGovernance, { path: newRoute.path, status: 'transitional' as const, pageRole: 'fact-page' as const }];
   const legacy = [...knowledgeRouteGovernance, { path: newRoute.path, status: 'legacy-inventory' as const, pageRole: 'fact-page' as const }];
-  assert.ok(validateKnowledgeRouteGovernance([...webRouteRegistry, newRoute], transitional).some((error) => error.includes('Ny transitional-route är inte tillåten')));
-  assert.ok(validateKnowledgeRouteGovernance([...webRouteRegistry, newRoute], legacy).some((error) => error.includes('Ny legacy-inventory-route är inte tillåten')));
+  assert.ok(validateKnowledgeRouteGovernance([...webRouteRegistry, newRoute], transitional).some((error) => error.includes('Icke-full governance-route saknar exakt grandfathered-baslinje')));
+  assert.ok(validateKnowledgeRouteGovernance([...webRouteRegistry, newRoute], legacy).some((error) => error.includes('Icke-full governance-route saknar exakt grandfathered-baslinje')));
 });
 
 test('en ny indexerbar route kan endast anslutas med full governance-status', () => {

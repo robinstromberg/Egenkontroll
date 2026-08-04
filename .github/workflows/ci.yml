@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -25,6 +27,11 @@ jobs:
 
       - name: Public platform contracts
         run: npm run contracts
+
+      - name: Grandfathered publication baseline
+        env:
+          PUBLICATION_GATE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: npm run publication:baseline -- --base-sha "$PUBLICATION_GATE_BASE_SHA"
 
       - name: App workspace typecheck
         run: npm run typecheck --workspace @min-egenkontroll/app

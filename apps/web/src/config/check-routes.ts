@@ -3,9 +3,11 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertWebRouteRegistry, webModernRoutes, webRedirects, webRouteRegistry, webStaticSeoRoutes } from './routes';
-import { validateKnowledgeRouteGovernance } from './knowledgeRouteGovernance';
-import { defaultKnowledgeSourceContractRegistries, validateKnowledgeArticleContracts } from './knowledgeSourceContract';
+import { grandfatheredGovernanceBaseline } from './grandfatheredGovernanceBaseline';
+import { governanceFindings } from './governanceFindings';
+import { knowledgeRouteGovernance } from './knowledgeRouteGovernance';
 import { migratedKnowledgeArticleDefinitions } from './migratedKnowledgeArticles';
+import { validatePublicationGate } from './publicationGate';
 import { config as vercelConfig } from '../../vercel';
 import { appRedirects, productionAppOrigin } from './appUrls';
 
@@ -29,10 +31,12 @@ function sourceFiles(directory: string): string[] {
 
 assertWebRouteRegistry();
 const errors: string[] = [];
-errors.push(...validateKnowledgeRouteGovernance(webRouteRegistry));
-errors.push(...validateKnowledgeArticleContracts(migratedKnowledgeArticleDefinitions, {
-  ...defaultKnowledgeSourceContractRegistries,
-  routeRegistry: webRouteRegistry,
+errors.push(...validatePublicationGate({
+  routes: webRouteRegistry,
+  governance: knowledgeRouteGovernance,
+  articles: migratedKnowledgeArticleDefinitions,
+  grandfatheredBaseline: grandfatheredGovernanceBaseline,
+  findings: governanceFindings,
 }));
 const expectedVercelRedirects = appRedirects.map(({ source, destination }) => ({ source, destination, permanent: true }));
 if (JSON.stringify(vercelConfig.redirects) !== JSON.stringify(expectedVercelRedirects)) {

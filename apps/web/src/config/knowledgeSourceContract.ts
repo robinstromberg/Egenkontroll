@@ -516,6 +516,22 @@ function validateV2Article(
   const h1Surface = surfaces.find((surface) => surface.id === seo?.h1SurfaceId);
   if (!h1Surface || h1Surface.kind !== 'h1') errors.push(`V2-artikel saknar H1-mappning: ${article.id}`);
 
+  if (article.contractKind === 'full') {
+    const requiredCoreSurfaces: readonly [KnowledgeSurfaceKind, string][] = [
+      ['title', 'titel'],
+      ['h1', 'H1'],
+      ['meta-description', 'metabeskrivning'],
+    ];
+    for (const [kind, label] of requiredCoreSurfaces) {
+      const surface = surfaces.find((candidate) => candidate.kind === kind);
+      if (!surface) errors.push(`Full v2-artikel saknar obligatorisk kärnyta ${label}: ${article.id}`);
+      else if (!surface.material) errors.push(`Full v2-artikels obligatoriska kärnyta måste vara materiell ${label}: ${article.id}`);
+    }
+    const directAnswer = surfaces.find((candidate) => candidate.kind === 'short-answer' || candidate.kind === 'ingress');
+    if (!directAnswer) errors.push(`Full v2-artikel saknar obligatoriskt direkt svar eller ingress: ${article.id}`);
+    else if (!directAnswer.material) errors.push(`Full v2-artikels direkta svar eller ingress måste vara materiell: ${article.id}`);
+  }
+
   const claims = blocks.flatMap((block) => Array.isArray(block.claims) ? block.claims : []);
   const v2Claims = claims.filter(isV2Claim);
   if (claims.some((claim) => !isV2Claim(claim))) errors.push(`V2-artikel innehåller v1-claim: ${article.id}`);
@@ -533,7 +549,7 @@ function validateV2Article(
     if (article.review?.status !== 'approved' || !article.review.humanReviewer?.trim() || article.review.explicitlyApproved !== true || !article.review.approvedBy?.trim() || !isoDatePattern.test(article.review.approvedAt ?? '')) {
       errors.push(`Röd artikel saknar uttryckligt mänskligt godkännande: ${article.id}`);
     }
-    if (article.review?.requiresExpertReview === true && !article.review.expertReviewer?.trim()) errors.push(`Röd artikel saknar sakkunnig granskare: ${article.id}`);
+    if (article.review?.requiresExpertReview !== true || !article.review.expertReviewer?.trim()) errors.push(`Röd artikel saknar obligatorisk sakkunnig granskare: ${article.id}`);
   }
 
   for (const claim of v2Claims) {
@@ -557,6 +573,12 @@ function validateV2Article(
       if (!source?.latestVersion?.trim() || source.latestVersion !== reference.approvedSourceVersion) errors.push(`Claim saknar senast godkänd källversion: ${article.id} -> ${claim.id} -> ${reference.sourceId}`);
     }
     if (claim.classification === 'requirement' && !references.some((reference) => sourceMap.get(reference.sourceId)?.type === 'rättsakt')) errors.push(`Bindande claim saknar relevant rättskälla: ${article.id} -> ${claim.id}`);
+  }
+
+  for (const surface of surfaces.filter((candidate) => candidate.material)) {
+    if (!v2Claims.some((claim) => claim.surfaceId === surface.id)) {
+      errors.push(`Materiell yta saknar claimkoppling: ${article.id} -> ${surface.id}`);
+    }
   }
 }
 
