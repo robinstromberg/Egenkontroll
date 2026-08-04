@@ -32,6 +32,8 @@ Runt appen byggs en publik plattform med kunskap, mallar, checklistor, verktyg o
 
 Produkten ska kännas trygg, snabb och begriplig för användare utan teknisk bakgrund. Appen är inte en teknisk formulärbyggare som råkar kunna dokumentera kontroller; den är ett arbetsverktyg för egenkontroll.
 
+Innan arbete som rör livsmedelsmallar, kontrollflöden, avvikelsebeteende eller kontrolltypsspecifik historik ska `docs/product/control-types/README.md` och eventuell länkad detaljdefinition läsas. Katalogen beskriver målbild och produktstatus; äldre mall- och motordokument kan beskriva nuvarande implementation.
+
 ## Arbetsregler för Codex
 
 - Läs relevant GitHub-issue, befintliga docs och berörda filer innan du ändrar något.

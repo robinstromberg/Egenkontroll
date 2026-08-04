@@ -1,6 +1,8 @@
 # Branschbaserade mallpaket
 
-Det här dokumentet beskriver hur Egenkontroll kan stödja fler branscher senare utan att ändra kontrollmotorn eller störa livsmedels-MVP:n.
+> Detta dokument beskriver paketarkitektur. För livsmedelsmallarnas produktlogik, tillåtna anpassning och status gäller [`docs/product/control-types/README.md`](./product/control-types/README.md).
+
+Det här dokumentet beskriver hur Egenkontroll kan stödja fler branscher senare utan att ändra den gemensamma kontrollmotorn eller störa livsmedels-MVP:n.
 
 ## Princip
 
@@ -8,7 +10,7 @@ Livsmedel är första mallpaketet, inte hela systemets identitet. Samma motor sk
 
 `mallpaket -> kontrolltyp -> kontrollpunkt -> fält -> utförd kontroll -> avvikelse -> historik -> delning/export`
 
-Mallar ska vara startpunkter. När en mall används ska den kopieras till organisationens egna `control_types`, `control_objects` och `control_field_definitions`, så att admin kan redigera allt.
+Mallar ska vara startpunkter. När en mall används ska verksamhetens tillåtna anpassningar kunna lagras i organisationens egna `control_types`, `control_objects` och `control_field_definitions`. Mallens syfte och grundläggande kontrollogik ska samtidigt kunna styras och versioneras enligt kontrolltypskatalogen.
 
 ## Nuvarande läge
 
@@ -64,7 +66,7 @@ Inga nya branscher ska exponeras i UI förrän minst ett nytt paket är definier
 - Ingen branschväljare i onboarding.
 - Inga nya branschmallar i produktflödet.
 - Ingen ny kontrollmotor.
-- Ingen låsning av mallar efter att de kopierats till en organisation.
+- Ingen total låsning av verksamhetens tillåtna anpassningar efter att en mall har kopierats till en organisation.
 - Ingen rapportombyggnad enbart för framtida branscher.
 
 ## Testprincip när detta byggs

@@ -1,5 +1,7 @@
 # Onboarding och startmallar
 
+> Detta dokument beskriver den implementerade MVP-modellen. Den beslutade produktmålbilden och statusen för de 16 livsmedelskontrollerna finns i [`docs/product/control-types/README.md`](./product/control-types/README.md).
+
 Issue #5 gör att en ny verksamhet kan komma igång med föreslagna kontrolltyper utan manuell databashantering.
 
 ## Flöde
@@ -36,3 +38,5 @@ Första svenska malluppsättningen är:
 ## Viktig princip
 
 MVP:n använder hybridstart: färdiga exempel finns, men verksamheten ska inte låsas till standardmallar.
+
+I målbilden gäller detta de verksamhetsspecifika val som katalogen tillåter. Mallens syfte och grundläggande kontrollogik ska inte kunna ändras fritt så att kontrolltypen förlorar sin betydelse.
