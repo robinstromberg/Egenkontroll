@@ -1,5 +1,7 @@
 # Kontrollmotor
 
+> Detta dokument beskriver den första implementerade kontrollmotorn. Produktmålbildens fyra UX-grundflöden och kontrolltypsstatus finns i [`docs/product/control-types/README.md`](./product/control-types/README.md).
+
 Issue #8 skapar första generella kontrollflödet.
 
 ## Grundflöde
@@ -36,3 +38,5 @@ Foto och mer avancerade fälttyper byggs vidare i senare issue.
 ## Viktig princip
 
 Kontrollmotorn är gemensam. Skillnaden mellan temperaturkontroll, städning och varumottagning ska ligga i kontrolltypens objekt och fält, inte i separata hårdkodade flöden.
+
+En gemensam motor betyder inte att alla kontrolltyper ska visas som samma formulär. Målbilden använder uppgiftsanpassade utförandeflöden ovanpå gemensam lagring, avvikelsehantering, historik och spårbarhet.

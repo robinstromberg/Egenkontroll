@@ -96,3 +96,7 @@ Codex ska inte bara fråga "går detta att bygga?". Codex ska väga:
 - produktens förtroende före snabb kosmetik.
 
 När dokumentation och implementation drar åt olika håll ska befintlig fungerande app inventeras först. Därefter ska dokumentationen eller koden justeras med tydlig scope, inte genom gissningar.
+
+## Styrande kontrolltypsdefinitioner
+
+Den gemensamma produktkatalogen för livsmedelskontroller finns i [`docs/product/control-types/README.md`](./control-types/README.md). Där finns status, gemensamma regler, arbetsordning och länkar till godkända detaljdefinitioner. Katalogen beskriver målbilden och ersätter inte en inventering av den faktiska implementationen inför varje ändring.
