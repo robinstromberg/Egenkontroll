@@ -2,7 +2,7 @@
 
 **Produktstatus:** UX beslutad 2026-08-04\
 **Grundflöde:** Snabb mätning\
-**Implementation:** Ingen ny implementationsuppgift är skapad utifrån denna definition
+**Implementation:** Första produktionsetappen hanteras i [GitHub-issue #400](https://github.com/robinstromberg/Egenkontroll/issues/400); återstående målbild delas upp i senare etapper
 
 Detta dokument är den beslutade produkt- och UX-målbilden för Kyl- och frystemperatur. Dagens fungerande inline-flöde ska utvecklas vidare, inte ersättas av ett helt nytt arbetssätt.
 

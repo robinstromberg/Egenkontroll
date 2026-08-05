@@ -64,6 +64,23 @@
   font-weight: 700;
 }
 
+.saved-result-note {
+  margin: 0;
+  border: 1px solid var(--ds-status-success-border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: var(--ds-status-success-fg);
+  background: var(--ds-status-success-bg);
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.saved-result-note.warning {
+  border-color: var(--ds-status-warning-border);
+  color: var(--ds-status-warning-fg);
+  background: var(--ds-status-warning-bg);
+}
+
 .saved-summary-card {
   display: grid;
   gap: 20px;

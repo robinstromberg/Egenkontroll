@@ -49,11 +49,12 @@ values (
   'active'
 );
 
-insert into public.control_types (id, organization_id, name, category, frequency, active)
+insert into public.control_types (id, organization_id, control_key, name, category, frequency, active)
 values
   (
     '88888888-8888-4888-8888-888888888821',
     '88888888-8888-4888-8888-888888888811',
+    'cold_storage_temperature',
     'Transactional Temperature Smoke',
     'temperature',
     'daily',
@@ -62,6 +63,7 @@ values
   (
     '88888888-8888-4888-8888-888888888822',
     '88888888-8888-4888-8888-888888888811',
+    null,
     'Transactional Other Smoke',
     'checklist',
     'daily',
@@ -145,6 +147,8 @@ declare
   attachment_count integer;
   run_count_before integer;
   run_count_after integer;
+  saved_item public.control_run_items%rowtype;
+  saved_deviation public.deviations%rowtype;
 begin
   select *
   into saved_run
@@ -208,6 +212,144 @@ begin
     raise exception 'Transactional smoke failure: expected 2 items, 1 deviation and 1 attachment metadata row';
   end if;
 
+  select * into saved_item
+  from public.control_run_items
+  where id = '88888888-8888-4888-8888-888888888861';
+
+  select * into saved_deviation
+  from public.deviations
+  where control_run_item_id = '88888888-8888-4888-8888-888888888861';
+
+  if saved_item.status <> 'deviation'
+    or saved_item.deviation_reason <> 'Värdet ligger utanför företagets åtgärdsgräns.'
+    or saved_item.value_json ->> 'schema' <> 'legacy_action_v1'
+    or saved_deviation.status <> 'open'
+  then
+    raise exception 'Transactional smoke failure: legacy cold-storage deviation was not normalized safely';
+  end if;
+
+  select *
+  into saved_run
+  from public.save_control_run_transactional(
+    '88888888-8888-4888-8888-888888888811',
+    '88888888-8888-4888-8888-888888888821',
+    '88888888-8888-4888-8888-888888888854',
+    jsonb_build_array(
+      jsonb_build_object(
+        'controlRunItemId', '88888888-8888-4888-8888-888888888865',
+        'controlObjectId', '88888888-8888-4888-8888-888888888831',
+        'fieldDefinitionId', '88888888-8888-4888-8888-888888888841',
+        'value', '12',
+        'status', 'ok',
+        'valueJson', jsonb_build_object(
+          'schema', 'cold_storage_v1',
+          'deviation', jsonb_build_object(
+            'goodsActionCode', 'moved',
+            'equipmentActionCode', 'service_contacted',
+            'recheckTemperature', '6.5',
+            'resolution', 'resolved',
+            'note', null
+          )
+        ),
+        'deviationDetected', false,
+        'deviationReason', null,
+        'actionText', null,
+        'deviationStatus', null
+      )
+    ),
+    '[]'::jsonb
+  );
+
+  select * into saved_item
+  from public.control_run_items
+  where id = '88888888-8888-4888-8888-888888888865';
+
+  select * into saved_deviation
+  from public.deviations
+  where control_run_item_id = '88888888-8888-4888-8888-888888888865';
+
+  if saved_run.status <> 'completed_with_deviation'
+    or saved_item.status <> 'deviation'
+    or saved_item.action_text not like '%Kontrollmätning: 6.5 °C%'
+    or saved_deviation.status <> 'resolved'
+    or saved_deviation.resolved_by <> '88888888-8888-4888-8888-888888888801'
+    or saved_deviation.resolved_at is null
+  then
+    raise exception 'Transactional smoke failure: structured resolved deviation was not derived and saved';
+  end if;
+
+  select *
+  into saved_run
+  from public.save_control_run_transactional(
+    '88888888-8888-4888-8888-888888888811',
+    '88888888-8888-4888-8888-888888888821',
+    '88888888-8888-4888-8888-888888888855',
+    jsonb_build_array(
+      jsonb_build_object(
+        'controlRunItemId', '88888888-8888-4888-8888-888888888866',
+        'controlObjectId', '88888888-8888-4888-8888-888888888831',
+        'fieldDefinitionId', '88888888-8888-4888-8888-888888888841',
+        'value', '',
+        'status', 'not_applicable',
+        'valueJson', jsonb_build_object(
+          'schema', 'cold_storage_v1',
+          'notApplicable', jsonb_build_object(
+            'reasonCode', 'empty_powered_off',
+            'note', null
+          )
+        ),
+        'deviationDetected', true
+      )
+    ),
+    '[]'::jsonb
+  );
+
+  select * into saved_item
+  from public.control_run_items
+  where id = '88888888-8888-4888-8888-888888888866';
+
+  if saved_run.status <> 'completed'
+    or saved_item.status <> 'not_applicable'
+    or saved_item.deviation_detected
+    or saved_item.value_number is not null
+    or saved_item.value_json #>> '{notApplicable,reasonLabel}' <> 'Tom och avstängd'
+  then
+    raise exception 'Transactional smoke failure: not-applicable outcome was not canonicalized';
+  end if;
+
+  select *
+  into saved_run
+  from public.save_control_run_transactional(
+    '88888888-8888-4888-8888-888888888811',
+    '88888888-8888-4888-8888-888888888821',
+    '88888888-8888-4888-8888-888888888856',
+    jsonb_build_array(
+      jsonb_build_object(
+        'controlRunItemId', '88888888-8888-4888-8888-888888888867',
+        'controlObjectId', '88888888-8888-4888-8888-888888888831',
+        'fieldDefinitionId', '88888888-8888-4888-8888-888888888841',
+        'value', '4,2',
+        'status', 'deviation',
+        'valueJson', jsonb_build_object('schema', 'cold_storage_v1'),
+        'deviationDetected', true,
+        'deviationReason', 'Clienten försökte markera avvikelse'
+      )
+    ),
+    '[]'::jsonb
+  );
+
+  select * into saved_item
+  from public.control_run_items
+  where id = '88888888-8888-4888-8888-888888888867';
+
+  if saved_run.status <> 'completed'
+    or saved_item.status <> 'ok'
+    or saved_item.deviation_detected
+    or saved_item.value_number <> 4.2
+  then
+    raise exception 'Transactional smoke failure: server did not normalize comma decimal and derive status';
+  end if;
+
   select count(*) into run_count_before
   from public.control_runs
   where organization_id = '88888888-8888-4888-8888-888888888811';
@@ -218,6 +360,13 @@ begin
       '88888888-8888-4888-8888-888888888821',
       '88888888-8888-4888-8888-888888888852',
       jsonb_build_array(
+        jsonb_build_object(
+          'controlRunItemId', '88888888-8888-4888-8888-888888888869',
+          'controlObjectId', '88888888-8888-4888-8888-888888888831',
+          'fieldDefinitionId', '88888888-8888-4888-8888-888888888841',
+          'value', '4',
+          'deviationDetected', false
+        ),
         jsonb_build_object(
           'controlRunItemId', '88888888-8888-4888-8888-888888888863',
           'controlObjectId', '88888888-8888-4888-8888-888888888831',
@@ -253,6 +402,15 @@ begin
       '88888888-8888-4888-8888-888888888821',
       '88888888-8888-4888-8888-888888888853',
       jsonb_build_array(
+        jsonb_build_object(
+          'controlRunItemId', '88888888-8888-4888-8888-888888888868',
+          'controlObjectId', '88888888-8888-4888-8888-888888888831',
+          'fieldDefinitionId', '88888888-8888-4888-8888-888888888841',
+          'value', '4',
+          'deviationDetected', false,
+          'deviationReason', null,
+          'actionText', null
+        ),
         jsonb_build_object(
           'controlRunItemId', '88888888-8888-4888-8888-888888888864',
           'controlObjectId', '88888888-8888-4888-8888-888888888831',

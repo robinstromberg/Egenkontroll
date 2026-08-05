@@ -1,6 +1,14 @@
 import { supabase } from '../lib/supabaseClient';
 import { uploadControlAttachment, type UploadedControlAttachment } from './attachmentService';
-import type { ControlFieldDefinition, ControlObject, ControlRun, ControlType } from '../types/database';
+import { COLD_STORAGE_CONTROL_KEY } from './coldStorageControl';
+import type {
+  ControlFieldDefinition,
+  ControlObject,
+  ControlRun,
+  ControlRunItemStatus,
+  ControlType,
+  DeviationStatus,
+} from '../types/database';
 
 export type ControlRunDefinition = {
   controlType: ControlType;
@@ -16,6 +24,21 @@ export type ControlResponse = {
   deviationDetected: boolean;
   deviationReason: string | null;
   actionText: string | null;
+  status?: ControlRunItemStatus;
+  valueJson?: Record<string, unknown>;
+  deviationStatus?: DeviationStatus | null;
+};
+
+export type SavedResponseOutcome = {
+  controlObjectId: string | null;
+  fieldDefinitionId: string;
+  status: ControlRunItemStatus;
+  deviationDetected: boolean;
+  deviationStatus: DeviationStatus | null;
+};
+
+export type SavedControlRun = ControlRun & {
+  responseOutcomes: SavedResponseOutcome[] | null;
 };
 
 type TransactionalControlResponse = {
@@ -26,6 +49,9 @@ type TransactionalControlResponse = {
   deviationDetected: boolean;
   deviationReason: string | null;
   actionText: string | null;
+  status?: ControlRunItemStatus;
+  valueJson?: Record<string, unknown>;
+  deviationStatus?: DeviationStatus | null;
 };
 
 function createUuid(): string {
@@ -82,7 +108,7 @@ export async function saveControlRun(
   performedBy: string,
   definition: ControlRunDefinition,
   responses: ControlResponse[],
-): Promise<ControlRun> {
+): Promise<SavedControlRun> {
   void performedBy;
 
   const controlRunId = createUuid();
@@ -104,6 +130,9 @@ export async function saveControlRun(
       deviationDetected: response.deviationDetected,
       deviationReason: response.deviationReason,
       actionText: response.actionText,
+      status: response.status,
+      valueJson: response.valueJson,
+      deviationStatus: response.deviationStatus,
     });
 
     if (response.file) {
@@ -134,5 +163,46 @@ export async function saveControlRun(
     throw new Error('Kunde inte spara kontrollen.');
   }
 
-  return savedRun;
+  if (definition.controlType.control_key !== COLD_STORAGE_CONTROL_KEY) {
+    return { ...(savedRun as ControlRun), responseOutcomes: null };
+  }
+
+  try {
+    const [{ data: savedItems, error: savedItemsError }, { data: savedDeviations, error: savedDeviationsError }] = await Promise.all([
+      supabase
+        .from('control_run_items')
+        .select('id, control_object_id, field_definition_id, status, deviation_detected')
+        .eq('organization_id', organizationId)
+        .eq('control_run_id', controlRunId),
+      supabase
+        .from('deviations')
+        .select('control_run_item_id, status')
+        .eq('organization_id', organizationId)
+        .eq('control_run_id', controlRunId),
+    ]);
+
+    if (savedItemsError || savedDeviationsError) {
+      return { ...(savedRun as ControlRun), responseOutcomes: null };
+    }
+
+    const deviationStatusByItemId = new Map(
+      (savedDeviations ?? []).map((deviation) => [deviation.control_run_item_id, deviation.status as DeviationStatus]),
+    );
+    const responseOutcomes = (savedItems ?? []).flatMap((item) => (
+      item.field_definition_id
+        ? [{
+          controlObjectId: item.control_object_id,
+          fieldDefinitionId: item.field_definition_id,
+          status: item.status as ControlRunItemStatus,
+          deviationDetected: item.deviation_detected,
+          deviationStatus: deviationStatusByItemId.get(item.id) ?? null,
+        }]
+        : []
+    ));
+
+    return { ...(savedRun as ControlRun), responseOutcomes };
+  } catch {
+    // A confirmed write remains successful even if the optional confirmation read fails.
+    return { ...(savedRun as ControlRun), responseOutcomes: null };
+  }
 }
