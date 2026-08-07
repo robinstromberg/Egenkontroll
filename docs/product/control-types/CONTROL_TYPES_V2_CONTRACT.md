@@ -84,7 +84,21 @@ Grundprincip:
 
 > Vi moderniserar hur framtida kontroller skapas och utförs. Vi skriver inte om sanningen om det som redan har hänt.
 
-## 5. Utvecklings- och releaseisolering
+## 5. Befintliga aktiva kontrolltyper ska övergå utan dokumentationsglapp
+
+Nya v2-krav får inte plötsligt göra en redan aktiv legacy-kontroll oanvändbar.
+
+Därför gäller:
+
+- En befintlig aktiv legacy-definition ska fortsätta vara utförbar tills en komplett v2-definition för framtida kontroller är redo att tas i bruk.
+- Om v2 kräver nya obligatoriska uppgifter som legacy-data saknar ska owner/admin kunna komplettera dem som en framtida/draft-definition utan att personalens nuvarande kontrollflöde stängs av under tiden.
+- Cutover till v2 ska vara explicit och framåtriktad. Tidigare kontroller och deras snapshots skrivs inte om.
+- Systemet får inte hitta på eller förifylla kriterier, instruktioner, scheman eller andra verksamhetsbeslut för att legacy-data ska passa v2.
+- Befintliga kontrollpunkter får inte destruktivt raderas eller automatiskt byta betydelse i migrationen.
+- När en komplett v2-definition aktiveras gäller den för nya planerade/utförda kontroller; historiken före cutover fortsätter använda sin tidigare kontext.
+- Om v2-cutover misslyckas ska legacy-vägen kunna fortsätta tills problemet är löst.
+
+## 6. Utvecklings- och releaseisolering
 
 Worktrees och separata branches får användas för parallellt arbete när kontrolltyperna kan utvecklas självständigt. De är ett utvecklingsverktyg, inte releasekontrollen.
 
@@ -97,7 +111,7 @@ Regler:
 - Den nya användarupplevelsen ska hållas bakom en gemensam release-/feature flag tills den definierade v2-helheten är sammanhängande och godkänd för publik användning.
 - Flaggan får inte användas som ursäkt för att mergea databasmigrationer som är destruktiva eller inkompatibla med den publika versionen.
 
-## 6. Gemensamma plattformsberoenden
+## 7. Gemensamma plattformsberoenden
 
 Följande behov ska inte lösas lokalt i en enskild kontrolltyp:
 
@@ -105,7 +119,7 @@ Följande behov ska inte lösas lokalt i en enskild kontrolltyp:
 - Gemensamma påminnelser/notifieringar: GitHub issue #403. Detta är ett separat planeringsspår och blockerar inte grundläggande dokumentation av en kontrolltyp.
 - Missade/försenade schematillfällen ska modelleras generellt och får inte byggas som rengöringsspecifik speciallogik.
 
-## 7. Release gate för Kontrolltyper v2
+## 8. Release gate för Kontrolltyper v2
 
 Publik aktivering får ske först när följande är sant för den releaseomfattning som beslutats:
 
@@ -114,9 +128,10 @@ Publik aktivering får ske först när följande är sant för den releaseomfatt
 3. `npm run contracts`, relevanta typ-/lint-/buildkontroller och kontrolltypsspecifika tester är gröna.
 4. Nya/ombyggda appvyer är verifierade enligt appens QA-matris i light, dark och system, inklusive 320 px och relevant desktopbredd.
 5. Historiska v1-kontroller kan fortfarande öppnas och förstås korrekt.
-6. Historik, export/rapport och inspektörsvy har regressionsverifierats mot äldre dokumentation och ny v2-dokumentation.
-7. Databasmigrationer är bakåtkompatibla och backup/rollback är verifierad.
-8. Feature flag kan slås av utan att dokumentation som redan skapats blir otillgänglig eller feltolkad.
-9. Produktägaren har gjort funktionellt/visuellt sluttest.
+6. Befintliga aktiva legacy-kontroller fortsätter fungera tills respektive kompletta v2-definition faktiskt aktiveras.
+7. Historik, export/rapport och inspektörsvy har regressionsverifierats mot äldre dokumentation och ny v2-dokumentation.
+8. Databasmigrationer är bakåtkompatibla och backup/rollback är verifierad.
+9. Feature flag kan slås av utan att dokumentation som redan skapats blir otillgänglig eller feltolkad.
+10. Produktägaren har gjort funktionellt/visuellt sluttest.
 
 Om någon av punkterna inte kan verifieras är releasen `no-go` oavsett om den nya UX:en i övrigt är färdig.
