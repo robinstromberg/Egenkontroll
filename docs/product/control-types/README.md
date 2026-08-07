@@ -4,6 +4,8 @@ Detta dokument är produktens samlade översikt för de 16 beslutade kontrolltyp
 
 Dokumentet beskriver **målbilden**. Befintliga startmallar och dagens implementation kan vara enklare eller delvis avvika. En rad i katalogen betyder därför inte att kontrolltypen redan finns färdig i appen.
 
+Gemensamma regler för den nya redigeringsmodellen, designsystem/branding, releaseisolering och historisk bakåtkompatibilitet finns i [Kontrolltyper v2 – gemensamt kontrakt](./CONTROL_TYPES_V2_CONTRACT.md).
+
 ## Statusbegrepp
 
 | Status | Betydelse |
@@ -36,7 +38,7 @@ Grundflödet i katalogen är den preliminära huvudmodellen. Detaljarbetet för 
 | 2 | Varmhållningskontroll | Händelsestyrd kontroll | Basdefinition klar | Återstår |
 | 3 | Nedkylningskontroll | Händelsestyrd kontroll | Basdefinition klar | Återstår |
 | 4 | Varumottagningskontroll | Händelsestyrd kontroll | Basdefinition klar | Återstår |
-| 5 | Rengöringskontroll | Checklista/rond | Basdefinition klar | Återstår |
+| 5 | Rengöringskontroll | Checklista/rond | Implementationsklar | [Rengöringskontroll](./RENGORINGSKONTROLL.md) |
 | 6 | Spårbarhetskontroll | Periodisk verifiering | Basdefinition klar | Återstår |
 | 7 | Datummärkningskontroll | Checklista/rond | Basdefinition klar | Återstår |
 | 8 | Skadedjurskontroll | Checklista/rond | Basdefinition klar | Återstår |
@@ -105,11 +107,15 @@ En kontroll som utförs offline ska sparas lokalt med den verkliga utförandetid
 
 Sena och missade kontroller får inte döljas eller efterregistreras som om de utförts i tid. Pausade och arkiverade kontrollpunkter ska finnas kvar i historiken.
 
-## Avgränsning: kontrolltypseditorn
+## Kontrolltypseditorn i v2
 
-Denna katalog bestämmer **vad** respektive kontrolltyp behöver kunna ställa in och hur inställningarna påverkar utförande och historik. Den bestämmer inte nu **hur hela redigeringsvyn ska byggas om**.
+Den tidigare avgränsningen att lämna den generella editorn i stort sett orörd är ersatt av det beslutade Kontrolltyper v2-kontraktet.
 
-I det fortsatta kontrolltypsarbetet ska editorn därför lämnas i stort sett orörd. En samlad omarbetning av redigeringsvyn är ett separat UX- och implementationsspår.
+Den gemensamma riktningen är:
+
+> Kontrolltyp → lista/översikt över kontrollpunkter → redigera en punkt i ett tydligt redigeringsläge → spara → tillbaka till översikten.
+
+Det ska inte skapas en separat editor per kontrolltyp. Gemensam redigeringsmekanik återanvänds och varje kontrolltyp anger endast sina relevanta fält och regler. Den nya UX:en ska följa repots befintliga designsystem-, branding-, tillgänglighets- och historikkontrakt.
 
 ## Arbetsordning för varje kontrolltyp
 
@@ -117,7 +123,7 @@ I det fortsatta kontrolltypsarbetet ska editorn därför lämnas i stort sett or
 2. Utgå från basdefinitionen och granska den faktiska lösningen på `main`.
 3. Besluta vad som ska behållas, ändras och kompletteras.
 4. Fastställ det konkreta mobilflödet för normalfall, avvikelse, sparbekräftelse och historik.
-5. Dokumentera endast de inställningsbehov som kontrolltypen kräver; öppna inte den generella editorfrågan.
+5. Dokumentera kontrolltypens inställningsbehov inom den gemensamma Kontrolltyper v2-modellen; skapa inte parallell editor-, schema- eller historiklogik.
 6. Efter produktägarens godkännande: skapa detaljdokumentet och uppdatera status i denna katalog.
 7. Skapa först därefter en avgränsad GitHub-issue för implementation.
 
@@ -125,4 +131,4 @@ Kyl- och frystemperatur är referens för detaljnivå, dokumentation, avvikelseh
 
 ## Rekommenderad nästa kontrolltyp
 
-Nästa produkt- och UX-arbete bör vara **Rengöringskontroll**. Den ger en första fullständig referens för grundflödet checklista/rond. Därefter bör Varumottagningskontroll och Funktionskontroll av termometrar definieras för att täcka de två återstående grundflödena innan närliggande mallar tas i turordning.
+Rengöringskontrollens produkt- och UX-definition är nu klar. Nästa produktarbete bör vara **Varumottagningskontroll** och därefter **Funktionskontroll av termometrar** för att täcka de två återstående grundflödena innan närliggande mallar tas i turordning.
