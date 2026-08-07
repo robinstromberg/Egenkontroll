@@ -2,7 +2,8 @@
 
 Datum: 2026-08-07  
 Primärt grundflöde: Checklista/rond  
-Produktstatus: Implementationsklar när den gemensamma Kontrolltyper v2-grunden i den aktuella implementationsplanen är etablerad
+Produktstatus: Implementationsklar  
+Implementationsberoende: den gemensamma Kontrolltyper v2-grunden i GitHub issue #405
 
 ## Syfte
 
@@ -115,7 +116,7 @@ Fältet är tomt från början.
 
 ## Aktivering
 
-Rengöringskontrollen får inte aktiveras utan minst en komplett aktiv kontrollpunkt.
+För en **ny eller framtida v2-definition** får Rengöringskontrollen inte aktiveras utan minst en komplett aktiv kontrollpunkt.
 
 En punkt är komplett när följande finns:
 
@@ -126,7 +127,19 @@ En punkt är komplett när följande finns:
 
 `Instruktion` är valfri.
 
-Tom eller ofullständig kontrolltyp ska inte kunna presenteras för personalen som en utförbar rengöringskontroll.
+En ny tom eller ofullständig v2-definition ska inte kunna presenteras för personalen som en utförbar rengöringskontroll.
+
+### Befintlig aktiv legacy-kontroll
+
+Aktiveringskravet ovan får inte användas för att plötsligt stänga av en redan aktiv äldre Rengöringskontroll som saknar nya v2-fält.
+
+- Legacy-kontrollen fortsätter vara utförbar medan owner/admin kompletterar en framtida v2-definition.
+- Befintliga punkter får inte automatiskt få påhittade `Godkänt när …`, instruktioner eller scheman.
+- Befintliga punkter och historiska kontroller får inte destruktivt raderas eller byta betydelse.
+- När en komplett v2-definition aktiveras gäller den för framtida kontroller.
+- Historiken före v2-cutover fortsätter visa sin tidigare snapshot/legacy-kontext.
+
+Den gemensamma övergångsmodellen styrs av `CONTROL_TYPES_V2_CONTRACT.md` och #405.
 
 ## Redigering
 
