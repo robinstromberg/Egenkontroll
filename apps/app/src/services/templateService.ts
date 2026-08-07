@@ -66,6 +66,7 @@ async function cloneTemplateRowsToOrganization(
       .insert({
         organization_id: organizationId,
         template_id: template.id,
+        control_key: template.control_key,
         name: template.name,
         description: template.description,
         category: template.category as ControlCategory,

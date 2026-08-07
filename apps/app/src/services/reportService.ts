@@ -11,6 +11,7 @@ import {
   buildPrintReportHtml,
 } from './historyReportContent';
 import type { ReportRow } from './historyReportContent';
+import { readControlRunItemValue } from './controlRunItemPresentation';
 
 export type { ReportRow } from './historyReportContent';
 
@@ -23,11 +24,7 @@ function readItemLabel(item: Awaited<ReturnType<typeof getControlRunDetail>>['it
 }
 
 function readItemValue(item: Awaited<ReturnType<typeof getControlRunDetail>>['items'][number]): string {
-  if (item.value_text) return item.value_text;
-  if (item.value_number !== null) return String(item.value_number);
-  if (item.value_boolean !== null) return item.value_boolean ? 'Ja' : 'Nej';
-  if (item.value_date) return item.value_date;
-  return '';
+  return readControlRunItemValue(item, '');
 }
 
 function uniqueNonEmpty(values: Array<string | null | undefined>): string[] {

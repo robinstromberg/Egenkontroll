@@ -13,6 +13,10 @@ type TemperatureLimits = {
   source: 'field' | 'object' | null;
 };
 
+export type TemperatureParseResult =
+  | { status: 'empty' | 'invalid' }
+  | { status: 'valid'; normalized: string; value: number };
+
 function readRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
@@ -28,6 +32,25 @@ function readNumber(value: unknown): number | null {
 
 function readString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+export function parseTemperatureInput(value: string): TemperatureParseResult {
+  const trimmed = value.trim();
+  if (!trimmed) return { status: 'empty' };
+
+  const normalizedDecimal = trimmed.replace(',', '.');
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalizedDecimal)) {
+    return { status: 'invalid' };
+  }
+
+  const parsed = Number(normalizedDecimal);
+  if (!Number.isFinite(parsed)) return { status: 'invalid' };
+
+  return {
+    status: 'valid',
+    normalized: String(parsed),
+    value: parsed,
+  };
 }
 
 export function readFieldTemperatureRule(field: ControlFieldDefinition): TemperatureRuleInput {
@@ -123,16 +146,16 @@ export function getTemperatureDeviationReason(
   value: string,
   label = field.label,
 ): string | null {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return null;
+  const parsed = parseTemperatureInput(value);
+  if (parsed.status !== 'valid') return null;
 
   const limits = getTemperatureLimits(field, object);
 
-  if (limits.limitMax !== null && parsed > limits.limitMax) {
+  if (limits.limitMax !== null && parsed.value > limits.limitMax) {
     return `${label} är över maxgräns ${limits.limitMax}${limits.unit}.`;
   }
 
-  if (limits.limitMin !== null && parsed < limits.limitMin) {
+  if (limits.limitMin !== null && parsed.value < limits.limitMin) {
     return `${label} är under mingräns ${limits.limitMin}${limits.unit}.`;
   }
 

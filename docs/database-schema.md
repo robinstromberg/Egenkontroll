@@ -28,8 +28,12 @@ Inbjudningar till en verksamhet innan ett aktivt medlemskap skapas. Tabellen lag
 ### `control_templates`
 Globala startmallar, till exempel Kyltemperaturer, Städning, Varumottagning och Spårbarhet. Dessa är föreslagna mallar och kopieras/anpassas till verksamhetens egna `control_types`.
 
+En mall kan ha en stabil `control_key` för ett beslutat specialiserat produktflöde. Ny funktionalitet ska identifiera ett sådant flöde med nyckeln, inte med ett användarredigerbart namn eller en bred kategori.
+
 ### `control_types`
 Verksamhetens egna kontrolltyper. Exempel: Kyltemperaturer, Städning, Datummärkning.
+
+`control_key` följer med från startmallen och är unik per verksamhet när den finns. Den första nyckeln är `cold_storage_temperature` för Kyl- och frystemperatur.
 
 ### `control_objects`
 Objekt eller kontrollpunkter inom en kontrolltyp. Exempel: Kyl 1 - Kök, Toaletter, Frys 1 - Lager.
@@ -44,6 +48,8 @@ En utförd kontroll. Innehåller kontrolltyp, utförd av, tidpunkt och övergrip
 
 ### `control_run_items`
 De enskilda svaren/värdena i en utförd kontroll. Här sparas även snapshots av objekt och fältdefinitioner så historiken fortsätter vara begriplig även efter senare ändringar.
+
+Kyl- och fryskontrollen sparar `Ej i drift` som status `not_applicable` och strukturerade orsaker/åtgärder i `value_json`. Den transaktionella sparfunktionen räknar temperaturavvikelsen från de lagrade gränserna och använder inte klientens avvikelseflagga som källa till sanningen.
 
 ### `deviations`
 Avvikelser som skapas när en kontrollpunkt avviker. Stödjer minst:

@@ -10,6 +10,10 @@ import {
 import type { ControlRunDetail, ControlRunSummary, HistoryFilters } from '../services/historyService';
 import { HISTORY_PAGE_SIZE } from '../services/historyPagination';
 import type { HistoryCursor } from '../services/historyPagination';
+import {
+  readControlRunItemValue,
+  readStoredTemperatureLimitText,
+} from '../services/controlRunItemPresentation';
 import './HistoryView.css';
 
 export type HistoryViewProps = {
@@ -30,11 +34,7 @@ function readItemLabel(item: ControlRunDetail['items'][number]): string {
 }
 
 function readItemValue(item: ControlRunDetail['items'][number]): string {
-  if (item.value_text) return item.value_text;
-  if (item.value_number !== null) return String(item.value_number);
-  if (item.value_boolean !== null) return item.value_boolean ? 'Ja' : 'Nej';
-  if (item.value_date) return item.value_date;
-  return 'Ej angivet';
+  return readControlRunItemValue(item);
 }
 
 function readObjectInstructions(item: ControlRunDetail['items'][number]): string | null {
@@ -46,6 +46,12 @@ function readObjectInstructions(item: ControlRunDetail['items'][number]): string
 function getRunStatusText(status: string): string {
   if (status === 'completed_with_deviation') return 'Avvikelse';
   if (status === 'completed') return 'Klar';
+  return status;
+}
+
+function getDeviationStatusText(status: string): string {
+  if (status === 'open') return 'Behöver följas upp';
+  if (status === 'resolved') return 'Löst';
   return status;
 }
 
@@ -350,6 +356,9 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
               <article className="history-detail-card" key={item.id}>
                 <strong>{readItemLabel(item)}</strong>
                 {readObjectInstructions(item) ? <p className="muted-copy">Instruktion: {readObjectInstructions(item)}</p> : null}
+                {readStoredTemperatureLimitText(item) ? (
+                  <p className="muted-copy">Åtgärdsgräns: {readStoredTemperatureLimitText(item)}</p>
+                ) : null}
                 <p>{readItemValue(item)}</p>
                 {item.deviation_detected ? <p className="form-message error-message">Avvikelse: {item.deviation_reason}</p> : null}
                 {item.action_text ? <p className="muted-copy">Åtgärd: {item.action_text}</p> : null}
@@ -362,7 +371,7 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
               <h4>Avvikelser</h4>
               {detail.deviations.map((deviation) => (
                 <article className="history-detail-card" key={deviation.id}>
-                  <strong>{deviation.status}</strong>
+                  <strong>{getDeviationStatusText(deviation.status)}</strong>
                   <p>{deviation.description}</p>
                   <p className="muted-copy">Åtgärd: {deviation.action_text}</p>
                   {deviation.follow_up_comment ? <p className="muted-copy">Uppföljning: {deviation.follow_up_comment}</p> : null}

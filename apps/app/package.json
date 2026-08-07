@@ -21,7 +21,7 @@
     "organization-contexts:test": "tsx --test src/services/organizationContext.test.ts",
     "sharing:test": "tsx --test src/sharing/inspectorSharing.test.ts",
     "theme:test": "tsx --test src/theme/appTheme.test.ts",
-    "control-execution:test": "tsx --test src/components/controlExecutionVisualContract.test.ts",
+    "control-execution:test": "tsx --test src/components/controlExecutionVisualContract.test.ts src/services/coldStorageControl.test.ts src/services/controlRunItemPresentation.test.ts",
     "review-sharing:test": "tsx --test src/components/reviewSharingVisualContract.test.ts",
     "menu-admin:test": "tsx --test src/components/menuAdminIconVisualContract.test.ts",
     "preview": "vite preview",

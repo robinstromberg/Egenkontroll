@@ -8,6 +8,130 @@
   gap: 12px;
 }
 
+.cold-storage-canvas {
+  display: grid;
+  gap: 12px;
+}
+
+.cold-storage-unit {
+  gap: 12px;
+}
+
+.cold-storage-unit-heading {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cold-storage-unit-heading h4,
+.cold-storage-unit-heading p,
+.cold-storage-instruction {
+  margin: 0;
+}
+
+.cold-storage-instruction {
+  border-left: 3px solid var(--ds-highlight-border);
+  padding-left: 10px;
+  color: var(--ds-text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.cold-storage-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid var(--ds-status-neutral-border);
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--ds-status-neutral-fg);
+  background: var(--ds-status-neutral-bg);
+  font-size: 0.75rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.cold-storage-status.good {
+  border-color: var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+  background: var(--ds-status-success-bg);
+}
+
+.cold-storage-status.bad {
+  border-color: var(--ds-status-danger-border);
+  color: var(--ds-status-danger-fg);
+  background: var(--ds-status-danger-bg);
+}
+
+.cold-storage-na-toggle {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 40px;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  padding: 7px 12px;
+  color: var(--ds-text);
+  background: var(--ds-action-secondary);
+  font: inherit;
+  font-weight: 800;
+}
+
+.cold-storage-na-toggle:hover,
+.cold-storage-na-toggle.selected {
+  border-color: var(--ds-border-strong);
+  background: var(--ds-action-secondary-hover);
+}
+
+.cold-storage-exception-panel {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--ds-status-neutral-border);
+  border-radius: 14px;
+  padding: 12px;
+  color: var(--ds-status-neutral-fg);
+  background: var(--ds-status-neutral-bg);
+}
+
+.cold-storage-exception-panel.deviation {
+  border-color: var(--ds-status-danger-border);
+  color: var(--ds-status-danger-fg);
+  background: var(--ds-status-danger-bg);
+}
+
+.cold-storage-exception-panel label {
+  color: var(--ds-text);
+  font-weight: 800;
+}
+
+.cold-storage-exception-panel textarea.text-input {
+  min-height: 88px;
+  padding-block: 12px;
+  line-height: 1.35;
+  resize: vertical;
+}
+
+.cold-storage-progress {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--ds-border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface-subtle);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.cold-storage-progress strong {
+  color: var(--ds-text);
+}
+
 .control-form-topbar {
   position: sticky;
   top: 8px;

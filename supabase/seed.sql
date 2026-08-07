@@ -30,6 +30,7 @@ set
 insert into public.control_types (
   id,
   organization_id,
+  control_key,
   name,
   description,
   category,
@@ -42,6 +43,7 @@ values
   (
     '22222222-2222-4222-8222-222222222201',
     '11111111-1111-4111-8111-111111111111',
+    'cold_storage_temperature',
     'Kyltemperaturer',
     'Daglig demo-kontroll av kylar och frysar.',
     'temperature',
@@ -53,6 +55,7 @@ values
   (
     '22222222-2222-4222-8222-222222222202',
     '11111111-1111-4111-8111-111111111111',
+    null,
     'Städning',
     'Daglig demo-checklista för städområden.',
     'checklist',
@@ -64,6 +67,7 @@ values
   (
     '22222222-2222-4222-8222-222222222203',
     '11111111-1111-4111-8111-111111111111',
+    null,
     'Varumottagning',
     'Demo-kontroll vid leverans.',
     'receiving',
@@ -74,6 +78,7 @@ values
   )
 on conflict (id) do update
 set
+  control_key = excluded.control_key,
   name = excluded.name,
   description = excluded.description,
   category = excluded.category,
