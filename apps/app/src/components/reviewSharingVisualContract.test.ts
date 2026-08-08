@@ -143,6 +143,7 @@ test('History and KPI keep filters, data boundaries, states and chart contracts'
     'performed_at.lt.${cursor.performedAt}',
     'id.lt.${cursor.id}',
     'loadFilteredHistoryPage({',
+    'control_types!control_runs_control_type_organization_fkey(name, instructions)',
     '.filter(isImageAttachment)',
     'createSignedAttachmentUrls(imageAttachments)',
   ]) {

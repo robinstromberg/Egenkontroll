@@ -123,7 +123,9 @@ export function getTemperatureDeviationReason(
   value: string,
   label = field.label,
 ): string | null {
-  const parsed = Number(value);
+  const normalizedValue = value.trim().replace(',', '.');
+  if (!normalizedValue) return null;
+  const parsed = Number(normalizedValue);
   if (!Number.isFinite(parsed)) return null;
 
   const limits = getTemperatureLimits(field, object);

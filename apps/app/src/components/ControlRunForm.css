@@ -392,6 +392,169 @@
   gap: 10px;
 }
 
+.cold-storage-flow {
+  display: grid;
+  gap: 12px;
+}
+
+.cold-storage-progress,
+.cold-storage-draft-note {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--ds-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: var(--ds-text);
+  background: var(--ds-surface-subtle);
+}
+
+.cold-storage-progress span,
+.cold-storage-draft-note span {
+  display: block;
+  margin-top: 2px;
+  color: var(--ds-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.cold-storage-text-button {
+  min-height: 44px;
+  flex: 0 0 auto;
+  border: 1px solid var(--ds-border-strong);
+  border-radius: 12px;
+  padding: 0 12px;
+  color: var(--ds-action-primary);
+  background: var(--ds-action-secondary);
+  font-weight: 800;
+}
+
+.cold-storage-row {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--ds-border);
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.cold-storage-row.has-deviation {
+  border-color: var(--ds-status-warning-border);
+}
+
+.cold-storage-row-heading {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cold-storage-row-heading h4,
+.cold-storage-row-heading p {
+  margin: 0;
+}
+
+.cold-storage-row-heading p {
+  margin-top: 3px;
+  color: var(--ds-text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cold-storage-status {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid var(--ds-status-neutral-border);
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--ds-status-neutral-fg);
+  background: var(--ds-status-neutral-bg);
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.cold-storage-status.good {
+  border-color: var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+  background: var(--ds-status-success-bg);
+}
+
+.cold-storage-status.bad {
+  border-color: var(--ds-status-danger-border);
+  color: var(--ds-status-danger-fg);
+  background: var(--ds-status-danger-bg);
+}
+
+.cold-storage-instructions {
+  display: grid;
+  gap: 4px;
+  color: var(--ds-text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.cold-storage-instructions strong {
+  color: var(--ds-text);
+}
+
+.cold-storage-temperature-field,
+.cold-storage-expanded-panel,
+.cold-storage-deviation-panel,
+.cold-storage-expanded-panel label,
+.cold-storage-deviation-panel label {
+  display: grid;
+  gap: 7px;
+}
+
+.cold-storage-temperature-field > label,
+.cold-storage-expanded-panel label,
+.cold-storage-deviation-panel label {
+  font-weight: 800;
+}
+
+.cold-storage-checkbox {
+  display: flex;
+  min-height: 44px;
+  gap: 9px;
+  align-items: center;
+  font-weight: 800;
+}
+
+.cold-storage-checkbox input {
+  width: 20px;
+  height: 20px;
+}
+
+.cold-storage-expanded-panel,
+.cold-storage-deviation-panel {
+  border-radius: 14px;
+  padding: 12px;
+  color: var(--ds-status-neutral-fg);
+  background: var(--ds-status-neutral-bg);
+}
+
+.cold-storage-expanded-panel p {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.cold-storage-deviation-panel {
+  color: var(--ds-status-warning-fg);
+  background: var(--ds-status-warning-bg);
+}
+
+.cold-storage-deviation-panel .text-input,
+.cold-storage-expanded-panel .text-input {
+  color: var(--ds-text);
+  background: var(--ds-surface);
+}
+
 .control-form-temperature .control-group {
   grid-template-columns: minmax(0, 1fr) minmax(132px, 0.78fr);
   gap: 8px 10px;
@@ -598,6 +761,10 @@
 
 
 @media (max-width: 420px) {
+  .control-form-cold-storage {
+    padding-bottom: calc(104px + env(safe-area-inset-bottom));
+  }
+
   .control-form-topbar {
     display: grid;
     align-items: stretch;
@@ -622,6 +789,17 @@
   }
 
   .canvas-edit-action {
+    justify-self: start;
+  }
+
+  .cold-storage-progress,
+  .cold-storage-draft-note,
+  .cold-storage-row-heading {
+    display: grid;
+  }
+
+  .cold-storage-text-button,
+  .cold-storage-status {
     justify-self: start;
   }
 }

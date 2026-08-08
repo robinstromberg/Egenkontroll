@@ -16,6 +16,9 @@ export type ControlResponse = {
   deviationDetected: boolean;
   deviationReason: string | null;
   actionText: string | null;
+  responseSchema?: string;
+  status?: 'ok' | 'deviation' | 'not_applicable';
+  valueJson?: Record<string, unknown>;
 };
 
 type TransactionalControlResponse = {
@@ -26,6 +29,9 @@ type TransactionalControlResponse = {
   deviationDetected: boolean;
   deviationReason: string | null;
   actionText: string | null;
+  responseSchema?: string;
+  status?: 'ok' | 'deviation' | 'not_applicable';
+  valueJson?: Record<string, unknown>;
 };
 
 function createUuid(): string {
@@ -104,6 +110,9 @@ export async function saveControlRun(
       deviationDetected: response.deviationDetected,
       deviationReason: response.deviationReason,
       actionText: response.actionText,
+      responseSchema: response.responseSchema,
+      status: response.status,
+      valueJson: response.valueJson,
     });
 
     if (response.file) {

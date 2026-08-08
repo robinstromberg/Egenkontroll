@@ -5,6 +5,8 @@ export type SavedControlSummary = {
   controlName: string;
   savedAt: string;
   performedBy: string;
+  resultText?: string;
+  hasOpenDeviation?: boolean;
 };
 
 type SavedControlViewProps = {
@@ -28,8 +30,8 @@ export function SavedControlView({ summary, onDone, onShowHistory }: SavedContro
       </div>
 
       <div className="saved-control-copy">
-        <h3 id="saved-control-title">Kontroll sparad</h3>
-        <p>All information är registrerad.</p>
+        <h3 id="saved-control-title">{summary.resultText ? `${summary.controlName} sparad` : 'Kontroll sparad'}</h3>
+        <p>{summary.resultText ? 'Dokumentationen är sparad.' : 'All information är registrerad.'}</p>
       </div>
 
       <div className="saved-summary-card">
@@ -45,7 +47,17 @@ export function SavedControlView({ summary, onDone, onShowHistory }: SavedContro
           <span>Utförd av</span>
           <strong>{summary.performedBy}</strong>
         </div>
+        {summary.resultText ? (
+          <div>
+            <span>Resultat</span>
+            <strong>{summary.resultText}</strong>
+          </div>
+        ) : null}
       </div>
+
+      {summary.hasOpenDeviation ? (
+        <p className="saved-open-deviation" role="status">En avvikelse är öppen och behöver följas upp.</p>
+      ) : null}
 
       <button className="saved-history-button" type="button" onClick={onShowHistory}>
         <span>Visa i historik</span>

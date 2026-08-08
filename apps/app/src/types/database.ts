@@ -68,6 +68,7 @@ export type OrganizationInvitation = {
 
 export type ControlTemplate = {
   id: string;
+  control_key: string | null;
   name: string;
   description: string | null;
   category: ControlCategory;
@@ -82,6 +83,7 @@ export type ControlType = {
   id: string;
   organization_id: string;
   template_id: string | null;
+  control_key: string | null;
   name: string;
   description: string | null;
   category: ControlCategory;
