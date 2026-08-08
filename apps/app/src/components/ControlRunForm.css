@@ -761,7 +761,7 @@
 
 
 @media (max-width: 420px) {
-  .cold-storage-flow {
+  .control-form-cold-storage {
     padding-bottom: calc(104px + env(safe-area-inset-bottom));
   }
 
