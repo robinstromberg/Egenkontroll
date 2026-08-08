@@ -83,7 +83,7 @@ async function fetchHistoryRunBatch(
 ): Promise<RawHistoryRun[]> {
   let query = supabase
     .from('control_runs')
-    .select('*, control_types(name, instructions)')
+    .select('*, control_types!control_runs_control_type_organization_fkey(name, instructions)')
     .eq('organization_id', organizationId)
     .order('performed_at', { ascending: false })
     .order('id', { ascending: false })
@@ -239,7 +239,7 @@ export async function getControlRunDetail(
 ): Promise<ControlRunDetail> {
   const { data: run, error: runError } = await supabase
     .from('control_runs')
-    .select('*, control_types(name, instructions)')
+    .select('*, control_types!control_runs_control_type_organization_fkey(name, instructions)')
     .eq('organization_id', organizationId)
     .eq('id', controlRunId)
     .single();
