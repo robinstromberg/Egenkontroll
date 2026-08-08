@@ -761,6 +761,10 @@
 
 
 @media (max-width: 420px) {
+  .cold-storage-flow {
+    padding-bottom: calc(104px + env(safe-area-inset-bottom));
+  }
+
   .control-form-topbar {
     display: grid;
     align-items: stretch;

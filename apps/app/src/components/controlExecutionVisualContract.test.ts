@@ -87,6 +87,9 @@ test('migrated view CSS uses only semantic theme tokens', async () => {
   const todayCss = await readComponentFile('TodayDashboard.css');
   assert.doesNotMatch(todayCss, /pwa-phone-|pwa-share-|pwa-add-|pwa-home-|pwa-pointer|pwa-highlight-pulse|home-screen-step-card/);
 
+  const controlCss = await readComponentFile('ControlRunForm.css');
+  assert.match(controlCss, /@media \(max-width: 420px\)[\s\S]*\.cold-storage-flow\s*\{[\s\S]*padding-bottom:\s*calc\(104px \+ env\(safe-area-inset-bottom\)\)/);
+
   const savedCss = await readComponentFile('SavedControlView.css');
   assert.match(savedCss, /animation:\s*saved-pop 560ms ease-out both/);
   assert.match(savedCss, /animation:\s*saved-dot 760ms ease-out both/);
