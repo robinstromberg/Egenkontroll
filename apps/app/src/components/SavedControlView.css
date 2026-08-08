@@ -90,6 +90,16 @@
   font-size: 1rem;
 }
 
+.saved-open-deviation {
+  margin: 0;
+  border: 1px solid var(--ds-status-warning-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: var(--ds-status-warning-fg);
+  background: var(--ds-status-warning-bg);
+  font-weight: 800;
+}
+
 .saved-history-button {
   display: flex;
   min-height: 58px;

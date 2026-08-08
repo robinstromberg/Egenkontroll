@@ -71,7 +71,7 @@ test('response keys, defaults, supplier detection and deviations stay stable', (
   assert.equal(getDeviationReason(temperature, null, '5'), null);
   assert.equal(getDeviationReason(temperature, null, '9'), 'Kyltemperatur är över maxgräns 8°C.');
   assert.equal(getDeviationReason(temperature, null, '1'), 'Kyltemperatur är under mingräns 2°C.');
-  assert.equal(getDeviationReason(temperature, null, ''), 'Kyltemperatur är under mingräns 2°C.');
+  assert.equal(getDeviationReason(temperature, null, ''), null);
 });
 
 test('migrated view CSS uses only semantic theme tokens', async () => {
@@ -139,14 +139,16 @@ test('control forms retain required, disabled, offline and save ordering', async
 
   for (const source of [legacyForm, photoForm]) {
     assert.match(source, /response\.deviationDetected && !response\.actionText\?\.trim\(\)/);
-    assert.match(source, /if \(!definition \|\| missingAction\) return;/);
     assert.match(source, /if \(!isOnline\)/);
-    assert.match(source, /disabled=\{saving \|\| definition\.fields\.length === 0 \|\| missingAction \|\| !isOnline\}/);
     assertOrdered(source, ['if (!isOnline)', "eventName: 'control_save_failed'", 'return;', 'await saveControlRun', "eventName: 'control_saved'", 'await onSaved']);
   }
 
   assert.match(legacyForm, /has_photo:\s*false/);
-  assertOrdered(photoForm, ['const savedAt = new Date().toISOString()', 'await saveControlRun', "eventName: 'control_saved'", 'await onSaved({', 'controlName:', 'savedAt,', 'performedBy: performedByName']);
+  assert.match(legacyForm, /if \(!definition \|\| missingAction\) return;/);
+  assert.match(legacyForm, /disabled=\{saving \|\| definition\.fields\.length === 0 \|\| missingAction \|\| !isOnline\}/);
+  assert.match(photoForm, /if \(!definition \|\| missingAction \|\| !coldStorageComplete\) return;/);
+  assert.match(photoForm, /disabled=\{saving \|\| definition\.fields\.length === 0 \|\| missingAction \|\| !coldStorageComplete \|\| !isOnline\}/);
+  assertOrdered(photoForm, ['const savedRun = await saveControlRun', "eventName: 'control_saved'", 'await onSaved({', 'controlName:', 'savedAt: savedRun.performed_at', 'performedBy: performedByName']);
   assertOrdered(photoForm, ['setFiles((current)', "setResponses((current) => ({ ...current, [key]: file?.name ?? '' }))"]);
   assert.match(photoForm, /nextDefinition\.fields\.some\(isSupplierField\)/);
 });

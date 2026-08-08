@@ -10,6 +10,7 @@ import {
 import type { ControlRunDetail, ControlRunSummary, HistoryFilters } from '../services/historyService';
 import { HISTORY_PAGE_SIZE } from '../services/historyPagination';
 import type { HistoryCursor } from '../services/historyPagination';
+import { readColdStorageHistoryPresentation } from '../services/coldStorageControl';
 import './HistoryView.css';
 
 export type HistoryViewProps = {
@@ -30,6 +31,8 @@ function readItemLabel(item: ControlRunDetail['items'][number]): string {
 }
 
 function readItemValue(item: ControlRunDetail['items'][number]): string {
+  const coldStoragePresentation = readColdStorageHistoryPresentation(item);
+  if (item.status === 'not_applicable' && coldStoragePresentation) return coldStoragePresentation.value;
   if (item.value_text) return item.value_text;
   if (item.value_number !== null) return String(item.value_number);
   if (item.value_boolean !== null) return item.value_boolean ? 'Ja' : 'Nej';
@@ -351,6 +354,9 @@ export function HistoryView({ organizationId }: HistoryViewProps) {
                 <strong>{readItemLabel(item)}</strong>
                 {readObjectInstructions(item) ? <p className="muted-copy">Instruktion: {readObjectInstructions(item)}</p> : null}
                 <p>{readItemValue(item)}</p>
+                {readColdStorageHistoryPresentation(item)?.details.map((line) => (
+                  <p className="muted-copy" key={line}>{line}</p>
+                ))}
                 {item.deviation_detected ? <p className="form-message error-message">Avvikelse: {item.deviation_reason}</p> : null}
                 {item.action_text ? <p className="muted-copy">Åtgärd: {item.action_text}</p> : null}
               </article>
